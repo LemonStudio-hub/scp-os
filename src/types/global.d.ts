@@ -7,6 +7,8 @@ declare global {
       navigateHistory: (direction: number) => void
       autocomplete: () => void
       focus: () => void
+      scrollToTop: () => void
+      scrollToBottom: () => void
     }
   }
 }

@@ -6,6 +6,7 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useTerminal } from '../composables/useTerminal'
 import { setupGestures, destroyGestures } from '../utils/gestures'
+import { updateTerminalFontSize } from '../utils/terminal'
 
 const terminalContainer = ref<HTMLDivElement>()
 let hammer: HammerManager | null = null
@@ -19,14 +20,48 @@ const {
   focus,
   clear,
   navigateHistory,
-  autocomplete
+  autocomplete,
+  getTerminal
 } = useTerminal(terminalContainer)
+
+const scrollToTop = () => {
+  const terminal = getTerminal()
+  if (terminal) {
+    terminal.scrollToTop()
+  }
+}
+
+const scrollToBottom = () => {
+  const terminal = getTerminal()
+  if (terminal) {
+    terminal.scrollToBottom()
+  }
+}
+
+// Handle resize events with debounced font size update
+let resizeTimeout: number | null = null
+const handleResize = () => {
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
+  
+  resizeTimeout = window.setTimeout(() => {
+    const terminal = getTerminal()
+    if (terminal) {
+      updateTerminalFontSize(terminal)
+    }
+  }, 250)
+}
 
 onMounted(async () => {
   initTerminal()
   if (terminalContainer.value) {
     hammer = setupGestures(terminalContainer.value)
   }
+  
+  // Add resize listener for responsive font size
+  window.addEventListener('resize', handleResize)
+  
   await displayBootLog()
   displayWelcomeMessage()
   setupCommandHandler()
@@ -36,6 +71,10 @@ onBeforeUnmount(() => {
   if (hammer) {
     destroyGestures(hammer)
   }
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+  }
+  window.removeEventListener('resize', handleResize)
   destroyTerminal()
 })
 
@@ -47,7 +86,9 @@ window.scpTerminalActions = {
   },
   navigateHistory,
   autocomplete,
-  focus
+  focus,
+  scrollToTop,
+  scrollToBottom
 }
 </script>
 
@@ -61,6 +102,7 @@ window.scpTerminalActions = {
   top: 0;
   left: 0;
   background: #0a0a0a;
+  overflow: hidden;
 }
 
 #terminal-container ::v-deep(.xterm) {
@@ -74,5 +116,18 @@ window.scpTerminalActions = {
 
 #terminal-container ::v-deep(.xterm-screen) {
   background-color: #0a0a0a !important;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  #terminal-container ::v-deep(.xterm) {
+    padding: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  #terminal-container ::v-deep(.xterm) {
+    padding: 2px;
+  }
 }
 </style>

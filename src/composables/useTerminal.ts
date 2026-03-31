@@ -283,6 +283,10 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     terminalInstance.value.terminal?.clear()
   }
 
+  const getTerminal = () => {
+    return terminalInstance.value.terminal
+  }
+
   return {
     terminalInstance,
     currentInput,
@@ -294,6 +298,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     focus,
     clear,
     navigateHistory,
-    autocomplete
+    autocomplete,
+    getTerminal
   }
 }
