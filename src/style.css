@@ -1,0 +1,66 @@
+/* Import xterm styles */
+@import 'xterm/css/xterm.css';
+
+/* SCP Terminal Styles - Full Screen */
+:root {
+  --scp-red: #8b0000;
+  --scp-dark-red: #5c0000;
+  --scp-green: #00ff00;
+  --scp-orange: #ffa500;
+  --scp-red-error: #ff4444;
+  --scp-white: #ffffff;
+  --scp-gray: #888888;
+  --scp-bg: #0a0a0a;
+  --scp-dark-bg: #000000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Courier New', 'Consolas', monospace;
+  background: var(--scp-dark-bg);
+  color: var(--scp-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Custom scrollbar for xterm */
+.xterm-viewport {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scp-red) var(--scp-bg);
+}
+
+.xterm-viewport::-webkit-scrollbar {
+  width: 8px;
+}
+
+.xterm-viewport::-webkit-scrollbar-track {
+  background: var(--scp-bg);
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb {
+  background: var(--scp-red);
+  border-radius: 4px;
+}
+
+.xterm-viewport::-webkit-scrollbar-thumb:hover {
+  background: var(--scp-dark-red);
+}
