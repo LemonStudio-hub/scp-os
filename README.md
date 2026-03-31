@@ -129,7 +129,40 @@ src/
 
 ## 📄 License
 
-This project is for educational and entertainment purposes only.
+This project uses a dual licensing model:
+
+### MIT License (Code)
+
+All source code, including but not limited to:
+- Application logic and algorithms
+- UI/UX components
+- Utility functions
+- Configuration files
+
+is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+### CC BY-SA 3.0 (SCP Foundation Content)
+
+All SCP Foundation related content, including but not limited to:
+- SCP object descriptions and classifications
+- SCP Foundation terminology and lore
+- Containment procedures and protocols
+- Site information and security classifications
+- Any references to SCP Foundation entities
+
+is licensed under the Creative Commons Attribution-ShareAlike 3.0 License (CC BY-SA 3.0).
+
+**You are free to:**
+- Share — copy and redistribute the material in any medium or format
+- Adapt — remix, transform, and build upon the material
+
+**Under the following terms:**
+- **Attribution** — You must give appropriate credit, provide a link to the license, and indicate if changes were made
+- **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original
+
+The SCP Foundation is a collaborative creative writing project. For more information:
+- [SCP Foundation Wiki](https://scp-wiki.net/)
+- [CC BY-SA 3.0 License](https://creativecommons.org/licenses/by-sa/3.0/)
 
 ## 🙏 Acknowledgments
 
