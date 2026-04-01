@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { commandHandlers, getCommandHandler } from './index'
 import type { CommandType } from '../types/command'
+import * as scraperModule from '../utils/scraper'
+
+// Mock scraper module
+vi.mock('../utils/scraper', () => ({
+  default: {
+    scrapeSCP: vi.fn(),
+    formatForTerminal: vi.fn(),
+  },
+}))
 
 describe('commands/index', () => {
   let writeMock: any
@@ -9,6 +18,9 @@ describe('commands/index', () => {
   beforeEach(() => {
     writeMock = vi.fn()
     writelnMock = vi.fn()
+    
+    // Reset all mocks before each test
+    vi.clearAllMocks()
   })
 
   describe('getCommandHandler', () => {
@@ -22,7 +34,7 @@ describe('commands/index', () => {
       const commands: CommandType[] = [
         'help', 'status', 'clear', 'cls', 'containment',
         'scp-list', 'info', 'protocol', 'emergency',
-        'version', 'about', 'search', 'scrape', 'logout'
+        'version', 'about', 'search', 'logout'
       ]
 
       commands.forEach(cmd => {
@@ -170,13 +182,24 @@ describe('commands/index', () => {
       )
     })
 
-    it('应该在 SCP 不存在时显示错误', () => {
-      const handler = commandHandlers.info
-      handler(['9999'], writeMock, writelnMock)
+    it('应该在 SCP 不存在时显示错误', async () => {
+      // Mock scraper to return failure
+      const scraper = (await import('../utils/scraper')).default
+      vi.mocked(scraper.scrapeSCP).mockResolvedValue({
+        success: false,
+        error: 'SCP 对象不存在或无法访问',
+      })
       
-      expect(writelnMock).toHaveBeenCalledWith(
-        expect.stringContaining('未找到 SCP-9999')
-      )
+      const handler = commandHandlers.info
+      await handler(['9999'], writeMock, writelnMock)
+      
+      expect(writelnMock).toHaveBeenCalled()
+      const calls = writelnMock.mock.calls
+      const output = calls.map((call: any) => call[0]).join('\n')
+      
+      // 测试应该显示查询失败的信息
+      expect(output).toContain('查询失败')
+      expect(output).toContain('9999')
     })
   })
 
@@ -220,8 +243,8 @@ describe('commands/index', () => {
       const output = calls.map((call: any) => call[0]).join('\n')
       
       expect(output).toContain('系统版本信息')
-      expect(output).toContain('3.0.1')
-      expect(output).toContain('Vue 3')
+      expect(output).toContain('3.0.2')
+      expect(output).toContain('安全级别')
     })
   })
 
@@ -314,15 +337,6 @@ describe('commands/index', () => {
     })
   })
 
-  describe('scrape 命令', () => {
-    it('应该显示用法信息当没有参数时', async () => {
-      await commandHandlers['scrape']([], writeMock, writelnMock)
-      
-      const output = writelnMock.mock.calls.map((call: any) => call[0]).join('\n')
-      expect(output).toContain('用法: scrape <编号>')
-      expect(output).toContain('示例: scrape 173')
-    })
   })
-})
 
 export { commandHandlers }

@@ -112,18 +112,48 @@ export const commandHandlers: CommandMap = {
     scpList.forEach(line => writeln(line))
   },
 
-  info: (args, _write, writeln) => {
+  info: async (args, _write, writeln) => {
     const scpNumber = args[0]
     if (!scpNumber) {
       writeln(`${ANSICode.yellow}请指定 SCP 编号，例如: info 173${ANSICode.reset}`)
       return
     }
 
-    const info = SCP_DATABASE[scpNumber]
-    if (info) {
-      info.description.forEach(line => writeln(line))
-    } else {
-      writeln(`${ANSICode.red}未找到 SCP-${scpNumber} 的信息${ANSICode.reset}`)
+    writeln(`${ANSICode.cyan}正在查询 SCP-${scpNumber}...${ANSICode.reset}`)
+    writeln('')
+
+    try {
+      // 先尝试从本地数据库查找
+      const localInfo = SCP_DATABASE[scpNumber]
+      
+      if (localInfo) {
+        writeln(`${ANSICode.yellow}[本地数据库]${ANSICode.reset}`)
+        writeln('')
+        localInfo.description.forEach(line => writeln(line))
+        return
+      }
+
+      // 本地没有，从基金会百科爬取
+      writeln(`${ANSICode.cyan}正在连接基金会百科...${ANSICode.reset}`)
+      writeln('')
+      
+      const result = await scraper.scrapeSCP(scpNumber)
+      
+      if (result.success && result.data) {
+        if (result.cached) {
+          writeln(`${ANSICode.yellow}[来自缓存]${ANSICode.reset}`)
+          writeln('')
+        }
+        
+        const formattedLines = scraper.formatForTerminal(result.data)
+        formattedLines.forEach(line => writeln(line))
+      } else {
+        writeln(`${ANSICode.red}查询失败: ${result.error}${ANSICode.reset}`)
+        writeln(`${ANSICode.yellow}提示: 确保SCP编号正确，例如: 173, 096, 682${ANSICode.reset}`)
+        writeln(`${ANSICode.yellow}本地数据库未收录此SCP，且网络查询失败${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}查询失败: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -196,21 +226,12 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
       '  SCP 基金会终端系统',
-      '  版本: 3.0.1',
-      '  构建日期: 2026-03-31',
+      '  版本: 3.0.2',
+      '  安全级别: 4级',
+      '  最后更新: 2026-04-01',
       '',
-      '  技术信息:',
-      '    - 前端框架: Vue 3',
-      '    - 终端库: xterm.js',
-      '    - 手势库: Hammer.js',
-      '    - 构建工具: Vite',
-      '    - 开发语言: TypeScript',
-      '    - 加密级别: AES-256',
-      '',
-      '  维护信息:',
-      '    - 维护部门: 技术部',
-      '    - 负责人: Dr. [数据删除]',
-      '    - 最后检查: 2026-03-31',
+      `${ANSICode.red}  仅限授权人员访问${ANSICode.reset}`,
+      `${ANSICode.red}  违规访问将受到严厉处罚${ANSICode.reset}`,
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -223,25 +244,25 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.green}                          关于系统${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  SCP 基金会终端系统是一个用于访问和控制',
-      '  基金会资源的现代化界面。',
+      '  SCP 基金会终端系统',
+      '  安全级别: 4级',
+      '  访问权限: 授权人员',
       '',
-      '  主要功能:',
-      '    - 访问 SCP 数据库',
-      '    - 查看收容协议',
-      '    - 监控系统状态',
+      '  系统功能:',
+      '    - SCP 数据库查询',
+      '    - 收容协议查看',
+      '    - 站点状态监控',
       '    - 紧急情况响应',
-      '    - 触摸屏手势支持',
+      '    - 安全通信通道',
       '',
-      '  设计理念:',
-      '    - 安全第一',
-      '    - 高效操作',
-      '    - 用户友好',
-      '    - 现代化界面',
-      '    - 全屏沉浸式体验',
+      '  安全特性:',
+      '    - AES-256 加密通信',
+      '    - 访问日志记录',
+      '    - 操作审计追踪',
+      '    - 多因素身份验证',
       '',
-      `${ANSICode.red}  本系统仅供授权人员使用。${ANSICode.reset}`,
-      `${ANSICode.red}  未经授权的访问将被追究法律责任。${ANSICode.reset}`,
+      `${ANSICode.red}  警告: 本系统仅供授权人员使用${ANSICode.reset}`,
+      `${ANSICode.red}  未经授权的访问将立即触发安全警报${ANSICode.reset}`,
       '',
       `${ANSICode.green}  Secure. Contain. Protect.${ANSICode.reset}`,
       '',
@@ -270,57 +291,6 @@ export const commandHandlers: CommandMap = {
       }
     } catch (error) {
       writeln(`${ANSICode.red}搜索失败: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
-    }
-  },
-
-  scrape: async (args, _write, writeln) => {
-    writeln(`${ANSICode.cyan}正在连接 SCP 基金会百科...${ANSICode.reset}`)
-    writeln('')
-    
-    try {
-      if (args.length === 0) {
-        writeln(`${ANSICode.yellow}用法: scrape <编号> 或 scrape search <关键词>${ANSICode.reset}`)
-        writeln(`${ANSICode.cyan}示例: scrape 173 或 scrape search 雕像${ANSICode.reset}`)
-        return
-      }
-
-      if (args[0] === 'search' && args.length > 1) {
-        // 搜索模式
-        const keyword = args.slice(1).join(' ')
-        writeln(`${ANSICode.cyan}正在搜索: ${keyword}${ANSICode.reset}`)
-        writeln('')
-        
-        const result = await scraper.searchSCP(keyword)
-        
-        if (result.success && result.data) {
-          const formattedLines = scraper.formatForTerminal(result.data)
-          formattedLines.forEach(line => writeln(line))
-        } else {
-          writeln(`${ANSICode.red}搜索失败: ${result.error}${ANSICode.reset}`)
-        }
-      } else {
-        // 直接爬取模式
-        const scpNumber = args[0]
-        writeln(`${ANSICode.cyan}正在爬取 SCP-${scpNumber}...${ANSICode.reset}`)
-        writeln('')
-        
-        const result = await scraper.scrapeSCP(scpNumber)
-        
-        if (result.success && result.data) {
-          if (result.cached) {
-            writeln(`${ANSICode.yellow}[来自缓存]${ANSICode.reset}`)
-            writeln('')
-          }
-          
-          const formattedLines = scraper.formatForTerminal(result.data)
-          formattedLines.forEach(line => writeln(line))
-        } else {
-          writeln(`${ANSICode.red}爬取失败: ${result.error}${ANSICode.reset}`)
-          writeln(`${ANSICode.yellow}提示: 确保SCP编号正确，例如: 173, 096, 682${ANSICode.reset}`)
-        }
-      }
-    } catch (error) {
-      writeln(`${ANSICode.red}命令执行失败: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 

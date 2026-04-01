@@ -12,7 +12,6 @@ export type CommandType =
   | 'version'
   | 'about'
   | 'search'
-  | 'scrape'
 
 export interface Command {
   name: CommandType
