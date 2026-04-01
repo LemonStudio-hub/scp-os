@@ -158,44 +158,6 @@ jobs:
           sarif_file: 'trivy-results.sarif'
         continue-on-error: true
 
-  worker-deploy:
-    name: Deploy Worker
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-    needs: [test, build]
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install Wrangler
-        run: npm install -g wrangler
-
-      - name: Deploy Worker
-        working-directory: ./worker
-        run: |
-          echo "Checking Cloudflare credentials..."
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "Error: CLOUDFLARE_API_TOKEN is not set"
-            exit 1
-          fi
-          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "Error: CLOUDFLARE_ACCOUNT_ID is not set"
-            exit 1
-          fi
-          echo "Deploying to Cloudflare Workers..."
-          wrangler deploy --verbose
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-
   pages-deploy:
     name: Deploy to Pages
     runs-on: ubuntu-latest
