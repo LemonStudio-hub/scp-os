@@ -113,35 +113,97 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       errorHandler.handleError({
         type: ErrorType.TERMINAL_NOT_AVAILABLE,
         severity: ErrorSeverity.HIGH,
-        message: '终端不可用，无法显示启动日志',
+        message: 'Terminal not available, cannot display boot log',
       })
       return
     }
 
     const bootLogs = getBootLogs(fastMode || config.app.fastBoot)
-    const delay = fastMode || config.app.fastBoot ? 1 : randomDelay(10, 30)
+    
+    // 动态速度配置
+    const baseDelay = fastMode || config.app.fastBoot ? 1 : 15
+    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.97  // 速度衰减因子
+    const minDelay = fastMode || config.app.fastBoot ? 1 : 5    // 最小延迟
+    const maxDelay = fastMode || config.app.fastBoot ? 5 : 30   // 最大延迟
+    
+    let currentSpeedMultiplier = 1.0
 
     for (const line of bootLogs) {
       try {
         terminal.writeln(line)
-        await sleep(delay)
+        
+        // 计算动态延迟
+        let dynamicDelay = baseDelay
+        
+        // 1. 根据行长度调整（更长的行需要更长时间阅读）
+        const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length  // 移除 ANSI 颜色代码
+        const lengthMultiplier = Math.min(Math.max(lineLength / 50, 0.8), 1.5)
+        
+        // 2. 根据是否为空行调整（空行快速滚动）
+        const isEmptyLine = line.trim().length === 0
+        if (isEmptyLine) {
+          dynamicDelay = minDelay
+        }
+        
+        // 3. 根据是否包含重要信息调整（颜色代码、系统状态等）
+        const hasImportantInfo = line.includes('ONLINE') || 
+                                line.includes('Security') ||
+                                line.includes('Established') ||
+                                line.includes('ACTIVE') ||
+                                line.includes('COMPLETE') ||
+                                line.includes('══════════')
+        if (hasImportantInfo) {
+          dynamicDelay *= 1.3  // 重要信息显示更长时间
+        }
+        
+        // 4. 根据是否为ASCII艺术框调整
+        const isBoxArt = line.includes('═') || line.includes('█')
+        if (isBoxArt) {
+          dynamicDelay *= 1.2
+        }
+        
+        // 5. 应用长度倍数
+        if (!isEmptyLine) {
+          dynamicDelay *= lengthMultiplier
+        }
+        
+        // 6. 应用当前速度倍数（逐渐加快）
+        dynamicDelay *= currentSpeedMultiplier
+        
+        // 7. 确保延迟在合理范围内
+        dynamicDelay = Math.max(minDelay, Math.min(maxDelay, dynamicDelay))
+        
+        // 8. 应用随机变化（避免过于机械）
+        if (!fastMode) {
+          dynamicDelay *= (0.9 + Math.random() * 0.2)  // ±10% 的随机变化
+        }
+        
+        await sleep(Math.round(dynamicDelay))
+        
+        // 更新速度倍数（逐渐加快）
+        if (!fastMode) {
+          currentSpeedMultiplier *= speedDecay
+          currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier)  // 最多加快到2倍
+        }
+        
       } catch (error) {
         errorHandler.handleError({
           type: ErrorType.SYSTEM_ERROR,
           severity: ErrorSeverity.LOW,
-          message: '启动日志输出失败',
+          message: 'Boot log output failed',
           details: error instanceof Error ? error.message : String(error),
         })
       }
     }
     
     try {
-      await sleep(fastMode || config.app.fastBoot ? 50 : 300)
+      // 最终延迟（让用户有时间阅读最后的信息）
+      await sleep(fastMode || config.app.fastBoot ? 100 : 500)
     } catch (error) {
       errorHandler.handleError({
         type: ErrorType.SYSTEM_ERROR,
         severity: ErrorSeverity.LOW,
-        message: '启动延迟失败',
+        message: 'Boot delay failed',
         details: error instanceof Error ? error.message : String(error),
       })
     }
