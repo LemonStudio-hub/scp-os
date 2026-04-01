@@ -3,10 +3,10 @@ import * as cheerio from 'cheerio'
 // 配置常量
 const CONFIG = {
   baseUrl: 'https://scp-wiki-cn.wikidot.com',
-  userAgent: 'SCP-Foundation-Terminal/3.0.1 (+https://github.com/LemonStudio-hub/scp-os)',
-  timeout: 10000,
+  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  timeout: 30000, // 30秒超时
   retryAttempts: 3,
-  retryDelay: 1000,
+  retryDelay: 2000, // 2秒重试延迟
   cacheDuration: 30 * 60 * 1000, // 30分钟缓存
 }
 
@@ -165,7 +165,7 @@ class SCPScraper {
     try {
       const url = `${CONFIG.baseUrl}/scp-${scpNumber}`
       const html = await this.fetchWithRetry(url)
-      return { success: true, html: html.substring(0, 5000) } // 只返回前5000字符
+      return { success: true, html: html } // 返回完整HTML
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       return { success: false, error: errorMessage }
@@ -183,13 +183,29 @@ class SCPScraper {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeout)
         
+        // 伪造真实的浏览器请求
         const response = await fetch(url, {
           headers: {
             'User-Agent': CONFIG.userAgent,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-US;q=0.7',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Cache-Control': 'max-age=0',
+            'DNT': '1',
+            'Sec-GPC': '1',
+            'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'Referer': 'https://scp-wiki-cn.wikidot.com/',
           },
           signal: controller.signal,
+          redirect: 'follow',
         })
         
         clearTimeout(timeoutId)
@@ -198,9 +214,22 @@ class SCPScraper {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
         
-        return await response.text()
+        const html = await response.text()
+        console.log(`Fetched HTML length: ${html.length} (attempt ${attempt})`)
+        
+        // 检查是否被重定向到错误页面或反爬页面
+        if (html.length < 1000) {
+          console.warn(`HTML too short (${html.length} chars), might be blocked`)
+        }
+        
+        if (!html.includes('page-content') && !html.includes('SCP-')) {
+          console.warn('HTML does not contain expected content, might be blocked')
+        }
+        
+        return html
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error))
+        console.error(`Fetch attempt ${attempt} failed:`, lastError.message)
         
         if (attempt < CONFIG.retryAttempts) {
           await this.delay(CONFIG.retryDelay * attempt)
