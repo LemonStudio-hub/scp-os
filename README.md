@@ -1,5 +1,8 @@
 # SCP-OS - SCP Foundation Terminal System
 
+[![CI](https://github.com/LemonStudio-hub/scp-os/actions/workflows/ci.yml/badge.svg)](https://github.com/LemonStudio-hub/scp-os/actions/workflows/ci.yml)
+[![Release](https://github.com/LemonStudio-hub/scp-os/actions/workflows/release.yml/badge.svg)](https://github.com/LemonStudio-hub/scp-os/actions/workflows/release.yml)
+
 A professional web-based terminal application themed around the SCP Foundation, featuring advanced command-line interface with comprehensive mobile support and optimized performance.
 
 ## 🌟 Features
@@ -388,6 +391,31 @@ The project maintains 87 tests with 100% pass rate:
 - **Boot Time**: 0.5 second (fast mode) / 2-3 seconds (normal mode)
 - **Bundle Size**: 55KB (main) + split chunks
 - **Test Coverage**: 87/87 (100%)
+
+## 🔄 CI/CD
+
+The project uses GitHub Actions for continuous integration and deployment.
+
+### Workflows
+
+- **CI Workflow**: Automatically runs tests, builds, and security scans on push/PR
+- **Release Workflow**: Creates releases with build artifacts when version tags are pushed
+- **Manual Deploy**: Manually trigger deployments with custom parameters
+
+### Status
+
+[![CI](https://github.com/LemonStudio-hub/scp-os/actions/workflows/ci.yml/badge.svg)](https://github.com/LemonStudio-hub/scp-os/actions/workflows/ci.yml)
+[![Release](https://github.com/LemonStudio-hub/scp-os/actions/workflows/release.yml/badge.svg)](https://github.com/LemonStudio-hub/scp-os/actions/workflows/release.yml)
+
+### Deployment
+
+- **Cloudflare Worker**: Automatically deployed on push to master
+- **GitHub Pages**: Automatically deployed on push to master
+- **Manual Deployment**: Available via GitHub Actions UI
+
+### Documentation
+
+See [`.github/workflows/README.md`](.github/workflows/README.md) for detailed CI/CD documentation.
 
 ## 🤝 Contributing
 

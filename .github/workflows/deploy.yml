@@ -1,0 +1,64 @@
+name: Manual Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - production
+      deploy_worker:
+        description: 'Deploy Cloudflare Worker'
+        type: boolean
+        default: false
+      deploy_pages:
+        description: 'Deploy to GitHub Pages'
+        type: boolean
+        default: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: |
+          if [ "${{ inputs.environment }}" == "development" ]; then
+            npm run build:development
+          else
+            npm run build:production
+          fi
+
+      - name: Deploy Worker
+        if: inputs.deploy_worker == true
+        working-directory: ./worker
+        run: wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy to Pages
+        if: inputs.deploy_pages == true
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
