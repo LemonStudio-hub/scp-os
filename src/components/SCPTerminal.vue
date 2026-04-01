@@ -5,11 +5,10 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useTerminal } from '../composables/useTerminal'
-import { setupGestures, destroyGestures } from '../utils/gestures'
+import { useGestures } from '../composables/useGestures'
 import { updateTerminalFontSize } from '../utils/terminal'
 
 const terminalContainer = ref<HTMLDivElement>()
-let hammer: HammerManager | null = null
 
 const {
   initTerminal,
@@ -23,6 +22,30 @@ const {
   autocomplete,
   getTerminal
 } = useTerminal(terminalContainer)
+
+const {
+  initGestures
+} = useGestures(terminalContainer, {
+  onClearScreen: () => {
+    clear()
+    displayWelcomeMessage()
+  },
+  onHistoryUp: () => navigateHistory(-1),
+  onHistoryDown: () => navigateHistory(1),
+  onFocus: focus,
+  onScrollTop: () => {
+    const terminal = getTerminal()
+    if (terminal) {
+      terminal.scrollToTop()
+    }
+  },
+  onScrollBottom: () => {
+    const terminal = getTerminal()
+    if (terminal) {
+      terminal.scrollToBottom()
+    }
+  }
+})
 
 const scrollToTop = () => {
   const terminal = getTerminal()
@@ -55,9 +78,7 @@ const handleResize = () => {
 
 onMounted(async () => {
   initTerminal()
-  if (terminalContainer.value) {
-    hammer = setupGestures(terminalContainer.value)
-  }
+  initGestures()
   
   // Add resize listener for responsive font size
   window.addEventListener('resize', handleResize)
@@ -68,9 +89,6 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  if (hammer) {
-    destroyGestures(hammer)
-  }
   if (resizeTimeout) {
     clearTimeout(resizeTimeout)
   }

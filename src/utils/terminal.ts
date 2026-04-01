@@ -1,5 +1,6 @@
 import type { TerminalConfig } from '../types/terminal'
 import { SCP_THEME } from '../constants/theme'
+import { config } from '../config'
 
 export function getResponsiveFontSize(): number {
   const screenWidth = window.innerWidth
@@ -22,8 +23,8 @@ export function createTerminalConfig(): TerminalConfig {
     lineHeight: 1.6,
     cursorBlink: true,
     cursorStyle: 'block',
-    scrollback: 1000,
-    tabStopWidth: 4,
+    scrollback: config.terminal.scrollback,
+    tabStopWidth: config.terminal.tabStopWidth,
     allowProposedApi: true
   }
 }

@@ -1,13 +1,12 @@
 import axios from 'axios'
 import { OBJECT_CLASSES } from '../constants/scraperConfig'
 import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
-
-// Cloudflare Worker API 配置
-const WORKER_API_URL = 'https://api.woodcat.online'
+import { config } from '../config'
 
 class SCPScraper {
   private cache: Map<string, { data: SCPWikiData, timestamp: number }> = new Map()
-  private readonly CACHE_DURATION = 30 * 60 * 1000 // 30分钟缓存
+  private readonly CACHE_DURATION = config.cache.duration
+  private readonly API_TIMEOUT = config.api.timeout
 
   /**
    * 爬取指定SCP的详细信息
@@ -25,9 +24,9 @@ class SCPScraper {
 
     try {
       // 调用Cloudflare Worker API
-      const response = await axios.get(`${WORKER_API_URL}/scrape`, {
+      const response = await axios.get(`${config.api.workerUrl}/scrape`, {
         params: { number: scpNumber },
-        timeout: 15000,
+        timeout: this.API_TIMEOUT,
       })
       
       if (response.data.success && response.data.data) {
@@ -60,9 +59,9 @@ class SCPScraper {
   async searchSCP(keyword: string): Promise<ScraperResult> {
     try {
       // 调用Cloudflare Worker API
-      const response = await axios.get(`${WORKER_API_URL}/search`, {
+      const response = await axios.get(`${config.api.workerUrl}/search`, {
         params: { keyword },
-        timeout: 15000,
+        timeout: this.API_TIMEOUT,
       })
       
       if (response.data.success && response.data.data) {
