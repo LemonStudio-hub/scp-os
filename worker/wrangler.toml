@@ -1,0 +1,25 @@
+name = "scp-scraper-worker"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Worker 配置
+[vars]
+# 环境变量可以在这里定义
+
+# KV 命名空间（用于缓存）
+[[kv_namespaces]]
+binding = "SCP_CACHE"
+id = "40f0d23a05e14f7484232bc1960e217f"
+
+# 定时任务（可选，用于定时更新缓存）
+# [triggers]
+# crons = ["0 */6 * * *"]  # 每6小时运行一次
+
+# 环境变量（开发环境）
+# [env.development]
+# vars = { ENVIRONMENT = "development" }
+
+# 环境变量（生产环境）
+# [env.production]
+# vars = { ENVIRONMENT = "production" }
