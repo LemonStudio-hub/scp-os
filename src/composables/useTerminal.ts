@@ -226,14 +226,14 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       `${ANSICode.green}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
       `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset}                        系统信息                                ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset}                        System Information                        ${ANSICode.green}█${ANSICode.reset}`,
       `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset} 版本: 3.0.2                           安全级别: 4级          ${ANSICode.green}█${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset} 位置: Site-19 主服务器                 加密: AES-256-GCM     ${ANSICode.green}█${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset} 状态: 在线                            最后更新: 2026-04-01  ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset} Version: 3.0.2                         Security Level: 4         ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset} Location: Site-19 Main Server          Encryption: AES-256-GCM  ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset} Status: Online                           Last Update: 2026-04-01 ${ANSICode.green}█${ANSICode.reset}`,
       `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
       '',
-      `${ANSICode.green}输入 "help" 查看可用命令${ANSICode.reset}`,
+      `${ANSICode.green}Type "help" to see available commands${ANSICode.reset}`,
       ''
     )
 
@@ -420,6 +420,18 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     return terminalInstance.value.terminal
   }
 
+  const sendKey = (key: string) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+    terminal.write(key)
+  }
+
+  const sendText = (text: string) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+    terminal.write(text)
+  }
+
   return {
     terminalInstance,
     currentInput,
@@ -432,6 +444,8 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     clear,
     navigateHistory,
     autocomplete,
-    getTerminal
+    getTerminal,
+    sendKey,
+    sendText
   }
 }
