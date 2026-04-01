@@ -5,10 +5,18 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+  security-events: write
+
 jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     
     steps:
       - name: Checkout code
@@ -58,13 +66,24 @@ jobs:
 
       - name: Deploy Worker
         working-directory: ./worker
-        run: wrangler deploy
+        run: |
+          echo "Checking Cloudflare credentials..."
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Error: CLOUDFLARE_API_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Error: CLOUDFLARE_ACCOUNT_ID is not set"
+            exit 1
+          fi
+          echo "Deploying to Cloudflare Workers..."
+          wrangler deploy --verbose
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Deploy to Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
