@@ -265,11 +265,10 @@ window.scpTerminalActions = {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #1a1a1a;
-  border-top: 1px solid #333;
+  background: #0a0a0a;
+  border-top: 1px solid #1a1a1a;
   padding: 8px;
   z-index: 1000;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
 }
 
 .keyboard-row {
@@ -287,10 +286,10 @@ window.scpTerminalActions = {
   flex: 1;
   min-width: 40px;
   height: 40px;
-  background: #2d2d2d;
-  border: none;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
   border-radius: 4px;
-  color: #e0e0e0;
+  color: #ffffff;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -303,67 +302,46 @@ window.scpTerminalActions = {
 }
 
 .key-button:active {
-  background: #3d3d3d;
-  transform: scale(0.95);
+  background: #000000;
+  border-color: #1a1a1a;
 }
 
 .key-button:hover {
-  background: #3d3d3d;
+  background: #000000;
+  border-color: #1a1a1a;
 }
 
-/* Key-specific styles */
-.key-esc {
-  background: #4a4a4a;
-  font-weight: 600;
+/* Key-specific styles - all unified with terminal theme */
+.key-esc,
+.key-tab,
+.key-ctrl,
+.key-alt,
+.key-arrow,
+.key-clear,
+.key-home,
+.key-end,
+.key-page,
+.key-help,
+.key-history,
+.key-enter {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  color: #ffffff;
 }
 
-.key-tab {
-  background: #4a4a4a;
-}
-
-.key-ctrl, .key-alt {
-  background: #3a3a3a;
-}
-
+/* Modifier key active state */
 .key-ctrl.active, .key-alt.active {
-  background: #5a5a5a;
-  box-shadow: 0 0 0 2px #4a90e2;
+  background: #000000;
+  border-color: #1a1a1a;
 }
 
+/* Key-specific font sizes */
 .key-arrow {
-  background: #4a4a4a;
   font-size: 14px;
 }
 
-.key-clear {
-  background: #5a4a4a;
-}
-
-.key-home, .key-end {
-  background: #4a4a4a;
-}
-
 .key-page {
-  background: #4a4a4a;
   font-size: 10px;
-}
-
-.key-help {
-  background: #4a90e2;
-  color: white;
-  font-weight: 600;
-}
-
-.key-history {
-  background: #f39c12;
-  color: white;
-  font-weight: 600;
-}
-
-.key-enter {
-  background: #4a90e2;
-  color: white;
-  font-weight: 600;
 }
 
 /* Mobile-specific adjustments */
