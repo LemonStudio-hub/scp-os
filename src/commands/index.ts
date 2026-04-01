@@ -2,6 +2,7 @@ import type { CommandType, CommandHandler, CommandMap } from '../types/command'
 import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { SCP_DATABASE, SCP_LIST } from '../constants/scpDatabase'
+import { scraper } from '../utils/scraper'
 
 export const commandHandlers: CommandMap = {
   help: (_args, _write, writeln) => {
@@ -250,21 +251,76 @@ export const commandHandlers: CommandMap = {
   },
 
   search: (args, _write, writeln) => {
-    const keyword = args.join(' ')
-    if (!keyword) {
-      writeln(`${ANSICode.yellow}请输入搜索关键词，例如: search 雕像${ANSICode.reset}`)
-      return
+    try {
+      const keyword = args.join(' ')
+      if (!keyword) {
+        writeln(`${ANSICode.yellow}请输入搜索关键词，例如: search 雕像${ANSICode.reset}`)
+        return
+      }
+
+      const results = SCP_LIST.filter(item =>
+        item.toLowerCase().includes(keyword.toLowerCase())
+      )
+
+      if (results.length > 0) {
+        writeln(`${ANSICode.green}找到 ${results.length} 个结果:${ANSICode.reset}`)
+        results.forEach(result => writeln(`  - ${result}`))
+      } else {
+        writeln(`${ANSICode.red}未找到匹配的结果${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}搜索失败: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
+  },
 
-    const results = SCP_LIST.filter(item =>
-      item.toLowerCase().includes(keyword.toLowerCase())
-    )
+  scrape: async (args, _write, writeln) => {
+    writeln(`${ANSICode.cyan}正在连接 SCP 基金会百科...${ANSICode.reset}`)
+    writeln('')
+    
+    try {
+      if (args.length === 0) {
+        writeln(`${ANSICode.yellow}用法: scrape <编号> 或 scrape search <关键词>${ANSICode.reset}`)
+        writeln(`${ANSICode.cyan}示例: scrape 173 或 scrape search 雕像${ANSICode.reset}`)
+        return
+      }
 
-    if (results.length > 0) {
-      writeln(`${ANSICode.green}找到 ${results.length} 个结果:${ANSICode.reset}`)
-      results.forEach(result => writeln(`  - ${result}`))
-    } else {
-      writeln(`${ANSICode.red}未找到匹配的结果${ANSICode.reset}`)
+      if (args[0] === 'search' && args.length > 1) {
+        // 搜索模式
+        const keyword = args.slice(1).join(' ')
+        writeln(`${ANSICode.cyan}正在搜索: ${keyword}${ANSICode.reset}`)
+        writeln('')
+        
+        const result = await scraper.searchSCP(keyword)
+        
+        if (result.success && result.data) {
+          const formattedLines = scraper.formatForTerminal(result.data)
+          formattedLines.forEach(line => writeln(line))
+        } else {
+          writeln(`${ANSICode.red}搜索失败: ${result.error}${ANSICode.reset}`)
+        }
+      } else {
+        // 直接爬取模式
+        const scpNumber = args[0]
+        writeln(`${ANSICode.cyan}正在爬取 SCP-${scpNumber}...${ANSICode.reset}`)
+        writeln('')
+        
+        const result = await scraper.scrapeSCP(scpNumber)
+        
+        if (result.success && result.data) {
+          if (result.cached) {
+            writeln(`${ANSICode.yellow}[来自缓存]${ANSICode.reset}`)
+            writeln('')
+          }
+          
+          const formattedLines = scraper.formatForTerminal(result.data)
+          formattedLines.forEach(line => writeln(line))
+        } else {
+          writeln(`${ANSICode.red}爬取失败: ${result.error}${ANSICode.reset}`)
+          writeln(`${ANSICode.yellow}提示: 确保SCP编号正确，例如: 173, 096, 682${ANSICode.reset}`)
+        }
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}命令执行失败: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 

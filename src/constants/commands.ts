@@ -13,7 +13,8 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
   'logout',
   'version',
   'about',
-  'search'
+  'search',
+  'scrape'
 ]
 
 export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
@@ -29,7 +30,8 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   logout: '安全注销',
   version: '显示系统版本信息',
   about: '关于本系统',
-  search: '搜索 SCP 数据库'
+  search: '搜索 SCP 数据库',
+  scrape: '从 SCP 基金会百科爬取 SCP 信息'
 }
 
 export const COMMAND_USAGE: Record<CommandType, string> = {
@@ -45,5 +47,6 @@ export const COMMAND_USAGE: Record<CommandType, string> = {
   logout: 'logout',
   version: 'version',
   about: 'about',
-  search: 'search [关键词]'
+  search: 'search [关键词]',
+  scrape: 'scrape <编号> | scrape search <关键词>'
 }

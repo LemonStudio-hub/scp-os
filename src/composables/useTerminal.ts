@@ -8,6 +8,7 @@ import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
 import { useCommandHistory } from './useCommandHistory'
+import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
@@ -20,40 +21,84 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const currentInput = ref('')
 
   const initTerminal = () => {
-    const config = createTerminalConfig()
-    terminalInstance.value.terminal = new Terminal(config)
-    
-    const fitAddon = new FitAddon()
-    terminalInstance.value.terminal.loadAddon(fitAddon)
-    terminalInstance.value.fitAddon = fitAddon
+    try {
+      const config = createTerminalConfig()
+      terminalInstance.value.terminal = new Terminal(config)
+      
+      const fitAddon = new FitAddon()
+      terminalInstance.value.terminal.loadAddon(fitAddon)
+      terminalInstance.value.fitAddon = fitAddon
 
-    if (container.value) {
-      terminalInstance.value.terminal.open(container.value)
-      fitAddon.fit()
-      terminalInstance.value.terminal.focus()
-    }
-
-    window.addEventListener('resize', () => {
-      if (terminalInstance.value.fitAddon) {
-        terminalInstance.value.fitAddon.fit()
+      if (container.value) {
+        terminalInstance.value.terminal.open(container.value)
+        fitAddon.fit()
+        terminalInstance.value.terminal.focus()
+      } else {
+        throw new Error('容器元素未找到')
       }
-    })
+
+      window.addEventListener('resize', () => {
+        try {
+          if (terminalInstance.value.fitAddon && terminalInstance.value.terminal) {
+            terminalInstance.value.fitAddon.fit()
+          }
+        } catch (error) {
+          errorHandler.handleError({
+            type: ErrorType.SYSTEM_ERROR,
+            severity: ErrorSeverity.LOW,
+            message: '终端调整大小失败',
+            details: error instanceof Error ? error.message : String(error),
+          })
+        }
+      })
+
+      // 设置终端写入器到错误处理器
+      errorHandler.setTerminalWriter((data: string) => {
+        terminalInstance.value.terminal?.write(data)
+      })
+    } catch (error) {
+      const errorObj = errorHandler.handleError({
+        type: ErrorType.TERMINAL_INIT_FAILED,
+        severity: ErrorSeverity.CRITICAL,
+        message: '终端初始化失败',
+        details: error instanceof Error ? error.message : String(error),
+        logToConsole: true,
+      })
+      throw errorObj
+    }
   }
 
   const destroyTerminal = () => {
-    if (terminalInstance.value.terminal) {
-      terminalInstance.value.terminal.dispose()
-      terminalInstance.value.terminal = null
-    }
-    if (terminalInstance.value.hammer) {
-      terminalInstance.value.hammer.destroy()
-      terminalInstance.value.hammer = null
+    try {
+      if (terminalInstance.value.terminal) {
+        terminalInstance.value.terminal.dispose()
+        terminalInstance.value.terminal = null
+      }
+      if (terminalInstance.value.hammer) {
+        terminalInstance.value.hammer.destroy()
+        terminalInstance.value.hammer = null
+      }
+    } catch (error) {
+      errorHandler.handleError({
+        type: ErrorType.TERMINAL_DISPOSE_FAILED,
+        severity: ErrorSeverity.MEDIUM,
+        message: '终端销毁失败',
+        details: error instanceof Error ? error.message : String(error),
+        logToConsole: true,
+      })
     }
   }
 
   const displayBootLog = async () => {
     const terminal = terminalInstance.value.terminal
-    if (!terminal) return
+    if (!terminal) {
+      errorHandler.handleError({
+        type: ErrorType.TERMINAL_NOT_AVAILABLE,
+        severity: ErrorSeverity.HIGH,
+        message: '终端不可用，无法显示启动日志',
+      })
+      return
+    }
 
     const bootLogs = [
       `${ANSICode.green}[    0.000000] Linux version 6.17.0-PRoot-SCP (scpos@site19) (gcc version 14.2.1)${ANSICode.reset}`,
@@ -143,10 +188,29 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     ]
 
     for (const line of bootLogs) {
-      terminal.writeln(line)
-      await sleep(randomDelay(10, 30))
+      try {
+        terminal.writeln(line)
+        await sleep(randomDelay(10, 30))
+      } catch (error) {
+        errorHandler.handleError({
+          type: ErrorType.SYSTEM_ERROR,
+          severity: ErrorSeverity.LOW,
+          message: '启动日志输出失败',
+          details: error instanceof Error ? error.message : String(error),
+        })
+      }
     }
-    await sleep(300)
+    
+    try {
+      await sleep(300)
+    } catch (error) {
+      errorHandler.handleError({
+        type: ErrorType.SYSTEM_ERROR,
+        severity: ErrorSeverity.LOW,
+        message: '启动延迟失败',
+        details: error instanceof Error ? error.message : String(error),
+      })
+    }
   }
 
   const displayWelcomeMessage = () => {
@@ -233,15 +297,68 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
   const processCommand = (command: string) => {
     const terminal = terminalInstance.value.terminal
-    if (!terminal) return
+    if (!terminal) {
+      errorHandler.handleError({
+        type: ErrorType.TERMINAL_NOT_AVAILABLE,
+        severity: ErrorSeverity.HIGH,
+        message: '终端不可用，无法执行命令',
+        details: `尝试执行的命令: ${command}`,
+      })
+      return
+    }
 
-    const [cmd, ...args] = command.toLowerCase().split(' ')
-    const handler = getCommandHandler(cmd as any)
+    try {
+      const [cmd, ...args] = command.toLowerCase().split(' ')
+      const handler = getCommandHandler(cmd as any)
 
-    if (handler) {
-      handler(args, (data: string) => terminal.write(data), (data: string) => terminal.writeln(data))
-    } else {
-      terminal.writeln(`${ANSICode.red}未知命令: ${cmd}. 输入 "help" 查看可用命令.${ANSICode.reset}`)
+      if (handler) {
+        try {
+          handler(args, (data: string) => {
+            try {
+              terminal.write(data)
+            } catch (error) {
+              errorHandler.handleError({
+                type: ErrorType.TERMINAL_WRITE_FAILED,
+                severity: ErrorSeverity.LOW,
+                message: '终端写入失败',
+                details: error instanceof Error ? error.message : String(error),
+              })
+            }
+          }, (data: string) => {
+            try {
+              terminal.writeln(data)
+            } catch (error) {
+              errorHandler.handleError({
+                type: ErrorType.TERMINAL_WRITE_FAILED,
+                severity: ErrorSeverity.LOW,
+                message: '终端写入失败',
+                details: error instanceof Error ? error.message : String(error),
+              })
+            }
+          })
+        } catch (error) {
+          errorHandler.handleError({
+            type: ErrorType.COMMAND_EXECUTION_FAILED,
+            severity: ErrorSeverity.MEDIUM,
+            message: `命令执行失败: ${cmd}`,
+            details: error instanceof Error ? error.message : String(error),
+            logToConsole: true,
+          })
+          terminal.writeln(`${ANSICode.red}命令执行失败: ${cmd}${ANSICode.reset}`)
+          terminal.writeln(`${ANSICode.yellow}详情: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+        }
+      } else {
+        terminal.writeln(`${ANSICode.red}未知命令: ${cmd}. 输入 "help" 查看可用命令.${ANSICode.reset}`)
+      }
+    } catch (error) {
+      errorHandler.handleError({
+        type: ErrorType.COMMAND_PARSING_FAILED,
+        severity: ErrorSeverity.MEDIUM,
+        message: '命令解析失败',
+        details: error instanceof Error ? error.message : String(error),
+        logToConsole: true,
+      })
+      terminal.writeln(`${ANSICode.red}命令解析失败${ANSICode.reset}`)
     }
   }
 

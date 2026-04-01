@@ -40,6 +40,7 @@ export const ANSICode = {
   magenta: '\x1b[35m',
   cyan: '\x1b[36m',
   white: '\x1b[37m',
+  gray: '\x1b[90m',
   brightBlack: '\x1b[90m',
   brightRed: '\x1b[91m',
   brightGreen: '\x1b[92m',
