@@ -13,6 +13,7 @@ import { ClassParser } from './parsers/classParser'
 
 // 工具
 import { HTMLCleaner } from './utils/htmlCleaner'
+import { HTMLSanitizer } from './utils/htmlSanitizer'
 import { ParagraphFilter } from './utils/paragraphFilter'
 import { logger } from './utils/logger'
 import { performanceMonitor } from './utils/performanceMonitor'
@@ -34,6 +35,7 @@ class SCPScraper {
   private sectionParser = new SectionParser()
   private classParser = new ClassParser()
   private htmlCleaner = new HTMLCleaner()
+  private htmlSanitizer = new HTMLSanitizer()
   private paragraphFilter = new ParagraphFilter()
   private retryStrategy = new RetryStrategy()
 
@@ -174,8 +176,11 @@ class SCPScraper {
     const parseTimer = performanceMonitor.startTimer('parseHTML')
 
     try {
+      // 先消毒 HTML（防止 XSS）
+      const sanitizedHTML = this.htmlSanitizer.sanitize(html)
+
       // 清理 HTML
-      const cleanedHTML = this.htmlCleaner.clean(html)
+      const cleanedHTML = this.htmlCleaner.clean(sanitizedHTML)
 
       // 提取文本
       const text = this.htmlParser.extractText(cleanedHTML)
