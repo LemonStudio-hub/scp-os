@@ -1,9 +1,9 @@
 /**
  * HTML 消毒器
- * 使用 DOMPurify 防止 XSS 攻击
+ * 使用正则表达式和文本处理防止 XSS 攻击
+ * Cloudflare Workers 兼容版本
  */
 
-import DOMPurify from 'isomorphic-dompurify'
 import { getConfig } from '../shared/config'
 
 export class HTMLSanitizer {
@@ -14,37 +14,33 @@ export class HTMLSanitizer {
    * 移除危险内容，防止 XSS 攻击
    */
   sanitize(html: string): string {
-    return DOMPurify.sanitize(html, {
-      // 允许的标签
-      ALLOWED_TAGS: [
-        'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'strong', 'b', 'em', 'i', 'u', 's',
-        'ul', 'ol', 'li',
-        'a', 'br', 'hr',
-        'blockquote', 'code', 'pre',
-        'div', 'span',
-      ],
-      // 允许的属性
-      ALLOWED_ATTR: [
-        'href',
-        'title',
-        'class',
-        'id',
-      ],
-      // 移除所有脚本和事件处理器
-      FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed'],
-      FORBID_ATTR: ['onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'onblur'],
-      // 保留安全的 URL
-      SAFE_FOR_TEMPLATES: false,
-      // 移除所有注释
-      REMOVE_COMMENT: true,
-      // 移除空标签
-      REMOVE_EMPTY: true,
-      // 移除空段落
-      REMOVE_EMPTY_TAGS: ['p', 'div', 'span'],
-      // 保留格式
-      KEEP_CONTENT: true,
-    })
+    let sanitized = html
+
+    // 移除脚本标签
+    sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+
+    // 移除样式标签
+    sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+
+    // 移除 iframe, object, embed 等危险标签
+    sanitized = sanitized.replace(/<(iframe|object|embed|form|input|button|textarea|select)\b[^<]*(?:(?!<\/\1>)<[^<]*)*<\/\1>/gi, '')
+
+    // 移除所有事件处理器
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
+    sanitized = sanitized.replace(/\s+on\w+\s*=\s*[^\s>]+/gi, '')
+
+    // 移除 javascript: 协议
+    sanitized = sanitized.replace(/href\s*=\s*["']\s*javascript:[^"']*["']/gi, 'href="#"')
+    sanitized = sanitized.replace(/href\s*=\s*javascript:[^\s>]*/gi, 'href="#"')
+
+    // 移除 data: 协议（除了图片）
+    sanitized = sanitized.replace(/src\s*=\s*["']\s*data:(?!image\/)[^"']*["']/gi, 'src=""')
+    sanitized = sanitized.replace(/src\s*=\s*data:(?!image\/)[^\s>]*/gi, 'src=""')
+
+    // 移除注释
+    sanitized = sanitized.replace(/<!--[\s\S]*?-->/g, '')
+
+    return sanitized
   }
 
   /**
@@ -94,10 +90,24 @@ export class HTMLSanitizer {
    * 验证 HTML 是否安全
    */
   isSafe(html: string): boolean {
-    const sanitized = this.sanitize(html)
+    // 检查是否包含危险标签
+    const dangerousPatterns = [
+      /<script\b/i,
+      /<style\b/i,
+      /<iframe\b/i,
+      /<object\b/i,
+      /<embed\b/i,
+      /javascript:/i,
+      /on\w+\s*=/i,
+    ]
 
-    // 如果消毒后的内容与原始内容相同，说明是安全的
-    return sanitized === html
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(html)) {
+        return false
+      }
+    }
+
+    return true
   }
 
   /**
