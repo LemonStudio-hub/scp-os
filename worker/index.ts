@@ -286,6 +286,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const corsManager = new CORSManager()
     const rateLimiter = new RateLimiter()
+    const config = getConfig()
 
     // 构建请求上下文
     const context: RequestContext = {
@@ -356,9 +357,9 @@ export default {
             },
             features: {
               modular: true,
-              caching: `${this.config.cacheDuration / 1000 / 60} minutes`,
-              retry: `${this.config.retryAttempts} attempts`,
-              rateLimit: `${this.config.rateLimit.maxRequests} requests / ${this.config.rateLimit.windowMs / 1000}s`,
+              caching: `${config.cacheDuration / 1000 / 60} minutes`,
+              retry: `${config.retryAttempts} attempts`,
+              rateLimit: `${config.rateLimit.maxRequests} requests / ${config.rateLimit.windowMs / 1000}s`,
             },
           },
           200,
