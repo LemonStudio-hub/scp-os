@@ -274,16 +274,15 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     lines.push(
       '',
-      `${ANSICode.cyan}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-      `${ANSICode.cyan}█${ANSICode.reset}                        系统信息                                ${ANSICode.cyan}█${ANSICode.reset}`,
-      `${ANSICode.cyan}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-      `${ANSICode.cyan}█${ANSICode.reset} 版本: 3.0.2                           安全级别: 4级          ${ANSICode.cyan}█${ANSICode.reset}`,
-      `${ANSICode.cyan}█${ANSICode.reset} 位置: Site-19 主服务器                 加密: AES-256-GCM     ${ANSICode.cyan}█${ANSICode.reset}`,
-      `${ANSICode.cyan}█${ANSICode.reset} 状态: 在线                            最后更新: 2026-04-01  ${ANSICode.cyan}█${ANSICode.reset}`,
-      `${ANSICode.cyan}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+      `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset}                        系统信息                                ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset} 版本: 3.0.2                           安全级别: 4级          ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset} 位置: Site-19 主服务器                 加密: AES-256-GCM     ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}█${ANSICode.reset} 状态: 在线                            最后更新: 2026-04-01  ${ANSICode.green}█${ANSICode.reset}`,
+      `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
       '',
       `${ANSICode.green}输入 "help" 查看可用命令${ANSICode.reset}`,
-      `${ANSICode.white}手势控制: 三指上滑清屏 | 双指左右滑动查看历史${ANSICode.reset}`,
       ''
     )
 
