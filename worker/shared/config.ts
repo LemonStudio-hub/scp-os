@@ -29,6 +29,8 @@ export const SCRAPER_CONFIG = {
     allowedOrigins: [
       'https://scpos.woodcat.online',
       'https://yourdomain.com',
+      'https://*.github.io',
+      'https://*.pages.dev',
       'http://localhost:*',
       'http://127.0.0.1:*',
     ],
