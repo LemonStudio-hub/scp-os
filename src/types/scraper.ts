@@ -1,7 +1,7 @@
 export interface SCPWikiData {
   id: string
   name: string
-  objectClass: string
+  objectClass: ObjectClass // 使用联合类型，与 Worker 保持一致
   containment: string[]
   description: string[]
   appendix: string[]

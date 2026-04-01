@@ -3,10 +3,17 @@ import { OBJECT_CLASSES } from '../constants/scraperConfig'
 import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
 import { config } from '../config'
 
+// Worker 统一配置（与 Worker 保持一致）
+const WORKER_CONFIG = {
+  timeout: 30000, // 与 Worker 一致
+  retryAttempts: 3, // 与 Worker 一致
+  retryDelay: 2000, // 与 Worker 一致
+}
+
 class SCPScraper {
   private cache: Map<string, { data: SCPWikiData, timestamp: number }> = new Map()
   private readonly CACHE_DURATION = config.cache.duration
-  private readonly API_TIMEOUT = config.api.timeout
+  private readonly API_TIMEOUT = WORKER_CONFIG.timeout // 使用 Worker 配置
 
   /**
    * 爬取指定SCP的详细信息
