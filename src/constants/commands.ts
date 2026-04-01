@@ -17,19 +17,19 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
 ]
 
 export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
-  help: '显示命令帮助信息',
-  status: '显示站点状态和收容统计',
-  clear: '清空终端屏幕',
-  cls: '清空终端屏幕',
-  containment: '显示收容协议分类信息',
-  'scp-list': '列出已收录的 SCP 对象',
-  info: '查询指定 SCP 对象的详细信息',
-  protocol: '显示安全协议和任务部队信息',
-  emergency: '显示紧急联系方式',
-  logout: '安全注销终端',
-  version: '显示系统版本',
-  about: '显示系统信息',
-  search: '搜索 SCP 数据库'
+  help: 'Display available commands',
+  status: 'Show system status and containment statistics',
+  clear: 'Clear terminal screen',
+  cls: 'Clear terminal screen',
+  containment: 'Display containment protocol classification',
+  'scp-list': 'List known SCP objects',
+  info: 'Query detailed information about specific SCP',
+  protocol: 'Display security protocols and task forces',
+  emergency: 'Display emergency contact information',
+  logout: 'Secure logout',
+  version: 'Display system version',
+  about: 'Display system information',
+  search: 'Search SCP database'
 }
 
 export const COMMAND_USAGE: Record<CommandType, string> = {
@@ -39,11 +39,11 @@ export const COMMAND_USAGE: Record<CommandType, string> = {
   cls: 'cls',
   containment: 'containment',
   'scp-list': 'scp-list',
-  info: 'info <编号>',
+  info: 'info <number>',
   protocol: 'protocol',
   emergency: 'emergency',
   logout: 'logout',
   version: 'version',
   about: 'about',
-  search: 'search <关键词>'
+  search: 'search <keyword>'
 }

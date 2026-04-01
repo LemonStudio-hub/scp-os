@@ -8,17 +8,17 @@ export const commandHandlers: CommandMap = {
   help: (_args, _write, writeln) => {
     const helpText = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                        可用命令列表${ANSICode.reset}`,
+      `${ANSICode.green}                        Available Commands${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
       ...Object.entries(COMMAND_DESCRIPTIONS).map(([cmd, desc]) => 
         `  ${COMMAND_USAGE[cmd as CommandType]} - ${desc}`
       ),
       '',
-      `${ANSICode.cyan}手势控制:${ANSICode.reset}`,
-      `  三指上滑      - 清屏`,
-      `  双指左滑      - 历史记录上一条`,
-      `  双指右滑      - 历史记录下一条`,
+      `${ANSICode.cyan}Gesture Controls:${ANSICode.reset}`,
+      `  Three-finger swipe up   - Clear screen`,
+      `  Two-finger swipe left  - Previous command in history`,
+      `  Two-finger swipe right - Next command in history`,
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -28,24 +28,24 @@ export const commandHandlers: CommandMap = {
   status: (_args, _write, writeln) => {
     const statusInfo = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                        系统状态报告${ANSICode.reset}`,
+      `${ANSICode.green}                      System Status Report${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      `  系统状态:        ${ANSICode.green}⚡ 运行正常${ANSICode.reset}`,
-      '  活跃收容:        4,891 个对象',
-      '  收容失效:        23 起事件',
-      '  待处理:          156 个异常',
-      '  威胁等级:        中等',
+      `  System Status:        ${ANSICode.green}⚡ Online${ANSICode.reset}`,
+      '  Active Containment:   4,891 objects',
+      '  Containment Breaches: 23 incidents',
+      '  Pending:              156 anomalies',
+      '  Threat Level:         Medium',
       '',
-      '  区域状态:',
-      '    Site-19        ✓ 正常运行',
-      '    Site-17        ✓ 正常运行',
-      '    Area-12        ⚠ 收容协议升级中',
-      '    Site-13        🚫 封闭中',
+      '  Site Status:',
+      '    Site-19        ✓ Operational',
+      '    Site-17        ✓ Operational',
+      '    Area-12        ⚠ Containment upgrade in progress',
+      '    Site-13        🚫 Locked down',
       '',
-      '  网络连接:        加密连接 [AES-256]',
-      '  数据库状态:      同步完成',
-      '  最后更新:        2026-03-31 14:32:15 UTC',
+      '  Network Connection:   Encrypted [AES-256]',
+      '  Database Status:      Synchronized',
+      '  Last Update:          2026-03-31 14:32:15 UTC',
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -63,31 +63,31 @@ export const commandHandlers: CommandMap = {
   containment: (_args, _write, writeln) => {
     const containmentInfo = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                      收容协议数据库${ANSICode.reset}`,
+      `${ANSICode.green}                    Containment Protocols${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  协议等级分类:',
+      '  Containment Classifications:',
       '',
-      `${ANSICode.green}  [Safe] 安全级:${ANSICode.reset}`,
-      '    - 标准收容程序足够',
-      '    - 无需特殊资源',
-      '    - 定期检查即可',
+      `${ANSICode.green}  [Safe] Safe Class:${ANSICode.reset}`,
+      '    - Standard containment procedures sufficient',
+      '    - No special resources required',
+      '    - Regular monitoring needed',
       '',
-      `${ANSICode.yellow}  [Euclid] 欧几里得级:${ANSICode.reset}`,
-      '    - 需要持续监控',
-      '    - 收容措施复杂',
-      '    - 可能需要特殊资源',
+      `${ANSICode.yellow}  [Euclid] Euclid Class:${ANSICode.reset}`,
+      '    - Requires constant monitoring',
+      '    - Complex containment procedures',
+      '    - May require special resources',
       '',
-      `${ANSICode.red}  [Keter] 刻耳柏洛斯级:${ANSICode.reset}`,
-      '    - 极难收容',
-      '    - 高度危险',
-      '    - 需要大量资源',
-      '    - 24小时监控',
+      `${ANSICode.red}  [Keter] Keter Class:${ANSICode.reset}`,
+      '    - Extremely difficult to contain',
+      '    - Highly dangerous',
+      '    - Requires massive resources',
+      '    - 24-hour monitoring mandatory',
       '',
-      `${ANSICode.magenta}  [Thaumiel] 塔耳塔洛斯级:${ANSICode.reset}`,
-      '    - 用于收容其他 SCP',
-      '    - 基金会秘密武器',
-      '    - 极高保密级别',
+      `${ANSICode.magenta}  [Thaumiel] Thaumiel Class:${ANSICode.reset}`,
+      '    - Used to contain other SCPs',
+      '    - Foundation secret weapons',
+      '    - Extremely high classification',
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -97,15 +97,15 @@ export const commandHandlers: CommandMap = {
   'scp-list': (_args, _write, writeln) => {
     const scpList = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                        已知 SCP 对象${ANSICode.reset}`,
+      `${ANSICode.green}                      Known SCP Objects${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  热门收录对象 (显示前10个):',
+      '  Popular Objects (Top 10):',
       '',
       ...SCP_LIST.map(scp => `  ${scp}`),
       '',
-      `${ANSICode.cyan}  提示: 使用 "info [编号]" 查看详细信息${ANSICode.reset}`,
-      `${ANSICode.cyan}  使用 "search [关键词]" 搜索特定对象${ANSICode.reset}`,
+      `${ANSICode.cyan}  Tip: Use "info <number>" to view details${ANSICode.reset}`,
+      `${ANSICode.cyan}  Use "search <keyword>" to search for specific objects${ANSICode.reset}`,
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -115,75 +115,75 @@ export const commandHandlers: CommandMap = {
   info: async (args, _write, writeln) => {
     const scpNumber = args[0]
     if (!scpNumber) {
-      writeln(`${ANSICode.yellow}请指定 SCP 编号，例如: info 173${ANSICode.reset}`)
+      writeln(`${ANSICode.yellow}Please specify SCP number, e.g.: info 173${ANSICode.reset}`)
       return
     }
 
-    writeln(`${ANSICode.cyan}正在查询 SCP-${scpNumber}...${ANSICode.reset}`)
+    writeln(`${ANSICode.cyan}Querying SCP-${scpNumber}...${ANSICode.reset}`)
     writeln('')
 
     try {
-      // 先尝试从本地数据库查找
+      // Try to find in local database first
       const localInfo = SCP_DATABASE[scpNumber]
       
       if (localInfo) {
-        writeln(`${ANSICode.yellow}[本地数据库]${ANSICode.reset}`)
+        writeln(`${ANSICode.yellow}[Local Database]${ANSICode.reset}`)
         writeln('')
         localInfo.description.forEach(line => writeln(line))
         return
       }
 
-      // 本地没有，从基金会百科爬取
-      writeln(`${ANSICode.cyan}正在连接基金会百科...${ANSICode.reset}`)
+      // Not found locally, fetch from Foundation Wiki
+      writeln(`${ANSICode.cyan}Connecting to Foundation Wiki...${ANSICode.reset}`)
       writeln('')
       
       const result = await scraper.scrapeSCP(scpNumber)
       
       if (result.success && result.data) {
         if (result.cached) {
-          writeln(`${ANSICode.yellow}[来自缓存]${ANSICode.reset}`)
+          writeln(`${ANSICode.yellow}[From Cache]${ANSICode.reset}`)
           writeln('')
         }
         
         const formattedLines = scraper.formatForTerminal(result.data)
         formattedLines.forEach(line => writeln(line))
       } else {
-        writeln(`${ANSICode.red}查询失败: ${result.error}${ANSICode.reset}`)
-        writeln(`${ANSICode.yellow}提示: 确保SCP编号正确，例如: 173, 096, 682${ANSICode.reset}`)
-        writeln(`${ANSICode.yellow}本地数据库未收录此SCP，且网络查询失败${ANSICode.reset}`)
+        writeln(`${ANSICode.red}Query failed: ${result.error}${ANSICode.reset}`)
+        writeln(`${ANSICode.yellow}Tip: Ensure the SCP number is correct, e.g.: 173, 096, 682${ANSICode.reset}`)
+        writeln(`${ANSICode.yellow}SCP not found in local database and network query failed${ANSICode.reset}`)
       }
     } catch (error) {
-      writeln(`${ANSICode.red}查询失败: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(`${ANSICode.red}Query failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
   protocol: (_args, _write, writeln) => {
     const protocols = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                      安全协议数据库${ANSICode.reset}`,
+      `${ANSICode.green}                    Security Protocols${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  主要安全协议:',
+      '  Major Security Protocols:',
       '',
-      `${ANSICode.magenta}  [Omega-7] 任务部队协议:${ANSICode.reset}`,
-      '    - 用于处理极度危险的 SCP 对象',
-      '    - 成员由收容异常个体组成',
-      '    - 只在紧急情况下激活',
+      `${ANSICode.magenta}  [Omega-7] Task Force Protocol:${ANSICode.reset}`,
+      '    - Handles extremely dangerous SCP objects',
+      '    - Members are contained anomalous individuals',
+      '    - Activated only in emergencies',
       '',
-      `${ANSICode.red}  [Alpha-1] 红右手协议:${ANSICode.reset}`,
-      '    - 基金会最高级别安保协议',
-      '    - 用于保护 O5 议会',
-      '    - 成员忠诚度无可置疑',
+      `${ANSICode.red}  [Alpha-1] Red Right Hand Protocol:${ANSICode.reset}`,
+      '    - Foundation highest security protocol',
+      '    - Protects the O5 Council',
+      '    - Members unquestionably loyal',
       '',
-      `${ANSICode.yellow}  [Nu-7] 落锤协议:${ANSICode.reset}`,
-      '    - 军事化应对协议',
-      '    - 用于处理收容失效事件',
-      '    - 配备重型武器和装备',
+      `${ANSICode.yellow}  [Nu-7] Hammer Down Protocol:${ANSICode.reset}`,
+      '    - Military response protocol',
+      '    - Handles containment breach events',
+      '    - Equipped with heavy weapons',
       '',
-      `${ANSICode.cyan}  [Zeta-9] 鼹鼠协议:${ANSICode.reset}`,
-      '    - 地下探索协议',
-      '    - 用于探索异常空间',
-      '    - 配备专业勘探设备',
+      `${ANSICode.cyan}  [Zeta-9] Mole Rats Protocol:${ANSICode.reset}`,
+      '    - Underground exploration protocol',
+      '    - Explores anomalous spaces',
+      '    - Equipped with specialized equipment',
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -193,26 +193,26 @@ export const commandHandlers: CommandMap = {
   emergency: (_args, _write, writeln) => {
     const emergencyInfo = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                      紧急联系人信息${ANSICode.reset}`,
+      `${ANSICode.green}                  Emergency Contact Information${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      `${ANSICode.red}  🚨 收容失效紧急热线:${ANSICode.reset}`,
-      '    - 内线: 911',
-      '    - 外线: +1-SCP-EMERGENCY',
+      `${ANSICode.red}  🚨 Containment Breach Hotline:${ANSICode.reset}`,
+      '    - Internal: 911',
+      '    - External: +1-SCP-EMERGENCY',
       '',
-      '  📞 各部门联系电话:',
-      '    - 研究部:      ext. 1001',
-      '    - 收容部:      ext. 1002',
-      '    - 安全部:      ext. 1003',
-      '    - 医疗部:      ext. 1004',
-      '    - 任务部队:    ext. 1005',
+      '  📞 Department Contacts:',
+      '    - Research Dept:    ext. 1001',
+      '    - Containment Dept: ext. 1002',
+      '    - Security Dept:    ext. 1003',
+      '    - Medical Dept:     ext. 1004',
+      '    - Task Forces:      ext. 1005',
       '',
-      '  🏥 站点医疗中心:',
-      '    - 急救:        ext. 2001',
-      '    - 心理咨询:    ext. 2002',
-      '    - 记忆消除:    ext. 2003',
+      '  🏥 Site Medical Center:',
+      '    - Emergency:        ext. 2001',
+      '    - Counseling:       ext. 2002',
+      '    - Amnestic:         ext. 2003',
       '',
-      `${ANSICode.yellow}  ⚠ 注意: 所有紧急联系都需要经过身份验证${ANSICode.reset}`,
+      `${ANSICode.yellow}  ⚠ Note: All emergency contacts require authentication${ANSICode.reset}`,
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -222,16 +222,16 @@ export const commandHandlers: CommandMap = {
   version: (_args, _write, writeln) => {
     const versionInfo = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                        系统版本信息${ANSICode.reset}`,
+      `${ANSICode.green}                      System Version${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  SCP 基金会终端系统',
-      '  版本: 3.0.2',
-      '  安全级别: 4级',
-      '  最后更新: 2026-04-01',
+      '  SCP Foundation Terminal System',
+      '  Version: 3.0.2',
+      '  Security Level: 4',
+      '  Last Updated: 2026-04-01',
       '',
-      `${ANSICode.red}  仅限授权人员访问${ANSICode.reset}`,
-      `${ANSICode.red}  违规访问将受到严厉处罚${ANSICode.reset}`,
+      `${ANSICode.red}  Authorized Personnel Only${ANSICode.reset}`,
+      `${ANSICode.red}  Unauthorized access will result in severe penalties${ANSICode.reset}`,
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
@@ -241,28 +241,28 @@ export const commandHandlers: CommandMap = {
   about: (_args, _write, writeln) => {
     const aboutInfo = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                          关于系统${ANSICode.reset}`,
+      `${ANSICode.green}                          About System${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  SCP 基金会终端系统',
-      '  安全级别: 4级',
-      '  访问权限: 授权人员',
+      '  SCP Foundation Terminal System',
+      '  Security Level: 4',
+      '  Access: Authorized Personnel',
       '',
-      '  系统功能:',
-      '    - SCP 数据库查询',
-      '    - 收容协议查看',
-      '    - 站点状态监控',
-      '    - 紧急情况响应',
-      '    - 安全通信通道',
+      '  System Features:',
+      '    - SCP Database Query',
+      '    - Containment Protocol Viewing',
+      '    - Site Status Monitoring',
+      '    - Emergency Response',
+      '    - Secure Communication Channel',
       '',
-      '  安全特性:',
-      '    - AES-256 加密通信',
-      '    - 访问日志记录',
-      '    - 操作审计追踪',
-      '    - 多因素身份验证',
+      '  Security Features:',
+      '    - AES-256 Encrypted Communication',
+      '    - Access Log Recording',
+      '    - Operation Audit Tracking',
+      '    - Multi-Factor Authentication',
       '',
-      `${ANSICode.red}  警告: 本系统仅供授权人员使用${ANSICode.reset}`,
-      `${ANSICode.red}  未经授权的访问将立即触发安全警报${ANSICode.reset}`,
+      `${ANSICode.red}  Warning: This system is for authorized personnel only${ANSICode.reset}`,
+      `${ANSICode.red}  Unauthorized access will immediately trigger security alerts${ANSICode.reset}`,
       '',
       `${ANSICode.green}  Secure. Contain. Protect.${ANSICode.reset}`,
       '',
@@ -275,7 +275,7 @@ export const commandHandlers: CommandMap = {
     try {
       const keyword = args.join(' ')
       if (!keyword) {
-        writeln(`${ANSICode.yellow}请输入搜索关键词，例如: search 雕像${ANSICode.reset}`)
+        writeln(`${ANSICode.yellow}Please enter search keyword, e.g.: search statue${ANSICode.reset}`)
         return
       }
 
@@ -284,20 +284,20 @@ export const commandHandlers: CommandMap = {
       )
 
       if (results.length > 0) {
-        writeln(`${ANSICode.green}找到 ${results.length} 个结果:${ANSICode.reset}`)
+        writeln(`${ANSICode.green}Found ${results.length} result(s):${ANSICode.reset}`)
         results.forEach(result => writeln(`  - ${result}`))
       } else {
-        writeln(`${ANSICode.red}未找到匹配的结果${ANSICode.reset}`)
+        writeln(`${ANSICode.red}No matching results found${ANSICode.reset}`)
       }
     } catch (error) {
-      writeln(`${ANSICode.red}搜索失败: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(`${ANSICode.red}Search failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
   logout: (_args, _write, writeln) => {
-    writeln(`${ANSICode.yellow}正在安全注销...${ANSICode.reset}`)
-    writeln(`${ANSICode.green}会话已终止。${ANSICode.reset}`)
-    writeln('感谢您使用 SCP 基金会终端系统。')
+    writeln(`${ANSICode.yellow}Logging out securely...${ANSICode.reset}`)
+    writeln(`${ANSICode.green}Session terminated.${ANSICode.reset}`)
+    writeln('Thank you for using the SCP Foundation Terminal System.')
     writeln('')
     writeln(`${ANSICode.green}Secure. Contain. Protect.${ANSICode.reset}`)
     writeln('')
