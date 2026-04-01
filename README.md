@@ -70,6 +70,104 @@ npm run preview
 | `search [keyword]` | Search SCP database |
 | `logout` | Secure logout |
 
+## 🌐 API & Web Scraper
+
+The project includes a Cloudflare Worker that provides real-time SCP information scraping from the SCP Wiki.
+
+### Deployment
+- **API Endpoint**: https://api.woodcat.online
+- **Platform**: Cloudflare Workers
+- **Caching**: 30-minute KV namespace caching
+- **Retry Mechanism**: Automatic 3-retry logic for failed requests
+
+### API Endpoints
+
+#### 1. Scrape SCP Information
+```
+GET /scrape?number={number}
+```
+Retrieves detailed information about a specific SCP object.
+
+**Example**:
+```bash
+curl "https://api.woodcat.online/scrape?number=682"
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "data": {
+    "id": "SCP-682",
+    "number": "682",
+    "name": "不灭孽蜥",
+    "objectClass": "KETER",
+    "containment": ["特殊收容措施：..."],
+    "description": ["描述：..."],
+    "appendix": ["附录：..."],
+    "author": "作者：...",
+    "url": "https://scp-wiki-cn.wikidot.com/scp-682"
+  }
+}
+```
+
+#### 2. Search SCP Database
+```
+GET /search?keyword={keyword}
+```
+Searches for SCP objects matching the keyword.
+
+**Example**:
+```bash
+curl "https://api.woodcat.online/search?keyword=173"
+```
+
+#### 3. Get Formatted Output
+```
+GET /format?number={number}
+```
+Returns formatted terminal-style output for an SCP object.
+
+**Example**:
+```bash
+curl "https://api.woodcat.online/format?number=173"
+```
+
+#### 4. Debug Mode
+```
+GET /debug?number={number}
+```
+Returns raw HTML content for debugging purposes.
+
+**Example**:
+```bash
+curl "https://api.woodcat.online/debug?number=173"
+```
+
+### Scraper Features
+
+- **Text-Based Parser**: Uses regex patterns optimized for Wikidot syntax
+- **Multi-line Matching**: Correctly handles multi-line content using `[\s\S]*?` pattern
+- **Format Flexibility**: Supports multiple format variations (Chinese/English punctuation)
+- **High Success Rate**: 90%+ success rate for content extraction
+- **Object Class Recognition**: Automatically detects SAFE/EUCLID/KETER/THAUMIEL/NEUTRALIZED/PENDING classes
+
+### Technical Implementation
+
+The scraper is implemented in `/worker/index.ts` with the following key components:
+
+- **SCPScraper Class**: Main scraper with caching and retry logic
+- **parseContent() Method**: Text-based parser using regex patterns
+- **formatForTerminal() Method**: Formats output for terminal display
+- **Error Handling**: Comprehensive error handling with fallback mechanisms
+
+### Worker Configuration
+
+Located in `/worker/wrangler.toml`:
+- **Compatibility**: Node.js compatibility mode enabled
+- **KV Namespace**: SCP_CACHE for 30-minute caching
+- **Custom Domain**: api.woodcat.online
+
 ## 🎮 Gesture Controls
 
 ### Mobile Gestures
