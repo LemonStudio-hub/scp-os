@@ -13,7 +13,8 @@ export class ErrorHandler {
   private terminalWriter?: ((data: string) => void) | null
 
   private constructor() {
-    this.setupGlobalErrorHandlers()
+    // 不在这里注册全局错误处理器，避免重复
+    // 全局错误处理器在 main.ts 中统一管理
   }
 
   public static getInstance(): ErrorHandler {
@@ -25,30 +26,6 @@ export class ErrorHandler {
 
   public setTerminalWriter(writer: (data: string) => void) {
     this.terminalWriter = writer
-  }
-
-  private setupGlobalErrorHandlers() {
-    if (typeof window !== 'undefined') {
-      // 全局错误处理
-      window.addEventListener('error', (event) => {
-        this.handleError({
-          type: ErrorType.SYSTEM_ERROR,
-          severity: ErrorSeverity.HIGH,
-          message: event.message || '未捕获的错误',
-          details: event.error?.stack,
-        })
-      })
-
-      // Promise 拒绝处理
-      window.addEventListener('unhandledrejection', (event) => {
-        this.handleError({
-          type: ErrorType.SYSTEM_ERROR,
-          severity: ErrorSeverity.HIGH,
-          message: event.reason?.message || '未处理的 Promise 拒绝',
-          details: event.reason?.stack,
-        })
-      })
-    }
   }
 
   public handleError(config: ErrorConfig): SCPError {

@@ -9,7 +9,8 @@ import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
-import { BOOT_LOGS } from '../constants/bootLogs'
+import { getBootLogs } from '../constants/bootLogs'
+import { config } from '../config'
 
 // ASCII Art Constants
 const SCP_LOGO_ART = [
@@ -106,7 +107,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
   }
 
-  const displayBootLog = async () => {
+  const displayBootLog = async (fastMode: boolean = false) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) {
       errorHandler.handleError({
@@ -117,10 +118,13 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       return
     }
 
-    for (const line of BOOT_LOGS) {
+    const bootLogs = getBootLogs(fastMode || config.app.fastBoot)
+    const delay = fastMode || config.app.fastBoot ? 1 : randomDelay(10, 30)
+
+    for (const line of bootLogs) {
       try {
         terminal.writeln(line)
-        await sleep(randomDelay(10, 30))
+        await sleep(delay)
       } catch (error) {
         errorHandler.handleError({
           type: ErrorType.SYSTEM_ERROR,
@@ -132,7 +136,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
     
     try {
-      await sleep(300)
+      await sleep(fastMode || config.app.fastBoot ? 50 : 300)
     } catch (error) {
       errorHandler.handleError({
         type: ErrorType.SYSTEM_ERROR,

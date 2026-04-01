@@ -1,6 +1,9 @@
 import { ref } from 'vue'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 
+// 最大命令历史记录数
+const MAX_HISTORY_SIZE = 500
+
 export function useCommandHistory() {
   const history = ref<string[]>([])
   const currentIndex = ref(-1)
@@ -18,6 +21,12 @@ export function useCommandHistory() {
       }
       
       history.value.push(command)
+      
+      // 限制历史记录数量
+      if (history.value.length > MAX_HISTORY_SIZE) {
+        history.value.shift()
+      }
+      
       currentIndex.value = -1
     } catch (error) {
       errorHandler.handleError({
