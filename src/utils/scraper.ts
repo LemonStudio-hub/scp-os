@@ -1,7 +1,9 @@
 import axios from 'axios'
-import * as cheerio from 'cheerio'
-import { SCRAPER_CONFIG, OBJECT_CLASSES, CSS_SELECTORS, REQUEST_HEADERS } from '../constants/scraperConfig'
+import { OBJECT_CLASSES } from '../constants/scraperConfig'
 import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
+
+// Cloudflare Worker API 配置
+const WORKER_API_URL = 'https://api.woodcat.online'
 
 class SCPScraper {
   private cache: Map<string, { data: SCPWikiData, timestamp: number }> = new Map()
@@ -22,62 +24,65 @@ class SCPScraper {
     }
 
     try {
-      // 构建URL
-      const url = `${SCRAPER_CONFIG.baseUrl}/scp-${scpNumber}`
+      // 调用Cloudflare Worker API
+      const response = await axios.get(`${WORKER_API_URL}/scrape`, {
+        params: { number: scpNumber },
+        timeout: 15000,
+      })
       
-      // 带重试机制的请求
-      const html = await this.fetchWithRetry(url)
-      
-      // 解析HTML
-      const data = this.parseHTML(html, scpNumber, url)
-      
-      // 保存到缓存
-      this.saveToCache(cacheKey, data)
-      
-      return { success: true, data }
+      if (response.data.success && response.data.data) {
+        const data = this.normalizeData(response.data.data)
+        
+        // 保存到缓存
+        this.saveToCache(cacheKey, data)
+        
+        return { success: true, data }
+      } else {
+        return { 
+          success: false, 
+          error: response.data.error || '爬取失败' 
+        }
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       return { 
         success: false, 
-        error: `爬取失败: ${errorMessage}` 
+        error: `API请求失败: ${errorMessage}` 
       }
     }
   }
 
   /**
-   * 搜索SCP（简化版，返回搜索结果列表）
+   * 搜索SCP
    * @param keyword 搜索关键词
    * @returns 搜索结果
    */
   async searchSCP(keyword: string): Promise<ScraperResult> {
     try {
-      // 使用维基的搜索功能
-      const url = `${SCRAPER_CONFIG.baseUrl}/search:site/q/${encodeURIComponent(keyword)}`
-      
-      const html = await this.fetchWithRetry(url)
-      const $ = cheerio.load(html)
-      
-      // 提取搜索结果
-      const results: string[] = []
-      $('.search-result-item a').each((_, element) => {
-        const link = $(element).attr('href')
-        if (link) {
-          const match = link.match(/scp-(\d+)/)
-          if (match) {
-            results.push(`SCP-${match[1]}`)
-          }
-        }
+      // 调用Cloudflare Worker API
+      const response = await axios.get(`${WORKER_API_URL}/search`, {
+        params: { keyword },
+        timeout: 15000,
       })
       
-      if (results.length === 0) {
-        return { success: false, error: `未找到包含 "${keyword}" 的SCP对象` }
+      if (response.data.success && response.data.data) {
+        // 如果返回的是数组，返回第一个结果
+        if (Array.isArray(response.data.data) && response.data.data.length > 0) {
+          const firstResult = response.data.data[0]
+          const data = this.normalizeData(firstResult)
+          return { success: true, data }
+        } 
+        // 如果返回的是单个对象
+        else if (typeof response.data.data === 'object') {
+          const data = this.normalizeData(response.data.data)
+          return { success: true, data }
+        }
       }
       
-      // 返回第一个结果的数据
-      const firstResult = results[0]
-      const number = firstResult.replace('SCP-', '')
-      return this.scrapeSCP(number)
-      
+      return { 
+        success: false, 
+        error: `未找到包含 "${keyword}" 的SCP对象` 
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
       return { 
@@ -88,213 +93,20 @@ class SCPScraper {
   }
 
   /**
-   * 带重试机制的HTTP请求
+   * 标准化API返回的数据格式
    */
-  private async fetchWithRetry(url: string): Promise<string> {
-    let lastError: Error | null = null
-    
-    for (let attempt = 1; attempt <= SCRAPER_CONFIG.retryAttempts; attempt++) {
-      try {
-        const response = await axios.get(url, {
-          headers: REQUEST_HEADERS,
-          timeout: SCRAPER_CONFIG.timeout,
-        })
-        
-        if (response.status !== 200) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-        
-        return response.data
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error))
-        
-        if (attempt < SCRAPER_CONFIG.retryAttempts) {
-          // 等待后重试
-          await this.delay(SCRAPER_CONFIG.retryDelay * attempt)
-        }
-      }
-    }
-    
-    throw lastError || new Error('未知错误')
-  }
-
-  /**
-   * 解析HTML并提取SCP信息
-   */
-  private parseHTML(html: string, scpNumber: string, url: string): SCPWikiData {
-    const $ = cheerio.load(html)
-    
-    // 提取标题
-    const title = this.extractTitle($, scpNumber)
-    
-    // 提取项目等级
-    const objectClass = this.extractObjectClass($)
-    
-    // 提取内容
-    const content = this.extractContent($)
-    
-    // 提取作者信息
-    const author = this.extractAuthor($)
-    
+  private normalizeData(data: any): SCPWikiData {
     return {
-      id: `SCP-${scpNumber}`,
-      name: title,
-      objectClass,
-      containment: content.containment,
-      description: content.description,
-      appendix: content.appendix,
-      references: content.references,
-      author,
-      url
+      id: data.id || `SCP-${data.number}`,
+      name: data.name || '未知',
+      objectClass: data.objectClass || 'UNKNOWN',
+      containment: Array.isArray(data.containment) ? data.containment : [],
+      description: Array.isArray(data.description) ? data.description : [],
+      appendix: Array.isArray(data.appendix) ? data.appendix : [],
+      references: Array.isArray(data.references) ? data.references : [],
+      author: data.author || '未知作者',
+      url: data.url || ''
     }
-  }
-
-  /**
-   * 提取标题
-   */
-  private extractTitle($: cheerio.CheerioAPI, scpNumber: string): string {
-    const title = $(CSS_SELECTORS.title).text().trim()
-    // 移除 "SCP-" 前缀
-    let cleanedTitle = title.replace(/^SCP-\d+\s*-\s*/, '')
-    
-    // 如果标题为空，使用SCP编号作为标题
-    if (!cleanedTitle) {
-      cleanedTitle = `SCP-${scpNumber}`
-    }
-    
-    return cleanedTitle
-  }
-
-  /**
-   * 提取项目等级
-   */
-  private extractObjectClass($: cheerio.CheerioAPI): string {
-    // 尝试从信息框中提取
-    const infoBox = $(CSS_SELECTORS.infoBox).first()
-    const classRow = infoBox.find('tr').filter((_, element) => {
-      return $(element).find('td').first().text().includes('项目等级') || 
-             $(element).find('td').first().text().includes('Object Class')
-    })
-    
-    const classText = classRow.find('td').last().text().trim().toUpperCase()
-    
-    // 匹配已知的项目等级
-    const knownClasses = Object.keys(OBJECT_CLASSES)
-    for (const className of knownClasses) {
-      if (classText.includes(className)) {
-        return className
-      }
-    }
-    
-    return 'UNKNOWN'
-  }
-
-  /**
-   * 提取内容
-   */
-  private extractContent($: cheerio.CheerioAPI): {
-    containment: string[]
-    description: string[]
-    appendix: string[]
-    references: string[]
-  } {
-    const containment: string[] = []
-    let description: string[] = []
-    const appendix: string[] = []
-    const references: string[] = []
-    
-    let currentSection: 'description' | 'containment' | 'appendix' | 'other' = 'description'
-    
-    $(CSS_SELECTORS.content).find('p, h1, h2, h3, h4, h5, h6, ul, ol').each((_, element) => {
-      const $el = $(element)
-      const tagName = element.tagName
-      const text = $el.text().trim()
-      
-      if (!text) return
-      
-      // 检测章节标题
-      if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(tagName)) {
-        if (text.includes('收容') || text.includes('Containment')) {
-          currentSection = 'containment'
-        } else if (text.includes('附录') || text.includes('Addendum')) {
-          currentSection = 'appendix'
-        } else if (text.includes('参考') || text.includes('Reference')) {
-          currentSection = 'other'
-        }
-        return
-      }
-      
-      // 根据当前章节添加内容
-      if (tagName === 'UL' || tagName === 'OL') {
-        const items: string[] = []
-        $el.find('li').each((_, li) => {
-          const itemText = $(li).text().trim()
-          if (itemText) items.push(`• ${itemText}`)
-        })
-        
-        if (currentSection === 'containment' && items.length > 0) {
-          containment.push(...items)
-        } else if (currentSection === 'appendix' && items.length > 0) {
-          appendix.push(...items)
-        } else if (currentSection === 'description' && items.length > 0) {
-          description.push(...items)
-        }
-      } else if (tagName === 'P') {
-        const paragraph = text
-        
-        // 清理空白和特殊字符
-        const cleaned = paragraph
-          .replace(/\s+/g, ' ')
-          .replace(/\n+/g, ' ')
-          .trim()
-        
-        if (!cleaned) return
-        
-        if (currentSection === 'containment') {
-          containment.push(cleaned)
-        } else if (currentSection === 'appendix') {
-          appendix.push(cleaned)
-        } else if (currentSection === 'description') {
-          description.push(cleaned)
-        }
-      }
-    })
-    
-    // 如果没有单独的收容协议章节，尝试从开头提取
-    if (containment.length === 0 && description.length > 0) {
-      // 假设前几段是收容协议
-      const firstParagraphs = description.slice(0, 3)
-      containment.push(...firstParagraphs)
-      description = description.slice(3)
-    }
-    
-    return {
-      containment,
-      description,
-      appendix,
-      references
-    }
-  }
-
-  /**
-   * 提取作者信息
-   */
-  private extractAuthor($: cheerio.CheerioAPI): string {
-    // 尝试从多个位置提取作者信息
-    const authorSelectors = [
-      '.author-info',
-      '.creditModule',
-      '.author'
-    ]
-    
-    for (const selector of authorSelectors) {
-      const authorElement = $(selector).first()
-      if (authorElement.length > 0) {
-        return authorElement.text().trim()
-      }
-    }
-    
-    return '未知作者'
   }
 
   /**
@@ -343,8 +155,10 @@ class SCPScraper {
     }
     
     // 来源
-    lines.push(`数据来源: ${data.url}`)
-    lines.push('')
+    if (data.url) {
+      lines.push(`数据来源: ${data.url}`)
+      lines.push('')
+    }
     lines.push(`═══════════════════════════════════════════════════════════════`)
     
     return lines
@@ -384,13 +198,6 @@ class SCPScraper {
    */
   clearCache(): void {
     this.cache.clear()
-  }
-
-  /**
-   * 延迟函数
-   */
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
 
