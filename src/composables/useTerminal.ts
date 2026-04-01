@@ -26,24 +26,6 @@ const SCP_LOGO_ART = [
   '                                                             ',
 ]
 
-const SLOGAN_ART = [
-  '  ___|  ____|  ___| |   |  _ \\  ____| ',
-  '\\___ \\  __|   |     |   | |   | __|   ',
-  '      | |     |     |   |  __ <  |     ',
-  '_____/ _____|\\____|\\___/ _| \\_\\_____| ',
-  '                                       ',
-  '  ___|  _ \\   \\  |__ __|  \\   _ _|  \\  | ',
-  ' |     |   |   \\ |   |   _ \\    |    \\ | ',
-  ' |     |   | |\\  |   |  ___ \\   |  |\\  | ',
-  '\\____|\\___/ _| \\_|  _|_/    _\\___|_| \\_| ',
-  '                                          ',
-  '  _ \\   _ \\   _ \\__ __| ____|  ___|__ __| ',
-  ' |   | |   | |   |  |   __|   |       |   ',
-  ' ___/  __ <  |   |  |   |     |       |   ',
-  '_|    _| \\_\\___/  _|  _____|\\____|  _|   ',
-  '                                          ',
-]
-
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
     terminal: null,
@@ -252,8 +234,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     if (!terminal) return
 
     const lines = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      '',
+      `${ANSICode.green}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
     ]
 
     // Add ASCII art logo
@@ -262,17 +243,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     })
 
     lines.push(
-      '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      '',
-    )
-
-    // Add slogan ASCII art
-    SLOGAN_ART.forEach(line => {
-      lines.push(`${ANSICode.yellow}${line}${ANSICode.reset}`)
-    })
-
-    lines.push(
+      `${ANSICode.green}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
       `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
       `${ANSICode.green}█${ANSICode.reset}                        系统信息                                ${ANSICode.green}█${ANSICode.reset}`,
