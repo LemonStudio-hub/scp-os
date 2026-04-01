@@ -234,6 +234,51 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     writePrompt()
   }
 
+  // 辅助函数：安全的终端写入
+  const safeTerminalWrite = (data: string, isWriteln = false) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    try {
+      if (isWriteln) {
+        terminal.writeln(data)
+      } else {
+        terminal.write(data)
+      }
+    } catch (error) {
+      errorHandler.handleError({
+        type: ErrorType.TERMINAL_WRITE_FAILED,
+        severity: ErrorSeverity.LOW,
+        message: '终端写入失败',
+        details: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  // 辅助函数：执行命令处理器（带错误处理）
+  const executeCommandHandler = (handler: any, args: string[], cmd: string) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    try {
+      handler(
+        args,
+        (data: string) => safeTerminalWrite(data, false),
+        (data: string) => safeTerminalWrite(data, true)
+      )
+    } catch (error) {
+      errorHandler.handleError({
+        type: ErrorType.COMMAND_EXECUTION_FAILED,
+        severity: ErrorSeverity.MEDIUM,
+        message: `命令执行失败: ${cmd}`,
+        details: error instanceof Error ? error.message : String(error),
+        logToConsole: true,
+      })
+      terminal.writeln(`${ANSICode.red}命令执行失败: ${cmd}${ANSICode.reset}`)
+      terminal.writeln(`${ANSICode.yellow}详情: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+    }
+  }
+
   const processCommand = (command: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) {
@@ -251,41 +296,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       const handler = getCommandHandler(cmd as any)
 
       if (handler) {
-        try {
-          handler(args, (data: string) => {
-            try {
-              terminal.write(data)
-            } catch (error) {
-              errorHandler.handleError({
-                type: ErrorType.TERMINAL_WRITE_FAILED,
-                severity: ErrorSeverity.LOW,
-                message: '终端写入失败',
-                details: error instanceof Error ? error.message : String(error),
-              })
-            }
-          }, (data: string) => {
-            try {
-              terminal.writeln(data)
-            } catch (error) {
-              errorHandler.handleError({
-                type: ErrorType.TERMINAL_WRITE_FAILED,
-                severity: ErrorSeverity.LOW,
-                message: '终端写入失败',
-                details: error instanceof Error ? error.message : String(error),
-              })
-            }
-          })
-        } catch (error) {
-          errorHandler.handleError({
-            type: ErrorType.COMMAND_EXECUTION_FAILED,
-            severity: ErrorSeverity.MEDIUM,
-            message: `命令执行失败: ${cmd}`,
-            details: error instanceof Error ? error.message : String(error),
-            logToConsole: true,
-          })
-          terminal.writeln(`${ANSICode.red}命令执行失败: ${cmd}${ANSICode.reset}`)
-          terminal.writeln(`${ANSICode.yellow}详情: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
-        }
+        executeCommandHandler(handler, args, cmd)
       } else {
         terminal.writeln(`${ANSICode.red}未知命令: ${cmd}. 输入 "help" 查看可用命令.${ANSICode.reset}`)
       }
