@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import type { TerminalInstance } from '../types/terminal'
-import { createTerminalConfig, sleep, isPrintableCharacter } from '../utils/terminal'
+import { createTerminalConfig, sleep, isPrintableCharacter, isMobileDevice } from '../utils/terminal'
 import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
@@ -12,8 +12,8 @@ import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 import { getBootLogs } from '../constants/bootLogs'
 import { config } from '../config'
 
-// ASCII Art Constants
-const SCP_LOGO_ART = [
+// ASCII Art Constants - Desktop (Full width)
+const SCP_LOGO_ART_DESKTOP = [
   '   _____ __________ ',
   '  / ___// ____/ __ \\',
   '  \\__ \\/ /   / /_/ /',
@@ -27,6 +27,40 @@ const SCP_LOGO_ART = [
   '/_/    \\____/\\____/_/ |_/_____/_/  |_/_/ /___/\\____/_/ |_/   ',
   '                                                             ',
 ]
+
+// ASCII Art Constants - Mobile (Compact)
+const SCP_LOGO_ART_MOBILE = [
+  '   _____ __________ ',
+  '  / ___// ____/ __ \\',
+  '  \\__ \\/ /   / /_/ /',
+  ' ___/ / /___/ ____/ ',
+  '/____/\\____/_/      ',
+  '                    ',
+  '    __________  __  ___   ______  ___',
+  '   / ____/ __ \\/ / / / | / / __ \\/   |',
+  '  / /_  / / / / / / /  |/ / / / / /| |',
+  ' / __/ / /_/ / /_/ / /|  / /_/ / ___ |',
+  '/_/    \\____/\\____/_/ |_/_____/_/  |_|',
+  '                                         ',
+]
+
+// Border Styles - Desktop (Full width borders)
+const BORDER_DESKTOP = {
+  top: '═══════════════════════════════════════════════════════════════',
+  left: '█',
+  right: '█',
+  bottom: '████████████████████████████████████████████████████████████████████████████████',
+  fill: ' '
+}
+
+// Border Styles - Mobile (Compact borders)
+const BORDER_MOBILE = {
+  top: '═════════════════════════════════════',
+  left: '│',
+  right: '│',
+  bottom: '─────────────────────────────────────',
+  fill: ' '
+}
 
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
@@ -213,29 +247,47 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
 
-    const lines = [
-      `${ANSICode.green}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-    ]
+    const isMobile = isMobileDevice()
+    const border = isMobile ? BORDER_MOBILE : BORDER_DESKTOP
+    const logoArt = isMobile ? SCP_LOGO_ART_MOBILE : SCP_LOGO_ART_DESKTOP
+
+    const lines: string[] = []
+
+    // Top border
+    lines.push(`${ANSICode.green}${border.top}${ANSICode.reset}`)
 
     // Add ASCII art logo
-    SCP_LOGO_ART.forEach(line => {
+    logoArt.forEach(line => {
       lines.push(`${ANSICode.red}${line}${ANSICode.reset}`)
     })
 
-    lines.push(
-      `${ANSICode.green}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      '',
-      `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset}                        System Information                        ${ANSICode.green}█${ANSICode.reset}`,
-      `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset} Version: 3.0.2                         Security Level: 4         ${ANSICode.green}█${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset} Location: Site-19 Main Server          Encryption: AES-256-GCM  ${ANSICode.green}█${ANSICode.reset}`,
-      `${ANSICode.green}█${ANSICode.reset} Status: Online                           Last Update: 2026-04-01 ${ANSICode.green}█${ANSICode.reset}`,
-      `${ANSICode.green}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-      '',
-      `${ANSICode.green}Type "help" to see available commands${ANSICode.reset}`,
-      ''
-    )
+    // Bottom border
+    lines.push(`${ANSICode.green}${border.top}${ANSICode.reset}`)
+    lines.push('')
+
+    if (isMobile) {
+      // Mobile version - Compact layout
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} System Info${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Ver: ${config.app.version} | Security: 4${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Site-19 | AES-256-GCM${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Status: Online${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push('')
+    } else {
+      // Desktop version - Full width layout
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset}                        System Information                        ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Version: ${config.app.version}                         Security Level: 4         ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Location: Site-19 Main Server          Encryption: AES-256-GCM  ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Status: Online                           Last Update: 2026-04-01 ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push('')
+    }
+
+    lines.push(`${ANSICode.green}Type "help" to see available commands${ANSICode.reset}`)
+    lines.push('')
 
     lines.forEach(line => terminal.writeln(line))
     writePrompt()

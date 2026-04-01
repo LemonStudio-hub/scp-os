@@ -2,6 +2,11 @@ import type { TerminalConfig } from '../types/terminal'
 import { SCP_THEME } from '../constants/theme'
 import { config } from '../config'
 
+export function isMobileDevice(): boolean {
+  const screenWidth = window.innerWidth
+  return screenWidth < 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+
 export function getResponsiveFontSize(): number {
   const screenWidth = window.innerWidth
   
