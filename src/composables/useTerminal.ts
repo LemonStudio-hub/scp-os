@@ -10,6 +10,40 @@ import { getCommandHandler } from '../commands'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 
+// ASCII Art Constants
+const SCP_LOGO_ART = [
+  '   _____ __________ ',
+  '  / ___// ____/ __ \\',
+  '  \\__ \\/ /   / /_/ /',
+  ' ___/ / /___/ ____/ ',
+  '/____/\\____/_/      ',
+  '                    ',
+  '    __________  __  ___   ______  ___  ______________  _   __',
+  '   / ____/ __ \\/ / / / | / / __ \\/   |/_  __/  _/ __ \\/ | / /',
+  '  / /_  / / / / / / /  |/ / / / / /| | / /  / // / / /  |/ / ',
+  ' / __/ / /_/ / /_/ / /|  / /_/ / ___ |/ / _/ // /_/ / /|  /  ',
+  '/_/    \\____/\\____/_/ |_/_____/_/  |_/_/ /___/\\____/_/ |_/   ',
+  '                                                             ',
+]
+
+const SLOGAN_ART = [
+  '  ___|  ____|  ___| |   |  _ \\  ____| ',
+  '\\___ \\  __|   |     |   | |   | __|   ',
+  '      | |     |     |   |  __ <  |     ',
+  '_____/ _____|\\____|\\___/ _| \\_\\_____| ',
+  '                                       ',
+  '  ___|  _ \\   \\  |__ __|  \\   _ _|  \\  | ',
+  ' |     |   |   \\ |   |   _ \\    |    \\ | ',
+  ' |     |   | |\\  |   |  ___ \\   |  |\\  | ',
+  '\\____|\\___/ _| \\_|  _|_/    _\\___|_| \\_| ',
+  '                                          ',
+  '  _ \\   _ \\   _ \\__ __| ____|  ___|__ __| ',
+  ' |   | |   | |   |  |   __|   |       |   ',
+  ' ___/  __ <  |   |  |   |     |       |   ',
+  '_|    _| \\_\\___/  _|  _____|\\____|  _|   ',
+  '                                          ',
+]
+
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
     terminal: null,
@@ -219,18 +253,39 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     const lines = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}          SCP 基金会 - 安全控制收容基金会${ANSICode.reset}`,
-      `${ANSICode.green}       控制收容保护 | Secure Contain Protect${ANSICode.reset}`,
+      '',
+    ]
+
+    // Add ASCII art logo
+    SCP_LOGO_ART.forEach(line => {
+      lines.push(`${ANSICode.red}${line}${ANSICode.reset}`)
+    })
+
+    lines.push(
+      '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      `${ANSICode.cyan}欢迎使用 SCP 基金会终端系统${ANSICode.reset}`,
-      `${ANSICode.white}系统版本: 3.0.1 | 最后更新: 2026-03-31${ANSICode.reset}`,
-      `${ANSICode.white}当前位置: Site-19 主服务器${ANSICode.reset}`,
+    )
+
+    // Add slogan ASCII art
+    SLOGAN_ART.forEach(line => {
+      lines.push(`${ANSICode.yellow}${line}${ANSICode.reset}`)
+    })
+
+    lines.push(
       '',
-      `${ANSICode.yellow}输入 "help" 查看可用命令${ANSICode.reset}`,
-      `${ANSICode.cyan}手势控制: 三指上滑清屏 | 双指左右滑动查看历史${ANSICode.reset}`,
+      `${ANSICode.cyan}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+      `${ANSICode.cyan}█${ANSICode.reset}                        系统信息                                ${ANSICode.cyan}█${ANSICode.reset}`,
+      `${ANSICode.cyan}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+      `${ANSICode.cyan}█${ANSICode.reset} 版本: 3.0.2                           安全级别: 4级          ${ANSICode.cyan}█${ANSICode.reset}`,
+      `${ANSICode.cyan}█${ANSICode.reset} 位置: Site-19 主服务器                 加密: AES-256-GCM     ${ANSICode.cyan}█${ANSICode.reset}`,
+      `${ANSICode.cyan}█${ANSICode.reset} 状态: 在线                            最后更新: 2026-04-01  ${ANSICode.cyan}█${ANSICode.reset}`,
+      `${ANSICode.cyan}████████████████████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+      '',
+      `${ANSICode.green}输入 "help" 查看可用命令${ANSICode.reset}`,
+      `${ANSICode.white}手势控制: 三指上滑清屏 | 双指左右滑动查看历史${ANSICode.reset}`,
       ''
-    ]
+    )
 
     lines.forEach(line => terminal.writeln(line))
     writePrompt()

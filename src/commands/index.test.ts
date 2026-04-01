@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { commandHandlers, getCommandHandler } from './index'
 import type { CommandType } from '../types/command'
-import * as scraperModule from '../utils/scraper'
 
 // Mock scraper module
 vi.mock('../utils/scraper', () => ({
-  default: {
+  scraper: {
     scrapeSCP: vi.fn(),
     formatForTerminal: vi.fn(),
   },
@@ -184,7 +183,7 @@ describe('commands/index', () => {
 
     it('应该在 SCP 不存在时显示错误', async () => {
       // Mock scraper to return failure
-      const scraper = (await import('../utils/scraper')).default
+      const { scraper } = await import('../utils/scraper')
       vi.mocked(scraper.scrapeSCP).mockResolvedValue({
         success: false,
         error: 'SCP 对象不存在或无法访问',
