@@ -13,9 +13,9 @@ binding = "SCP_CACHE"
 id = "40f0d23a05e14f7484232bc1960e217f"
 
 # 路由配置
-# [[routes]]
-# pattern = "api.scpos.site/*"
-# zone_name = "scpos.site"
+[[routes]]
+pattern = "api.scpos.site/*"
+zone_name = "scpos.site"
 
 # 定时任务（可选，用于定时更新缓存）
 # [triggers]
