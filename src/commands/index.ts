@@ -427,6 +427,30 @@ export const commandHandlers: CommandMap = {
     writeln('')
   },
 
+  performance: (_args, _write, writeln) => {
+    writeln(`${ANSICode.cyan}Opening Performance Monitor Dashboard...${ANSICode.reset}`)
+    writeln('')
+    
+    console.log('[Performance Command] Executing performance command')
+    console.log('[Performance Command] window.openPerformanceDashboard exists:', typeof window.openPerformanceDashboard)
+    
+    if (window.openPerformanceDashboard) {
+      console.log('[Performance Command] Calling openPerformanceDashboard function')
+      window.openPerformanceDashboard()
+      writeln(`${ANSICode.green}✓ Performance Dashboard opened${ANSICode.reset}`)
+      writeln('')
+      writeln(`${ANSICode.gray}Monitor real-time metrics, view performance issues,${ANSICode.reset}`)
+      writeln(`${ANSICode.gray}and receive optimization recommendations.${ANSICode.reset}`)
+    } else {
+      console.error('[Performance Command] openPerformanceDashboard function not found')
+      writeln(`${ANSICode.red}✗ Failed to open Performance Dashboard${ANSICode.reset}`)
+      writeln('')
+      writeln(`${ANSICode.yellow}Debug info:${ANSICode.reset}`)
+      writeln(`  - Function exists: ${typeof window.openPerformanceDashboard !== 'undefined'}`)
+      writeln(`  - Window object: ${typeof window !== 'undefined'}`)
+    }
+  },
+
   logout: (_args, _write, writeln) => {
     writeln(`${ANSICode.yellow}Logging out securely...${ANSICode.reset}`)
     writeln(`${ANSICode.green}Session terminated.${ANSICode.reset}`)

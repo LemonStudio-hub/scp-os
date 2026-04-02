@@ -17,7 +17,8 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
   'version',
   'about',
   'search',
-  'network'
+  'network',
+  'performance'
 ]
 
 export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
@@ -37,7 +38,8 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   version: 'Display system version',
   about: 'Display system information',
   search: 'Search SCP database (supports Chinese keywords)',
-  network: 'Test network connection to Foundation Wiki'
+  network: 'Test network connection to Foundation Wiki',
+  performance: 'Open Performance Monitor Dashboard'
 }
 
 export const COMMAND_USAGE: Record<CommandType, string> = {
@@ -57,5 +59,6 @@ export const COMMAND_USAGE: Record<CommandType, string> = {
   version: 'version',
   about: 'about',
   search: 'search <keyword>',
-  network: 'network'
+  network: 'network',
+  performance: 'performance'
 }

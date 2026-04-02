@@ -545,6 +545,60 @@ export default {
         logger.info('Getting stats', { ip })
         const result = await scraper.getStats()
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/performance') {
+        // 性能监控API端点
+        if (request.method === 'POST') {
+          // 接收性能指标数据
+          try {
+            const body = await request.json() as any
+            logger.info('Received performance metrics', { ip, metrics: body })
+            
+            // 存储性能指标到KV
+            const metricKey = `perf-${Date.now()}`
+            await env.SCP_CACHE?.put(metricKey, JSON.stringify(body), {
+              expirationTtl: 3600, // 1小时过期
+            })
+            
+            return corsManager.createResponse({
+              success: true,
+              message: 'Performance metrics received',
+              timestamp: Date.now()
+            }, 200, context)
+          } catch (error) {
+            logger.error('Failed to parse performance metrics', error as Error)
+            return corsManager.createErrorResponse('Invalid request body', 400, context)
+          }
+        } else if (request.method === 'GET') {
+          // 获取最近的性能指标
+          try {
+            const limit = parseInt(url.searchParams.get('limit') || '10')
+            const metrics: any[] = []
+            
+            // 列出所有性能指标键
+            const list = await env.SCP_CACHE?.list({ prefix: 'perf-', limit })
+            
+            if (list && list.keys.length > 0) {
+              // 获取所有指标数据
+              for (const key of list.keys) {
+                const value = await env.SCP_CACHE?.get(key.name, 'text')
+                if (value) {
+                  metrics.push(JSON.parse(value))
+                }
+              }
+            }
+            
+            return corsManager.createResponse({
+              success: true,
+              metrics: metrics.reverse(), // 最新的在前
+              count: metrics.length
+            }, 200, context)
+          } catch (error) {
+            logger.error('Failed to retrieve performance metrics', error as Error)
+            return corsManager.createErrorResponse('Failed to retrieve metrics', 500, context)
+          }
+        } else {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
       } else if (path === '/') {
         return corsManager.createResponse(
           {
@@ -557,6 +611,7 @@ export default {
               '/list?limit={limit}&offset={offset}&clearance_level={level}': '列出SCP编号（默认100条，可选按权限等级筛选）',
               '/stats': '获取数据库统计信息',
               '/debug?number={number}': '调试：返回原始HTML',
+              '/performance': '性能监控API (POST: 提交指标, GET: 获取指标)',
             },
             features: {
               modular: true,
@@ -564,6 +619,7 @@ export default {
               retry: `${config.retryAttempts} attempts`,
               rateLimit: `${config.rateLimit.maxRequests} requests / ${config.rateLimit.windowMs / 1000}s`,
               database: 'D1 database enabled with tags and clearance_level filtering',
+              performance: 'Performance monitoring with metrics collection',
             },
           },
           200,

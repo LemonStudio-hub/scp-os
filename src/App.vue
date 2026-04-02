@@ -2,9 +2,18 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import SCPTerminal from './components/SCPTerminal.vue'
 import Sidebar from './components/Sidebar.vue'
+import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import { useTabsStore } from './stores/tabs'
 
 const tabsStore = useTabsStore()
+
+// Performance Dashboard state
+const showPerformanceDashboard = ref(false)
+
+// Global function to open performance dashboard
+const openPerformanceDashboard = () => {
+  showPerformanceDashboard.value = true
+}
 
 // Touch gesture control
 const touchStartX = ref(0)
@@ -51,6 +60,9 @@ onMounted(async () => {
   // Initialize tabs store with IndexedDB
   await tabsStore.initialize()
 
+  // Set global function for performance dashboard
+  window.openPerformanceDashboard = openPerformanceDashboard
+
   // Add touch event listeners
   document.addEventListener('touchstart', handleTouchStart, { passive: true })
   document.addEventListener('touchmove', handleTouchMove, { passive: true })
@@ -58,6 +70,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  // Clean up global function
+  delete window.openPerformanceDashboard
+
   // Remove touch event listeners
   document.removeEventListener('touchstart', handleTouchStart)
   document.removeEventListener('touchmove', handleTouchMove)
@@ -69,6 +84,10 @@ onUnmounted(() => {
   <div id="app">
     <SCPTerminal />
     <Sidebar />
+    <PerformanceDashboard 
+      :isVisible="showPerformanceDashboard" 
+      @close="showPerformanceDashboard = false"
+    />
   </div>
 </template>
 

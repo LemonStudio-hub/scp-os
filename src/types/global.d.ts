@@ -10,6 +10,7 @@ declare global {
       scrollToTop: () => void
       scrollToBottom: () => void
     }
+    openPerformanceDashboard?: () => void
   }
 
   interface Performance {

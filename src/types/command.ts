@@ -16,6 +16,7 @@ export type CommandType =
   | 'about'
   | 'search'
   | 'network'
+  | 'performance'
 
 import type { TerminalWrite, TerminalWriteln } from './terminal'
 
