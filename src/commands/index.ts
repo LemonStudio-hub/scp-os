@@ -6,8 +6,10 @@ import { useTabsStore } from '../stores/tabs'
 
 export const commandHandlers: CommandMap = {
   start: async (_args, _write, writeln) => {
-    writeln(`${ANSICode.cyan}Starting system...${ANSICode.reset}`)
-    writeln('')
+    // Clear screen first
+    if (window.__terminalController) {
+      window.__terminalController.clear()
+    }
     
     // Mark system as running
     localStorage.setItem('scp-os-system-status', 'running')
@@ -15,6 +17,7 @@ export const commandHandlers: CommandMap = {
     // Use global terminal controller to display boot log and welcome message
     if (window.__terminalController) {
       await window.__terminalController.displayBootLog()
+      window.__terminalController.markBootLogShown()
       window.__terminalController.displayWelcomeMessage()
     } else {
       writeln(`${ANSICode.red}Error: Terminal controller not available.${ANSICode.reset}`)
@@ -27,6 +30,9 @@ export const commandHandlers: CommandMap = {
     writeln('')
     writeln(`${ANSICode.green}System will restart now.${ANSICode.reset}`)
     writeln('')
+    
+    // Reset boot log shown flag so boot log shows again after restart
+    localStorage.removeItem('scp-os-boot-log-shown')
     
     // Reload the page
     setTimeout(() => {
@@ -49,6 +55,9 @@ export const commandHandlers: CommandMap = {
       
       // Mark system as shutdown
       localStorage.setItem('scp-os-system-status', 'shutdown')
+      
+      // Reset boot log shown flag
+      localStorage.removeItem('scp-os-boot-log-shown')
       
       writeln(`${ANSICode.red}System shutdown complete.${ANSICode.reset}`)
       writeln('')

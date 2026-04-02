@@ -16,12 +16,14 @@ import { useTabsStore } from '../stores/tabs'
 // Local storage key for first launch detection
 const FIRST_LAUNCH_KEY = 'scp-os-first-launch'
 const SYSTEM_STATUS_KEY = 'scp-os-system-status'
+const BOOT_LOG_SHOWN_KEY = 'scp-os-boot-log-shown'
 
 // Global terminal controller for command handlers
 export interface TerminalController {
   displayBootLog: (fastMode?: boolean) => Promise<void>
   displayWelcomeMessage: () => void
   clear: () => void
+  markBootLogShown: () => void
 }
 
 declare global {
@@ -99,6 +101,27 @@ function markSystemLaunched(): void {
  */
 function isSystemRunning(): boolean {
   return localStorage.getItem(SYSTEM_STATUS_KEY) === 'running'
+}
+
+/**
+ * Check if boot log has been shown
+ */
+function hasBootLogBeenShown(): boolean {
+  return localStorage.getItem(BOOT_LOG_SHOWN_KEY) === 'true'
+}
+
+/**
+ * Mark boot log as shown
+ */
+function markBootLogShown(): void {
+  localStorage.setItem(BOOT_LOG_SHOWN_KEY, 'true')
+}
+
+/**
+ * Reset boot log shown flag
+ */
+function resetBootLogShown(): void {
+  localStorage.removeItem(BOOT_LOG_SHOWN_KEY)
 }
 
 /**
@@ -181,6 +204,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         },
         clear: () => {
           clear()
+        },
+        markBootLogShown: () => {
+          markBootLogShown()
         }
       }
     } catch (error) {
@@ -657,6 +683,8 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     isSystemRunning,
     markSystemRunning,
     markSystemShutdown,
-    resetFirstLaunch
+    resetFirstLaunch,
+    hasBootLogBeenShown,
+    resetBootLogShown
   }
 }

@@ -86,7 +86,7 @@ const {
   getTerminal,
   sendKey,
   sendText,
-  isSystemRunning
+  hasBootLogBeenShown
 } = useTerminal(terminalContainer)
 
 const handleKeyPress = (key: any) => {
@@ -177,11 +177,11 @@ onMounted(async () => {
   window.addEventListener('resize', handleResize)
   
   // Check system status and display appropriate screen
-  if (isSystemRunning()) {
-    // System is running, display welcome message without boot log
+  if (hasBootLogBeenShown()) {
+    // Boot log has been shown, display welcome message without boot log
     displayWelcomeMessage()
   } else {
-    // System is not running (first launch or after shutdown), display startup prompt
+    // Boot log has not been shown (first launch or after shutdown), display startup prompt
     displayStartupPrompt()
   }
   
