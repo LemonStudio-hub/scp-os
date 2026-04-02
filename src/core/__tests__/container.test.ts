@@ -265,9 +265,11 @@ describe('DIContainer', () => {
 
       const registrations = container.getRegistrations()
 
-      expect(registrations).toHaveLength(2)
+      // Container auto-registers itself, so we have 3 registrations
+      expect(registrations).toHaveLength(3)
       expect(registrations.map((r) => r.token)).toContain('service1')
       expect(registrations.map((r) => r.token)).toContain('service2')
+      expect(registrations.map((r) => r.token)).toContain('DIContainer')
     })
 
     it('should check if service is registered', () => {

@@ -264,12 +264,25 @@ export class ExtensionRegistry {
    * Register a command extension
    */
   registerCommand(command: any): void {
+    // Register main command
     this.registerExtension('command', {
       id: command.name,
       name: command.name,
       description: command.description,
       data: command
     })
+
+    // Register aliases if they exist
+    if (command.aliases && Array.isArray(command.aliases)) {
+      for (const alias of command.aliases) {
+        this.registerExtension('command', {
+          id: alias,
+          name: command.name,
+          description: command.description,
+          data: command
+        })
+      }
+    }
   }
 
   /**

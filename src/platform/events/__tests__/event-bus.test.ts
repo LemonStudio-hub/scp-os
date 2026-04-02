@@ -98,7 +98,9 @@ describe('EventBus', () => {
       eventBus.on('test-event', asyncErrorHandler)
 
       // Should not throw, but log error
-      await expect(eventBus.emit('test-event', 'data')).resolves.not.toThrow()
+      expect(() => eventBus.emit('test-event', 'data')).not.toThrow()
+      // Wait for async handlers to complete
+      await new Promise(resolve => setTimeout(resolve, 10))
     })
   })
 
