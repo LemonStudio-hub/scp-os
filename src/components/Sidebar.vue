@@ -6,13 +6,13 @@
   >
     <div class="sidebar-content" @click.stop>
       <div class="sidebar-header">
-        <h2>标签页</h2>
+        <h2>Tabs</h2>
         <button 
           class="btn-icon" 
           @click="handleClose" 
-          aria-label="关闭侧边栏"
+          aria-label="Close sidebar"
         >
-          ✕
+          &times;
         </button>
       </div>
 
@@ -22,7 +22,7 @@
           @click="handleCreateTab"
           :disabled="tabs.length >= 10"
         >
-          + 新建标签页
+          + New Tab
         </button>
       </div>
 
@@ -39,7 +39,7 @@
         >
           <div class="tab-main">
             <span class="tab-icon">
-              {{ tab.isLocked ? '🔒' : '📄' }}
+              {{ tab.isLocked ? 'Locked' : '' }}
             </span>
             <input
               v-if="editingTabId === tab.id"
@@ -61,31 +61,31 @@
               v-if="!tab.isLocked"
               class="btn-icon btn-small"
               @click.stop="handleCloseTab(tab.id)"
-              aria-label="关闭标签页"
+              aria-label="Close tab"
             >
-              ✕
+              &times;
             </button>
           </div>
         </div>
 
         <div v-if="tabs.length === 0" class="empty-state">
-          <p>暂无标签页</p>
+          <p>No tabs</p>
           <button class="btn-secondary" @click="handleCreateTab">
-            创建第一个标签页
+            Create First Tab
           </button>
         </div>
       </div>
 
       <div class="sidebar-footer">
         <div class="tabs-count">
-          {{ tabs.length }} / 10 标签页
+          {{ tabs.length }} / 10 tabs
         </div>
         <button 
           class="btn-secondary btn-small"
           @click="handleCleanup"
-          title="清理7天未使用的标签页"
+          title="Clean up unused tabs (7 days)"
         >
-          🧹 清理旧标签
+          Cleanup
         </button>
       </div>
     </div>
@@ -106,22 +106,22 @@ const editingTabId = ref<string>('')
 const tempTitle = ref<string>('')
 const renameInput = ref<HTMLInputElement>()
 
-// 按创建时间排序的标签页列表
+// Tabs sorted by creation time
 const sortedTabs = computed(() => {
   return [...tabs.value].sort((a, b) => a.createdAt - b.createdAt)
 })
 
-// 关闭侧边栏
+// Close sidebar
 const handleClose = () => {
   tabsStore.closeSidebar()
 }
 
-// 处理背景点击（关闭侧边栏）
+// Handle backdrop click (close sidebar)
 const handleBackdropClick = () => {
   handleClose()
 }
 
-// 创建新标签页
+// Create new tab
 const handleCreateTab = () => {
   if (tabs.value.length >= 10) {
     return
@@ -129,18 +129,18 @@ const handleCreateTab = () => {
   tabsStore.createTab()
 }
 
-// 切换标签页
+// Switch tab
 const handleTabClick = (tabId: string) => {
   tabsStore.switchTab(tabId)
   handleClose()
 }
 
-// 关闭标签页
+// Close tab
 const handleCloseTab = (tabId: string) => {
   tabsStore.closeTab(tabId)
 }
 
-// 开始重命名
+// Start rename
 const handleRenameStart = (tab: Tab) => {
   editingTabId.value = tab.id
   tempTitle.value = tab.title
@@ -150,7 +150,7 @@ const handleRenameStart = (tab: Tab) => {
   })
 }
 
-// 完成重命名
+// Complete rename
 const handleRenameComplete = () => {
   if (editingTabId.value && tempTitle.value.trim()) {
     tabsStore.renameTab(editingTabId.value, tempTitle.value.trim())
@@ -159,13 +159,13 @@ const handleRenameComplete = () => {
   tempTitle.value = ''
 }
 
-// 取消重命名
+// Cancel rename
 const handleRenameCancel = () => {
   editingTabId.value = ''
   tempTitle.value = ''
 }
 
-// 清理旧标签页
+// Clean up old tabs
 const handleCleanup = () => {
   const beforeCount = tabs.value.length
   tabsStore.cleanupOldTabs()
@@ -330,7 +330,7 @@ const handleCleanup = () => {
   margin: 0 0 15px 0;
 }
 
-/* 按钮样式 */
+/* Button styles */
 .btn-primary {
   width: 100%;
   padding: 10px;

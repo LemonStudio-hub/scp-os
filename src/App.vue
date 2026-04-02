@@ -2,12 +2,11 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import SCPTerminal from './components/SCPTerminal.vue'
 import Sidebar from './components/Sidebar.vue'
-import TabBar from './components/TabBar.vue'
 import { useTabsStore } from './stores/tabs'
 
 const tabsStore = useTabsStore()
 
-// 手势控制相关
+// Touch gesture control
 const touchStartX = ref(0)
 const touchStartY = ref(0)
 const isSwiping = ref(false)
@@ -26,16 +25,16 @@ const handleTouchMove = (e: TouchEvent) => {
   const diffX = touchX - touchStartX.value
   const diffY = touchY - touchStartY.value
 
-  // 判断是横向滑动还是纵向滑动
+  // Determine horizontal or vertical swipe
   if (Math.abs(diffX) > Math.abs(diffY)) {
-    // 横向滑动
+    // Horizontal swipe
     if (Math.abs(diffX) > 50) {
-      // 向右滑动打开侧边栏
+      // Swipe right to open sidebar
       if (diffX > 0 && !tabsStore.sidebarOpen) {
         tabsStore.openSidebar()
         isSwiping.value = false
       }
-      // 向左滑动关闭侧边栏
+      // Swipe left to close sidebar
       else if (diffX < 0 && tabsStore.sidebarOpen) {
         tabsStore.closeSidebar()
         isSwiping.value = false
@@ -49,14 +48,14 @@ const handleTouchEnd = () => {
 }
 
 onMounted(() => {
-  // 添加触摸事件监听
+  // Add touch event listeners
   document.addEventListener('touchstart', handleTouchStart, { passive: true })
   document.addEventListener('touchmove', handleTouchMove, { passive: true })
   document.addEventListener('touchend', handleTouchEnd)
 })
 
 onUnmounted(() => {
-  // 移除触摸事件监听
+  // Remove touch event listeners
   document.removeEventListener('touchstart', handleTouchStart)
   document.removeEventListener('touchmove', handleTouchMove)
   document.removeEventListener('touchend', handleTouchEnd)
@@ -65,10 +64,7 @@ onUnmounted(() => {
 
 <template>
   <div id="app">
-    <TabBar />
-    <div class="main-content">
-      <SCPTerminal />
-    </div>
+    <SCPTerminal />
     <Sidebar />
   </div>
 </template>
@@ -97,13 +93,6 @@ body {
 #app {
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.main-content {
-  flex: 1;
   overflow: hidden;
   position: relative;
 }

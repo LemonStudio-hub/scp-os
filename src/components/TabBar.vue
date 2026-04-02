@@ -9,7 +9,7 @@
         @click="handleTabClick(tab.id)"
       >
         <span class="tab-icon">
-          {{ tab.isLocked ? '🔒' : '📄' }}
+          {{ tab.isLocked ? 'Locked' : '' }}
         </span>
         <span class="tab-title" :title="tab.title">
           {{ tab.title }}
@@ -18,9 +18,9 @@
           v-if="!tab.isLocked"
           class="tab-close-btn"
           @click.stop="handleCloseTab(tab.id)"
-          aria-label="关闭标签"
+          aria-label="Close tab"
         >
-          ✕
+          &times;
         </button>
       </div>
 
@@ -28,8 +28,8 @@
         v-if="tabs.length < 10"
         class="tab-new-btn"
         @click="handleCreateTab"
-        aria-label="新建标签"
-        title="新建标签页"
+        aria-label="New tab"
+        title="New tab"
       >
         +
       </button>
@@ -52,12 +52,12 @@ const tabsStore = useTabsStore()
 const tabs = computed(() => tabsStore.tabs)
 const activeTabId = computed(() => tabsStore.activeTabId)
 
-// 当前活动标签的索引
+// Current active tab index
 const activeTabIndex = computed(() => {
   return tabs.value.findIndex(tab => tab.id === activeTabId.value)
 })
 
-// 可见的标签（最多显示5个，优先显示活动标签）
+// Visible tabs (max 5, prioritize active tab)
 const visibleTabs = computed(() => {
   if (tabs.value.length <= 5) {
     return tabs.value
@@ -66,7 +66,7 @@ const visibleTabs = computed(() => {
   const activeIndex = activeTabIndex.value
   const result = [...tabs.value]
 
-  // 如果活动标签不在前5个，调整显示顺序
+  // If active tab is not in first 5, adjust display order
   if (activeIndex >= 5) {
     const activeTab = result.splice(activeIndex, 1)[0]
     result.splice(4, 0, activeTab)
@@ -75,17 +75,17 @@ const visibleTabs = computed(() => {
   return result.slice(0, 5)
 })
 
-// 切换标签页
+// Switch tab
 const handleTabClick = (tabId: string) => {
   tabsStore.switchTab(tabId)
 }
 
-// 创建新标签页
+// Create new tab
 const handleCreateTab = () => {
   tabsStore.createTab()
 }
 
-// 关闭标签页
+// Close tab
 const handleCloseTab = (tabId: string) => {
   tabsStore.closeTab(tabId)
 }
@@ -221,7 +221,7 @@ const handleCloseTab = (tabId: string) => {
   border-radius: 4px;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 480px) {
   .tab-bar {
     padding: 6px 8px;

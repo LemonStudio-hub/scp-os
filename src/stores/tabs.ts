@@ -14,12 +14,12 @@ export interface Tab {
 const STORAGE_KEY = 'scp-terminal-tabs'
 
 export const useTabsStore = defineStore('tabs', () => {
-  // 状态
+  // State
   const tabs = ref<Tab[]>([])
   const activeTabId = ref<string>('')
   const sidebarOpen = ref<boolean>(false)
 
-  // 计算属性
+  // Computed
   const activeTab = computed(() => {
     return tabs.value.find(tab => tab.id === activeTabId.value) || null
   })
@@ -30,7 +30,7 @@ export const useTabsStore = defineStore('tabs', () => {
 
   const tabCount = computed(() => tabs.value.length)
 
-  // 从 localStorage 加载标签页
+  // Load tabs from localStorage
   const loadTabs = () => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -42,12 +42,12 @@ export const useTabsStore = defineStore('tabs', () => {
       }
     } catch (error) {
       console.error('[Tabs Store] Failed to load tabs:', error)
-      // 如果加载失败，创建默认标签页
+      // Create default tab if loading fails
       createDefaultTab()
     }
   }
 
-  // 保存标签页到 localStorage
+  // Save tabs to localStorage
   const saveTabs = () => {
     try {
       const data = {
@@ -61,11 +61,11 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
-  // 创建默认标签页
+  // Create default tab
   const createDefaultTab = () => {
     const defaultTab: Tab = {
       id: generateTabId(),
-      title: '主终端',
+      title: 'Main Terminal',
       isActive: true,
       isLocked: true,
       createdAt: Date.now(),
@@ -76,23 +76,23 @@ export const useTabsStore = defineStore('tabs', () => {
     saveTabs()
   }
 
-  // 生成标签页 ID
+  // Generate tab ID
   const generateTabId = () => {
     return `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   }
 
-  // 创建新标签页
+  // Create new tab
   const createTab = (title?: string) => {
     const newTab: Tab = {
       id: generateTabId(),
-      title: title || `终端 ${tabCount.value + 1}`,
+      title: title || `Terminal ${tabCount.value + 1}`,
       isActive: true,
       isLocked: false,
       createdAt: Date.now(),
       lastActiveAt: Date.now()
     }
 
-    // 将新标签页设置为活动标签
+    // Set new tab as active
     tabs.value.forEach(tab => tab.isActive = false)
     tabs.value.push(newTab)
     activeTabId.value = newTab.id
@@ -101,7 +101,7 @@ export const useTabsStore = defineStore('tabs', () => {
     return newTab
   }
 
-  // 切换标签页
+  // Switch tab
   const switchTab = (tabId: string) => {
     const tab = tabs.value.find(t => t.id === tabId)
     if (tab) {
@@ -113,24 +113,24 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
-  // 关闭标签页
+  // Close tab
   const closeTab = (tabId: string) => {
     const tab = tabs.value.find(t => t.id === tabId)
     if (!tab) return false
 
-    // 不允许关闭锁定的标签页
+    // Cannot close locked tabs
     if (tab.isLocked) {
       console.warn('[Tabs Store] Cannot close locked tab:', tabId)
       return false
     }
 
-    // 移除标签页
+    // Remove tab
     const index = tabs.value.findIndex(t => t.id === tabId)
     tabs.value.splice(index, 1)
 
-    // 如果关闭的是活动标签页，切换到最近的标签页
+    // If closing active tab, switch to most recent tab
     if (tab.isActive && tabs.value.length > 0) {
-      // 优先切换到最近使用的标签页
+      // Switch to most recently used tab
       const remainingTabs = tabs.value.filter(t => t.id !== tabId)
       const lastActive = remainingTabs
         .sort((a, b) => b.lastActiveAt - a.lastActiveAt)[0]
@@ -139,7 +139,7 @@ export const useTabsStore = defineStore('tabs', () => {
       }
     }
 
-    // 如果没有标签页了，创建新的默认标签页
+    // If no tabs left, create default tab
     if (tabs.value.length === 0) {
       createDefaultTab()
     }
@@ -148,7 +148,7 @@ export const useTabsStore = defineStore('tabs', () => {
     return true
   }
 
-  // 重命名标签页
+  // Rename tab
   const renameTab = (tabId: string, newTitle: string) => {
     const tab = tabs.value.find(t => t.id === tabId)
     if (tab && newTitle.trim()) {
@@ -157,7 +157,7 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
-  // 锁定/解锁标签页
+  // Toggle lock tab
   const toggleLockTab = (tabId: string) => {
     const tab = tabs.value.find(t => t.id === tabId)
     if (tab) {
@@ -166,25 +166,25 @@ export const useTabsStore = defineStore('tabs', () => {
     }
   }
 
-  // 切换侧边栏
+  // Toggle sidebar
   const toggleSidebar = () => {
     sidebarOpen.value = !sidebarOpen.value
     saveTabs()
   }
 
-  // 打开侧边栏
+  // Open sidebar
   const openSidebar = () => {
     sidebarOpen.value = true
     saveTabs()
   }
 
-  // 关闭侧边栏
+  // Close sidebar
   const closeSidebar = () => {
     sidebarOpen.value = false
     saveTabs()
   }
 
-  // 清理过期的未锁定标签页
+  // Clean up old unlocked tabs
   const cleanupOldTabs = (maxAge: number = 7 * 24 * 60 * 60 * 1000) => {
     const now = Date.now()
     const toRemove: string[] = []
@@ -200,28 +200,28 @@ export const useTabsStore = defineStore('tabs', () => {
     })
   }
 
-  // 获取标签页列表（按创建时间排序）
+  // Get tabs sorted by creation time
   const getTabsByCreationOrder = () => {
     return [...tabs.value].sort((a, b) => a.createdAt - b.createdAt)
   }
 
-  // 获取最近使用的标签页
+  // Get recently used tabs
   const getRecentTabs = (limit: number = 5) => {
     return [...tabs.value]
       .sort((a, b) => b.lastActiveAt - a.lastActiveAt)
       .slice(0, limit)
   }
 
-  // 监听标签页变化，自动保存
+  // Watch for tab changes and auto-save
   watch(tabs, () => {
     saveTabs()
   }, { deep: true })
 
-  // 初始化
+  // Initialize
   loadTabs()
 
   return {
-    // 状态
+    // State
     tabs,
     activeTabId,
     sidebarOpen,
@@ -229,7 +229,7 @@ export const useTabsStore = defineStore('tabs', () => {
     lockedTabs,
     tabCount,
     
-    // 方法
+    // Methods
     createTab,
     switchTab,
     closeTab,
