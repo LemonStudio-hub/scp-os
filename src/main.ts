@@ -1,7 +1,12 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 import { errorHandler, ErrorType, ErrorSeverity } from './utils/errorHandler'
+import { useTerminalStore } from './stores'
+
+// 创建 Pinia 实例
+const pinia = createPinia()
 
 // 设置全局错误处理
 window.addEventListener('error', (event) => {
@@ -27,6 +32,20 @@ window.addEventListener('unhandledrejection', (event) => {
 })
 
 const app = createApp(App)
+
+// 使用 Pinia
+app.use(pinia)
+
+// 初始化 terminal store
+const terminalStore = useTerminalStore()
+terminalStore.checkMobile()
+terminalStore.updateFontSize()
+
+// 监听窗口大小变化
+window.addEventListener('resize', () => {
+  terminalStore.checkMobile()
+  terminalStore.updateFontSize()
+})
 
 // 设置 Vue 错误处理器
 app.config.errorHandler = (err, _instance, info) => {
