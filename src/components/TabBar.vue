@@ -46,6 +46,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useTabsStore } from '../stores/tabs'
+import indexedDBService from '../utils/indexedDB'
 
 const tabsStore = useTabsStore()
 
@@ -86,8 +87,17 @@ const handleCreateTab = () => {
 }
 
 // Close tab
-const handleCloseTab = (tabId: string) => {
-  tabsStore.closeTab(tabId)
+const handleCloseTab = async (tabId: string) => {
+  const success = tabsStore.closeTab(tabId)
+  
+  // Delete terminal state from IndexedDB if tab was closed
+  if (success) {
+    try {
+      await indexedDBService.deleteTerminalState(tabId)
+    } catch (error) {
+      console.error('[TabBar] Failed to delete terminal state:', error)
+    }
+  }
 }
 </script>
 

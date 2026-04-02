@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import indexedDBService from '../utils/indexedDB'
 
 export interface Tab {
   id: string
@@ -11,13 +12,12 @@ export interface Tab {
   lastActiveAt: number
 }
 
-const STORAGE_KEY = 'scp-terminal-tabs'
-
 export const useTabsStore = defineStore('tabs', () => {
   // State
   const tabs = ref<Tab[]>([])
   const activeTabId = ref<string>('')
   const sidebarOpen = ref<boolean>(false)
+  const isInitialized = ref<boolean>(false)
 
   // Computed
   const activeTab = computed(() => {
@@ -30,32 +30,45 @@ export const useTabsStore = defineStore('tabs', () => {
 
   const tabCount = computed(() => tabs.value.length)
 
-  // Load tabs from localStorage
-  const loadTabs = () => {
+  // Initialize store with IndexedDB
+  const initialize = async () => {
+    if (isInitialized.value) return
+
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        tabs.value = parsed.tabs || []
-        activeTabId.value = parsed.activeTabId || ''
-        sidebarOpen.value = parsed.sidebarOpen || false
+      // Initialize IndexedDB
+      await indexedDBService.init()
+
+      // Load tabs from IndexedDB
+      const data = await indexedDBService.loadTabs()
+      tabs.value = data.tabs || []
+      activeTabId.value = data.activeTabId || ''
+      sidebarOpen.value = data.sidebarOpen || false
+
+      // If no tabs exist, create default tab
+      if (tabs.value.length === 0) {
+        createDefaultTab()
       }
+
+      isInitialized.value = true
+      console.log('[Tabs Store] Initialized with IndexedDB')
     } catch (error) {
-      console.error('[Tabs Store] Failed to load tabs:', error)
-      // Create default tab if loading fails
+      console.error('[Tabs Store] Failed to initialize:', error)
+      // Fallback: create default tab
       createDefaultTab()
+      isInitialized.value = true
     }
   }
 
-  // Save tabs to localStorage
-  const saveTabs = () => {
+  // Save tabs to IndexedDB
+  const saveTabs = async () => {
+    if (!isInitialized.value) return
+
     try {
-      const data = {
-        tabs: tabs.value,
-        activeTabId: activeTabId.value,
-        sidebarOpen: sidebarOpen.value
-      }
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+      await indexedDBService.saveTabs(
+        tabs.value,
+        activeTabId.value,
+        sidebarOpen.value
+      )
     } catch (error) {
       console.error('[Tabs Store] Failed to save tabs:', error)
     }
@@ -185,7 +198,7 @@ export const useTabsStore = defineStore('tabs', () => {
   }
 
   // Clean up old unlocked tabs
-  const cleanupOldTabs = (maxAge: number = 7 * 24 * 60 * 60 * 1000) => {
+  const cleanupOldTabs = async (maxAge: number = 7 * 24 * 60 * 60 * 1000) => {
     const now = Date.now()
     const toRemove: string[] = []
 
@@ -195,9 +208,15 @@ export const useTabsStore = defineStore('tabs', () => {
       }
     })
 
-    toRemove.forEach(tabId => {
+    // Remove tabs and their terminal states
+    for (const tabId of toRemove) {
       closeTab(tabId)
-    })
+      try {
+        await indexedDBService.deleteTerminalState(tabId)
+      } catch (error) {
+        console.error('[Tabs Store] Failed to delete terminal state during cleanup:', error)
+      }
+    }
   }
 
   // Get tabs sorted by creation time
@@ -217,8 +236,8 @@ export const useTabsStore = defineStore('tabs', () => {
     saveTabs()
   }, { deep: true })
 
-  // Initialize
-  loadTabs()
+  // Initialize (async)
+  initialize()
 
   return {
     // State
@@ -228,8 +247,10 @@ export const useTabsStore = defineStore('tabs', () => {
     activeTab,
     lockedTabs,
     tabCount,
-    
+    isInitialized,
+
     // Methods
+    initialize,
     createTab,
     switchTab,
     closeTab,

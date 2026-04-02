@@ -35,11 +35,12 @@ import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useTerminal } from '../composables/useTerminal'
 import { updateTerminalFontSize } from '../utils/terminal'
 import { useTabsStore } from '../stores/tabs'
+import indexedDBService from '../utils/indexedDB'
 
 const tabsStore = useTabsStore()
 const terminalContainer = ref<HTMLDivElement>()
 
-// 存储每个标签页的终端状态
+// 存储每个标签页的终端状态（内存缓存）
 const terminalStates = ref<Record<string, string>>({})
 
 // Detect if device is mobile
@@ -157,6 +158,18 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
+  // Initialize IndexedDB
+  try {
+    await indexedDBService.init()
+    
+    // Load all terminal states
+    const allStates = await indexedDBService.loadAllTerminalStates()
+    terminalStates.value = allStates
+    console.log('[Terminal] Loaded terminal states from IndexedDB:', Object.keys(allStates).length)
+  } catch (error) {
+    console.error('[Terminal] Failed to initialize IndexedDB:', error)
+  }
+
   initTerminal()
   
   // Add resize listener for responsive font size
@@ -172,7 +185,7 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
   if (!terminal) return
 
-  // 保存旧标签页的终端状态（保存整个缓冲区）
+  // 保存旧标签页的终端状态到IndexedDB（保存整个缓冲区）
   if (oldTabId && terminal.buffer.active) {
     const buffer = terminal.buffer.active
     let fullContent = ''
@@ -185,18 +198,38 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
       }
     }
     
+    // 保存到内存缓存和IndexedDB
     terminalStates.value[oldTabId] = fullContent
+    try {
+      await indexedDBService.saveTerminalState(oldTabId, fullContent)
+    } catch (error) {
+      console.error('[Terminal] Failed to save state to IndexedDB:', error)
+    }
   }
 
   // 恢复新标签页的终端状态
-  if (newTabId && terminalStates.value[newTabId]) {
+  if (newTabId) {
     clear()
-    // 恢复之前保存的完整内容
-    terminal.write(terminalStates.value[newTabId])
-  } else if (newTabId) {
-    // 新标签页，显示欢迎信息
-    clear()
-    displayWelcomeMessage()
+    
+    // 首先尝试从内存缓存加载
+    if (terminalStates.value[newTabId]) {
+      terminal.write(terminalStates.value[newTabId])
+    } else {
+      // 从IndexedDB加载
+      try {
+        const savedContent = await indexedDBService.loadTerminalState(newTabId)
+        if (savedContent) {
+          terminal.write(savedContent)
+          terminalStates.value[newTabId] = savedContent
+        } else {
+          // 新标签页，显示欢迎信息
+          displayWelcomeMessage()
+        }
+      } catch (error) {
+        console.error('[Terminal] Failed to load state from IndexedDB:', error)
+        displayWelcomeMessage()
+      }
+    }
   }
 })
 

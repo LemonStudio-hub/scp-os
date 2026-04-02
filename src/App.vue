@@ -47,7 +47,10 @@ const handleTouchEnd = () => {
   isSwiping.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialize tabs store with IndexedDB
+  await tabsStore.initialize()
+
   // Add touch event listeners
   document.addEventListener('touchstart', handleTouchStart, { passive: true })
   document.addEventListener('touchmove', handleTouchMove, { passive: true })
