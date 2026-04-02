@@ -383,16 +383,6 @@ class SCPScraper {
       lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
       lines.push('')
     }
-
-    // 来源
-    if (data.url) {
-      if (isMobileDevice()) {
-        lines.push(`来源: ${data.url}`)
-      } else {
-        lines.push(`数据来源: ${data.url}`)
-      }
-      lines.push('')
-    }
     
     lines.push(borders.horizontal)
     lines.push('')
