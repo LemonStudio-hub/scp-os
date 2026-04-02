@@ -1,14 +1,5 @@
 <template>
   <div class="tab-bar">
-    <button 
-      class="tab-menu-btn"
-      @click="handleOpenSidebar"
-      aria-label="打开标签菜单"
-      title="查看所有标签"
-    >
-      ☰
-    </button>
-
     <div class="tabs-container">
       <div 
         v-for="tab in visibleTabs" 
@@ -84,11 +75,6 @@ const visibleTabs = computed(() => {
   return result.slice(0, 5)
 })
 
-// 打开侧边栏
-const handleOpenSidebar = () => {
-  tabsStore.openSidebar()
-}
-
 // 切换标签页
 const handleTabClick = (tabId: string) => {
   tabsStore.switchTab(tabId)
@@ -115,26 +101,6 @@ const handleCloseTab = (tabId: string) => {
   gap: 8px;
   height: 44px;
   overflow: hidden;
-}
-
-.tab-menu-btn {
-  width: 36px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #0f3460;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 18px;
-  flex-shrink: 0;
-  transition: background 0.2s ease;
-}
-
-.tab-menu-btn:hover {
-  background: #1a1a2e;
 }
 
 .tabs-container {
@@ -260,12 +226,6 @@ const handleCloseTab = (tabId: string) => {
   .tab-bar {
     padding: 6px 8px;
     height: 40px;
-  }
-
-  .tab-menu-btn {
-    width: 32px;
-    height: 28px;
-    font-size: 16px;
   }
 
   .tab {
