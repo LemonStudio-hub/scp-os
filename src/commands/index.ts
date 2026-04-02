@@ -2,8 +2,61 @@ import type { CommandType, CommandHandler, CommandMap } from '../types/command'
 import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { scraper } from '../utils/scraper'
+import { useTabsStore } from '../stores/tabs'
 
 export const commandHandlers: CommandMap = {
+  start: async (_args, _write, writeln) => {
+    writeln(`${ANSICode.cyan}Starting system...${ANSICode.reset}`)
+    writeln('')
+    
+    // Mark system as running
+    localStorage.setItem('scp-os-system-status', 'running')
+    
+    writeln(`${ANSICode.green}System started successfully.${ANSICode.reset}`)
+    writeln('')
+    writeln(`${ANSICode.yellow}Please refresh the page to see the boot log.${ANSICode.reset}`)
+    writeln('')
+  },
+
+  restart: async (_args, _write, writeln) => {
+    writeln(`${ANSICode.yellow}Restarting system...${ANSICode.reset}`)
+    writeln('')
+    writeln(`${ANSICode.green}System will restart now.${ANSICode.reset}`)
+    writeln('')
+    
+    // Reload the page
+    setTimeout(() => {
+      window.location.reload()
+    }, 1000)
+  },
+
+  shutdown: async (args, _write, writeln) => {
+    const confirmation = args[0]?.toLowerCase()
+    
+    if (confirmation === 'now') {
+      writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
+      writeln('')
+      
+      // Get tabs store
+      const tabsStore = useTabsStore()
+      
+      // Clear all tabs
+      tabsStore.clearAllTabs()
+      
+      // Mark system as shutdown
+      localStorage.setItem('scp-os-system-status', 'shutdown')
+      
+      writeln(`${ANSICode.red}System shutdown complete.${ANSICode.reset}`)
+      writeln('')
+      writeln(`${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`)
+      writeln('')
+    } else {
+      writeln(`${ANSICode.yellow}Usage: shutdown now${ANSICode.reset}`)
+      writeln('')
+      writeln(`${ANSICode.gray}This will shutdown the system and clear all tabs.${ANSICode.reset}`)
+    }
+  },
+
   help: (_args, _write, writeln) => {
     const helpText = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,

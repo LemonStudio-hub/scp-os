@@ -231,6 +231,30 @@ export const useTabsStore = defineStore('tabs', () => {
       .slice(0, limit)
   }
 
+  // Clear all tabs (for shutdown)
+  const clearAllTabs = async () => {
+    // Get all tab IDs before clearing
+    const tabIds = tabs.value.map(tab => tab.id)
+    
+    // Delete all terminal states from IndexedDB
+    for (const tabId of tabIds) {
+      try {
+        await indexedDBService.deleteTerminalState(tabId)
+      } catch (error) {
+        console.error('[Tabs Store] Failed to delete terminal state:', error)
+      }
+    }
+    
+    // Clear all tabs
+    tabs.value = []
+    activeTabId.value = ''
+    
+    // Save to IndexedDB
+    saveTabs()
+    
+    console.log('[Tabs Store] All tabs cleared')
+  }
+
   // Watch for tab changes and auto-save
   watch(tabs, () => {
     saveTabs()
@@ -261,6 +285,7 @@ export const useTabsStore = defineStore('tabs', () => {
     closeSidebar,
     cleanupOldTabs,
     getTabsByCreationOrder,
-    getRecentTabs
+    getRecentTabs,
+    clearAllTabs
   }
 })

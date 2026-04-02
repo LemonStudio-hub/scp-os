@@ -1,6 +1,9 @@
 import type { CommandType } from '../types/command'
 
 export const AVAILABLE_COMMANDS: CommandType[] = [
+  'start',
+  'restart',
+  'shutdown',
   'help',
   'status',
   'clear',
@@ -18,6 +21,9 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
 ]
 
 export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
+  start: 'Start the system (first-time initialization)',
+  restart: 'Restart the system',
+  shutdown: 'Shutdown the system',
   help: 'Display available commands',
   status: 'Show system status and containment statistics',
   clear: 'Clear terminal screen',
@@ -35,6 +41,9 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
 }
 
 export const COMMAND_USAGE: Record<CommandType, string> = {
+  start: 'start',
+  restart: 'restart',
+  shutdown: 'shutdown now',
   help: 'help',
   status: 'status',
   clear: 'clear',

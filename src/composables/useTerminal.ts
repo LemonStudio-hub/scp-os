@@ -11,6 +11,11 @@ import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 import { getBootLogs } from '../constants/bootLogs'
 import { config } from '../config'
+import { useTabsStore } from '../stores/tabs'
+
+// Local storage key for first launch detection
+const FIRST_LAUNCH_KEY = 'scp-os-first-launch'
+const SYSTEM_STATUS_KEY = 'scp-os-system-status'
 
 // ASCII Art Constants - Desktop (Full width)
 const SCP_LOGO_ART_DESKTOP = [
@@ -60,6 +65,48 @@ const BORDER_MOBILE = {
   right: '│',
   bottom: '─────────────────────────────────────',
   fill: ' '
+}
+
+/**
+ * Check if this is the first launch of the system
+ */
+function isFirstLaunch(): boolean {
+  return localStorage.getItem(FIRST_LAUNCH_KEY) === null
+}
+
+/**
+ * Mark system as launched
+ */
+function markSystemLaunched(): void {
+  localStorage.setItem(FIRST_LAUNCH_KEY, 'true')
+}
+
+/**
+ * Check if system is running
+ */
+function isSystemRunning(): boolean {
+  return localStorage.getItem(SYSTEM_STATUS_KEY) === 'running'
+}
+
+/**
+ * Mark system as running
+ */
+function markSystemRunning(): void {
+  localStorage.setItem(SYSTEM_STATUS_KEY, 'running')
+}
+
+/**
+ * Mark system as shutdown
+ */
+function markSystemShutdown(): void {
+  localStorage.setItem(SYSTEM_STATUS_KEY, 'shutdown')
+}
+
+/**
+ * Reset first launch flag (for restart)
+ */
+function resetFirstLaunch(): void {
+  localStorage.removeItem(FIRST_LAUNCH_KEY)
 }
 
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
@@ -243,6 +290,90 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
   }
 
+  /**
+   * Display startup prompt for first-time users
+   */
+  const displayStartupPrompt = () => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    const lines: string[] = []
+
+    lines.push(`${ANSICode.green}${BORDER_MOBILE.top}${ANSICode.reset}`)
+    lines.push('')
+    lines.push(`${ANSICode.red}    _____ __________ ${ANSICode.reset}`)
+    lines.push(`${ANSICode.red}   / ___// ____/ __ \\${ANSICode.reset}`)
+    lines.push(`${ANSICode.red}   \\__ \\/ /   / /_/ /${ANSICode.reset}`)
+    lines.push(`${ANSICode.red}  ___/ / /___/ ____/ ${ANSICode.reset}`)
+    lines.push(`${ANSICode.red} /____/\\____/_/      ${ANSICode.reset}`)
+    lines.push('')
+    lines.push(`${ANSICode.green}${BORDER_MOBILE.top}${ANSICode.reset}`)
+    lines.push('')
+    lines.push(`${ANSICode.yellow}Welcome to SCP Foundation Terminal System${ANSICode.reset}`)
+    lines.push('')
+    lines.push(`${ANSICode.cyan}To start the system, type: ${ANSICode.bold}start${ANSICode.reset}`)
+    lines.push('')
+    lines.push(`${ANSICode.gray}Security Level: 4 | Version: ${config.app.version}${ANSICode.reset}`)
+    lines.push('')
+
+    lines.forEach(line => terminal.writeln(line))
+    writePrompt()
+  }
+
+  /**
+   * Restart the system
+   */
+  const restartSystem = async () => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    terminal.writeln(`${ANSICode.yellow}Restarting system...${ANSICode.reset}`)
+    await sleep(500)
+    
+    clear()
+    
+    // Reset first launch flag to show boot log again
+    markSystemRunning()
+    
+    // Display boot log and welcome message
+    await displayBootLog()
+    displayWelcomeMessage()
+  }
+
+  /**
+   * Shutdown the system
+   */
+  const shutdownSystem = async (confirmed: boolean = false) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    if (!confirmed) {
+      terminal.writeln(`${ANSICode.yellow}Are you sure you want to shutdown? (yes/no)${ANSICode.reset}`)
+      return
+    }
+
+    terminal.writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
+    await sleep(500)
+    
+    // Clear all tabs
+    const tabsStore = useTabsStore()
+    tabsStore.clearAllTabs()
+    
+    // Mark system as shutdown
+    markSystemShutdown()
+    
+    terminal.writeln(`${ANSICode.red}System shutdown complete.${ANSICode.reset}`)
+    terminal.writeln('')
+    terminal.writeln(`${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`)
+    terminal.writeln('')
+    
+    // Clear the terminal
+    clear()
+    
+    // Display startup prompt again
+    displayStartupPrompt()
+  }
+
   const displayWelcomeMessage = () => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
@@ -291,6 +422,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     lines.forEach(line => terminal.writeln(line))
     writePrompt()
+    
+    // Mark system as running after welcome message
+    markSystemRunning()
   }
 
   const writePrompt = () => {
@@ -497,6 +631,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     destroyTerminal,
     displayBootLog,
     displayWelcomeMessage,
+    displayStartupPrompt,
+    restartSystem,
+    shutdownSystem,
     setupCommandHandler,
     focus,
     clear,
@@ -504,6 +641,12 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     autocomplete,
     getTerminal,
     sendKey,
-    sendText
+    sendText,
+    isFirstLaunch,
+    markSystemLaunched,
+    isSystemRunning,
+    markSystemRunning,
+    markSystemShutdown,
+    resetFirstLaunch
   }
 }
