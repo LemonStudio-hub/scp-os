@@ -12,11 +12,7 @@ import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 import { getBootLogs } from '../constants/bootLogs'
 import { config } from '../config'
 import { useTabsStore } from '../stores/tabs'
-
-// Local storage key for first launch detection
-const FIRST_LAUNCH_KEY = 'scp-os-first-launch'
-const SYSTEM_STATUS_KEY = 'scp-os-system-status'
-const BOOT_LOG_SHOWN_KEY = 'scp-os-boot-log-shown'
+import { useSystemStore } from '../stores/system'
 
 // Global terminal controller for command handlers
 export interface TerminalController {
@@ -82,69 +78,6 @@ const BORDER_MOBILE = {
   fill: ' '
 }
 
-/**
- * Check if this is the first launch of the system
- */
-function isFirstLaunch(): boolean {
-  return localStorage.getItem(FIRST_LAUNCH_KEY) === null
-}
-
-/**
- * Mark system as launched
- */
-function markSystemLaunched(): void {
-  localStorage.setItem(FIRST_LAUNCH_KEY, 'true')
-}
-
-/**
- * Check if system is running
- */
-function isSystemRunning(): boolean {
-  return localStorage.getItem(SYSTEM_STATUS_KEY) === 'running'
-}
-
-/**
- * Check if boot log has been shown
- */
-function hasBootLogBeenShown(): boolean {
-  return localStorage.getItem(BOOT_LOG_SHOWN_KEY) === 'true'
-}
-
-/**
- * Mark boot log as shown
- */
-function markBootLogShown(): void {
-  localStorage.setItem(BOOT_LOG_SHOWN_KEY, 'true')
-}
-
-/**
- * Reset boot log shown flag
- */
-function resetBootLogShown(): void {
-  localStorage.removeItem(BOOT_LOG_SHOWN_KEY)
-}
-
-/**
- * Mark system as running
- */
-function markSystemRunning(): void {
-  localStorage.setItem(SYSTEM_STATUS_KEY, 'running')
-}
-
-/**
- * Mark system as shutdown
- */
-function markSystemShutdown(): void {
-  localStorage.setItem(SYSTEM_STATUS_KEY, 'shutdown')
-}
-
-/**
- * Reset first launch flag (for restart)
- */
-function resetFirstLaunch(): void {
-  localStorage.removeItem(FIRST_LAUNCH_KEY)
-}
-
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
     terminal: null,
@@ -153,6 +86,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
   const { addToHistory, navigateHistory: navHistory, resetIndex } = useCommandHistory()
   const currentInput = ref('')
+  const systemStore = useSystemStore()
 
   // 标记：防止重复绑定事件监听器
   let commandHandlerSetup = false
@@ -206,7 +140,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
           clear()
         },
         markBootLogShown: () => {
-          markBootLogShown()
+          systemStore.markBootLogShown()
         }
       }
     } catch (error) {
@@ -369,7 +303,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     clear()
     
     // Reset first launch flag to show boot log again
-    markSystemRunning()
+    systemStore.markSystemRunning()
     
     // Display boot log and welcome message
     await displayBootLog()
@@ -396,7 +330,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     tabsStore.clearAllTabs()
     
     // Mark system as shutdown
-    markSystemShutdown()
+    systemStore.markSystemShutdown()
     
     terminal.writeln(`${ANSICode.red}System shutdown complete.${ANSICode.reset}`)
     terminal.writeln('')
@@ -460,7 +394,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     writePrompt()
     
     // Mark system as running after welcome message
-    markSystemRunning()
+    systemStore.markSystemRunning()
   }
 
   const writePrompt = () => {
@@ -573,8 +507,8 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       errorHandler.handleError({
         type: ErrorType.TERMINAL_NOT_AVAILABLE,
         severity: ErrorSeverity.HIGH,
-        message: '终端不可用，无法执行命令',
-        details: `尝试执行的命令: ${command}`,
+        message: 'Terminal not available, cannot execute command',
+        details: `Attempted command: ${command}`,
       })
       return
     }
@@ -582,102 +516,22 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     try {
       const [cmd, ...args] = command.toLowerCase().split(' ')
       
-      // Handle start command
-      if (cmd === 'start') {
-        terminal.writeln(`${ANSICode.yellow}Starting system...${ANSICode.reset}`)
-        terminal.writeln('')
-        
-        // Display boot log
-        displayBootLog().then(() => {
-          // Mark boot log as shown
-          markBootLogShown()
-          // Display welcome message
-          displayWelcomeMessage()
-        })
-        return
-      }
-      
-      // Handle restart command
-      if (cmd === 'restart') {
-        terminal.writeln(`${ANSICode.yellow}Restarting system...${ANSICode.reset}`)
-        terminal.writeln('')
-        
-        // Clear terminal
-        clear()
-        
-        // Redisplay boot log
-        displayBootLog().then(() => {
-          // Display welcome message
-          displayWelcomeMessage()
-        })
-        return
-      }
-      
-      // Handle shutdown now command
-      if (cmd === 'shutdown' && args[0] === 'now') {
-        terminal.writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
-        terminal.writeln('')
-        
-        // Simulate Linux shutdown logs
-        const shutdownLogs = [
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping SCP Foundation Terminal System...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Command Handler Service...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Terminal Emulator...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping IndexedDB Service...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Network Services...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Unmounting File Systems...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping System Services...`,
-          `${ANSICode.yellow}[  *  ]${ANSICode.reset} Syncing filesystems...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Syncing filesystems...`,
-          `${ANSICode.yellow}[  *  ]${ANSICode.reset} Stopping remaining processes...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping remaining processes...`,
-          `${ANSICode.yellow}[  *  ]${ANSICode.reset} Deactivating swap...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Deactivating swap...`,
-          `${ANSICode.yellow}[  *  ]${ANSICode.reset} Unmounting temporary filesystems...`,
-          `${ANSICode.green}[  OK  ]${ANSICode.reset} Unmounting temporary filesystems...`,
-          `${ANSICode.red}System halted${ANSICode.reset}`,
-          '',
-          `${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`,
-          ''
-        ]
-        
-        // Scroll through shutdown logs
-        let index = 0
-        const showShutdownLog = () => {
-          if (index < shutdownLogs.length) {
-            terminal.writeln(shutdownLogs[index])
-            index++
-            setTimeout(showShutdownLog, 200)
-          } else {
-            // Mark system as shutdown
-            markSystemShutdown()
-            // Reset boot log shown flag
-            resetBootLogShown()
-            // Display startup prompt
-            displayStartupPrompt()
-          }
-        }
-        
-        showShutdownLog()
-        return
-      }
-      
       const handler = getCommandHandler(cmd as any)
 
       if (handler) {
         executeCommandHandler(handler, args, cmd)
       } else {
-        terminal.writeln(`${ANSICode.red}未知命令: ${cmd}. 输入 "help" 查看可用命令.${ANSICode.reset}`)
+        terminal.writeln(`${ANSICode.red}Unknown command: ${cmd}. Type "help" to see available commands.${ANSICode.reset}`)
       }
     } catch (error) {
       errorHandler.handleError({
         type: ErrorType.COMMAND_PARSING_FAILED,
         severity: ErrorSeverity.MEDIUM,
-        message: '命令解析失败',
+        message: 'Command parsing failed',
         details: error instanceof Error ? error.message : String(error),
         logToConsole: true,
       })
-      terminal.writeln(`${ANSICode.red}命令解析失败${ANSICode.reset}`)
+      terminal.writeln(`${ANSICode.red}Command parsing failed${ANSICode.reset}`)
     }
   }
 
@@ -759,13 +613,13 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     getTerminal,
     sendKey,
     sendText,
-    isFirstLaunch,
-    markSystemLaunched,
-    isSystemRunning,
-    markSystemRunning,
-    markSystemShutdown,
-    resetFirstLaunch,
-    hasBootLogBeenShown,
-    resetBootLogShown
+    isFirstLaunch: () => systemStore.isFirstLaunch,
+    markSystemLaunched: () => systemStore.markSystemLaunched(),
+    isSystemRunning: () => systemStore.isRunning,
+    markSystemRunning: () => systemStore.markSystemRunning(),
+    markSystemShutdown: () => systemStore.markSystemShutdown(),
+    resetFirstLaunch: () => systemStore.resetFirstLaunch(),
+    hasBootLogBeenShown: () => systemStore.bootLogShown,
+    resetBootLogShown: () => systemStore.resetBootLogShown()
   }
 }

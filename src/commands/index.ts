@@ -3,6 +3,7 @@ import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { scraper } from '../utils/scraper'
 import { useTabsStore } from '../stores/tabs'
+import { useSystemStore } from '../stores/system'
 
 export const commandHandlers: CommandMap = {
   start: async (_args, _write, writeln) => {
@@ -12,7 +13,8 @@ export const commandHandlers: CommandMap = {
     }
     
     // Mark system as running
-    localStorage.setItem('scp-os-system-status', 'running')
+    const systemStore = useSystemStore()
+    systemStore.markSystemRunning()
     
     // Use global terminal controller to display boot log and welcome message
     if (window.__terminalController) {
@@ -28,16 +30,22 @@ export const commandHandlers: CommandMap = {
   restart: async (_args, _write, writeln) => {
     writeln(`${ANSICode.yellow}Restarting system...${ANSICode.reset}`)
     writeln('')
-    writeln(`${ANSICode.green}System will restart now.${ANSICode.reset}`)
-    writeln('')
     
     // Reset boot log shown flag so boot log shows again after restart
-    localStorage.removeItem('scp-os-boot-log-shown')
+    const systemStore = useSystemStore()
+    systemStore.resetBootLogShown()
+    systemStore.markSystemRunning()
     
-    // Reload the page
-    setTimeout(() => {
-      window.location.reload()
-    }, 1000)
+    // Use global terminal controller to display boot log and welcome message
+    if (window.__terminalController) {
+      window.__terminalController.clear()
+      await window.__terminalController.displayBootLog()
+      window.__terminalController.markBootLogShown()
+      window.__terminalController.displayWelcomeMessage()
+    } else {
+      writeln(`${ANSICode.red}Error: Terminal controller not available.${ANSICode.reset}`)
+      writeln('')
+    }
   },
 
   shutdown: async (args, _write, writeln) => {
@@ -49,20 +57,49 @@ export const commandHandlers: CommandMap = {
       
       // Get tabs store
       const tabsStore = useTabsStore()
+      const systemStore = useSystemStore()
       
       // Clear all tabs
       tabsStore.clearAllTabs()
       
       // Mark system as shutdown
-      localStorage.setItem('scp-os-system-status', 'shutdown')
+      systemStore.markSystemShutdown()
+      systemStore.resetBootLogShown()
       
-      // Reset boot log shown flag
-      localStorage.removeItem('scp-os-boot-log-shown')
+      // Simulate Linux shutdown logs
+      const shutdownLogs = [
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping SCP Foundation Terminal System...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Command Handler Service...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Terminal Emulator...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping IndexedDB Service...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Network Services...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Unmounting File Systems...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping System Services...`,
+        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Syncing filesystems...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Syncing filesystems...`,
+        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Stopping remaining processes...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping remaining processes...`,
+        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Deactivating swap...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Deactivating swap...`,
+        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Unmounting temporary filesystems...`,
+        `${ANSICode.green}[  OK  ]${ANSICode.reset} Unmounting temporary filesystems...`,
+        `${ANSICode.red}System halted${ANSICode.reset}`,
+        '',
+        `${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`,
+        ''
+      ]
       
-      writeln(`${ANSICode.red}System shutdown complete.${ANSICode.reset}`)
-      writeln('')
-      writeln(`${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`)
-      writeln('')
+      // Scroll through shutdown logs
+      let index = 0
+      const showShutdownLog = () => {
+        if (index < shutdownLogs.length) {
+          writeln(shutdownLogs[index])
+          index++
+          setTimeout(showShutdownLog, 200)
+        }
+      }
+      
+      showShutdownLog()
     } else {
       writeln(`${ANSICode.yellow}Usage: shutdown now${ANSICode.reset}`)
       writeln('')
