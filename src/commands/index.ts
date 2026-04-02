@@ -28,15 +28,12 @@ export const commandHandlers: CommandMap = {
   },
 
   restart: async (_args, _write, writeln) => {
-    writeln(`${ANSICode.yellow}Restarting system...${ANSICode.reset}`)
-    writeln('')
-    
     // Reset boot log shown flag so boot log shows again after restart
     const systemStore = useSystemStore()
     systemStore.resetBootLogShown()
     systemStore.markSystemRunning()
     
-    // Use global terminal controller to display boot log and welcome message
+    // Use global terminal controller to clear terminal and display boot log
     if (window.__terminalController) {
       window.__terminalController.clear()
       await window.__terminalController.displayBootLog()
@@ -55,7 +52,7 @@ export const commandHandlers: CommandMap = {
       writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
       writeln('')
       
-      // Get tabs store
+      // Get stores
       const tabsStore = useTabsStore()
       const systemStore = useSystemStore()
       
@@ -66,40 +63,14 @@ export const commandHandlers: CommandMap = {
       systemStore.markSystemShutdown()
       systemStore.resetBootLogShown()
       
-      // Simulate Linux shutdown logs
-      const shutdownLogs = [
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping SCP Foundation Terminal System...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Command Handler Service...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Terminal Emulator...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping IndexedDB Service...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping Network Services...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Unmounting File Systems...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping System Services...`,
-        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Syncing filesystems...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Syncing filesystems...`,
-        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Stopping remaining processes...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Stopping remaining processes...`,
-        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Deactivating swap...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Deactivating swap...`,
-        `${ANSICode.yellow}[  *  ]${ANSICode.reset} Unmounting temporary filesystems...`,
-        `${ANSICode.green}[  OK  ]${ANSICode.reset} Unmounting temporary filesystems...`,
-        `${ANSICode.red}System halted${ANSICode.reset}`,
-        '',
-        `${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`,
-        ''
-      ]
-      
-      // Scroll through shutdown logs
-      let index = 0
-      const showShutdownLog = () => {
-        if (index < shutdownLogs.length) {
-          writeln(shutdownLogs[index])
-          index++
-          setTimeout(showShutdownLog, 200)
-        }
+      // Use global terminal controller to display shutdown log and startup prompt
+      if (window.__terminalController) {
+        await window.__terminalController.displayShutdownLog()
+        window.__terminalController.displayStartupPrompt()
+      } else {
+        writeln(`${ANSICode.red}Error: Terminal controller not available.${ANSICode.reset}`)
+        writeln('')
       }
-      
-      showShutdownLog()
     } else {
       writeln(`${ANSICode.yellow}Usage: shutdown now${ANSICode.reset}`)
       writeln('')

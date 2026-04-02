@@ -124,3 +124,91 @@ export const BOOT_LOGS_CONFIG = {
 export function getBootLogs(fastMode: boolean = false): string[] {
   return fastMode ? BOOT_LOGS_CONFIG.fastMode : BOOT_LOGS_CONFIG.normalMode
 }
+
+/**
+ * 系统关机日志配置
+ */
+export const SHUTDOWN_LOGS_CONFIG = {
+  /**
+   * 快速模式 - 只显示关键信息
+   */
+  fastMode: [
+    `${ANSICode.yellow}[  0.000000] Initiating system shutdown...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000100] Stopping SCP Foundation Terminal System...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000200] Stopping Command Handler Service...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000300] Stopping Terminal Emulator...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000400] Stopping IndexedDB Service...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000500] Stopping Network Services...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000600] Syncing filesystems...${ANSICode.reset}`,
+    `${ANSICode.red}[  0.000700] System halted${ANSICode.reset}`,
+    '',
+  ],
+
+  /**
+   * 正常模式 - 完整的关机日志
+   */
+  normalMode: [
+    `${ANSICode.yellow}[  0.000000] System is going down for halt NOW!${ANSICode.reset}`,
+    `${ANSICode.white}[  0.000100] Stopping Systemd target paths...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000200] [  OK  ] Stopped target Paths.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.000300] Stopping Network Service...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000400] [  OK  ] Stopped Network Service.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.000500] Stopping SCP Foundation Terminal System...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000600] [  OK  ] Stopped SCP Foundation Terminal System.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.000700] Stopping Command Handler Service...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000800] [  OK  ] Stopped Command Handler Service.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.000900] Stopping Terminal Emulator...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.001000] [  OK  ] Stopped Terminal Emulator.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.001100] Stopping IndexedDB Service...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.001200] [  OK  ] Stopped IndexedDB Service.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.001300] Stopping Secure Storage Service...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.001400] [  OK  ] Stopped Secure Storage Service.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.001500] Unmounting /scp-secure...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.001600] [  OK  ] Unmounted /scp-secure.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.001700] Unmounting /var/lib...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.001800] [  OK  ] Unmounted /var/lib.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.001900] Unmounting /tmp...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.002000] [  OK  ] Unmounted /tmp.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.002100] Unmounting File Systems...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.002200] [  OK  ] Unmounted File Systems.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.002300] Syncing filesystems...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.002400] [  OK  ] Synced filesystems.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.002500] Deactivating swap...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.002600] [  OK  ] Deactivated swap.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.002700] Stopping remaining processes...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.002800] [  OK  ] Stopped remaining processes.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.002900] Unmounting temporary filesystems...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.003000] [  OK  ] Unmounted temporary filesystems.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.003100] Shutting down SCP Security Protocols...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.003200] [  OK  ] SCP Security Protocols shutdown.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.003300] Closing secure network connections...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.003400] [  OK  ] Secure network connections closed.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.003500] Flushing caches...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.003600] [  OK  ] Caches flushed.${ANSICode.reset}`,
+    `${ANSICode.red}[  0.003700] System halted.${ANSICode.reset}`,
+    '',
+    `${ANSICode.green}[  0.003800] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+    `${ANSICode.green}[  0.003900] █     SCP Foundation - Site-19 Terminal System - SHUTDOWN             █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004000] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004100] █                                                          █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004200] █  System Status: HALTED                                    █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004300] █  Containment Protocols: DISENGAGED                        █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004400] █  Network: DISCONNECTED                                     █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004500] █  Storage: SYNCED                                          █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004600] █  Location: Site-19, Foundation Network                     █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004700] █                                                          █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004800] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+    `${ANSICode.green}[  0.004900] █  Secure • Contain • Protect                               █${ANSICode.reset}`,
+    `${ANSICode.green}[  0.005000] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
+    '',
+  ],
+}
+
+/**
+ * 获取关机日志
+ * @param fastMode 是否使用快速模式
+ * @returns 关机日志数组
+ */
+export function getShutdownLogs(fastMode: boolean = false): string[] {
+  return fastMode ? SHUTDOWN_LOGS_CONFIG.fastMode : SHUTDOWN_LOGS_CONFIG.normalMode
+}

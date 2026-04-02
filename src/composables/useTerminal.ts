@@ -9,7 +9,7 @@ import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
-import { getBootLogs } from '../constants/bootLogs'
+import { getBootLogs, getShutdownLogs } from '../constants/bootLogs'
 import { config } from '../config'
 import { useTabsStore } from '../stores/tabs'
 import { useSystemStore } from '../stores/system'
@@ -17,7 +17,9 @@ import { useSystemStore } from '../stores/system'
 // Global terminal controller for command handlers
 export interface TerminalController {
   displayBootLog: (fastMode?: boolean) => Promise<void>
+  displayShutdownLog: (fastMode?: boolean) => Promise<void>
   displayWelcomeMessage: () => void
+  displayStartupPrompt: () => void
   clear: () => void
   markBootLogShown: () => void
 }
@@ -133,8 +135,14 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         displayBootLog: async (fastMode?: boolean) => {
           await displayBootLog(fastMode)
         },
+        displayShutdownLog: async (fastMode?: boolean) => {
+          await displayShutdownLog(fastMode)
+        },
         displayWelcomeMessage: () => {
           displayWelcomeMessage()
+        },
+        displayStartupPrompt: () => {
+          displayStartupPrompt()
         },
         clear: () => {
           clear()
@@ -288,6 +296,101 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     terminal.writeln(`${ANSICode.cyan}Type 'start' to boot the system${ANSICode.reset}`)
     terminal.writeln('')
     writePrompt()
+  }
+
+  /**
+   * Display shutdown log
+   */
+  const displayShutdownLog = async (fastMode: boolean = false) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) {
+      errorHandler.handleError({
+        type: ErrorType.TERMINAL_NOT_AVAILABLE,
+        severity: ErrorSeverity.HIGH,
+        message: 'Terminal not available, cannot display shutdown log',
+      })
+      return
+    }
+
+    const shutdownLogs = getShutdownLogs(fastMode || config.app.fastBoot)
+    
+    // Dynamic speed configuration
+    const baseDelay = fastMode || config.app.fastBoot ? 50 : 150
+    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.97
+    const minDelay = fastMode || config.app.fastBoot ? 20 : 50
+    const maxDelay = fastMode || config.app.fastBoot ? 100 : 300
+    
+    let currentSpeedMultiplier = 1.0
+
+    for (const line of shutdownLogs) {
+      try {
+        terminal.writeln(line)
+        
+        // Calculate dynamic delay
+        let dynamicDelay = baseDelay
+        
+        // Adjust based on line length
+        const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length
+        const lengthMultiplier = Math.min(Math.max(lineLength / 50, 0.8), 1.5)
+        
+        // Adjust based on empty lines
+        const isEmptyLine = line.trim().length === 0
+        if (isEmptyLine) {
+          dynamicDelay = minDelay
+        }
+        
+        // Adjust based on important info
+        const hasImportantInfo = line.includes('[  OK  ]') || 
+                                line.includes('[FAILED]') ||
+                                line.includes('System halted')
+        if (hasImportantInfo) {
+          dynamicDelay *= 1.2
+        }
+        
+        // Apply length multiplier
+        if (!isEmptyLine) {
+          dynamicDelay *= lengthMultiplier
+        }
+        
+        // Apply current speed multiplier
+        dynamicDelay *= currentSpeedMultiplier
+        
+        // Ensure delay is within reasonable range
+        dynamicDelay = Math.max(minDelay, Math.min(maxDelay, dynamicDelay))
+        
+        // Apply random variation
+        if (!fastMode) {
+          dynamicDelay *= (0.9 + Math.random() * 0.2)
+        }
+        
+        await sleep(Math.round(dynamicDelay))
+        
+        // Update speed multiplier
+        if (!fastMode) {
+          currentSpeedMultiplier *= speedDecay
+          currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier)
+        }
+        
+      } catch (error) {
+        errorHandler.handleError({
+          type: ErrorType.SYSTEM_ERROR,
+          severity: ErrorSeverity.LOW,
+          message: 'Shutdown log output failed',
+          details: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+    
+    try {
+      await sleep(fastMode || config.app.fastBoot ? 200 : 500)
+    } catch (error) {
+      errorHandler.handleError({
+        type: ErrorType.SYSTEM_ERROR,
+        severity: ErrorSeverity.LOW,
+        message: 'Shutdown delay failed',
+        details: error instanceof Error ? error.message : String(error),
+      })
+    }
   }
 
   /**
