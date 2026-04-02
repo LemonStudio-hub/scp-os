@@ -188,7 +188,8 @@ onBeforeUnmount(() => {
   top: 0;
   left: 0;
   background: #0a0a0a;
-  overflow: hidden;
+  overflow: visible;
+  touch-action: pan-y;
 }
 
 #terminal-container ::v-deep(.xterm) {
@@ -198,6 +199,9 @@ onBeforeUnmount(() => {
 
 #terminal-container ::v-deep(.xterm-viewport) {
   overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 #terminal-container ::v-deep(.xterm-screen) {
@@ -214,6 +218,7 @@ onBeforeUnmount(() => {
   border-top: 1px solid #1a1a1a;
   padding: 8px;
   z-index: 1000;
+  touch-action: manipulation;
 }
 
 .keyboard-row {
