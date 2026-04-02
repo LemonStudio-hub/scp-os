@@ -237,7 +237,7 @@ export class TenantManager {
       throw new Error(`Tenant ${metadata.id} already exists`)
     }
     
-    const context = new TenantContext(metadata, config, this.eventBus)
+    const context = new TenantContext(metadata, config, this.eventBus ?? undefined)
     this.tenants.set(metadata.id, context)
     
     if (this.eventBus) {
@@ -401,7 +401,7 @@ export class TenantManager {
     this.currentTenantId = null
     
     if (this.eventBus) {
-      this.eventBus.emit('tenant:registry:cleared')
+      this.eventBus.emit('tenant:registry:cleared', {})
     }
   }
 }

@@ -210,9 +210,9 @@ export class DataSourceManagerService {
   }
   
   /**
-   * Get statistics
+   * Get global statistics for all data sources
    */
-  getStatistics(): {
+  getGlobalStatistics(): {
     totalDataSources: number
     totalPlugins: number
     types: Record<string, number>
@@ -241,7 +241,7 @@ export class DataSourceManagerService {
     
     // Emit event
     if (this.eventBus) {
-      this.eventBus.emit('datasource:registry:cleared')
+      this.eventBus.emit('datasource:registry:cleared', {})
     }
   }
 }

@@ -4,8 +4,6 @@
  */
 
 import type { IDataSourcePlugin, DataSourceMetadata, DataSourceDefinition, DataSourceQueryOptions, DataSourceQueryResult } from '../datasource-plugin.interface'
-import type { SCPEntity } from '../../domain/entities'
-import type { Plugin } from '../plugin.interface'
 
 /**
  * SCP Wiki Data Source Plugin
@@ -29,17 +27,13 @@ export class ScpWikiDataSourcePlugin implements IDataSourcePlugin {
     requiresAuth: false
   }
   
-  private dataSources: DataSourceDefinition[] = []
+  dataSources: DataSourceDefinition[] = []
   private cache: Map<string, any> = new Map()
   private apiUrl: string
   
   constructor(apiUrl: string = 'https://api.woodcat.online') {
     this.apiUrl = apiUrl
     this.initializeDataSources()
-  }
-  
-  get dataSources(): DataSourceDefinition[] {
-    return this.dataSources
   }
   
   private initializeDataSources(): void {
@@ -160,7 +154,7 @@ export class ScpWikiDataSourcePlugin implements IDataSourcePlugin {
     }
   }
   
-  async getStatistics(dataSourceId: string): Promise<{
+  async getStatistics(_dataSourceId: string): Promise<{
     totalItems: number
     lastUpdated?: string
     [key: string]: any

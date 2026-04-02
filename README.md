@@ -83,7 +83,7 @@ VITE_TERMINAL_SCROLLBACK=1000
 VITE_TERMINAL_TAB_STOP_WIDTH=4
 
 # Application Configuration
-VITE_APP_VERSION=3.0.2
+VITE_APP_VERSION=0.1.0
 VITE_APP_NAME=SCP Foundation Terminal
 ```
 
@@ -839,6 +839,49 @@ The scraper system has been completely refactored with significant improvements 
 
 ## 📝 Changelog
 
+### Version 0.1.0 (2026-04-02) - First Official Release
+- **Complete Platform Architecture**: 6-layer architecture implementation
+  - Core Layer: Dependency injection container with lifecycle management
+  - Domain Layer: Business entities, repositories, and services
+  - Application Layer: Controllers and application services
+  - Infrastructure Layer: Repository implementations and data access
+  - Platform Layer: Plugin system, event bus, capabilities
+  - Presentation Layer: Vue components and stores
+
+- **Plugin System**: Extensible plugin architecture
+  - Command plugins for dynamic command registration
+  - Theme plugins for UI customization
+  - Data source plugins for external data integration
+  - UI component plugins for custom components
+
+- **Performance Monitoring**: Real-time performance tracking
+  - PerformanceMonitorService: Metrics collection and scoring
+  - PerformanceOptimizerService: Optimization strategies
+  - Event-driven architecture
+  - Configurable monitoring intervals
+
+- **Multi-Tenant Support**: Isolated tenant contexts
+  - Tenant context management
+  - Per-tenant configuration
+  - Tenant isolation
+
+- **Application Templates**: Template system for applications
+  - BaseApplicationTemplate for common functionality
+  - SimpleApplicationTemplate for basic templates
+  - Template manager for lifecycle management
+
+- **Quality Assurance**: Comprehensive testing
+  - 236 tests passing (100% pass rate)
+  - Zero TypeScript errors
+  - Complete type coverage
+  - Performance benchmarks
+
+- **Documentation**: Extensive documentation
+  - Platform architecture documentation
+  - Plugin development guide
+  - API documentation
+  - Deployment guides
+
 ### Version 3.1.0 (2026-04-02) - Platform Transformation Complete
 - **Phase 4 Completed**: Platform Layer Implementation
   - Capability abstraction system (ITerminalCapability, IDataCapability, IUICapability)
@@ -906,7 +949,7 @@ The scraper system has been completely refactored with significant improvements 
 
 **Secure • Contain • Protect**
 
-*SCP Foundation Terminal System v3.1.0*
+*SCP Foundation Terminal System v0.1.0*
 *Security Level: 4*
 *Status: Operational*
 *Architecture: Layered with Platform Support*

@@ -4,7 +4,6 @@
  */
 
 import type { Plugin } from './plugin.interface'
-import type { SCPEntity } from '../../domain/entities'
 
 /**
  * Data Source Query Options

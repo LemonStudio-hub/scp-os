@@ -4,7 +4,7 @@
  */
 
 import type { TerminalTheme } from '../../types/terminal'
-import type { ThemeConfig } from './capability.interfaces'
+import type { ThemeConfig } from '../capabilities/capability.interfaces'
 
 /**
  * Application Template Metadata

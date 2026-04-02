@@ -207,12 +207,6 @@ export class PerformanceOptimizerService {
     const recommended = this.recommendOptimizations(issues)
     
     // Estimate total improvement
-    const effortEstimates = {
-      low: 20,
-      medium: 35,
-      high: 50
-    }
-    
     const estimatedTotalImprovement = recommended.reduce((sum, strategy) => {
       // Remove % from the string and split
       const cleanRange = strategy.estimatedImprovement.replace('%', '').split('-').map(Number)

@@ -12,7 +12,8 @@ const mockEventBus: IEventBus = {
   on: vi.fn(),
   off: vi.fn(),
   once: vi.fn(),
-  removeAllListeners: vi.fn()
+  removeAllListeners: vi.fn(),
+  listenerCount: vi.fn(() => 0)
 }
 
 describe('PerformanceMonitorService', () => {
@@ -56,13 +57,13 @@ describe('PerformanceMonitorService', () => {
     
     it('should emit event when monitoring starts', () => {
       monitor.startMonitoring()
-      expect(mockEventBus.emit).toHaveBeenCalledWith('performance:monitoring:started')
+      expect(mockEventBus.emit).toHaveBeenCalledWith('performance:monitoring:started', {})
     })
     
     it('should emit event when monitoring stops', () => {
       monitor.startMonitoring()
       monitor.stopMonitoring()
-      expect(mockEventBus.emit).toHaveBeenCalledWith('performance:monitoring:stopped')
+      expect(mockEventBus.emit).toHaveBeenCalledWith('performance:monitoring:stopped', {})
     })
   })
   
@@ -183,7 +184,7 @@ describe('PerformanceMonitorService', () => {
     
     it('should emit event when metrics are cleared', () => {
       monitor.clear()
-      expect(mockEventBus.emit).toHaveBeenCalledWith('performance:metrics:cleared')
+      expect(mockEventBus.emit).toHaveBeenCalledWith('performance:metrics:cleared', {})
     })
   })
   

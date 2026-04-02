@@ -3,7 +3,7 @@
  * Manages application templates and their lifecycle
  */
 
-import type { IApplicationTemplate, ApplicationTemplateMetadata, ApplicationTemplateConfig } from './application-template.interface'
+import type { IApplicationTemplate } from './application-template.interface'
 import type { IEventBus } from '../events/event-bus'
 import { SimpleApplicationTemplate } from './base-application-template'
 
@@ -154,7 +154,7 @@ export class ApplicationTemplateManagerService {
       // Apply custom CSS variables
       if (config.uiTheme.cssVariables) {
         Object.entries(config.uiTheme.cssVariables).forEach(([key, value]) => {
-          root.style.setProperty(key, value)
+          root.style.setProperty(key, String(value))
         })
       }
     }
@@ -274,7 +274,7 @@ export class ApplicationTemplateManagerService {
     
     // Emit event
     if (this.eventBus) {
-      this.eventBus.emit('template:registry:cleared')
+      this.eventBus.emit('template:registry:cleared', {})
     }
   }
 }

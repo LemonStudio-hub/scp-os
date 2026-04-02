@@ -10,8 +10,8 @@ import type { IApplicationTemplate, ApplicationTemplateMetadata, ApplicationTemp
  * Provides common functionality for application templates
  */
 export abstract class BaseApplicationTemplate implements IApplicationTemplate {
-  abstract metadata: ApplicationTemplateMetadata
-  abstract config: ApplicationTemplateConfig
+  metadata!: ApplicationTemplateMetadata
+  config!: ApplicationTemplateConfig
   
   /**
    * Validate template configuration
@@ -96,6 +96,9 @@ export abstract class BaseApplicationTemplate implements IApplicationTemplate {
  * Simplified implementation for basic application templates
  */
 export class SimpleApplicationTemplate extends BaseApplicationTemplate {
+  metadata: ApplicationTemplateMetadata
+  config: ApplicationTemplateConfig
+  
   constructor(
     metadata: ApplicationTemplateMetadata,
     config: ApplicationTemplateConfig

@@ -2,7 +2,7 @@
  * Performance Optimizer Service Tests
  */
 
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { PerformanceOptimizerService } from '../performance-optimizer.service'
 import type { PerformanceIssue } from '../performance-monitor.service'
 

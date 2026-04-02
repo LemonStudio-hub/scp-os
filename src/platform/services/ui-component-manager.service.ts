@@ -216,7 +216,7 @@ export class UIComponentManagerService {
     
     // Emit event
     if (this.eventBus) {
-      this.eventBus.emit('ui-component:registry:cleared')
+      this.eventBus.emit('ui-component:registry:cleared', {})
     }
   }
 }

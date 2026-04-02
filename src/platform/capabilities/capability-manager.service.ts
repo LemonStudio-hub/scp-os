@@ -248,7 +248,7 @@ export class CapabilityManagerService {
     this.uiCapabilities.clear()
     
     if (this.eventBus) {
-      this.eventBus.emit('capability:registry:cleared')
+      this.eventBus.emit('capability:registry:cleared', {})
     }
   }
 }

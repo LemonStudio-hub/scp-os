@@ -86,7 +86,7 @@ export class PerformanceMonitorService {
     }, interval)
     
     if (this.eventBus) {
-      this.eventBus.emit('performance:monitoring:started')
+      this.eventBus.emit('performance:monitoring:started', {})
     }
   }
   
@@ -106,7 +106,7 @@ export class PerformanceMonitorService {
     this.isMonitoring = false
     
     if (this.eventBus) {
-      this.eventBus.emit('performance:monitoring:stopped')
+      this.eventBus.emit('performance:monitoring:stopped', {})
     }
   }
   
@@ -230,7 +230,7 @@ export class PerformanceMonitorService {
         metrics.push(latest)
         
         // Analyze metric and generate issues
-        this.analyzeMetric(latest, issues, recommendations)
+        this.analyzeMetric(latest, issues)
       }
     }
     
@@ -251,9 +251,8 @@ export class PerformanceMonitorService {
    * Analyze a metric and generate issues
    * @param metric Performance metric
    * @param issues Issues array to populate
-   * @param recommendations Recommendations array to populate
    */
-  private analyzeMetric(metric: PerformanceMetric, issues: PerformanceIssue[], recommendations: string[]): void {
+  private analyzeMetric(metric: PerformanceMetric, issues: PerformanceIssue[]): void {
     switch (metric.name) {
       case 'memory-used':
         if (performance.memory && metric.value > performance.memory.jsHeapSizeLimit * 0.8) {
@@ -328,7 +327,7 @@ export class PerformanceMonitorService {
     this.metrics.clear()
     
     if (this.eventBus) {
-      this.eventBus.emit('performance:metrics:cleared')
+      this.eventBus.emit('performance:metrics:cleared', {})
     }
   }
   
