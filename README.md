@@ -10,10 +10,12 @@ A professional web-based terminal application themed around the SCP Foundation, 
 ### Core Functionality
 - **Professional Terminal Interface**: Built with xterm.js for authentic terminal experience
 - **Gesture Controls**: Multi-touch gestures for mobile and desktop (powered by Hammer.js)
-- **Command System**: 12 SCP-themed commands with intelligent autocomplete
+- **Command System**: 14 SCP-themed commands with intelligent autocomplete
 - **Command History**: Navigate through previous commands (limited to 500 entries)
 - **Tab Autocomplete**: Intelligent command completion
 - **Boot Animation**: Simulated Linux boot log with SCP-themed content (supports fast mode)
+- **Multi-Tab Support**: Open multiple terminal tabs with independent sessions
+- **Data Persistence**: IndexedDB storage for terminal state and tab management
 
 ### Performance Optimizations
 - **Code Splitting**: Optimized bundle splitting for faster initial load
@@ -34,7 +36,7 @@ A professional web-based terminal application themed around the SCP Foundation, 
 - **Full-Screen Mode**: Immersive terminal experience
 - **ANSI Color Support**: Rich colored output
 - **Custom Scrollbar**: Themed scrollbar for consistency
-- **ASCII Art**: Generated with Figlet for authentic terminal feel
+- **Responsive UI**: Sidebar and tab bar for better navigation
 
 ## 🚀 Quick Start
 
@@ -66,24 +68,23 @@ cp .env.example .env.development
 ```bash
 # API Configuration
 VITE_WORKER_API_URL=https://api.woodcat.online
-VITE_API_TIMEOUT=30000
+VITE_API_TIMEOUT=15000
 
 # Cache Configuration
-VITE_CACHE_DURATION=600000
-VITE_CACHE_MAX_SIZE=50
+VITE_CACHE_DURATION=1800000
+VITE_CACHE_MAX_SIZE=100
 
 # Scraper Configuration
-VITE_SCRAPER_RETRY_ATTEMPTS=5
-VITE_SCRAPER_RETRY_DELAY=500
+VITE_SCRAPER_RETRY_ATTEMPTS=3
+VITE_SCRAPER_RETRY_DELAY=1000
 
 # Terminal Configuration
-VITE_TERMINAL_SCROLLBACK=5000
+VITE_TERMINAL_SCROLLBACK=1000
 VITE_TERMINAL_TAB_STOP_WIDTH=4
 
 # Application Configuration
 VITE_APP_VERSION=3.0.2
 VITE_APP_NAME=SCP Foundation Terminal
-VITE_FAST_BOOT=true  # Enable fast boot mode
 ```
 
 ### Development
@@ -148,6 +149,7 @@ npm run lint
 | `version` | Display system version | `version` |
 | `about` | Show system information | `about` |
 | `search [keyword]` | Search SCP database | `search statue` |
+| `network` | Test network connection to Foundation Wiki | `network` |
 | `logout` | Secure logout | `logout` |
 
 ## 🌐 API & Web Scraper
@@ -202,7 +204,29 @@ Searches for SCP objects matching the keyword.
 curl "https://api.woodcat.online/search?keyword=173"
 ```
 
-#### 3. Debug Mode
+#### 3. List SCP Objects
+```
+GET /list?limit={limit}&offset={offset}
+```
+Lists SCP objects with pagination.
+
+**Example**:
+```bash
+curl "https://api.woodcat.online/list?limit=10&offset=0"
+```
+
+#### 4. Get Statistics
+```
+GET /stats
+```
+Returns API statistics.
+
+**Example**:
+```bash
+curl "https://api.woodcat.online/stats"
+```
+
+#### 5. Debug Mode
 ```
 GET /debug?number={number}
 ```
@@ -211,6 +235,17 @@ Returns raw HTML content for debugging purposes.
 **Example**:
 ```bash
 curl "https://api.woodcat.online/debug?number=173"
+```
+
+#### 6. API Information
+```
+GET /
+```
+Returns API information.
+
+**Example**:
+```bash
+curl "https://api.woodcat.online/"
 ```
 
 ### Scraper Features
@@ -234,14 +269,23 @@ scpos/
 │   │   ├── useCommandHistory.ts # Command history management
 │   │   └── useGestures.ts        # Gesture handling
 │   ├── components/            # Vue components
-│   │   └── SCPTerminal.vue       # Main terminal component
+│   │   ├── SCPTerminal.vue       # Main terminal component
+│   │   ├── Sidebar.vue           # Sidebar component
+│   │   └── TabBar.vue            # Tab bar component
 │   ├── config/                # Configuration management
 │   │   └── index.ts              # Centralized config
 │   ├── constants/             # Constants and configurations
 │   │   ├── commands.ts            # Command definitions
 │   │   ├── theme.ts               # Theme configuration
 │   │   ├── scpDatabase.ts         # SCP data
-│   │   └── bootLogs.ts            # Boot log messages
+│   │   ├── bootLogs.ts            # Boot log messages
+│   │   └── scraperConfig.ts       # Scraper configuration
+│   ├── stores/                # Pinia state management
+│   │   ├── index.ts              # Store exports
+│   │   ├── command.ts             # Command state
+│   │   ├── terminal.ts            # Terminal state
+│   │   ├── scraper.ts             # Scraper state
+│   │   └── tabs.ts                # Tabs state
 │   ├── types/                  # TypeScript type definitions
 │   │   ├── command.ts             # Command types
 │   │   ├── error.ts               # Error handling types
@@ -254,7 +298,8 @@ scpos/
 │   │   ├── errorHandler.ts        # Error handling
 │   │   ├── gestures.ts            # Gesture utilities
 │   │   ├── scraper.ts             # API scraper
-│   │   └── terminal.ts            # Terminal utilities
+│   │   ├── terminal.ts            # Terminal utilities
+│   │   └── indexedDB.ts           # IndexedDB service
 │   ├── App.vue                 # Root component
 │   ├── main.ts                 # Application entry point
 │   └── style.css               # Global styles
@@ -265,7 +310,12 @@ scpos/
 ├── worker/                     # Cloudflare Worker
 │   ├── index.ts               # Worker implementation
 │   ├── package.json           # Worker dependencies
-│   └── wrangler.toml          # Worker configuration
+│   ├── wrangler.toml          # Worker configuration
+│   ├── parsers/               # HTML parsers
+│   ├── utils/                 # Worker utilities
+│   ├── security/              # Security modules
+│   ├── scripts/               # Database scripts
+│   └── migrations/            # Database migrations
 ├── .env.example               # Environment variables template
 ├── .env.development           # Development environment config
 ├── .env.production            # Production environment config
@@ -283,6 +333,8 @@ scpos/
 - **Terminal**: xterm.js 5.3
 - **Gestures**: Hammer.js 2.0
 - **HTTP Client**: Axios 1.14
+- **State Management**: Pinia 3.0
+- **Storage**: IndexedDB (persistent data storage)
 
 ### Development Tools
 - **Testing**: Vitest 4.1
@@ -346,10 +398,12 @@ The project maintains 87 tests with 100% pass rate:
 
 ```bash
 # Test Coverage
-✓ src/composables/useCommandHistory.test.ts (21 tests)
-✓ src/composables/useGestures.test.ts (21 tests)
 ✓ src/commands/index.test.ts (26 tests)
+✓ src/composables/useCommandHistory.test.ts (21 tests)
 ✓ src/utils/terminal.test.ts (19 tests)
+✓ worker/security/__tests__/rateLimiter.test.ts (15 tests)
+✓ worker/utils/__tests__/htmlSanitizer.test.ts (20 tests)
+✓ worker/benchmarks/performance.test.ts
 ```
 
 ## 🔒 Security Features
@@ -653,7 +707,14 @@ The scraper system has been completely refactored with significant improvements 
 
 ## 📝 Changelog
 
-### Version 3.0.3 (2026-04-01) - Major Refactoring
+### Version 3.0.3 (2026-04-02) - Enhanced Persistence
+- Implement IndexedDB for persistent data storage
+- Multi-tab support with state preservation
+- Terminal content saved when switching tabs
+- Sidebar colors updated to match terminal theme
+- Improved mobile navigation with gesture controls
+
+### Version 3.0.2 (2026-04-01) - Major Refactoring
 - Complete scraper system refactoring
 - 70% code reduction (829 → 255 lines)
 - 4-6x performance improvement
@@ -665,7 +726,7 @@ The scraper system has been completely refactored with significant improvements 
 - Performance benchmarking suite
 - Deployment documentation
 
-### Version 3.0.2 (2026-04-01)
+### Version 3.0.1 (2026-03-31)
 - Performance optimization with code splitting
 - Bundle size reduced from 440KB to 55KB (main)
 - Added fast boot mode for quicker startup
@@ -674,7 +735,7 @@ The scraper system has been completely refactored with significant improvements 
 - Added command history limits (500 entries)
 - Optimized image assets
 
-### Version 3.0.1 (2026-03-31)
+### Version 3.0.0 (2026-03-30)
 - Initial stable release
 - Complete command system
 - Full mobile support
@@ -685,6 +746,6 @@ The scraper system has been completely refactored with significant improvements 
 
 **Secure • Contain • Protect**
 
-*SCP Foundation Terminal System v3.0.2*
+*SCP Foundation Terminal System v3.0.3*
 *Security Level: 4*
 *Status: Operational*
