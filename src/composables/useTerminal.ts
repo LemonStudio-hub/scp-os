@@ -503,7 +503,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const writePrompt = () => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
-    terminal.write(`${ANSICode.red}SCP-ROOT>${ANSICode.reset} `)
+    terminal.write(`${ANSICode.prompt}SCP-ROOT>${ANSICode.reset} `)
   }
 
   const replaceCurrentLine = (newInput: string) => {
@@ -511,7 +511,19 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     if (!terminal) return
     terminal.write('\r\x1b[K')
     writePrompt()
-    terminal.write(newInput)
+    
+    // 检查输入是否是有效命令
+    const inputLower = newInput.toLowerCase().trim()
+    const isCommand = AVAILABLE_COMMANDS.some(cmd => cmd === inputLower)
+    
+    if (isCommand && newInput.trim() !== '') {
+      // 命令高亮：绿色
+      terminal.write(`${ANSICode.command}${newInput}${ANSICode.reset}`)
+    } else {
+      // 普通输入：白色
+      terminal.write(newInput)
+    }
+    
     currentInput.value = newInput
   }
 
@@ -530,14 +542,13 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     )
 
     if (matches.length === 1) {
-      const autoComplete = matches[0].slice(currentInput.value.length)
       currentInput.value = matches[0]
-      terminal.write(autoComplete)
+      replaceCurrentLine(currentInput.value)
     } else if (matches.length > 1) {
       terminal.writeln('\r\n')
       terminal.writeln(`${ANSICode.cyan}可能的命令: ${matches.join(', ')}${ANSICode.reset}`)
       writePrompt()
-      terminal.write(currentInput.value)
+      replaceCurrentLine(currentInput.value)
     }
   }
 
@@ -661,7 +672,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       } else if (data === '\x7f') { // Backspace
         if (currentInput.value.length > 0) {
           currentInput.value = currentInput.value.slice(0, -1)
-          terminal.write('\b \b')
+          replaceCurrentLine(currentInput.value)
         }
       } else if (data === '\x03') { // Ctrl+C
         terminal.write('^C\r\n')
@@ -669,7 +680,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         writePrompt()
       } else if (isPrintableCharacter(data)) {
         currentInput.value += data
-        terminal.write(data)
+        replaceCurrentLine(currentInput.value)
       }
     })
   }
