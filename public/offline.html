@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>离线 - SCP基金会终端</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Courier New', monospace;
+      background-color: #0a0a0a;
+      color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      color: #ff6b6b;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #ff6b6b;
+    }
+
+    p {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+      color: #b0b0b0;
+    }
+
+    .suggestions {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .suggestions h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #e0e0e0;
+    }
+
+    .suggestions ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .suggestions li {
+      padding: 8px 0;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+    }
+
+    .suggestions li:last-child {
+      border-bottom: none;
+    }
+
+    .suggestions li::before {
+      content: '→';
+      margin-right: 10px;
+      color: #4ecdc4;
+    }
+
+    .retry-btn {
+      background: #4ecdc4;
+      color: #0a0a0a;
+      border: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-top: 20px;
+      transition: background 0.2s;
+    }
+
+    .retry-btn:hover {
+      background: #45b7aa;
+    }
+
+    .status {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    @media (max-width: 480px) {
+      .icon {
+        font-size: 60px;
+      }
+      
+      h1 {
+        font-size: 20px;
+      }
+      
+      p {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">⚠️</div>
+    <h1>离线模式</h1>
+    <p>您当前处于离线状态。部分功能可能无法使用。</p>
+    
+    <div class="suggestions">
+      <h2>建议操作：</h2>
+      <ul>
+        <li>检查您的网络连接</li>
+        <li>稍后重试</li>
+        <li>使用已缓存的数据</li>
+      </ul>
+    </div>
+
+    <button class="retry-btn" onclick="window.location.reload()">
+      重试连接
+    </button>
+
+    <div class="status">
+      SCP基金会终端系统 v3.0.2
+    </div>
+  </div>
+
+  <script>
+    // 检查网络连接状态
+    window.addEventListener('online', () => {
+      console.log('[Offline Page] Network restored, reloading...')
+      window.location.reload()
+    })
+
+    // 每30秒检查一次网络状态
+    setInterval(() => {
+      if (navigator.onLine) {
+        console.log('[Offline Page] Network restored, reloading...')
+        window.location.reload()
+      }
+    }, 30000)
+  </script>
+</body>
+</html>

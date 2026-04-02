@@ -1,6 +1,6 @@
 /**
  * Service Worker for SCP-OS
- * 实现离线缓存和性能优化
+ * 实现完整的 PWA 功能：离线缓存、性能优化、后台同步
  */
 
 const CACHE_NAME = 'scp-os-v1'
@@ -32,12 +32,15 @@ const DYNAMIC_CACHE = new Map()
  * 安装事件
  */
 self.addEventListener('install', (event: ExtendableEvent) => {
-  console.log('[SW] Installing Service Worker...')
+  console.log('[SW] Installing Service Worker v' + CACHE_VERSION + '...')
   
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Pre-caching app shell')
       return cache.addAll(CACHE_URLS)
+    }).then(() => {
+      // 跳过等待，立即激活
+      return self.skipWaiting()
     })
   )
 })
@@ -46,19 +49,24 @@ self.addEventListener('install', (event: ExtendableEvent) => {
  * 激活事件
  */
 self.addEventListener('activate', (event: ExtendableEvent) => {
-  console.log('[SW] Activating Service Worker...')
+  console.log('[SW] Activating Service Worker v' + CACHE_VERSION + '...')
   
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Removing old cache:', cacheName)
-            return caches.delete(cacheName)
-          }
-        })
-      )
-    })
+    Promise.all([
+      // 清理旧缓存
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('[SW] Removing old cache:', cacheName)
+              return caches.delete(cacheName)
+            }
+          })
+        )
+      }),
+      // 立即控制所有客户端
+      self.clients.claim()
+    ])
   )
 })
 
@@ -99,10 +107,20 @@ async function handleAPIRequest(request: Request): Promise<Response> {
   if (cachedResponse && !isCacheExpired(cachedResponse)) {
     console.log('[SW] Cache hit:', cacheKey)
     
+    // 显示缓存指示器
+    const responseWithCacheFlag = new Response(cachedResponse.body, {
+      status: cachedResponse.status,
+      statusText: cachedResponse.statusText,
+      headers: {
+        ...cachedResponse.headers,
+        'X-Cache': 'HIT',
+      },
+    })
+    
     // 后台更新缓存
     updateCache(request, cacheKey)
     
-    return cachedResponse
+    return responseWithCacheFlag
   }
 
   // 缓存未命中，发起网络请求
@@ -125,6 +143,7 @@ async function handleAPIRequest(request: Request): Promise<Response> {
       headers: {
         ...clonedResponse.headers,
         'X-Cache-Date': Date.now().toString(),
+        'X-Cache': 'MISS',
       },
     })
     
@@ -141,21 +160,25 @@ async function handleAPIRequest(request: Request): Promise<Response> {
     const expiredCache = await caches.match(cacheKey)
     if (expiredCache) {
       console.log('[SW] Returning expired cache:', cacheKey)
-      return expiredCache
+      const responseWithExpiredFlag = new Response(expiredCache.body, {
+        status: expiredCache.status,
+        statusText: expiredCache.statusText,
+        headers: {
+          ...expiredCache.headers,
+          'X-Cache': 'STALE',
+          'X-Cache-Status': 'expired',
+        },
+      })
+      return responseWithExpiredFlag
     }
     
     // 返回离线响应
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Offline: Unable to connect to server',
-        cached: false,
-      }),
-      {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' },
+    return caches.match('/offline.html').then(offlinePage => {
+      if (offlinePage) {
+        return offlinePage
       }
-    )
+      return new Response('Offline', { status: 503 })
+    })
   }
 }
 
@@ -250,6 +273,31 @@ async function checkCacheSize() {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting()
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    event.waitUntil(
+      caches.keys().then((cacheNames) => {
+        return Promise.all(cacheNames.map(name => caches.delete(name)))
+      }).then(() => {
+        event.ports[0].postMessage({ success: true, message: 'Cache cleared' })
+      })
+    )
+  }
+  
+  if (event.data && event.data.type === 'GET_CACHE_INFO') {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.keys().then((keys) => {
+          const cacheInfo = {
+            name: CACHE_NAME,
+            size: keys.length,
+            urls: keys.map(key => key.url)
+          }
+          event.ports[0].postMessage({ success: true, cacheInfo })
+        })
+      })
+    )
   }
 })
 
