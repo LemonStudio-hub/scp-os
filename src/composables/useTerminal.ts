@@ -71,6 +71,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const { addToHistory, navigateHistory: navHistory, resetIndex } = useCommandHistory()
   const currentInput = ref('')
 
+  // 标记：防止重复绑定事件监听器
+  let commandHandlerSetup = false
+
   const initTerminal = () => {
     try {
       const config = createTerminalConfig()
@@ -125,6 +128,8 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         terminalInstance.value.terminal.dispose()
         terminalInstance.value.terminal = null
       }
+      // 重置事件监听器标志
+      commandHandlerSetup = false
     } catch (error) {
       errorHandler.handleError({
         type: ErrorType.TERMINAL_DISPOSE_FAILED,
@@ -428,6 +433,12 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const setupCommandHandler = () => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
+
+    // 防止重复绑定事件监听器
+    if (commandHandlerSetup) {
+      return
+    }
+    commandHandlerSetup = true
 
     terminal.onData((data) => {
       if (data === '\r') { // Enter
