@@ -61,18 +61,6 @@ describe('commands/index', () => {
       expect(output).toContain('help')
       expect(output).toContain('status')
     })
-
-    it('should display gesture control information', () => {
-      const handler = commandHandlers.help
-      handler([], writeMock, writelnMock)
-      
-      const calls = writelnMock.mock.calls
-      const output = calls.map((call: any) => call[0]).join('\n')
-      
-      expect(output).toContain('Gesture Controls')
-      expect(output).toContain('Three-finger swipe up')
-      expect(output).toContain('Two-finger swipe left')
-    })
   })
 
   describe('status command', () => {

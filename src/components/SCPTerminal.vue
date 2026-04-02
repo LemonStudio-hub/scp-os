@@ -33,7 +33,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useTerminal } from '../composables/useTerminal'
-import { useGestures } from '../composables/useGestures'
 import { updateTerminalFontSize } from '../utils/terminal'
 
 const terminalContainer = ref<HTMLDivElement>()
@@ -76,52 +75,12 @@ const {
   displayBootLog,
   displayWelcomeMessage,
   setupCommandHandler,
-  focus,
   clear,
   navigateHistory,
-  autocomplete,
   getTerminal,
   sendKey,
   sendText
 } = useTerminal(terminalContainer)
-
-const {
-  initGestures
-} = useGestures(terminalContainer, {
-  onClearScreen: () => {
-    clear()
-    displayWelcomeMessage()
-  },
-  onHistoryUp: () => navigateHistory(-1),
-  onHistoryDown: () => navigateHistory(1),
-  onFocus: focus,
-  onScrollTop: () => {
-    const terminal = getTerminal()
-    if (terminal) {
-      terminal.scrollToTop()
-    }
-  },
-  onScrollBottom: () => {
-    const terminal = getTerminal()
-    if (terminal) {
-      terminal.scrollToBottom()
-    }
-  }
-})
-
-const scrollToTop = () => {
-  const terminal = getTerminal()
-  if (terminal) {
-    terminal.scrollToTop()
-  }
-}
-
-const scrollToBottom = () => {
-  const terminal = getTerminal()
-  if (terminal) {
-    terminal.scrollToBottom()
-  }
-}
 
 const handleKeyPress = (key: any) => {
   const terminal = getTerminal()
@@ -194,7 +153,6 @@ const handleResize = () => {
 
 onMounted(async () => {
   initTerminal()
-  initGestures()
   
   // Add resize listener for responsive font size
   window.addEventListener('resize', handleResize)
@@ -211,19 +169,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   destroyTerminal()
 })
-
-// Export functions for gesture handlers
-window.scpTerminalActions = {
-  clearScreen: () => {
-    clear()
-    displayWelcomeMessage()
-  },
-  navigateHistory,
-  autocomplete,
-  focus,
-  scrollToTop,
-  scrollToBottom
-}
 </script>
 
 <style scoped>

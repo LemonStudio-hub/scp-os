@@ -65,8 +65,7 @@ const BORDER_MOBILE = {
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
     terminal: null,
-    fitAddon: null,
-    hammer: null
+    fitAddon: null
   })
 
   const { addToHistory, navigateHistory: navHistory, resetIndex } = useCommandHistory()
@@ -125,10 +124,6 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       if (terminalInstance.value.terminal) {
         terminalInstance.value.terminal.dispose()
         terminalInstance.value.terminal = null
-      }
-      if (terminalInstance.value.hammer) {
-        terminalInstance.value.hammer.destroy()
-        terminalInstance.value.hammer = null
       }
     } catch (error) {
       errorHandler.handleError({

@@ -15,11 +15,6 @@ export const commandHandlers: CommandMap = {
         `  ${COMMAND_USAGE[cmd as CommandType]} - ${desc}`
       ),
       '',
-      `${ANSICode.cyan}Gesture Controls:${ANSICode.reset}`,
-      `  Three-finger swipe up   - Clear screen`,
-      `  Two-finger swipe left  - Previous command in history`,
-      `  Two-finger swipe right - Next command in history`,
-      '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
     ]
     helpText.forEach(line => writeln(line))

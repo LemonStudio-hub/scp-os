@@ -38,7 +38,6 @@ export interface TerminalTheme {
 export interface TerminalInstance {
   terminal: Terminal | null
   fitAddon: FitAddon | null
-  hammer: HammerManager | null
 }
 
 export type TerminalWrite = (data: string) => void
