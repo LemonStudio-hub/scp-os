@@ -217,27 +217,37 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
 
   // 恢复新标签页的终端状态
   if (newTabId) {
-    clear()
+    // 首先加载新内容到内存
+    let contentToLoad = ''
     
     // 首先尝试从内存缓存加载
     if (terminalStates.value[newTabId]) {
-      terminal.write(terminalStates.value[newTabId])
+      contentToLoad = terminalStates.value[newTabId]
     } else {
       // 从IndexedDB加载
       try {
         const savedContent = await indexedDBService.loadTerminalState(newTabId)
         if (savedContent) {
-          terminal.write(savedContent)
+          contentToLoad = savedContent
           terminalStates.value[newTabId] = savedContent
-        } else {
-          // 新标签页，显示欢迎信息
-          displayWelcomeMessage()
         }
       } catch (error) {
         console.error('[Terminal] Failed to load state from IndexedDB:', error)
-        displayWelcomeMessage()
       }
     }
+    
+    // 如果没有保存的内容，显示欢迎信息
+    if (!contentToLoad) {
+      displayWelcomeMessage()
+      return
+    }
+    
+    // 清空终端并立即写入新内容
+    clear()
+    terminal.write(contentToLoad)
+    
+    // 确保滚动到底部
+    terminal.scrollToBottom()
   }
 })
 
