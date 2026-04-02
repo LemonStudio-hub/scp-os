@@ -44,9 +44,9 @@ class SCPScraper {
   /**
    * 爬取指定 SCP 的详细信息
    */
-  async scrapeSCP(scpNumber: string): Promise<ScraperResult> {
+  async scrapeSCP(scpNumber: string, branch: string = 'en'): Promise<ScraperResult> {
     const endTimer = performanceMonitor.startTimer('scrapeSCP')
-    const cacheKey = `scp-${scpNumber}`
+    const cacheKey = `scp-${branch}-${scpNumber}` // 缓存键包含分部信息
 
     try {
       // 检查缓存
@@ -57,10 +57,10 @@ class SCPScraper {
       }
 
       // 获取 HTML
-      const html = await this.fetchHTML(scpNumber)
+      const html = await this.fetchHTML(scpNumber, branch)
 
       // 解析 HTML
-      const data = await this.parseHTML(html, scpNumber)
+      const data = await this.parseHTML(html, scpNumber, branch)
 
       // 保存到缓存
       await this.saveToCache(cacheKey, data)
@@ -78,9 +78,13 @@ class SCPScraper {
   /**
    * 搜索 SCP
    */
-  async searchSCP(keyword: string): Promise<ScraperResult> {
+  async searchSCP(keyword: string, branch: string = 'en'): Promise<ScraperResult> {
     try {
-      const url = `${this.config.baseUrl}/search:site/q/${encodeURIComponent(keyword)}`
+      const branchUrl = branch === 'cn' 
+        ? 'https://scp-wiki-cn.wikidot.com' 
+        : 'https://scp-wiki.wikidot.com'
+      
+      const url = `${branchUrl}/search:site/q/${encodeURIComponent(keyword)}`
       const html = await this.fetchURL(url)
 
       // 提取搜索结果
@@ -93,7 +97,7 @@ class SCPScraper {
       // 返回第一个结果
       const firstResult = results[0]
       const number = firstResult.replace('SCP-', '')
-      return this.scrapeSCP(number)
+      return this.scrapeSCP(number, branch)
     } catch (error) {
       const scraperError = ScraperError.fromError(error as Error)
       logger.error('Failed to search SCP', scraperError, { keyword })
@@ -117,8 +121,13 @@ class SCPScraper {
   /**
    * 获取 HTML
    */
-  private async fetchHTML(scpNumber: string): Promise<string> {
-    const url = `${this.config.baseUrl}/scp-${scpNumber}`
+  private async fetchHTML(scpNumber: string, branch: string = 'en'): Promise<string> {
+    // 根据分部选择 URL
+    const branchUrl = branch === 'cn' 
+      ? 'https://scp-wiki-cn.wikidot.com' 
+      : 'https://scp-wiki.wikidot.com'
+    
+    const url = `${branchUrl}/scp-${scpNumber}`
     return this.fetchURL(url)
   }
 
@@ -172,7 +181,7 @@ class SCPScraper {
   /**
    * 解析 HTML
    */
-  private async parseHTML(html: string, scpNumber: string): Promise<SCPWikiData> {
+  private async parseHTML(html: string, scpNumber: string, branch: string = 'en'): Promise<SCPWikiData> {
     const parseTimer = performanceMonitor.startTimer('parseHTML')
 
     try {
@@ -189,15 +198,19 @@ class SCPScraper {
       const sections = this.sectionParser.parseSections(text)
 
       // 构建数据
+      const branchUrl = branch === 'cn' 
+        ? 'https://scp-wiki-cn.wikidot.com' 
+        : 'https://scp-wiki.wikidot.com'
+      
       const data: SCPWikiData = {
-        id: sections.title || `SCP-${scpNumber}`,
+        id: `SCP-${scpNumber}`,
         name: sections.title || `SCP-${scpNumber}`,
         objectClass: sections.objectClass,
         containment: sections.containment,
         description: sections.description,
         appendix: sections.appendix,
         author: sections.author,
-        url: `${this.config.baseUrl}/scp-${scpNumber}`,
+        url: `${branchUrl}/scp-${scpNumber}`,
       }
 
       // 验证数据
@@ -473,12 +486,14 @@ export default {
       // 路由处理
       if (path === '/scrape') {
         const scpNumber = url.searchParams.get('number')
+        const branch = url.searchParams.get('branch') || 'en' // 默认英文分部
+        
         if (!scpNumber) {
           return corsManager.createErrorResponse('Missing number parameter', 400, context)
         }
 
-        logger.info('Scraping SCP', { scpNumber, ip })
-        const result = await scraper.scrapeSCP(scpNumber)
+        logger.info('Scraping SCP', { scpNumber, branch, ip })
+        const result = await scraper.scrapeSCP(scpNumber, branch)
 
         if (result.success) {
           logger.info('Scrape successful', { scpNumber, cached: result.cached })
@@ -489,6 +504,8 @@ export default {
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/search') {
         const keyword = url.searchParams.get('keyword')
+        const branch = url.searchParams.get('branch') || 'en' // 默认英文分部
+        
         if (!keyword) {
           return corsManager.createErrorResponse('Missing keyword parameter', 400, context)
         }
@@ -497,8 +514,17 @@ export default {
           ? parseInt(url.searchParams.get('clearance_level')!)
           : undefined
 
-        logger.info('Searching SCP', { keyword, clearanceLevel, ip })
-        const result = await scraper.searchInDatabase(keyword, clearanceLevel)
+        logger.info('Searching SCP', { keyword, branch, clearanceLevel, ip })
+        
+        // 如果有 clearance_level，使用数据库搜索
+        if (clearanceLevel !== undefined) {
+          const result = await scraper.searchInDatabase(keyword, clearanceLevel)
+          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+        }
+        
+        // 否则使用网页搜索
+        const result = await scraper.searchSCP(keyword, branch)
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/debug') {
         const scpNumber = url.searchParams.get('number') || '173'

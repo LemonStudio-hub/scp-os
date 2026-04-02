@@ -168,20 +168,24 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.green}                      Known SCP Objects${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  Popular Objects:',
+      '  English Branch:',
       '',
       '  SCP-173 - The Sculpture (Statue)',
       '  SCP-096 - The Shy Guy (Humanoid)',
       '  SCP-682 - The Hard-to-Destroy Reptile (Reptile)',
       '  SCP-999 - The Tickle Monster (Orange Creature)',
       '  SCP-049 - The Plague Doctor (Humanoid)',
-      '  SCP-914 - The万能加工机 (Machine)',
-      '  SCP-3008 - The Infinite IKEA (Structure)',
-      '  SCP-087 - The Staircase (Space)',
-      '  SCP-106 - The Old Man (Humanoid)',
-      '  SCP-1471 - The Demon (Digital Entity)',
       '',
-      `${ANSICode.cyan}  Tip: Use "info <number>" to view details${ANSICode.reset}`,
+      '  Chinese Branch (CN):',
+      '',
+      '  CN-001 - 深红之王',
+      '  CN-002 - 龙之神',
+      '  CN-003 - 天蛾人',
+      '  CN-009 - 不灭孽蜥',
+      '  CN-173 - 雕像',
+      '',
+      `${ANSICode.cyan}  Tip: Use "info <number>" for English branch${ANSICode.reset}`,
+      `${ANSICode.cyan}  Use "info CN-<number>" for Chinese branch${ANSICode.reset}`,
       `${ANSICode.cyan}  Use "search <keyword>" to search for specific objects${ANSICode.reset}`,
       '',
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
@@ -190,21 +194,31 @@ export const commandHandlers: CommandMap = {
   },
 
   info: async (args, _write, writeln) => {
-    const scpNumber = args[0]
-    if (!scpNumber) {
-      writeln(`${ANSICode.yellow}Please specify SCP number, e.g.: info 173${ANSICode.reset}`)
+    const input = args[0]
+    if (!input) {
+      writeln(`${ANSICode.yellow}Please specify SCP number, e.g.: info 173, info CN-001${ANSICode.reset}`)
       return
     }
 
-    writeln(`${ANSICode.cyan}Querying SCP-${scpNumber}...${ANSICode.reset}`)
+    // 解析分部和编号
+    let branch = 'en' // 默认英文分部
+    let scpNumber = input
+
+    // 检查是否是中文分部 (CN-xxx 格式)
+    if (input.toUpperCase().startsWith('CN-')) {
+      branch = 'cn'
+      scpNumber = input.slice(3) // 移除 CN- 前缀
+    }
+
+    writeln(`${ANSICode.cyan}Querying SCP-${scpNumber} (${branch.toUpperCase()} Branch)...${ANSICode.reset}`)
     writeln('')
 
     try {
       // Fetch from Foundation Wiki API
-      writeln(`${ANSICode.cyan}Connecting to Foundation Wiki...${ANSICode.reset}`)
+      writeln(`${ANSICode.cyan}Connecting to Foundation Wiki (${branch.toUpperCase()} Branch)...${ANSICode.reset}`)
       writeln('')
 
-      const result = await scraper.scrapeSCP(scpNumber)
+      const result = await scraper.scrapeSCP(scpNumber, branch)
 
       if (result.success && result.data) {
         if (result.cached) {
@@ -219,9 +233,10 @@ export const commandHandlers: CommandMap = {
         writeln('')
         writeln(`${ANSICode.yellow}Tips:${ANSICode.reset}`)
         writeln(`  - Ensure the SCP number is correct, e.g.: 173, 096, 682`)
+        writeln(`  - For Chinese branch SCPs, use CN- prefix, e.g.: CN-001`)
         writeln(`  - Check your internet connection`)
         writeln(`  - Try again later (server might be busy)`)
-        writeln(`  - Check if SCP-${scpNumber} exists on SCP Wiki`)
+        writeln(`  - Check if SCP-${scpNumber} exists on ${branch.toUpperCase()} Wiki`)
         writeln('')
         writeln(`${ANSICode.red}Network query failed${ANSICode.reset}`)
       }

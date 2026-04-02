@@ -59,10 +59,11 @@ class SCPScraper {
   /**
    * 爬取指定SCP的详细信息
    * @param scpNumber SCP编号（如 "173"）
+   * @param branch 分部（如 "cn" 表示中文分部，默认 "en"）
    * @returns 爬取结果
    */
-    async scrapeSCP(scpNumber: string): Promise<ScraperResult> {
-        const cacheKey = `scp-${scpNumber}`
+    async scrapeSCP(scpNumber: string, branch: string = 'en'): Promise<ScraperResult> {
+        const cacheKey = `scp-${branch}-${scpNumber}`
     
         // 检查缓存
         const cached = this.getFromCache(cacheKey)
@@ -73,11 +74,11 @@ class SCPScraper {
         // 重试机制
         for (let attempt = 1; attempt <= WORKER_CONFIG.retryAttempts; attempt++) {        try {
           const apiUrl = `${config.api.workerUrl}/scrape`
-          console.log(`[Scraper] [尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}`)
+          console.log(`[Scraper] [尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`)
   
           // 调用Cloudflare Worker API
           const response = await axios.get(apiUrl, {
-            params: { number: scpNumber },
+            params: { number: scpNumber, branch },
             timeout: this.API_TIMEOUT,
             headers: {
               'Accept': 'application/json',
