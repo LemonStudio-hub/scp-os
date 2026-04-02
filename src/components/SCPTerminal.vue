@@ -172,18 +172,27 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
   if (!terminal) return
 
-  // 保存旧标签页的终端状态（保存当前行）
+  // 保存旧标签页的终端状态（保存整个缓冲区）
   if (oldTabId && terminal.buffer.active) {
-    const cursorLine = terminal.buffer.active.getLine(terminal.buffer.active.cursorY)
-    if (cursorLine) {
-      terminalStates.value[oldTabId] = cursorLine.translateToString()
+    const buffer = terminal.buffer.active
+    let fullContent = ''
+    
+    // 遍历所有行，保存完整内容
+    for (let i = 0; i < buffer.length; i++) {
+      const line = buffer.getLine(i)
+      if (line) {
+        fullContent += line.translateToString() + '\n'
+      }
     }
+    
+    terminalStates.value[oldTabId] = fullContent
   }
 
   // 恢复新标签页的终端状态
   if (newTabId && terminalStates.value[newTabId]) {
     clear()
-    displayWelcomeMessage()
+    // 恢复之前保存的完整内容
+    terminal.write(terminalStates.value[newTabId])
   } else if (newTabId) {
     // 新标签页，显示欢迎信息
     clear()
