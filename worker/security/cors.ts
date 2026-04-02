@@ -65,12 +65,13 @@ export class CORSManager {
    * 创建带有 CORS 头的响应
    */
   createResponse(data: any, status: number, request: RequestContext): Response {
+    const corsHeaders = this.getHeaders(request)
+    const headers = new Headers(corsHeaders)
+    headers.set('Content-Type', 'application/json')
+    
     return new Response(JSON.stringify(data), {
       status,
-      headers: {
-        ...this.getHeaders(request),
-        'Content-Type': 'application/json',
-      },
+      headers,
     })
   }
 
@@ -78,12 +79,13 @@ export class CORSManager {
    * 创建错误响应
    */
   createErrorResponse(message: string, status: number, request: RequestContext): Response {
+    const corsHeaders = this.getHeaders(request)
+    const headers = new Headers(corsHeaders)
+    headers.set('Content-Type', 'application/json')
+    
     return new Response(JSON.stringify({ error: message }), {
       status,
-      headers: {
-        ...this.getHeaders(request),
-        'Content-Type': 'application/json',
-      },
+      headers,
     })
   }
 }
