@@ -17,6 +17,19 @@ import { useTabsStore } from '../stores/tabs'
 const FIRST_LAUNCH_KEY = 'scp-os-first-launch'
 const SYSTEM_STATUS_KEY = 'scp-os-system-status'
 
+// Global terminal controller for command handlers
+export interface TerminalController {
+  displayBootLog: (fastMode?: boolean) => Promise<void>
+  displayWelcomeMessage: () => void
+  clear: () => void
+}
+
+declare global {
+  interface Window {
+    __terminalController?: TerminalController
+  }
+}
+
 // ASCII Art Constants - Desktop (Full width)
 const SCP_LOGO_ART_DESKTOP = [
   '   _____ __________ ',
@@ -157,6 +170,19 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       errorHandler.setTerminalWriter((data: string) => {
         terminalInstance.value.terminal?.write(data)
       })
+
+      // Initialize global terminal controller
+      window.__terminalController = {
+        displayBootLog: async (fastMode?: boolean) => {
+          await displayBootLog(fastMode)
+        },
+        displayWelcomeMessage: () => {
+          displayWelcomeMessage()
+        },
+        clear: () => {
+          clear()
+        }
+      }
     } catch (error) {
       const errorObj = errorHandler.handleError({
         type: ErrorType.TERMINAL_INIT_FAILED,
@@ -297,26 +323,10 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
 
-    const lines: string[] = []
-
-    lines.push(`${ANSICode.green}${BORDER_MOBILE.top}${ANSICode.reset}`)
-    lines.push('')
-    lines.push(`${ANSICode.red}    _____ __________ ${ANSICode.reset}`)
-    lines.push(`${ANSICode.red}   / ___// ____/ __ \\${ANSICode.reset}`)
-    lines.push(`${ANSICode.red}   \\__ \\/ /   / /_/ /${ANSICode.reset}`)
-    lines.push(`${ANSICode.red}  ___/ / /___/ ____/ ${ANSICode.reset}`)
-    lines.push(`${ANSICode.red} /____/\\____/_/      ${ANSICode.reset}`)
-    lines.push('')
-    lines.push(`${ANSICode.green}${BORDER_MOBILE.top}${ANSICode.reset}`)
-    lines.push('')
-    lines.push(`${ANSICode.yellow}Welcome to SCP Foundation Terminal System${ANSICode.reset}`)
-    lines.push('')
-    lines.push(`${ANSICode.cyan}To start the system, type: ${ANSICode.bold}start${ANSICode.reset}`)
-    lines.push('')
-    lines.push(`${ANSICode.gray}Security Level: 4 | Version: ${config.app.version}${ANSICode.reset}`)
-    lines.push('')
-
-    lines.forEach(line => terminal.writeln(line))
+    terminal.writeln(`${ANSICode.yellow}SCP Foundation Terminal System${ANSICode.reset}`)
+    terminal.writeln('')
+    terminal.writeln(`${ANSICode.cyan}Type 'start' to boot the system${ANSICode.reset}`)
+    terminal.writeln('')
     writePrompt()
   }
 

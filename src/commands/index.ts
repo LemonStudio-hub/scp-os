@@ -12,10 +12,14 @@ export const commandHandlers: CommandMap = {
     // Mark system as running
     localStorage.setItem('scp-os-system-status', 'running')
     
-    writeln(`${ANSICode.green}System started successfully.${ANSICode.reset}`)
-    writeln('')
-    writeln(`${ANSICode.yellow}Please refresh the page to see the boot log.${ANSICode.reset}`)
-    writeln('')
+    // Use global terminal controller to display boot log and welcome message
+    if (window.__terminalController) {
+      await window.__terminalController.displayBootLog()
+      window.__terminalController.displayWelcomeMessage()
+    } else {
+      writeln(`${ANSICode.red}Error: Terminal controller not available.${ANSICode.reset}`)
+      writeln('')
+    }
   },
 
   restart: async (_args, _write, writeln) => {
