@@ -149,8 +149,14 @@ export const commandHandlers: CommandMap = {
         formattedLines.forEach(line => writeln(line))
       } else {
         writeln(`${ANSICode.red}Query failed: ${result.error}${ANSICode.reset}`)
-        writeln(`${ANSICode.yellow}Tip: Ensure the SCP number is correct, e.g.: 173, 096, 682${ANSICode.reset}`)
-        writeln(`${ANSICode.yellow}SCP not found in local database and network query failed${ANSICode.reset}`)
+        writeln('')
+        writeln(`${ANSICode.yellow}Tips:${ANSICode.reset}`)
+        writeln(`  - Ensure the SCP number is correct, e.g.: 173, 096, 682`)
+        writeln(`  - Check your internet connection`)
+        writeln(`  - Try again later (server might be busy)`)
+        writeln(`  - Check if SCP-${scpNumber} exists on SCP Wiki`)
+        writeln('')
+        writeln(`${ANSICode.red}SCP not found in local database and network query failed${ANSICode.reset}`)
       }
     } catch (error) {
       writeln(`${ANSICode.red}Query failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
@@ -292,6 +298,43 @@ export const commandHandlers: CommandMap = {
     } catch (error) {
       writeln(`${ANSICode.red}Search failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
+  },
+
+  network: async (_args, _write, writeln) => {
+    writeln(`${ANSICode.cyan}Testing network connection to Foundation Wiki...${ANSICode.reset}`)
+    writeln('')
+
+    const result = await scraper.testConnection()
+
+    if (result.success) {
+      writeln(`${ANSICode.green}✓ Network connection is working${ANSICode.reset}`)
+      writeln('')
+      writeln(`${ANSICode.cyan}API Details:${ANSICode.reset}`)
+      writeln(`  Status: ${result.details?.status || 'Online'}`)
+      writeln(`  Version: ${result.details?.version || 'Unknown'}`)
+      writeln('')
+      writeln(`${ANSICode.green}All systems operational. Ready for queries.${ANSICode.reset}`)
+    } else {
+      writeln(`${ANSICode.red}✗ Network connection failed${ANSICode.reset}`)
+      writeln('')
+      writeln(`${ANSICode.cyan}Error Details:${ANSICode.reset}`)
+      writeln(`  Message: ${result.message}`)
+      if (result.details?.code) {
+        writeln(`  Code: ${result.details.code}`)
+      }
+      if (result.details?.url) {
+        writeln(`  URL: ${result.details.url}`)
+      }
+      writeln('')
+      writeln(`${ANSICode.yellow}Possible Solutions:${ANSICode.reset}`)
+      writeln(`  - Check your internet connection`)
+      writeln(`  - Verify firewall or proxy settings`)
+      writeln(`  - Try using a different network`)
+      writeln(`  - Contact system administrator if problem persists`)
+      writeln('')
+      writeln(`${ANSICode.red}Connection failed. Unable to query SCP database.${ANSICode.reset}`)
+    }
+    writeln('')
   },
 
   logout: (_args, _write, writeln) => {

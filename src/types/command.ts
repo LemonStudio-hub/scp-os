@@ -1,4 +1,4 @@
-export type CommandType = 
+export type CommandType =
   | 'help'
   | 'status'
   | 'clear'
@@ -12,6 +12,7 @@ export type CommandType =
   | 'version'
   | 'about'
   | 'search'
+  | 'network'
 
 export interface Command {
   name: CommandType

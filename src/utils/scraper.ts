@@ -20,87 +20,116 @@ class SCPScraper {
    * @param scpNumber SCP编号（如 "173"）
    * @returns 爬取结果
    */
-  async scrapeSCP(scpNumber: string): Promise<ScraperResult> {
-    const cacheKey = `scp-${scpNumber}`
-
-    // 检查缓存
-    const cached = this.getFromCache(cacheKey)
-    if (cached) {
-      return { success: true, data: cached, cached: true }
-    }
-
-    try {
-      const apiUrl = `${config.api.workerUrl}/scrape`
-      console.log(`[Scraper] 正在请求 API: ${apiUrl}?number=${scpNumber}`)
-
-      // 调用Cloudflare Worker API
-      const response = await axios.get(apiUrl, {
-        params: { number: scpNumber },
-        timeout: this.API_TIMEOUT,
-        headers: {
-          'Accept': 'application/json',
-        },
-      })
-
-      console.log(`[Scraper] API 响应状态: ${response.status}`)
-      console.log(`[Scraper] API 响应数据:`, response.data)
-
-      if (response.data.success && response.data.data) {
-        const data = this.normalizeData(response.data.data)
-
-        // 保存到缓存
-        this.saveToCache(cacheKey, data)
-
-        return { success: true, data }
-      } else {
-        return {
-          success: false,
-          error: response.data.error || '爬取失败'
+    async scrapeSCP(scpNumber: string): Promise<ScraperResult> {
+        const cacheKey = `scp-${scpNumber}`
+    
+        // 检查缓存
+        const cached = this.getFromCache(cacheKey)
+        if (cached) {
+          return { success: true, data: cached, cached: true }
+        }
+    
+        // 重试机制
+        for (let attempt = 1; attempt <= WORKER_CONFIG.retryAttempts; attempt++) {        try {
+          const apiUrl = `${config.api.workerUrl}/scrape`
+          console.log(`[Scraper] [尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}`)
+  
+          // 调用Cloudflare Worker API
+          const response = await axios.get(apiUrl, {
+            params: { number: scpNumber },
+            timeout: this.API_TIMEOUT,
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            withCredentials: false,
+          })
+  
+          console.log(`[Scraper] API 响应状态: ${response.status}`)
+          console.log(`[Scraper] API 响应数据:`, response.data)
+  
+          if (response.data.success && response.data.data) {
+            const data = this.normalizeData(response.data.data)
+  
+            // 保存到缓存
+            this.saveToCache(cacheKey, data)
+  
+            return { success: true, data }
+          } else {
+            return {
+              success: false,
+              error: response.data.error || '爬取失败'
+            }
+          }
+        } catch (error) {
+          // 详细的错误处理
+          if (axios.isAxiosError(error)) {
+            if (error.response) {
+              // 服务器响应了错误状态码 - 不重试
+              console.error(`[Scraper] API 错误响应:`, {
+                status: error.response.status,
+                data: error.response.data,
+                headers: error.response.headers,
+              })
+  
+              // 4xx 错误不重试
+              if (error.response.status >= 400 && error.response.status < 500) {
+                return {
+                  success: false,
+                  error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
+                }
+              }
+              // 5xx 错误可以重试
+            } else if (error.request) {
+                        // 请求已发出但没有收到响应 - 可以重试
+                        console.error(`[Scraper] 无响应:`, {
+                          message: error.message,
+                          code: error.code,
+                          attempt,
+                        })
+            
+                        // 如果是最后一次尝试，返回错误
+                        if (attempt === WORKER_CONFIG.retryAttempts) {
+                          const errorCode = error.code || 'NETWORK_ERROR'
+                          return {
+                            success: false,
+                            error: `网络错误: 无法连接到服务器 (${errorCode})`
+                          }
+                        }
+            
+                        // 等待后重试
+                        await this.sleep(WORKER_CONFIG.retryDelay * attempt)
+                      } else {              // 请求配置错误 - 不重试
+              console.error(`[Scraper] 请求配置错误:`, error.message)
+              return {
+                success: false,
+                error: `请求配置错误: ${error.message}`
+              }
+            }
+          } else {
+            // 其他错误 - 不重试
+            console.error(`[Scraper] 未知错误:`, error)
+            return {
+              success: false,
+              error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
+            }
+          }
         }
       }
-    } catch (error) {
-      // 详细的错误处理
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // 服务器响应了错误状态码
-          console.error(`[Scraper] API 错误响应:`, {
-            status: error.response.status,
-            data: error.response.data,
-            headers: error.response.headers,
-          })
-          return {
-            success: false,
-            error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
-          }
-        } else if (error.request) {
-          // 请求已发出但没有收到响应
-          console.error(`[Scraper] 无响应:`, {
-            message: error.message,
-            code: error.code,
-          })
-          return {
-            success: false,
-            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`
-          }
-        } else {
-          // 请求配置错误
-          console.error(`[Scraper] 请求配置错误:`, error.message)
-          return {
-            success: false,
-            error: `请求配置错误: ${error.message}`
-          }
-        }
-      } else {
-        // 其他错误
-        console.error(`[Scraper] 未知错误:`, error)
-        return {
-          success: false,
-          error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
-        }
+  
+      // 所有重试都失败了
+      return {
+        success: false,
+        error: `网络错误: 无法连接到服务器 (已重试 ${WORKER_CONFIG.retryAttempts} 次)`
       }
     }
-  }
-
+  
+    /**
+     * 延迟函数
+     */
+    private sleep(ms: number): Promise<void> {
+      return new Promise(resolve => setTimeout(resolve, ms))
+    }
   /**
    * 搜索SCP
    * @param keyword 搜索关键词
@@ -370,6 +399,68 @@ class SCPScraper {
    */
   clearCache(): void {
     this.cache.clear()
+  }
+
+  /**
+   * 测试 API 连接
+   * 用于诊断网络问题
+   */
+  async testConnection(): Promise<{ success: boolean; message: string; details?: any }> {
+    try {
+      console.log('[Scraper] 测试 API 连接...')
+      const response = await axios.get(`${config.api.workerUrl}/`, {
+        timeout: 10000,
+        headers: {
+          'Accept': 'application/json',
+        },
+      })
+
+      console.log('[Scraper] API 连接测试成功:', response.data)
+
+      return {
+        success: true,
+        message: 'API 连接正常',
+        details: response.data
+      }
+    } catch (error) {
+      console.error('[Scraper] API 连接测试失败:', error)
+
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          return {
+            success: false,
+            message: `API 返回错误状态: ${error.response.status}`,
+            details: {
+              status: error.response.status,
+              data: error.response.data,
+            }
+          }
+        } else if (error.request) {
+          return {
+            success: false,
+            message: `无法连接到服务器: ${error.code || 'NETWORK_ERROR'}`,
+            details: {
+              code: error.code,
+              message: error.message,
+              url: config.api.workerUrl,
+            }
+          }
+        } else {
+          return {
+            success: false,
+            message: `请求配置错误: ${error.message}`,
+            details: {
+              message: error.message,
+            }
+          }
+        }
+      }
+
+      return {
+        success: false,
+        message: `未知错误: ${error instanceof Error ? error.message : String(error)}`,
+      }
+    }
   }
 }
 

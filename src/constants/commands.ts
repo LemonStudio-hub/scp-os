@@ -13,7 +13,8 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
   'logout',
   'version',
   'about',
-  'search'
+  'search',
+  'network'
 ]
 
 export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
@@ -29,7 +30,8 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   logout: 'Secure logout',
   version: 'Display system version',
   about: 'Display system information',
-  search: 'Search SCP database'
+  search: 'Search SCP database',
+  network: 'Test network connection to Foundation Wiki'
 }
 
 export const COMMAND_USAGE: Record<CommandType, string> = {
@@ -45,5 +47,6 @@ export const COMMAND_USAGE: Record<CommandType, string> = {
   logout: 'logout',
   version: 'version',
   about: 'about',
-  search: 'search <keyword>'
+  search: 'search <keyword>',
+  network: 'network'
 }
