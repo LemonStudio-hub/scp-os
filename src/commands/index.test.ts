@@ -267,7 +267,7 @@ describe('commands/index', () => {
       const mockData = {
         id: 'SCP-173',
         name: '雕像',
-        objectClass: 'KETER',
+        objectClass: 'KETER' as const,
         containment: ['特殊收容措施'],
         description: ['描述内容'],
         appendix: [],
@@ -324,7 +324,7 @@ describe('commands/index', () => {
       const mockData = {
         id: 'SCP-173',
         name: '雕像',
-        objectClass: 'KETER',
+        objectClass: 'KETER' as const,
         containment: [],
         description: [],
         appendix: [],
@@ -350,7 +350,7 @@ describe('commands/index', () => {
       const mockData = {
         id: 'SCP-173',
         name: '雕像',
-        objectClass: 'KETER',
+        objectClass: 'KETER' as const,
         containment: [],
         description: [],
         appendix: [],

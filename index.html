@@ -29,6 +29,24 @@
     <meta name="twitter:title" content="SCP基金会终端">
     <meta name="twitter:description" content="安全、收容、保护">
     <meta name="twitter:image" content="/scp-logo.jpg">
+    <!-- 预连接优化 -->
+    <link rel="dns-prefetch" href="https://api.scpos.site">
+    <link rel="preconnect" href="https://api.scpos.site">
+    <link rel="preconnect" href="https://scp-wiki-cn.wikidot.com">
+    <!-- Service Worker 注册 -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.ts')
+            .then(registration => {
+              console.log('SW registered: ', registration)
+            })
+            .catch(registrationError => {
+              console.log('SW registration failed: ', registrationError)
+            })
+        })
+      }
+    </script>
     <title>SCP基金会终端</title>
     <style>
       /* Prevent pull-to-refresh on mobile */

@@ -190,6 +190,11 @@ onBeforeUnmount(() => {
   background: #0a0a0a;
   overflow: visible;
   touch-action: pan-y;
+  /* 移动端滚动优化 */
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  will-change: transform;
 }
 
 #terminal-container ::v-deep(.xterm) {

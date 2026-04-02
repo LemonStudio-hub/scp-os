@@ -109,6 +109,7 @@ export class ErrorHandler {
     const timestamp = error.timestamp.toLocaleTimeString('en-US')
     const severity = this.getSeverityDisplay(error.severity)
     const type = this.getTypeDisplay(error.type)
+    const suggestions = this.getErrorSuggestions(error.type)
 
     this.terminalWriter(`\r\n`)
     this.terminalWriter(`${ANSICode.red}[${timestamp}] ERROR - ${severity}${ANSICode.reset}\r\n`)
@@ -118,8 +119,56 @@ export class ErrorHandler {
     if (error.details) {
       this.terminalWriter(`${ANSICode.gray}Details: ${error.details}${ANSICode.reset}\r\n`)
     }
+
+    // 显示建议
+    if (suggestions.length > 0 && this.terminalWriter) {
+      const writer = this.terminalWriter
+      writer(`${ANSICode.cyan}Suggestions:${ANSICode.reset}\r\n`)
+      suggestions.forEach((suggestion, index) => {
+        writer(`  ${index + 1}. ${suggestion}${ANSICode.reset}\r\n`)
+      })
+    }
     
-    this.terminalWriter(`\r\n`)
+    if (this.terminalWriter) {
+      this.terminalWriter(`\r\n`)
+    }
+  }
+
+  private getErrorSuggestions(type: string): string[] {
+    const suggestionsMap: Record<string, string[]> = {
+      [ErrorType.NETWORK_ERROR]: [
+        '检查网络连接是否正常',
+        '使用 "network" 命令测试连接',
+        '稍后重试或检查防火墙设置',
+        '尝试刷新页面重新加载',
+      ],
+      [ErrorType.COMMAND_NOT_FOUND]: [
+        '使用 "help" 命令查看可用命令',
+        '检查命令拼写是否正确',
+        '查看命令使用帮助',
+      ],
+      [ErrorType.DATA_NOT_FOUND]: [
+        '检查SCP编号是否正确',
+        '使用 "search" 命令搜索相关SCP',
+        '尝试使用 "scp-list" 查看已知SCP',
+      ],
+      [ErrorType.TERMINAL_WRITE_FAILED]: [
+        '刷新页面重试',
+        '检查浏览器兼容性',
+        '清除浏览器缓存',
+      ],
+      [ErrorType.COMMAND_INVALID_ARGS]: [
+        '使用 "help <命令>" 查看用法',
+        '检查命令参数格式',
+        '参考命令示例',
+      ],
+    }
+    
+    return suggestionsMap[type] || [
+      '如果是网络问题，请检查连接',
+      '如果问题持续，请刷新页面',
+      '使用 "help" 命令获取帮助',
+    ]
   }
 
   private getSeverityDisplay(severity: string): string {
