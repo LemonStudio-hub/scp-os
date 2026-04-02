@@ -39,7 +39,7 @@ class SCPScraper {
   private paragraphFilter = new ParagraphFilter()
   private retryStrategy = new RetryStrategy()
 
-  constructor(private kv?: KVNamespace) {}
+  constructor(private kv?: KVNamespace, private db?: D1Database) {}
 
   /**
    * 爬取指定 SCP 的详细信息
@@ -277,6 +277,163 @@ class SCPScraper {
       logger.error('Cache write error', error as Error)
     }
   }
+
+  /**
+   * 列出所有 SCP 编号
+   */
+  async listSCPs(limit: number = 100, offset: number = 0, clearanceLevel?: number): Promise<{
+    success: boolean
+    data?: any[]
+    total?: number
+    error?: string
+  }> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      // 构建查询条件
+      let whereClause = ''
+      let params: any[] = []
+
+      if (clearanceLevel !== undefined) {
+        whereClause = 'WHERE clearance_level <= ?'
+        params.push(clearanceLevel)
+      }
+
+      // 获取总数
+      const countQuery = `SELECT COUNT(*) as total FROM scp_index ${whereClause}`
+      const countResult = await this.db.prepare(countQuery)
+        .bind(...params)
+        .first<{ total: number }>()
+
+      const total = countResult?.total || 0
+
+      // 获取分页数据
+      const dataQuery = `SELECT scp_id, name, object_class, tags, clearance_level, updated_at FROM scp_index ${whereClause} ORDER BY scp_id ASC LIMIT ? OFFSET ?`
+      const result = await this.db.prepare(dataQuery)
+        .bind(...params, limit, offset)
+        .all()
+
+      return {
+        success: true,
+        data: result.results,
+        total,
+      }
+    } catch (error) {
+      logger.error('Database query error', error as Error)
+      return {
+        success: false,
+        error: `Database query failed: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 在数据库中搜索 SCP
+   */
+  async searchInDatabase(keyword: string, clearanceLevel?: number): Promise<{
+    success: boolean
+    data?: any[]
+    error?: string
+  }> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      // 使用全文搜索，通过 JOIN 获取完整信息
+      let query = `
+        SELECT i.scp_id, i.name, i.object_class, i.tags, i.clearance_level, i.updated_at
+        FROM scp_search s
+        JOIN scp_index i ON s.rowid = i.scp_id
+        WHERE s MATCH ?
+      `
+      let params: any[] = [keyword]
+
+      // 如果指定了权限等级，添加筛选条件
+      if (clearanceLevel !== undefined) {
+        query += ' AND i.clearance_level <= ?'
+        params.push(clearanceLevel)
+      }
+
+      query += ' ORDER BY i.scp_id ASC LIMIT 20'
+
+      const result = await this.db.prepare(query)
+        .bind(...params)
+        .all()
+
+      return {
+        success: true,
+        data: result.results,
+      }
+    } catch (error) {
+      logger.error('Database search error', error as Error)
+      return {
+        success: false,
+        error: `Database search failed: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 获取数据库统计信息
+   */
+  async getStats(): Promise<{
+    success: boolean
+    stats?: {
+      total: number
+      byClass: Record<string, number>
+      byClearance: Record<number, number>
+    }
+    error?: string
+  }> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      // 按项目等级统计
+      const classResult = await this.db.prepare(
+        'SELECT object_class, COUNT(*) as count FROM scp_index GROUP BY object_class'
+      ).all()
+
+      const byClass: Record<string, number> = {}
+
+      for (const row of classResult.results as any[]) {
+        byClass[row.object_class] = row.count
+      }
+
+      // 按权限等级统计
+      const clearanceResult = await this.db.prepare(
+        'SELECT clearance_level, COUNT(*) as count FROM scp_index GROUP BY clearance_level ORDER BY clearance_level'
+      ).all()
+
+      const byClearance: Record<number, number> = {}
+
+      for (const row of clearanceResult.results as any[]) {
+        byClearance[row.clearance_level] = row.count
+      }
+
+      // 获取总数
+      const totalResult = await this.db.prepare(
+        'SELECT COUNT(*) as total FROM scp_index'
+      ).first<{ total: number }>()
+
+      const total = totalResult?.total || 0
+
+      return {
+        success: true,
+        stats: { total, byClass, byClearance },
+      }
+    } catch (error) {
+      logger.error('Database stats error', error as Error)
+      return {
+        success: false,
+        error: `Failed to get stats: ${(error as Error).message}`
+      }
+    }
+  }
 }
 
 /**
@@ -309,7 +466,7 @@ export default {
         return corsManager.createErrorResponse('Rate limit exceeded', 429, context)
       }
 
-      const scraper = new SCPScraper(env.SCP_CACHE)
+      const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
       const url = new URL(request.url)
       const path = url.pathname
 
@@ -336,14 +493,32 @@ export default {
           return corsManager.createErrorResponse('Missing keyword parameter', 400, context)
         }
 
-        logger.info('Searching SCP', { keyword, ip })
-        const result = await scraper.searchSCP(keyword)
+        const clearanceLevel = url.searchParams.get('clearance_level')
+          ? parseInt(url.searchParams.get('clearance_level')!)
+          : undefined
+
+        logger.info('Searching SCP', { keyword, clearanceLevel, ip })
+        const result = await scraper.searchInDatabase(keyword, clearanceLevel)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/debug') {
         const scpNumber = url.searchParams.get('number') || '173'
         logger.info('Debug mode', { scpNumber, ip })
         const result = await scraper.getRawHTML(scpNumber)
         return corsManager.createResponse(result, 200, context)
+      } else if (path === '/list') {
+        const limit = parseInt(url.searchParams.get('limit') || '100')
+        const offset = parseInt(url.searchParams.get('offset') || '0')
+        const clearanceLevel = url.searchParams.get('clearance_level')
+          ? parseInt(url.searchParams.get('clearance_level')!)
+          : undefined
+
+        logger.info('Listing SCPs', { limit, offset, clearanceLevel, ip })
+        const result = await scraper.listSCPs(limit, offset, clearanceLevel)
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/stats') {
+        logger.info('Getting stats', { ip })
+        const result = await scraper.getStats()
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/') {
         return corsManager.createResponse(
           {
@@ -352,7 +527,9 @@ export default {
             status: 'online',
             endpoints: {
               '/scrape?number={number}': '爬取指定SCP的信息',
-              '/search?keyword={keyword}': '搜索SCP',
+              '/search?keyword={keyword}&clearance_level={level}': '搜索SCP（使用数据库，可选按权限等级筛选）',
+              '/list?limit={limit}&offset={offset}&clearance_level={level}': '列出SCP编号（默认100条，可选按权限等级筛选）',
+              '/stats': '获取数据库统计信息',
               '/debug?number={number}': '调试：返回原始HTML',
             },
             features: {
@@ -360,6 +537,7 @@ export default {
               caching: `${config.cacheDuration / 1000 / 60} minutes`,
               retry: `${config.retryAttempts} attempts`,
               rateLimit: `${config.rateLimit.maxRequests} requests / ${config.rateLimit.windowMs / 1000}s`,
+              database: 'D1 database enabled with tags and clearance_level filtering',
             },
           },
           200,

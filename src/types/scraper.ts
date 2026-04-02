@@ -25,6 +25,22 @@ export interface ScraperResult {
   cached?: boolean
 }
 
+export interface SCPListItem {
+  scp_id: number
+  name: string
+  object_class: string
+  tags: string
+  clearance_level: number
+  updated_at: string
+}
+
+export interface SCPListResult {
+  success: boolean
+  data?: SCPListItem[]
+  total?: number
+  error?: string
+}
+
 export type ObjectClass = 'SAFE' | 'EUCLID' | 'KETER' | 'THAUMIEL' | 'NEUTRALIZED' | 'PENDING' | 'UNKNOWN'
 
 export interface ObjectClassInfo {

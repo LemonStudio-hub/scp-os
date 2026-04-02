@@ -1,7 +1,6 @@
 import type { CommandType, CommandHandler, CommandMap } from '../types/command'
 import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
-import { SCP_DATABASE, SCP_LIST } from '../constants/scpDatabase'
 import { scraper } from '../utils/scraper'
 
 export const commandHandlers: CommandMap = {
@@ -95,9 +94,18 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.green}                      Known SCP Objects${ANSICode.reset}`,
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
       '',
-      '  Popular Objects (Top 10):',
+      '  Popular Objects:',
       '',
-      ...SCP_LIST.map(scp => `  ${scp}`),
+      '  SCP-173 - 雕像 (雕像)',
+      '  SCP-096 - 羞涩的人 (人形)',
+      '  SCP-682 - 不灭孽蜥 (爬行动物)',
+      '  SCP-999 - 痒痒怪 (橙色生物)',
+      '  SCP-049 - 疫医 (人形)',
+      '  SCP-914 - 万能加工机 (机器)',
+      '  SCP-3008 - 无限宜家 (建筑)',
+      '  SCP-087 - 楼梯间 (空间)',
+      '  SCP-106 - 老人 (人形)',
+      '  SCP-1471 - 恶魔 (数字实体)',
       '',
       `${ANSICode.cyan}  Tip: Use "info <number>" to view details${ANSICode.reset}`,
       `${ANSICode.cyan}  Use "search <keyword>" to search for specific objects${ANSICode.reset}`,
@@ -118,28 +126,18 @@ export const commandHandlers: CommandMap = {
     writeln('')
 
     try {
-      // Try to find in local database first
-      const localInfo = SCP_DATABASE[scpNumber]
-      
-      if (localInfo) {
-        writeln(`${ANSICode.yellow}[Local Database]${ANSICode.reset}`)
-        writeln('')
-        localInfo.description.forEach(line => writeln(line))
-        return
-      }
-
-      // Not found locally, fetch from Foundation Wiki
+      // Fetch from Foundation Wiki API
       writeln(`${ANSICode.cyan}Connecting to Foundation Wiki...${ANSICode.reset}`)
       writeln('')
-      
+
       const result = await scraper.scrapeSCP(scpNumber)
-      
+
       if (result.success && result.data) {
         if (result.cached) {
           writeln(`${ANSICode.yellow}[From Cache]${ANSICode.reset}`)
           writeln('')
         }
-        
+
         const formattedLines = scraper.formatForTerminal(result.data)
         formattedLines.forEach(line => writeln(line))
       } else {
@@ -151,7 +149,7 @@ export const commandHandlers: CommandMap = {
         writeln(`  - Try again later (server might be busy)`)
         writeln(`  - Check if SCP-${scpNumber} exists on SCP Wiki`)
         writeln('')
-        writeln(`${ANSICode.red}SCP not found in local database and network query failed${ANSICode.reset}`)
+        writeln(`${ANSICode.red}Network query failed${ANSICode.reset}`)
       }
     } catch (error) {
       writeln(`${ANSICode.red}Query failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
@@ -272,7 +270,7 @@ export const commandHandlers: CommandMap = {
     aboutInfo.forEach(line => writeln(line))
   },
 
-  search: (args, _write, writeln) => {
+  search: async (args, _write, writeln) => {
     try {
       const keyword = args.join(' ')
       if (!keyword) {
@@ -280,15 +278,23 @@ export const commandHandlers: CommandMap = {
         return
       }
 
-      const results = SCP_LIST.filter(item =>
-        item.toLowerCase().includes(keyword.toLowerCase())
-      )
+      writeln(`${ANSICode.cyan}Searching for "${keyword}"...${ANSICode.reset}`)
+      writeln('')
 
-      if (results.length > 0) {
-        writeln(`${ANSICode.green}Found ${results.length} result(s):${ANSICode.reset}`)
-        results.forEach(result => writeln(`  - ${result}`))
+      const result = await scraper.searchSCP(keyword)
+
+      if (result.success && result.data) {
+        writeln(`${ANSICode.green}Found matching SCP object:${ANSICode.reset}`)
+        writeln('')
+        const formattedLines = scraper.formatForTerminal(result.data)
+        formattedLines.forEach(line => writeln(line))
       } else {
-        writeln(`${ANSICode.red}No matching results found${ANSICode.reset}`)
+        writeln(`${ANSICode.red}${result.error}${ANSICode.reset}`)
+        writeln('')
+        writeln(`${ANSICode.yellow}Tips:${ANSICode.reset}`)
+        writeln(`  - Try using a different keyword`)
+        writeln(`  - Check your internet connection`)
+        writeln(`  - Use "info <number>" if you know the SCP number`)
       }
     } catch (error) {
       writeln(`${ANSICode.red}Search failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)

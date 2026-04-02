@@ -6,7 +6,9 @@ import type { CommandType } from '../types/command'
 vi.mock('../utils/scraper', () => ({
   scraper: {
     scrapeSCP: vi.fn(),
+    searchSCP: vi.fn(),
     formatForTerminal: vi.fn(),
+    testConnection: vi.fn(),
   },
 }))
 
@@ -260,52 +262,113 @@ describe('commands/index', () => {
   })
 
   describe('search command', () => {
-    it('should search and display results', () => {
+    it('should search and display results', async () => {
+      const { scraper } = await import('../utils/scraper')
+      const mockData = {
+        id: 'SCP-173',
+        name: '雕像',
+        objectClass: 'KETER',
+        containment: ['特殊收容措施'],
+        description: ['描述内容'],
+        appendix: [],
+        references: [],
+        author: 'Unknown',
+        url: 'https://scp-wiki-cn.wikidot.com/scp-173'
+      }
+      vi.mocked(scraper.searchSCP).mockResolvedValue({
+        success: true,
+        data: mockData
+      })
+      vi.mocked(scraper.formatForTerminal).mockReturnValue([
+        'Formatted output line 1',
+        'Formatted output line 2'
+      ])
+
       const handler = commandHandlers.search
-      handler(['173'], writeMock, writelnMock)
-      
+      await handler(['173'], writeMock, writelnMock)
+
+      expect(scraper.searchSCP).toHaveBeenCalledWith('173')
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
-      expect(output).toContain('Found')
-      expect(output).toContain('SCP-173')
+
+      expect(output).toContain('Found matching SCP object')
     })
 
-    it('should display prompt when no parameter provided', () => {
+    it('should display prompt when no parameter provided', async () => {
       const handler = commandHandlers.search
-      handler([], writeMock, writelnMock)
-      
+      await handler([], writeMock, writelnMock)
+
       expect(writelnMock).toHaveBeenCalledWith(
         expect.stringContaining('Please enter search keyword')
       )
     })
 
-    it('should display prompt when no results found', () => {
+    it('should display prompt when no results found', async () => {
+      const { scraper } = await import('../utils/scraper')
+      vi.mocked(scraper.searchSCP).mockResolvedValue({
+        success: false,
+        error: '未找到包含 "nonexistent keyword" 的SCP对象'
+      })
+
       const handler = commandHandlers.search
-      handler(['nonexistent keyword'], writeMock, writelnMock)
-      
+      await handler(['nonexistent keyword'], writeMock, writelnMock)
+
       expect(writelnMock).toHaveBeenCalledWith(
-        expect.stringContaining('No matching results found')
+        expect.stringContaining('未找到包含 "nonexistent keyword" 的SCP对象')
       )
     })
 
-    it('should support multi-keyword search', () => {
+    it('should support multi-keyword search', async () => {
+      const { scraper } = await import('../utils/scraper')
+      const mockData = {
+        id: 'SCP-173',
+        name: '雕像',
+        objectClass: 'KETER',
+        containment: [],
+        description: [],
+        appendix: [],
+        references: [],
+        author: 'Unknown',
+        url: ''
+      }
+      vi.mocked(scraper.searchSCP).mockResolvedValue({
+        success: true,
+        data: mockData
+      })
+      vi.mocked(scraper.formatForTerminal).mockReturnValue([])
+
       const handler = commandHandlers.search
-      handler(['SCP', '173'], writeMock, writelnMock)
-      
+      await handler(['SCP', '173'], writeMock, writelnMock)
+
+      expect(scraper.searchSCP).toHaveBeenCalledWith('SCP 173')
       expect(writelnMock).toHaveBeenCalled()
     })
 
-    it('should be case-insensitive', () => {
+    it('should be case-insensitive', async () => {
+      const { scraper } = await import('../utils/scraper')
+      const mockData = {
+        id: 'SCP-173',
+        name: '雕像',
+        objectClass: 'KETER',
+        containment: [],
+        description: [],
+        appendix: [],
+        references: [],
+        author: 'Unknown',
+        url: ''
+      }
+      vi.mocked(scraper.searchSCP).mockResolvedValue({
+        success: true,
+        data: mockData
+      })
+      vi.mocked(scraper.formatForTerminal).mockReturnValue([])
+
       const handler = commandHandlers.search
-      handler(['scp'], writeMock, writelnMock)
-      
+      await handler(['scp'], writeMock, writelnMock)
+
+      expect(scraper.searchSCP).toHaveBeenCalledWith('scp')
       expect(writelnMock).toHaveBeenCalled()
-      const calls = writelnMock.mock.calls
-      const output = calls.map((call: any) => call[0]).join('\n')
-      
-      expect(output).toContain('Found')
     })
   })
 

@@ -194,13 +194,28 @@ class SCPScraper {
       console.log(`[Scraper] 搜索响应数据:`, response.data)
 
       if (response.data.success && response.data.data) {
-        // 如果返回的是数组，返回第一个结果
-        if (Array.isArray(response.data.data) && response.data.data.length > 0) {
+        // 如果返回的是数组（数据库搜索结果）
+        if (Array.isArray(response.data.data)) {
+          if (response.data.data.length === 0) {
+            return {
+              success: false,
+              error: `未找到包含 "${keyword}" 的SCP对象`
+            }
+          }
+
+          // 返回第一个匹配结果的详细信息
           const firstResult = response.data.data[0]
-          const data = this.normalizeData(firstResult)
+          const data = this.normalizeData({
+            id: `SCP-${firstResult.scp_id}`,
+            number: firstResult.scp_id.toString(),
+            name: firstResult.name,
+            objectClass: firstResult.object_class,
+            tags: firstResult.tags,
+            clearanceLevel: firstResult.clearance_level,
+          })
           return { success: true, data }
         }
-        // 如果返回的是单个对象
+        // 如果返回的是单个对象（爬虫结果）
         else if (typeof response.data.data === 'object') {
           const data = this.normalizeData(response.data.data)
           return { success: true, data }
@@ -519,6 +534,85 @@ class SCPScraper {
       return {
         success: false,
         message: `未知错误: ${error instanceof Error ? error.message : String(error)}`,
+      }
+    }
+  }
+
+  /**
+   * 获取 SCP 列表
+   * @param limit 每页数量
+   * @param offset 偏移量
+   * @param clearanceLevel 权限等级筛选（可选）
+   * @returns SCP 列表
+   */
+  async listSCPs(limit: number = 100, offset: number = 0, clearanceLevel?: number): Promise<{
+    success: boolean
+    data?: Array<{
+      scp_id: number
+      name: string
+      object_class: string
+      tags: string
+      clearance_level: number
+      updated_at: string
+    }>
+    total?: number
+    error?: string
+  }> {
+    try {
+      const apiUrl = `${config.api.workerUrl}/list`
+      const params: any = { limit, offset }
+
+      if (clearanceLevel !== undefined) {
+        params.clearance_level = clearanceLevel
+      }
+
+      console.log(`[Scraper] 正在获取 SCP 列表: ${apiUrl}`, params)
+
+      const response = await axios.get(apiUrl, {
+        params,
+        timeout: this.API_TIMEOUT,
+        headers: {
+          'Accept': 'application/json',
+        },
+      })
+
+      console.log(`[Scraper] 列表响应状态: ${response.status}`)
+
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data,
+          total: response.data.total,
+        }
+      } else {
+        return {
+          success: false,
+          error: response.data.error || '获取列表失败'
+        }
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          return {
+            success: false,
+            error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
+          }
+        } else if (error.request) {
+          return {
+            success: false,
+            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`
+          }
+        } else {
+          return {
+            success: false,
+            error: `请求配置错误: ${error.message}`
+          }
+        }
+      } else {
+        return {
+          success: false,
+          error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
+        }
       }
     }
   }

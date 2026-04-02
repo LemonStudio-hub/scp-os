@@ -7,6 +7,13 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 API_DOMAIN = "api.scpos.site"
 
+# D1 数据库绑定
+[[d1_databases]]
+binding = "SCP_DB"
+database_name = "scp-database"
+database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
+migrations_dir = "migrations"
+
 # KV 命名空间（用于缓存）
 [[kv_namespaces]]
 binding = "SCP_CACHE"

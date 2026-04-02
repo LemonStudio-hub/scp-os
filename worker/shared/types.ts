@@ -110,6 +110,7 @@ export interface ParsedSections {
  */
 export interface Env {
   SCP_CACHE: KVNamespace
+  SCP_DB: D1Database
 }
 
 /**
