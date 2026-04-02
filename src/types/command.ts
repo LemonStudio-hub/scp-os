@@ -14,13 +14,13 @@ export type CommandType =
   | 'search'
   | 'network'
 
+import type { TerminalWrite, TerminalWriteln } from './terminal'
+
 export interface Command {
   name: CommandType
   description: string
   usage?: string
 }
-
-import type { TerminalWrite, TerminalWriteln } from './terminal'
 
 export interface CommandHandler {
   (args: string[], terminal: TerminalWrite, terminalWriteln: TerminalWriteln): void | Promise<void>

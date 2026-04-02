@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 
-// 最大命令历史记录数
+// Maximum command history size
 const MAX_HISTORY_SIZE = 500
 
 export function useCommandHistory() {
@@ -14,15 +14,15 @@ export function useCommandHistory() {
         errorHandler.handleError({
           type: ErrorType.INVALID_INPUT,
           severity: ErrorSeverity.LOW,
-          message: '无效的命令历史输入',
-          details: `输入类型: ${typeof command}, 值: ${String(command)}`,
+          message: 'Invalid command history input',
+          details: `Input type: ${typeof command}, value: ${String(command)}`,
         })
         return
       }
       
       history.value.push(command)
       
-      // 限制历史记录数量
+      // Limit history size
       if (history.value.length > MAX_HISTORY_SIZE) {
         history.value.shift()
       }
@@ -32,7 +32,7 @@ export function useCommandHistory() {
       errorHandler.handleError({
         type: ErrorType.HISTORY_UPDATE_FAILED,
         severity: ErrorSeverity.MEDIUM,
-        message: '添加命令到历史记录失败',
+        message: 'Failed to add command to history',
         details: error instanceof Error ? error.message : String(error),
       })
     }
@@ -44,8 +44,8 @@ export function useCommandHistory() {
         errorHandler.handleError({
           type: ErrorType.INVALID_INPUT,
           severity: ErrorSeverity.HIGH,
-          message: '历史导航回调不是函数',
-          details: `回调类型: ${typeof callback}`,
+          message: 'History navigation callback is not a function',
+          details: `Callback type: ${typeof callback}`,
         })
         return
       }
@@ -64,7 +64,7 @@ export function useCommandHistory() {
             errorHandler.handleError({
               type: ErrorType.CALLBACK_EXECUTION_FAILED,
               severity: ErrorSeverity.MEDIUM,
-              message: '历史导航回调执行失败',
+              message: 'History navigation callback execution failed',
               details: error instanceof Error ? error.message : String(error),
             })
           }
@@ -79,7 +79,7 @@ export function useCommandHistory() {
               errorHandler.handleError({
                 type: ErrorType.CALLBACK_EXECUTION_FAILED,
                 severity: ErrorSeverity.MEDIUM,
-                message: '历史导航回调执行失败',
+                message: 'History navigation callback execution failed',
                 details: error instanceof Error ? error.message : String(error),
               })
             }
@@ -91,7 +91,7 @@ export function useCommandHistory() {
               errorHandler.handleError({
                 type: ErrorType.CALLBACK_EXECUTION_FAILED,
                 severity: ErrorSeverity.MEDIUM,
-                message: '历史导航回调执行失败',
+                message: 'History navigation callback execution failed',
                 details: error instanceof Error ? error.message : String(error),
               })
             }
@@ -102,7 +102,7 @@ export function useCommandHistory() {
       errorHandler.handleError({
         type: ErrorType.HISTORY_NAVIGATION_FAILED,
         severity: ErrorSeverity.MEDIUM,
-        message: '命令历史导航失败',
+        message: 'Command history navigation failed',
         details: error instanceof Error ? error.message : String(error),
       })
     }
@@ -115,7 +115,7 @@ export function useCommandHistory() {
       errorHandler.handleError({
         type: ErrorType.HISTORY_RESET_FAILED,
         severity: ErrorSeverity.LOW,
-        message: '历史索引重置失败',
+        message: 'History index reset failed',
         details: error instanceof Error ? error.message : String(error),
       })
     }

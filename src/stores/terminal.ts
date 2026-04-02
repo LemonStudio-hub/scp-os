@@ -1,83 +1,55 @@
-/**
- * Terminal Store
- * 管理终端相关的状态
- */
-
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { getResponsiveFontSize } from '../utils/terminal'
 
-export interface TerminalState {
-  isReady: boolean
-  fontSize: number
-  isMobile: boolean
-  fastBoot: boolean
-}
-
+/**
+ * Terminal state management
+ */
 export const useTerminalStore = defineStore('terminal', () => {
-  // State
   const isReady = ref(false)
-  const fontSize = ref(16)
+  const fontSize = ref(getResponsiveFontSize())
   const isMobile = ref(false)
-  const fastBoot = ref(false)
 
-  // Getters
-  const terminalState = computed<TerminalState>(() => ({
-    isReady: isReady.value,
-    fontSize: fontSize.value,
-    isMobile: isMobile.value,
-    fastBoot: fastBoot.value,
-  }))
-
-  // Actions
-  function setReady(ready: boolean) {
-    isReady.value = ready
+  /**
+   * Initialize terminal
+   */
+  function initialize() {
+    updateFontSize()
+    checkMobile()
+    isReady.value = true
   }
 
-  function setFontSize(size: number) {
-    fontSize.value = size
-  }
-
-  function setMobile(mobile: boolean) {
-    isMobile.value = mobile
-  }
-
-  function setFastBoot(enabled: boolean) {
-    fastBoot.value = enabled
-  }
-
+  /**
+   * Update font size based on screen width
+   */
   function updateFontSize() {
-    const screenWidth = window.innerWidth
-
-    if (screenWidth >= 1200) {
-      fontSize.value = 16
-    } else if (screenWidth >= 768) {
-      fontSize.value = 14
-    } else if (screenWidth >= 480) {
-      fontSize.value = 12
-    } else {
-      fontSize.value = 10
-    }
+    fontSize.value = getResponsiveFontSize()
   }
 
+  /**
+   * Check if device is mobile
+   */
   function checkMobile() {
-    const screenWidth = window.innerWidth
-    isMobile.value = screenWidth < 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  }
+
+  /**
+   * Setup resize listener
+   */
+  function setupResizeListener() {
+    window.addEventListener('resize', () => {
+      updateFontSize()
+      checkMobile()
+    })
   }
 
   return {
-    // State
     isReady,
     fontSize,
     isMobile,
-    fastBoot,
-    // Getters
-    terminalState,
-    // Actions
-    setReady,
-    setFontSize,
-    setMobile,
-    setFastBoot,
+    initialize,
     updateFontSize,
     checkMobile,
+    setupResizeListener,
   }
 })

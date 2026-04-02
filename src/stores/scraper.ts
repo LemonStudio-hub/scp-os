@@ -1,69 +1,57 @@
-/**
- * Scraper Store
- * 管理 API 缓存和请求状态
- */
-
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import type { SCPWikiData } from '../types/scraper'
+import { config } from '../config'
 
-export interface CacheEntry {
-  data: SCPWikiData
-  timestamp: number
-  ttl: number
-}
-
+/**
+ * API cache and request state management
+ */
 export const useScraperStore = defineStore('scraper', () => {
-  // State
-  const cache = ref<Map<string, CacheEntry>>(new Map())
+  const cache = ref<Map<string, { data: SCPWikiData, timestamp: number }>>(new Map())
   const isLoading = ref(false)
   const lastError = ref<string | null>(null)
-  const cacheDuration = 30 * 60 * 1000 // 30 minutes
 
-  // Getters
-  const cacheSize = computed(() => cache.value.size)
-  const isCacheEmpty = computed(() => cache.value.size === 0)
-  const hasError = computed(() => lastError.value !== null)
-
-  // Actions
+  /**
+   * Get from cache
+   */
   function getFromCache(key: string): SCPWikiData | null {
-    const entry = cache.value.get(key)
-    if (!entry) {
-      return null
-    }
-
-    const now = Date.now()
-    if (now - entry.timestamp > entry.ttl) {
-      // Cache expired
+    const cached = cache.value.get(key)
+    if (cached) {
+      const now = Date.now()
+      if (now - cached.timestamp < config.cache.duration) {
+        return cached.data
+      }
       cache.value.delete(key)
-      return null
     }
-
-    return entry.data
+    return null
   }
 
-  function saveToCache(key: string, data: SCPWikiData, ttl?: number) {
+  /**
+   * Save to cache
+   */
+  function saveToCache(key: string, data: SCPWikiData): void {
     cache.value.set(key, {
       data,
-      timestamp: Date.now(),
-      ttl: ttl || cacheDuration,
+      timestamp: Date.now()
     })
   }
 
-  function removeFromCache(key: string) {
-    cache.value.delete(key)
-  }
-
-  function clearCache() {
+  /**
+   * Clear cache
+   */
+  function clearCache(): void {
     cache.value.clear()
   }
 
-  function cleanExpiredCache() {
+  /**
+   * Clear expired cache entries
+   */
+  function clearExpiredCache(): void {
     const now = Date.now()
     const expiredKeys: string[] = []
 
-    cache.value.forEach((entry, key) => {
-      if (now - entry.timestamp > entry.ttl) {
+    cache.value.forEach((value, key) => {
+      if (now - value.timestamp > config.cache.duration) {
         expiredKeys.push(key)
       }
     })
@@ -71,65 +59,61 @@ export const useScraperStore = defineStore('scraper', () => {
     expiredKeys.forEach(key => cache.value.delete(key))
   }
 
-  function setLoading(loading: boolean) {
+  /**
+   * Get cache statistics
+   */
+  function getCacheStats() {
+    const now = Date.now()
+    let expired = 0
+    let totalSize = 0
+
+    cache.value.forEach((value) => {
+      totalSize += JSON.stringify(value.data).length
+      if (now - value.timestamp > config.cache.duration) {
+        expired++
+      }
+    })
+
+    return {
+      totalEntries: cache.value.size,
+      expiredEntries: expired,
+      totalSize: totalSize,
+      averageSize: cache.value.size > 0 ? totalSize / cache.value.size : 0,
+    }
+  }
+
+  /**
+   * Set loading state
+   */
+  function setLoading(loading: boolean): void {
     isLoading.value = loading
   }
 
-  function setError(error: string | null) {
+  /**
+   * Set error
+   */
+  function setError(error: string | null): void {
     lastError.value = error
   }
 
-  function getCacheKeys(): string[] {
-    return Array.from(cache.value.keys())
-  }
-
-  function getCacheEntry(key: string): CacheEntry | null {
-    return cache.value.get(key) || null
-  }
-
-  function updateCacheTTL(key: string, ttl: number) {
-    const entry = cache.value.get(key)
-    if (entry) {
-      entry.ttl = ttl
-      cache.value.set(key, entry)
-    }
-  }
-
-  function getCacheStats() {
-    const entries = Array.from(cache.value.values())
-    const now = Date.now()
-    const validCount = entries.filter(e => now - e.timestamp <= e.ttl).length
-    const expiredCount = entries.length - validCount
-
-    return {
-      total: entries.length,
-      valid: validCount,
-      expired: expiredCount,
-      size: new Blob([JSON.stringify(entries)]).size,
-    }
+  /**
+   * Clear error
+   */
+  function clearError(): void {
+    lastError.value = null
   }
 
   return {
-    // State
     cache,
     isLoading,
     lastError,
-    cacheDuration,
-    // Getters
-    cacheSize,
-    isCacheEmpty,
-    hasError,
-    // Actions
     getFromCache,
     saveToCache,
-    removeFromCache,
     clearCache,
-    cleanExpiredCache,
+    clearExpiredCache,
+    getCacheStats,
     setLoading,
     setError,
-    getCacheKeys,
-    getCacheEntry,
-    updateCacheTTL,
-    getCacheStats,
+    clearError,
   }
 })

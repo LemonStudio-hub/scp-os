@@ -5,15 +5,15 @@ import App from './App.vue'
 import { errorHandler, ErrorType, ErrorSeverity } from './utils/errorHandler'
 import { useTerminalStore } from './stores'
 
-// 创建 Pinia 实例
+// Create Pinia instance
 const pinia = createPinia()
 
-// 设置全局错误处理
+// Set up global error handling
 window.addEventListener('error', (event) => {
   errorHandler.handleError({
     type: ErrorType.GLOBAL_ERROR,
     severity: ErrorSeverity.CRITICAL,
-    message: '全局错误',
+    message: 'Global error',
     details: event.error ? event.error.message : event.message,
     stack: event.error ? event.error.stack : undefined,
     logToConsole: true,
@@ -24,7 +24,7 @@ window.addEventListener('unhandledrejection', (event) => {
   errorHandler.handleError({
     type: ErrorType.UNHANDLED_PROMISE_REJECTION,
     severity: ErrorSeverity.HIGH,
-    message: '未处理的 Promise 拒绝',
+    message: 'Unhandled Promise rejection',
     details: event.reason instanceof Error ? event.reason.message : String(event.reason),
     stack: event.reason instanceof Error ? event.reason.stack : undefined,
     logToConsole: true,
@@ -33,26 +33,26 @@ window.addEventListener('unhandledrejection', (event) => {
 
 const app = createApp(App)
 
-// 使用 Pinia
+// Use Pinia
 app.use(pinia)
 
-// 初始化 terminal store
+// Initialize terminal store
 const terminalStore = useTerminalStore()
 terminalStore.checkMobile()
 terminalStore.updateFontSize()
 
-// 监听窗口大小变化
+// Listen for window size changes
 window.addEventListener('resize', () => {
   terminalStore.checkMobile()
   terminalStore.updateFontSize()
 })
 
-// 设置 Vue 错误处理器
+// Set up Vue error handler
 app.config.errorHandler = (err, _instance, info) => {
   errorHandler.handleError({
     type: ErrorType.VUE_ERROR,
     severity: ErrorSeverity.CRITICAL,
-    message: 'Vue 错误',
+    message: 'Vue error',
     details: err instanceof Error ? err.message : String(err),
     context: info,
     stack: err instanceof Error ? err.stack : undefined,

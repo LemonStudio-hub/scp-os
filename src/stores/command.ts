@@ -1,137 +1,117 @@
-/**
- * Command Store
- * 管理命令历史和状态
- */
-
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 
-export interface CommandHistoryItem {
-  command: string
-  timestamp: number
-  index: number
-}
-
+/**
+ * Command history and state management
+ */
 export const useCommandStore = defineStore('command', () => {
-  // State
-  const history = ref<CommandHistoryItem[]>([])
+  const history = ref<string[]>([])
   const currentIndex = ref(-1)
-  const maxHistorySize = 500
-  const currentInput = ref('')
+  const maxSize = 500
 
-  // Getters
-  const historyCount = computed(() => history.value.length)
-  const previousCommand = computed(() => {
-    if (currentIndex.value >= 0 && currentIndex.value < history.value.length) {
-      return history.value[currentIndex.value].command
-    }
-    return ''
-  })
-  const nextCommand = computed(() => {
-    const nextIndex = currentIndex.value + 1
-    if (nextIndex >= 0 && nextIndex < history.value.length) {
-      return history.value[nextIndex].command
-    }
-    return ''
-  })
-  const canGoBack = computed(() => currentIndex.value > 0)
-  const canGoForward = computed(() => currentIndex.value < history.value.length - 1)
-
-  // Actions
+  /**
+   * Add command to history
+   */
   function addToHistory(command: string) {
-    // 跳过空字符串
-    if (!command.trim()) {
+    // Skip empty strings
+    if (!command || command.trim() === '') {
       return
     }
 
-    // 检查是否与上一条命令相同
-    const lastCommand = history.value[history.value.length - 1]
-    if (lastCommand && lastCommand.command === command) {
+    // Check if it's the same as the last command
+    if (history.value.length > 0 && history.value[history.value.length - 1] === command) {
       return
     }
 
-    // 添加到历史记录
-    history.value.push({
-      command,
-      timestamp: Date.now(),
-      index: history.value.length,
-    })
+    // Add to history
+    history.value.push(command)
 
-    // 如果超过最大大小，移除最旧的
-    if (history.value.length > maxHistorySize) {
+    // Limit history size
+    if (history.value.length > maxSize) {
       history.value.shift()
     }
 
-    // 重置当前索引到最新
-    currentIndex.value = history.value.length - 1
+    // Reset current index to the latest
+    currentIndex.value = history.value.length
   }
 
-  function navigateBack() {
-    if (canGoBack.value) {
-      currentIndex.value--
-      return history.value[currentIndex.value].command
+  /**
+   * Navigate history
+   */
+  function navigateHistory(direction: number): string | null {
+    if (history.value.length === 0) {
+      return null
     }
-    return ''
-  }
 
-  function navigateForward() {
-    if (canGoForward.value) {
-      currentIndex.value++
-      return history.value[currentIndex.value].command
+    const newIndex = currentIndex.value + direction
+
+    // Check bounds
+    if (newIndex < -1 || newIndex >= history.value.length) {
+      return null
     }
-    return ''
+
+    currentIndex.value = newIndex
+
+    if (newIndex === -1) {
+      // At the bottom of history
+      return ''
+    } else if (newIndex >= 0 && newIndex < history.value.length) {
+      // Navigate to a command in history
+      return history.value[newIndex]
+    }
+
+    return null
   }
 
+  /**
+   * Search history
+   */
+  function searchHistory(query: string): string[] {
+    if (!query) {
+      return []
+    }
+
+    const lowerQuery = query.toLowerCase()
+    return history.value.filter(cmd => 
+      cmd.toLowerCase().includes(lowerQuery)
+    )
+  }
+
+  /**
+   * Reset navigation
+   */
   function resetNavigation() {
     currentIndex.value = history.value.length
   }
 
-  function setCurrentInput(input: string) {
-    currentInput.value = input
-  }
-
+  /**
+   * Clear history
+   */
   function clearHistory() {
     history.value = []
     currentIndex.value = -1
-    currentInput.value = ''
   }
 
-  function getCommandByIndex(index: number): string | null {
-    if (index >= 0 && index < history.value.length) {
-      return history.value[index].command
+  /**
+   * Get history statistics
+   */
+  function getStats() {
+    return {
+      total: history.value.length,
+      currentIndex: currentIndex.value,
+      maxSize: maxSize,
+      percentage: (history.value.length / maxSize) * 100,
     }
-    return null
-  }
-
-  function searchHistory(keyword: string): CommandHistoryItem[] {
-    if (!keyword.trim()) {
-      return []
-    }
-    return history.value.filter(item =>
-      item.command.toLowerCase().includes(keyword.toLowerCase())
-    )
   }
 
   return {
-    // State
     history,
     currentIndex,
-    currentInput,
-    maxHistorySize,
-    // Getters
-    historyCount,
-    previousCommand,
-    nextCommand,
-    canGoBack,
-    canGoForward,
-    // Actions
     addToHistory,
-    navigateBack,
-    navigateForward,
-    resetNavigation,
-    setCurrentInput,
-    clearHistory,
-    getCommandByIndex,
+    navigateHistory,
     searchHistory,
+    resetNavigation,
+    clearHistory,
+    getStats,
   }
 })
