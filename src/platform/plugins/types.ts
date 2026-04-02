@@ -5,6 +5,90 @@
 import type { Component } from 'vue'
 
 /**
+ * Extension interface
+ */
+export interface Extension<T = any> {
+  /** Extension ID */
+  id: string
+  /** Extension name */
+  name: string
+  /** Extension description */
+  description?: string
+  /** Extension version */
+  version?: string
+  /** Extension author */
+  author?: string
+  /** Extension data */
+  data: T
+}
+
+/**
+ * Extension metadata
+ */
+export interface ExtensionMetadata {
+  /** Extension point ID */
+  id: string
+  /** Extension point name */
+  name: string
+  /** Extension point description */
+  description: string
+  /** Registered extensions */
+  extensions: {
+    id: string
+    name: string
+    description: string
+    version: string
+    author: string
+  }[]
+  /** Created timestamp */
+  createdAt: number
+}
+
+/**
+ * Extension point interface
+ */
+export interface ExtensionPoint<T = any> {
+  /** Extension point ID */
+  id: string
+  /** Extension point name */
+  name: string
+  /** Extension point description */
+  description: string
+  /** Extension metadata */
+  metadata: ExtensionMetadata
+
+  /**
+   * Register an extension
+   */
+  register(extension: Extension<T>): void
+
+  /**
+   * Unregister an extension
+   */
+  unregister(extensionId: string): void
+
+  /**
+   * Get an extension by ID
+   */
+  get(extensionId: string): Extension<T> | undefined
+
+  /**
+   * Get all extensions
+   */
+  getAll(): Extension<T>[]
+
+  /**
+   * Check if extension exists
+   */
+  has(extensionId: string): boolean
+
+  /**
+   * Clear all extensions
+   */
+  clear(): void
+}
+
+/**
  * Plugin lifecycle status
  */
 export const PluginStatus = {

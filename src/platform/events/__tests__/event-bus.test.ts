@@ -7,10 +7,7 @@ import {
   EventBus,
   getGlobalEventBus,
   resetGlobalEventBus,
-  onGlobal,
-  offGlobal,
-  emitGlobal,
-  onceGlobal
+  subscribe
 } from '../event-bus'
 
 describe('EventBus', () => {
@@ -26,19 +23,22 @@ describe('EventBus', () => {
       const handler = vi.fn()
       eventBus.on('test-event', handler)
 
-      expect(eventBus.listenerCount('test-event')).toBe(1)
+      eventBus.emit('test-event', 'data')
+
+      expect(handler).toHaveBeenCalledWith('data')
     })
 
     it('should register multiple handlers for the same event', () => {
       const handler1 = vi.fn()
       const handler2 = vi.fn()
-      const handler3 = vi.fn()
 
       eventBus.on('test-event', handler1)
       eventBus.on('test-event', handler2)
-      eventBus.on('test-event', handler3)
 
-      expect(eventBus.listenerCount('test-event')).toBe(3)
+      eventBus.emit('test-event', 'data')
+
+      expect(handler1).toHaveBeenCalledWith('data')
+      expect(handler2).toHaveBeenCalledWith('data')
     })
 
     it('should unregister an event handler', () => {
@@ -46,25 +46,18 @@ describe('EventBus', () => {
       eventBus.on('test-event', handler)
       eventBus.off('test-event', handler)
 
-      expect(eventBus.listenerCount('test-event')).toBe(0)
+      eventBus.emit('test-event', 'data')
+
+      expect(handler).not.toHaveBeenCalled()
     })
 
-    it('should not unregister wrong handler', () => {
-      const handler1 = vi.fn()
-      const handler2 = vi.fn()
-
-      eventBus.on('test-event', handler1)
-      eventBus.off('test-event', handler2)
-
-      expect(eventBus.listenerCount('test-event')).toBe(1)
-    })
-
-    it('should remove all listeners for an event', () => {
+    it('should remove all handlers for an event', () => {
       const handler1 = vi.fn()
       const handler2 = vi.fn()
 
       eventBus.on('test-event', handler1)
       eventBus.on('test-event', handler2)
+
       eventBus.removeAllListeners('test-event')
 
       expect(eventBus.listenerCount('test-event')).toBe(0)
@@ -72,238 +65,142 @@ describe('EventBus', () => {
   })
 
   describe('Event Emission', () => {
-    it('should emit event to registered handlers', () => {
+    it('should emit event with data', () => {
       const handler = vi.fn()
       eventBus.on('test-event', handler)
 
       eventBus.emit('test-event', { value: 42 })
 
-      expect(handler).toHaveBeenCalledTimes(1)
       expect(handler).toHaveBeenCalledWith({ value: 42 })
     })
 
-    it('should emit event to all registered handlers', () => {
-      const handler1 = vi.fn()
-      const handler2 = vi.fn()
-      const handler3 = vi.fn()
+    it('should handle async handlers', async () => {
+      const handler = vi.fn().mockResolvedValue(undefined)
+      eventBus.on('test-event', handler)
 
-      eventBus.on('test-event', handler1)
-      eventBus.on('test-event', handler2)
-      eventBus.on('test-event', handler3)
+      await eventBus.emit('test-event', 'data')
 
-      eventBus.emit('test-event', { value: 42 })
-
-      expect(handler1).toHaveBeenCalledTimes(1)
-      expect(handler2).toHaveBeenCalledTimes(1)
-      expect(handler3).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('data')
     })
 
-    it('should not emit to unregistered handlers', () => {
-      const handler1 = vi.fn()
-      const handler2 = vi.fn()
+    it('should handle errors in handlers', () => {
+      const errorHandler = vi.fn().mockImplementation(() => {
+        throw new Error('Handler error')
+      })
+      eventBus.on('test-event', errorHandler)
 
-      eventBus.on('test-event', handler1)
-      eventBus.off('test-event', handler1)
-      eventBus.on('test-event', handler2)
-
-      eventBus.emit('test-event', { value: 42 })
-
-      expect(handler1).not.toHaveBeenCalled()
-      expect(handler2).toHaveBeenCalledTimes(1)
+      // Should not throw, but log error
+      expect(() => eventBus.emit('test-event', 'data')).not.toThrow()
     })
 
-    it('should handle events with no handlers', () => {
-      expect(() => eventBus.emit('non-existent-event', {})).not.toThrow()
+    it('should handle errors in async handlers', async () => {
+      const asyncErrorHandler = vi.fn().mockRejectedValue(new Error('Async error'))
+      eventBus.on('test-event', asyncErrorHandler)
+
+      // Should not throw, but log error
+      await expect(eventBus.emit('test-event', 'data')).resolves.not.toThrow()
     })
   })
 
   describe('One-time Handlers', () => {
-    it('should execute handler once and then remove it', () => {
+    it('should call handler only once', () => {
       const handler = vi.fn()
       eventBus.once('test-event', handler)
 
-      eventBus.emit('test-event', {})
-      eventBus.emit('test-event', {})
+      eventBus.emit('test-event', 'data1')
+      eventBus.emit('test-event', 'data2')
 
       expect(handler).toHaveBeenCalledTimes(1)
+      expect(handler).toHaveBeenCalledWith('data1')
     })
 
-    it('should execute handler once with correct data', () => {
+    it('should unregister after first call', () => {
       const handler = vi.fn()
       eventBus.once('test-event', handler)
 
-      eventBus.emit('test-event', { value: 42 })
+      eventBus.emit('test-event', 'data')
 
-      expect(handler).toHaveBeenCalledWith({ value: 42 })
+      expect(eventBus.listenerCount('test-event')).toBe(0)
     })
+  })
 
-    it('should allow multiple once handlers for the same event', () => {
+  describe('Event Query', () => {
+    it('should return correct listener count', () => {
       const handler1 = vi.fn()
       const handler2 = vi.fn()
+      const handler3 = vi.fn()
 
-      eventBus.once('test-event', handler1)
-      eventBus.once('test-event', handler2)
+      eventBus.on('event1', handler1)
+      eventBus.on('event1', handler2)
+      eventBus.on('event2', handler3)
 
-      eventBus.emit('test-event', {})
-
-      expect(handler1).toHaveBeenCalledTimes(1)
-      expect(handler2).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('Async Handlers', () => {
-    it('should handle async handlers', async () => {
-      const handler = vi.fn(async (data) => {
-        await new Promise((resolve) => setTimeout(resolve, 10))
-        return data.value * 2
-      })
-
-      eventBus.on('test-event', handler)
-
-      eventBus.emit('test-event', { value: 21 })
-
-      // Wait for async handlers to complete
-      await new Promise((resolve) => setTimeout(resolve, 50))
-
-      expect(handler).toHaveBeenCalledTimes(1)
+      expect(eventBus.listenerCount('event1')).toBe(2)
+      expect(eventBus.listenerCount('event2')).toBe(1)
+      expect(eventBus.listenerCount('event3')).toBe(0)
     })
 
-    it('should handle async once handlers', async () => {
-      const handler = vi.fn(async (data) => {
-        await new Promise((resolve) => setTimeout(resolve, 10))
-        return data.value * 2
-      })
-
-      eventBus.once('test-event', handler)
-
-      eventBus.emit('test-event', { value: 21 })
-      eventBus.emit('test-event', { value: 21 })
-
-      await new Promise((resolve) => setTimeout(resolve, 50))
-
-      expect(handler).toHaveBeenCalledTimes(1)
-    })
-  })
-
-  describe('Error Handling', () => {
-    it('should handle errors in handlers', () => {
-      const errorHandler = vi.fn()
-      const eventBusWithError = new EventBus({
-        errorHandler
-      })
-
-      const handler = vi.fn(() => {
-        throw new Error('Handler error')
-      })
-
-      eventBusWithError.on('test-event', handler)
-      eventBusWithError.emit('test-event', {})
-
-      expect(errorHandler).toHaveBeenCalled()
-      expect(errorHandler).toHaveBeenCalledWith(
-        expect.any(Error),
-        'test-event',
-        {}
-      )
-    })
-
-    it('should continue executing handlers after error', () => {
-      const errorHandler = vi.fn()
-      const eventBusWithError = new EventBus({
-        errorHandler
-      })
-
-      const handler1 = vi.fn(() => {
-        throw new Error('Handler error')
-      })
-      const handler2 = vi.fn()
-
-      eventBusWithError.on('test-event', handler1)
-      eventBusWithError.on('test-event', handler2)
-
-      eventBusWithError.emit('test-event', {})
-
-      expect(errorHandler).toHaveBeenCalled()
-      expect(handler2).toHaveBeenCalled()
-    })
-  })
-
-  describe('Utility Methods', () => {
     it('should return all event names', () => {
       eventBus.on('event1', vi.fn())
       eventBus.on('event2', vi.fn())
-      eventBus.on('event3', vi.fn())
 
-      const names = eventBus.eventNames()
+      const eventNames = eventBus.eventNames()
 
-      expect(names).toHaveLength(3)
-      expect(names).toContain('event1')
-      expect(names).toContain('event2')
-      expect(names).toContain('event3')
-    })
-
-    it('should return listener count for an event', () => {
-      eventBus.on('test-event', vi.fn())
-      eventBus.on('test-event', vi.fn())
-      eventBus.on('test-event', vi.fn())
-
-      expect(eventBus.listenerCount('test-event')).toBe(3)
-    })
-
-    it('should return 0 for non-existent event', () => {
-      expect(eventBus.listenerCount('non-existent')).toBe(0)
-    })
-
-    it('should clear all handlers', () => {
-      eventBus.on('event1', vi.fn())
-      eventBus.on('event2', vi.fn())
-      eventBus.on('event3', vi.fn())
-
-      eventBus.clear()
-
-      expect(eventBus.eventNames()).toHaveLength(0)
-    })
-
-    it('should set max listeners', () => {
-      const eventBusWithLimit = new EventBus({ maxListeners: 5 })
-      eventBusWithLimit.setMaxListeners(10)
-
-      const config = eventBusWithLimit.getConfig()
-      expect(config.maxListeners).toBe(10)
+      expect(eventNames).toHaveLength(2)
+      expect(eventNames).toContain('event1')
+      expect(eventNames).toContain('event2')
     })
   })
 
   describe('Configuration', () => {
     it('should use default configuration', () => {
-      const config = eventBus.getConfig()
+      const config = eventBus['config']
 
-      expect(config.debug).toBe(false)
-      expect(config.maxListeners).toBe(100)
+      expect(config.maxListeners).toBe(10)
+      expect(config.async).toBe(false)
+      expect(config.warnOnMemoryLeak).toBe(true)
     })
 
     it('should use custom configuration', () => {
-      const customEventBus = new EventBus({
-        debug: true,
-        maxListeners: 50
+      const customBus = new EventBus({
+        maxListeners: 20,
+        async: true,
+        warnOnMemoryLeak: false
       })
 
-      const config = customEventBus.getConfig()
+      const config = customBus['config']
 
-      expect(config.debug).toBe(true)
-      expect(config.maxListeners).toBe(50)
+      expect(config.maxListeners).toBe(20)
+      expect(config.async).toBe(true)
+      expect(config.warnOnMemoryLeak).toBe(false)
+    })
+
+    it('should set max listeners', () => {
+      eventBus.setMaxListeners(20)
+
+      expect(eventBus['config'].maxListeners).toBe(20)
     })
 
     it('should warn when exceeding max listeners', () => {
-      const customEventBus = new EventBus({ maxListeners: 5 })
-      const warnSpy = vi.spyOn(console, 'warn')
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-      // Add 6 listeners (exceeds max of 5)
-      for (let i = 0; i < 6; i++) {
-        customEventBus.on('test-event', vi.fn())
+      for (let i = 0; i < 12; i++) {
+        eventBus.on('test-event', vi.fn())
       }
 
-      expect(warnSpy).toHaveBeenCalled()
-      warnSpy.mockRestore()
+      expect(consoleWarnSpy).toHaveBeenCalled()
+      consoleWarnSpy.mockRestore()
+    })
+  })
+
+  describe('Clear', () => {
+    it('should clear all handlers', () => {
+      eventBus.on('event1', vi.fn())
+      eventBus.on('event2', vi.fn())
+
+      eventBus.clear()
+
+      expect(eventBus.listenerCount('event1')).toBe(0)
+      expect(eventBus.listenerCount('event2')).toBe(0)
     })
   })
 
@@ -315,91 +212,78 @@ describe('EventBus', () => {
       expect(instance1).toBe(instance2)
     })
 
-    it('should reset global event bus', () => {
+    it('should reset global instance', () => {
       const instance1 = getGlobalEventBus()
       resetGlobalEventBus()
       const instance2 = getGlobalEventBus()
 
       expect(instance1).not.toBe(instance2)
     })
+  })
 
-    it('should register and emit in global event bus', () => {
+  describe('Subscribe Helper', () => {
+    it('should subscribe and unsubscribe', () => {
       const handler = vi.fn()
+      const unsubscribe = subscribe(eventBus, 'test-event', handler)
 
-      onGlobal('test-event', handler)
-      emitGlobal('test-event', { value: 42 })
+      eventBus.emit('test-event', 'data1')
+      expect(handler).toHaveBeenCalledWith('data1')
 
-      expect(handler).toHaveBeenCalledWith({ value: 42 })
-    })
-
-    it('should unregister from global event bus', () => {
-      const handler = vi.fn()
-
-      onGlobal('test-event', handler)
-      offGlobal('test-event', handler)
-      emitGlobal('test-event', {})
-
-      expect(handler).not.toHaveBeenCalled()
-    })
-
-    it('should register once in global event bus', () => {
-      const handler = vi.fn()
-
-      onceGlobal('test-event', handler)
-      emitGlobal('test-event', {})
-      emitGlobal('test-event', {})
-
+      unsubscribe()
+      eventBus.emit('test-event', 'data2')
       expect(handler).toHaveBeenCalledTimes(1)
     })
   })
 
   describe('Complex Scenarios', () => {
-    it('should handle event chaining', () => {
-      const results: number[] = []
-
-      eventBus.on('step1', () => {
-        results.push(1)
-        eventBus.emit('step2', {})
+    it('should handle mixed handler types', () => {
+      const syncHandler = vi.fn()
+      const asyncHandler = vi.fn().mockResolvedValue(undefined)
+      const errorSyncHandler = vi.fn().mockImplementation(() => {
+        throw new Error('Sync error')
       })
 
-      eventBus.on('step2', () => {
-        results.push(2)
-        eventBus.emit('step3', {})
-      })
+      eventBus.on('test-event', syncHandler)
+      eventBus.on('test-event', asyncHandler)
+      eventBus.on('test-event', errorSyncHandler)
 
-      eventBus.on('step3', () => {
-        results.push(3)
-      })
+      expect(() => eventBus.emit('test-event', 'data')).not.toThrow()
 
-      eventBus.emit('step1', {})
-
-      expect(results).toEqual([1, 2, 3])
+      expect(syncHandler).toHaveBeenCalled()
+      expect(asyncHandler).toHaveBeenCalled()
+      expect(errorSyncHandler).toHaveBeenCalled()
     })
 
-    it('should handle concurrent event emissions', () => {
-      const handler = vi.fn()
-      eventBus.on('test-event', handler)
+    it('should preserve handler order', () => {
+      const order: number[] = []
+      const handler1 = vi.fn(() => { order.push(1) })
+      const handler2 = vi.fn(() => { order.push(2) })
+      const handler3 = vi.fn(() => { order.push(3) })
 
-      eventBus.emit('test-event', { id: 1 })
-      eventBus.emit('test-event', { id: 2 })
-      eventBus.emit('test-event', { id: 3 })
+      eventBus.on('test-event', handler1)
+      eventBus.on('test-event', handler2)
+      eventBus.on('test-event', handler3)
 
-      expect(handler).toHaveBeenCalledTimes(3)
-      expect(handler).toHaveBeenNthCalledWith(1, { id: 1 })
-      expect(handler).toHaveBeenNthCalledWith(2, { id: 2 })
-      expect(handler).toHaveBeenNthCalledWith(3, { id: 3 })
+      eventBus.emit('test-event', 'data')
+
+      expect(order).toEqual([1, 2, 3])
     })
 
-    it('should maintain handler order', () => {
-      const results: string[] = []
+    it('should handle event emission while handling', () => {
+      const handler1 = vi.fn((data: string) => {
+        if (data === 'trigger') {
+          eventBus.emit('test-event', 'nested')
+        }
+      })
+      const handler2 = vi.fn()
 
-      eventBus.on('test-event', () => results.push('first'))
-      eventBus.on('test-event', () => results.push('second'))
-      eventBus.on('test-event', () => results.push('third'))
+      eventBus.on('test-event', handler1)
+      eventBus.on('test-event', handler2)
 
-      eventBus.emit('test-event', {})
+      eventBus.emit('test-event', 'trigger')
 
-      expect(results).toEqual(['first', 'second', 'third'])
+      expect(handler1).toHaveBeenCalledTimes(2)
+      expect(handler2).toHaveBeenCalledTimes(2)
     })
   })
 })

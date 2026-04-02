@@ -1,160 +1,80 @@
 /**
  * Extension Point System
- * Manages extensible points in the application where plugins can register their extensions
+ * Provides extension points for plugins to extend the platform
  */
 
-import type {
-  CommandDefinition,
-  ThemeDefinition,
-  DataSourceDefinition,
-  UIComponentDefinition
-} from '../plugins/types'
+import type { ExtensionPoint, Extension, ExtensionMetadata } from '../plugins/types'
 
 /**
- * Generic extension point interface
+ * Generic extension point
  */
-export interface ExtensionPoint<T = any> {
-  /** Extension point name */
+class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
+  id: string
   name: string
-  /** Extension point description */
-  description?: string
-  /** Register an extension */
-  register(extension: T): void
-  /** Unregister an extension */
-  unregister(extension: T): void
-  /** Get all extensions */
-  getAll(): T[]
-  /** Get extension by name */
-  get(name: string): T | undefined
-  /** Check if extension exists */
-  has(name: string): boolean
-}
+  description: string
+  extensions: Map<string, Extension<T>>
+  metadata: ExtensionMetadata
 
-/**
- * Generic extension point implementation
- */
-export class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
-  protected extensions = new Map<string, T>()
-
-  constructor(
-    public name: string,
-    public description?: string
-  ) {}
-
-  register(extension: T): void {
-    const extName = this.getExtensionName(extension)
-    if (this.extensions.has(extName)) {
-      console.warn(
-        `[ExtensionPoint] Extension "${extName}" is already registered in point "${this.name}". Replacing...`
-      )
+  constructor(id: string, name: string, description: string) {
+    this.id = id
+    this.name = name
+    this.description = description
+    this.extensions = new Map()
+    this.metadata = {
+      id,
+      name,
+      description,
+      extensions: [],
+      createdAt: Date.now()
     }
-    this.extensions.set(extName, extension)
   }
 
-  unregister(extension: T): void {
-    const extName = this.getExtensionName(extension)
-    this.extensions.delete(extName)
+  register(extension: Extension<T>): void {
+    if (this.extensions.has(extension.id)) {
+      throw new Error(`Extension with id ${extension.id} already exists`)
+    }
+
+    this.extensions.set(extension.id, extension)
+    this.metadata.extensions.push({
+      id: extension.id,
+      name: extension.name,
+      description: extension.description || '',
+      version: extension.version || '1.0.0',
+      author: extension.author || 'Unknown'
+    })
+
+    console.log(`[ExtensionPoint] Registered extension ${extension.id} in ${this.id}`)
   }
 
-  getAll(): T[] {
+  unregister(extensionId: string): void {
+    if (!this.extensions.has(extensionId)) {
+      throw new Error(`Extension with id ${extensionId} not found`)
+    }
+
+    this.extensions.delete(extensionId)
+    this.metadata.extensions = this.metadata.extensions.filter(
+      (e: { id: string }) => e.id !== extensionId
+    )
+
+    console.log(`[ExtensionPoint] Unregistered extension ${extensionId} from ${this.id}`)
+  }
+
+  get(extensionId: string): Extension<T> | undefined {
+    return this.extensions.get(extensionId)
+  }
+
+  getAll(): Extension<T>[] {
     return Array.from(this.extensions.values())
   }
 
-  get(name: string): T | undefined {
-    return this.extensions.get(name)
-  }
-
-  has(name: string): boolean {
-    return this.extensions.has(name)
+  has(extensionId: string): boolean {
+    return this.extensions.has(extensionId)
   }
 
   clear(): void {
     this.extensions.clear()
-  }
-
-  protected getExtensionName(extension: T): string {
-    // Handle different extension types
-    if (typeof extension === 'object' && extension !== null) {
-      if ('name' in extension && typeof extension.name === 'string') {
-        return extension.name
-      }
-    }
-    return String(extension)
-  }
-}
-
-/**
- * Command extension point
- */
-export class CommandExtensionPoint extends GenericExtensionPoint<CommandDefinition> {
-  constructor() {
-    super('commands', 'Extension point for terminal commands')
-  }
-
-  register(extension: CommandDefinition): void {
-    super.register(extension)
-  }
-
-  unregister(extension: CommandDefinition): void {
-    // Also unregister aliases
-    if (extension.aliases) {
-      for (const alias of extension.aliases) {
-        this.extensions.delete(alias)
-      }
-    }
-    super.unregister(extension)
-  }
-
-  get(name: string): CommandDefinition | undefined {
-    // Try to find by name or alias
-    return (
-      this.extensions.get(name) ||
-      Array.from(this.extensions.values()).find(
-        (cmd) => cmd.aliases?.includes(name)
-      )
-    )
-  }
-
-  has(name: string): boolean {
-    return (
-      this.extensions.has(name) ||
-      Array.from(this.extensions.values()).some(
-        (cmd) => cmd.aliases?.includes(name)
-      )
-    )
-  }
-}
-
-/**
- * Theme extension point
- */
-export class ThemeExtensionPoint extends GenericExtensionPoint<ThemeDefinition> {
-  constructor() {
-    super('themes', 'Extension point for UI themes')
-  }
-}
-
-/**
- * Data source extension point
- */
-export class DataSourceExtensionPoint extends GenericExtensionPoint<DataSourceDefinition> {
-  constructor() {
-    super('datasources', 'Extension point for data sources')
-  }
-}
-
-/**
- * UI component extension point
- */
-export class UIComponentExtensionPoint extends GenericExtensionPoint<UIComponentDefinition> {
-  constructor() {
-    super('ui-components', 'Extension point for UI components')
-  }
-
-  getByPosition(position: string): UIComponentDefinition[] {
-    return Array.from(this.extensions.values())
-      .filter((comp) => comp.position === position)
-      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+    this.metadata.extensions = []
+    console.log(`[ExtensionPoint] Cleared all extensions from ${this.id}`)
   }
 }
 
@@ -163,140 +83,271 @@ export class UIComponentExtensionPoint extends GenericExtensionPoint<UIComponent
  * Central registry for all extension points
  */
 export class ExtensionRegistry {
-  private extensionPoints = new Map<string, ExtensionPoint>()
+  private extensionPoints: Map<string, ExtensionPoint>
 
   constructor() {
+    this.extensionPoints = new Map()
+
     // Register built-in extension points
-    this.registerExtensionPoint(new CommandExtensionPoint())
-    this.registerExtensionPoint(new ThemeExtensionPoint())
-    this.registerExtensionPoint(new DataSourceExtensionPoint())
-    this.registerExtensionPoint(new UIComponentExtensionPoint())
+    this.registerBuiltInExtensionPoints()
+
+    console.log('[ExtensionRegistry] Extension registry initialized')
   }
 
-  registerExtensionPoint<T>(point: ExtensionPoint<T>): void {
-    this.extensionPoints.set(point.name, point)
+  /**
+   * Register built-in extension points
+   */
+  private registerBuiltInExtensionPoints(): void {
+    // Command extension point
+    this.registerExtensionPoint(
+      'command',
+      'Command',
+      'Extension point for registering terminal commands'
+    )
+
+    // Theme extension point
+    this.registerExtensionPoint(
+      'theme',
+      'Theme',
+      'Extension point for registering UI themes'
+    )
+
+    // Data source extension point
+    this.registerExtensionPoint(
+      'data-source',
+      'Data Source',
+      'Extension point for registering data sources'
+    )
+
+    // UI component extension point
+    this.registerExtensionPoint(
+      'ui-component',
+      'UI Component',
+      'Extension point for registering UI components'
+    )
   }
 
-  getExtensionPoint<T>(name: string): ExtensionPoint<T> | undefined {
-    return this.extensionPoints.get(name) as ExtensionPoint<T>
+  /**
+   * Register an extension point
+   */
+  registerExtensionPoint(
+    id: string,
+    name: string,
+    description: string
+  ): ExtensionPoint {
+    if (this.extensionPoints.has(id)) {
+      throw new Error(`Extension point ${id} already exists`)
+    }
+
+    const extensionPoint = new GenericExtensionPoint(id, name, description)
+    this.extensionPoints.set(id, extensionPoint)
+
+    console.log(`[ExtensionRegistry] Registered extension point: ${id}`)
+
+    return extensionPoint
   }
 
+  /**
+   * Unregister an extension point
+   */
+  unregisterExtensionPoint(id: string): void {
+    if (!this.extensionPoints.has(id)) {
+      throw new Error(`Extension point ${id} not found`)
+    }
+
+    this.extensionPoints.delete(id)
+
+    console.log(`[ExtensionRegistry] Unregistered extension point: ${id}`)
+  }
+
+  /**
+   * Get an extension point
+   */
+  getExtensionPoint<T = any>(id: string): ExtensionPoint<T> | undefined {
+    return this.extensionPoints.get(id) as ExtensionPoint<T>
+  }
+
+  /**
+   * Get all extension points
+   */
   getAllExtensionPoints(): ExtensionPoint[] {
     return Array.from(this.extensionPoints.values())
   }
 
+  /**
+   * Check if extension point exists
+   */
+  hasExtensionPoint(id: string): boolean {
+    return this.extensionPoints.has(id)
+  }
+
+  /**
+   * Register an extension to an extension point
+   */
+  registerExtension<T = any>(
+    extensionPointId: string,
+    extension: Extension<T>
+  ): void {
+    const extensionPoint = this.getExtensionPoint<T>(extensionPointId)
+
+    if (!extensionPoint) {
+      throw new Error(`Extension point ${extensionPointId} not found`)
+    }
+
+    extensionPoint.register(extension)
+  }
+
+  /**
+   * Unregister an extension from an extension point
+   */
+  unregisterExtension(extensionPointId: string, extensionId: string): void {
+    const extensionPoint = this.getExtensionPoint(extensionPointId)
+
+    if (!extensionPoint) {
+      throw new Error(`Extension point ${extensionPointId} not found`)
+    }
+
+    extensionPoint.unregister(extensionId)
+  }
+
+  /**
+   * Get an extension from an extension point
+   */
+  getExtension<T = any>(
+    extensionPointId: string,
+    extensionId: string
+  ): Extension<T> | undefined {
+    const extensionPoint = this.getExtensionPoint<T>(extensionPointId)
+
+    if (!extensionPoint) {
+      throw new Error(`Extension point ${extensionPointId} not found`)
+    }
+
+    return extensionPoint.get(extensionId)
+  }
+
+  /**
+   * Get all extensions from an extension point
+   */
+  getExtensions<T = any>(extensionPointId: string): Extension<T>[] {
+    const extensionPoint = this.getExtensionPoint<T>(extensionPointId)
+
+    if (!extensionPoint) {
+      throw new Error(`Extension point ${extensionPointId} not found`)
+    }
+
+    return extensionPoint.getAll()
+  }
+
+  /**
+   * Clear all extensions from an extension point
+   */
+  clearExtensions(extensionPointId: string): void {
+    const extensionPoint = this.getExtensionPoint(extensionPointId)
+
+    if (!extensionPoint) {
+      throw new Error(`Extension point ${extensionPointId} not found`)
+    }
+
+    extensionPoint.clear()
+  }
+
+  /**
+   * Clear all extension points
+   */
   clear(): void {
-    this.extensionPoints.forEach((point) => {
-      if ('clear' in point && typeof point.clear === 'function') {
-        ;(point as any).clear()
-      }
+    this.extensionPoints.clear()
+    console.log('[ExtensionRegistry] Cleared all extension points')
+  }
+
+  /**
+   * Register a command extension
+   */
+  registerCommand(command: any): void {
+    this.registerExtension('command', {
+      id: command.name,
+      name: command.name,
+      description: command.description,
+      data: command
     })
   }
 
-  // Convenience methods for common extension points
-
-  registerCommand(command: CommandDefinition): void {
-    const point = this.getExtensionPoint<CommandDefinition>('commands')
-    if (point) {
-      point.register(command)
-    }
+  /**
+   * Register a theme extension
+   */
+  registerTheme(theme: any): void {
+    this.registerExtension('theme', {
+      id: theme.name,
+      name: theme.name,
+      description: 'Theme',
+      data: theme
+    })
   }
 
-  unregisterCommand(command: CommandDefinition): void {
-    const point = this.getExtensionPoint<CommandDefinition>('commands')
-    if (point) {
-      point.unregister(command)
-    }
+  /**
+   * Register a data source extension
+   */
+  registerDataSource(source: any): void {
+    this.registerExtension('data-source', {
+      id: source.name,
+      name: source.name,
+      description: 'Data source',
+      data: source
+    })
   }
 
-  getCommand(name: string): CommandDefinition | undefined {
-    const point = this.getExtensionPoint<CommandDefinition>('commands')
-    return point?.get(name)
+  /**
+   * Register a UI component extension
+   */
+  registerUIComponent(component: any): void {
+    this.registerExtension('ui-component', {
+      id: component.name,
+      name: component.name,
+      description: 'UI component',
+      data: component
+    })
   }
 
-  getAllCommands(): CommandDefinition[] {
-    const point = this.getExtensionPoint<CommandDefinition>('commands')
-    return point?.getAll() ?? []
+  /**
+   * Unregister a command extension
+   */
+  unregisterCommand(command: any): void {
+    this.unregisterExtension('command', command.name)
   }
 
-  registerTheme(theme: ThemeDefinition): void {
-    const point = this.getExtensionPoint<ThemeDefinition>('themes')
-    if (point) {
-      point.register(theme)
-    }
+  /**
+   * Unregister a theme extension
+   */
+  unregisterTheme(theme: any): void {
+    this.unregisterExtension('theme', theme.name)
   }
 
-  unregisterTheme(theme: ThemeDefinition): void {
-    const point = this.getExtensionPoint<ThemeDefinition>('themes')
-    if (point) {
-      point.unregister(theme)
-    }
+  /**
+   * Unregister a data source extension
+   */
+  unregisterDataSource(source: any): void {
+    this.unregisterExtension('data-source', source.name)
   }
 
-  getTheme(name: string): ThemeDefinition | undefined {
-    const point = this.getExtensionPoint<ThemeDefinition>('themes')
-    return point?.get(name)
+  /**
+   * Unregister a UI component extension
+   */
+  unregisterUIComponent(component: any): void {
+    this.unregisterExtension('ui-component', component.name)
   }
 
-  getAllThemes(): ThemeDefinition[] {
-    const point = this.getExtensionPoint<ThemeDefinition>('themes')
-    return point?.getAll() ?? []
+  /**
+   * Get a command extension
+   */
+  getCommand(commandName: string): any {
+    return this.getExtension('command', commandName)
   }
 
-  registerDataSource(source: DataSourceDefinition): void {
-    const point = this.getExtensionPoint<DataSourceDefinition>('datasources')
-    if (point) {
-      point.register(source)
-    }
-  }
-
-  unregisterDataSource(source: DataSourceDefinition): void {
-    const point = this.getExtensionPoint<DataSourceDefinition>('datasources')
-    if (point) {
-      point.unregister(source)
-    }
-  }
-
-  getDataSource(name: string): DataSourceDefinition | undefined {
-    const point = this.getExtensionPoint<DataSourceDefinition>('datasources')
-    return point?.get(name)
-  }
-
-  getAllDataSources(): DataSourceDefinition[] {
-    const point = this.getExtensionPoint<DataSourceDefinition>('datasources')
-    return point?.getAll() ?? []
-  }
-
-  registerUIComponent(component: UIComponentDefinition): void {
-    const point = this.getExtensionPoint<UIComponentDefinition>('ui-components')
-    if (point) {
-      point.register(component)
-    }
-  }
-
-  unregisterUIComponent(component: UIComponentDefinition): void {
-    const point = this.getExtensionPoint<UIComponentDefinition>('ui-components')
-    if (point) {
-      point.unregister(component)
-    }
-  }
-
-  getUIComponent(name: string): UIComponentDefinition | undefined {
-    const point = this.getExtensionPoint<UIComponentDefinition>('ui-components')
-    return point?.get(name)
-  }
-
-  getAllUIComponents(): UIComponentDefinition[] {
-    const point = this.getExtensionPoint<UIComponentDefinition>('ui-components')
-    return point?.getAll() ?? []
-  }
-
-  getUIComponentsByPosition(position: string): UIComponentDefinition[] {
-    const point = this.getExtensionPoint<UIComponentDefinition>('ui-components')
-    if (point && 'getByPosition' in point) {
-      return (point as UIComponentExtensionPoint).getByPosition(position)
-    }
-    return []
+  /**
+   * Get a theme extension
+   */
+  getTheme(themeName: string): any {
+    return this.getExtension('theme', themeName)
   }
 }
 
@@ -319,8 +370,5 @@ export function getGlobalExtensionRegistry(): ExtensionRegistry {
  * Reset the global extension registry
  */
 export function resetGlobalExtensionRegistry(): void {
-  if (globalExtensionRegistry) {
-    globalExtensionRegistry.clear()
-  }
   globalExtensionRegistry = null
 }

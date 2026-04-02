@@ -3,9 +3,9 @@
  * Handles loading plugins from files or URLs
  */
 
-import type { Plugin, PluginManifest, PluginLoadResult } from './types'
+import type { Plugin, PluginLoadResult } from './types'
 import { PluginManager } from './plugin-manager'
-import { EventType } from '../events/types'
+import { getGlobalPluginManager } from './plugin-manager'
 
 /**
  * Plugin loader options
@@ -44,10 +44,7 @@ export class PluginLoader {
   constructor(options: PluginLoaderOptions = {}) {
     this.config = {
       debug: options.debug ?? false,
-      pluginManager: options.pluginManager ?? (() => {
-        const { getGlobalPluginManager } = require('./plugin-manager')
-        return getGlobalPluginManager()
-      })(),
+      pluginManager: options.pluginManager ?? getGlobalPluginManager(),
       maxFileSize: options.maxFileSize ?? 1024 * 1024 // 1MB
     }
 

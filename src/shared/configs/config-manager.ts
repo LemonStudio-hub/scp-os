@@ -20,7 +20,7 @@ class EnvironmentSource implements ConfigSource {
   name = 'environment'
   priority = 1000
 
-  constructor(private _environment: Environment) {}
+  constructor() {}
 
   get(key: string): ConfigValue | undefined {
     const envKey = key.toUpperCase().replace(/-/g, '_')
@@ -39,15 +39,18 @@ class EnvironmentSource implements ConfigSource {
 class DefaultSource implements ConfigSource {
   name = 'default'
   priority = 0
+  private defaults: Record<string, ConfigValue>
 
-  constructor(private _defaults: Record<string, ConfigValue> = {}) {}
+  constructor(defaults: Record<string, ConfigValue> = {}) {
+    this.defaults = defaults
+  }
 
   get(key: string): ConfigValue | undefined {
-    return this._defaults[key]
+    return this.defaults[key]
   }
 
   has(key: string): boolean {
-    return key in this._defaults
+    return key in this.defaults
   }
 }
 
@@ -57,23 +60,26 @@ class DefaultSource implements ConfigSource {
 class MemorySource implements ConfigSource {
   name = 'memory'
   priority = 500
+  private values: Record<string, ConfigValue>
 
-  constructor(private _values: Record<string, ConfigValue> = {}) {}
+  constructor(values: Record<string, ConfigValue> = {}) {
+    this.values = values
+  }
 
   get(key: string): ConfigValue | undefined {
-    return this._values[key]
+    return this.values[key]
   }
 
   set(key: string, value: ConfigValue): void {
-    this._values[key] = value
+    this.values[key] = value
   }
 
   has(key: string): boolean {
-    return key in this._values
+    return key in this.values
   }
 
   clear(): void {
-    this._values = {}
+    this.values = {}
   }
 }
 
@@ -101,7 +107,7 @@ export class ConfigManager {
     // Add default sources
     this.addSource(new DefaultSource())
     this.addSource(new MemorySource())
-    this.addSource(new EnvironmentSource(this.config.environment))
+    this.addSource(new EnvironmentSource())
 
     // Add custom sources
     for (const source of this.config.sources) {
@@ -344,12 +350,8 @@ export class ConfigManager {
     this.config.environment = environment
 
     // Update environment source
-    const envSource = this.sources.find(s => s.name === 'environment') as EnvironmentSource
-    if (envSource) {
-      // Re-add environment source with new environment
-      this.removeSource('environment')
-      this.addSource(new EnvironmentSource(environment))
-    }
+    this.removeSource('environment')
+    this.addSource(new EnvironmentSource())
 
     this.clearCache()
 

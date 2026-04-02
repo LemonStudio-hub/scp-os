@@ -4,7 +4,6 @@
  */
 
 import type {
-  ServiceLifetime,
   ServiceFactory,
   ServiceRegistrationOptions,
   ServiceRegistration,
@@ -34,9 +33,7 @@ export class DIContainer {
     }
 
     // Register the container itself
-    this.register('DIContainer', () => this, {
-      lifetime: Lifetime.SINGLETON
-    })
+    this.register('DIContainer', () => this)
 
     if (this.config.debug) {
       console.log('[DIContainer] Container initialized', this.config)
@@ -52,7 +49,7 @@ export class DIContainer {
   register<T = any>(
     token: string,
     factory: ServiceFactory<T>,
-    options?: ServiceRegistrationOptions<T>
+    options: Partial<ServiceRegistrationOptions<T>> = {}
   ): void {
     if (this.registrations.has(token)) {
       if (this.config.debug) {
@@ -63,18 +60,11 @@ export class DIContainer {
     const registration: ServiceRegistration = {
       token,
       factory,
-      lifetime: options?.lifetime ?? this.config.defaultLifetime,
-      dependencies: options?.dependencies ?? [],
-      instance: options?.instance,
-      instantiated: !!options?.instance
+      lifetime: options.lifetime ?? this.config.defaultLifetime,
+      dependencies: options.dependencies ?? []
     }
 
     this.registrations.set(token, registration)
-
-    // If singleton and instance provided, store it
-    if (registration.lifetime === Lifetime.SINGLETON && registration.instance) {
-      this.instances.set(token, registration.instance)
-    }
 
     if (this.config.debug) {
       console.log(`[DIContainer] Registered service: ${token}`, {
@@ -85,21 +75,7 @@ export class DIContainer {
   }
 
   /**
-   * Register multiple services at once
-   * @param services - Array of service registrations
-   */
-  registerMultiple(services: Array<{
-    token: string
-    factory: ServiceFactory
-    options?: ServiceRegistrationOptions
-  }>): void {
-    services.forEach(({ token, factory, options }) => {
-      this.register(token, factory, options)
-    })
-  }
-
-  /**
-   * Resolve a service by token
+   * Resolve a service from the container
    * @param token - Service token
    * @returns Service instance
    */
@@ -122,49 +98,49 @@ export class DIContainer {
     this.resolutionStack.push(token)
 
     try {
-      // Return cached instance for singleton
+      // Singleton
       if (registration.lifetime === Lifetime.SINGLETON) {
-        if (this.instances.has(token)) {
-          return this.instances.get(token) as T
+        if (!this.instances.has(token)) {
+          this.instances.set(token, this.createInstance(registration))
         }
-
-        const instance = this.createInstance(registration)
-        this.instances.set(token, instance)
-        registration.instantiated = true
-        return instance as T
+        return this.instances.get(token) as T
       }
 
-      // Return scoped instance
+      // Scoped
       if (registration.lifetime === Lifetime.SCOPED) {
         if (this.currentScope) {
-          if (this.currentScope.instances.has(token)) {
-            return this.currentScope.instances.get(token) as T
+          if (!this.currentScope.instances.has(token)) {
+            this.currentScope.instances.set(token, this.createInstance(registration))
           }
-
-          const instance = this.createInstance(registration)
-          this.currentScope.instances.set(token, instance)
-          return instance as T
+          return this.currentScope.instances.get(token) as T
         }
-
-        // No scope, fallback to singleton behavior
-        if (this.config.debug) {
-          console.warn(
-            `[DIContainer] Scoped service ${token} resolved without scope, using singleton behavior`
-          )
+        // Fallback to singleton when no scope is active
+        if (!this.instances.has(token)) {
+          this.instances.set(token, this.createInstance(registration))
         }
-        if (this.instances.has(token)) {
-          return this.instances.get(token) as T
-        }
-
-        const instance = this.createInstance(registration)
-        this.instances.set(token, instance)
-        return instance as T
+        return this.instances.get(token) as T
       }
 
-      // Create new instance for transient
+      // Transient
       return this.createInstance(registration) as T
     } finally {
       this.resolutionStack.pop()
+    }
+  }
+
+  /**
+   * Create a service instance
+   * @private
+   */
+  private createInstance(registration: ServiceRegistration): any {
+    try {
+      return registration.factory(this)
+    } catch (error) {
+      console.error(
+        `[DIContainer] Failed to create instance for ${registration.token}:`,
+        error
+      )
+      throw error
     }
   }
 
@@ -184,8 +160,6 @@ export class DIContainer {
   unregister(token: string): void {
     this.registrations.delete(token)
     this.instances.delete(token)
-    this.scopes.forEach(scope => scope.instances.delete(token))
-
     if (this.config.debug) {
       console.log(`[DIContainer] Unregistered service: ${token}`)
     }
@@ -198,127 +172,74 @@ export class DIContainer {
     this.registrations.clear()
     this.instances.clear()
     this.scopes.clear()
-    this.currentScope = null
-
     if (this.config.debug) {
       console.log('[DIContainer] Container cleared')
     }
   }
 
   /**
-   * Create a new scope for scoped services
-   * @param id - Scope identifier (optional, auto-generated if not provided)
-   * @returns Scope object
+   * Create a new scope
+   * @returns Scope ID
    */
-  createScope(id?: string): ContainerScope {
-    const scopeId = id ?? `scope-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  createScope(): string {
+    const scopeId = `scope-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     const scope: ContainerScope = {
       id: scopeId,
       instances: new Map(),
       parent: this.currentScope ?? undefined
     }
-
     this.scopes.set(scopeId, scope)
     this.currentScope = scope
-
     if (this.config.debug) {
       console.log(`[DIContainer] Created scope: ${scopeId}`)
     }
-
-    return scope
+    return scopeId
   }
 
   /**
-   * Enter an existing scope
-   * @param id - Scope identifier
+   * Destroy a scope
+   * @param scopeId - Scope ID
    */
-  enterScope(id: string): void {
-    const scope = this.scopes.get(id)
+  destroyScope(scopeId: string): void {
+    const scope = this.scopes.get(scopeId)
     if (!scope) {
-      throw new Error(`Scope not found: ${id}`)
-    }
-
-    this.currentScope = scope
-
-    if (this.config.debug) {
-      console.log(`[DIContainer] Entered scope: ${id}`)
-    }
-  }
-
-  /**
-   * Exit the current scope
-   */
-  exitScope(): void {
-    if (!this.currentScope) {
-      if (this.config.debug) {
-        console.warn('[DIContainer] No scope to exit')
-      }
+      console.warn(`[DIContainer] Scope not found: ${scopeId}`)
       return
     }
 
-    const scopeId = this.currentScope.id
-    this.currentScope = this.currentScope.parent ?? null
-
-    if (this.config.debug) {
-      console.log(`[DIContainer] Exited scope: ${scopeId}`)
-    }
-  }
-
-  /**
-   * Destroy a scope and clear its instances
-   * @param id - Scope identifier
-   */
-  destroyScope(id: string): void {
-    const scope = this.scopes.get(id)
-    if (!scope) {
-      throw new Error(`Scope not found: ${id}`)
-    }
-
-    // Clear all instances in the scope
+    // Clear scope instances
     scope.instances.clear()
-    this.scopes.delete(id)
+    this.scopes.delete(scopeId)
 
-    if (this.currentScope?.id === id) {
-      this.currentScope = this.currentScope.parent ?? null
+    // Update current scope if we destroyed the current one
+    if (this.currentScope?.id === scopeId) {
+      this.currentScope = scope.parent ?? null
     }
 
     if (this.config.debug) {
-      console.log(`[DIContainer] Destroyed scope: ${id}`)
+      console.log(`[DIContainer] Destroyed scope: ${scopeId}`)
     }
   }
 
   /**
-   * Get all registered service tokens
-   * @returns Array of service tokens
+   * Get the current scope
    */
-  getRegisteredTokens(): string[] {
-    return Array.from(this.registrations.keys())
+  getCurrentScope(): ContainerScope | null {
+    return this.currentScope
+  }
+
+  /**
+   * Get all registered services
+   */
+  getRegistrations(): ServiceRegistration[] {
+    return Array.from(this.registrations.values())
   }
 
   /**
    * Get container configuration
-   * @returns Container configuration
    */
   getConfig(): Required<ContainerConfig> {
     return { ...this.config }
-  }
-
-  /**
-   * Create a service instance
-   * @param registration - Service registration
-   * @returns Service instance
-   */
-  private createInstance(registration: ServiceRegistration): any {
-    try {
-      const instance = registration.factory(this)
-      return instance
-    } catch (error) {
-      console.error(
-        `[DIContainer] Failed to create instance for ${registration.token}:`,
-        error
-      )
-      throw error
-    }
   }
 }
 
@@ -328,9 +249,8 @@ export class DIContainer {
 let globalContainer: DIContainer | null = null
 
 /**
- * Get or create the global container instance
+ * Get or create the global container
  * @param config - Container configuration (only used on first call)
- * @returns Global container instance
  */
 export function getGlobalContainer(config?: ContainerConfig): DIContainer {
   if (!globalContainer) {
@@ -358,7 +278,7 @@ export function resetGlobalContainer(): void {
 export function registerGlobal<T = any>(
   token: string,
   factory: ServiceFactory<T>,
-  options?: ServiceRegistrationOptions<T>
+  options?: Partial<ServiceRegistrationOptions<T>>
 ): void {
   getGlobalContainer().register(token, factory, options)
 }
@@ -371,6 +291,3 @@ export function registerGlobal<T = any>(
 export function resolveGlobal<T = any>(token: string): T {
   return getGlobalContainer().resolve<T>(token)
 }
-
-// Re-export ServiceLifetime for convenience
-export { ServiceLifetime } from './types'

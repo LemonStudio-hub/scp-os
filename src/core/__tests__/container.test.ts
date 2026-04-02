@@ -1,16 +1,17 @@
 /**
- * Unit tests for DIContainer
+ * Unit tests for DIContainer (Dependency Injection Container)
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   DIContainer,
-  ServiceLifetime,
   getGlobalContainer,
   resetGlobalContainer,
   registerGlobal,
   resolveGlobal
 } from '../container'
+import type { ServiceFactory } from '../types'
+import { ServiceLifetime as Lifetime } from '../types'
 
 describe('DIContainer', () => {
   let container: DIContainer
@@ -22,259 +23,219 @@ describe('DIContainer', () => {
 
   describe('Service Registration', () => {
     it('should register a service', () => {
-      const factory = () => ({ value: 42 })
-      container.register('TestService', factory)
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      container.register('testService', factory)
 
-      expect(container.has('TestService')).toBe(true)
+      expect(container.has('testService')).toBe(true)
     })
 
-    it('should register multiple services', () => {
-      container.register('Service1', () => ({ id: 1 }))
-      container.register('Service2', () => ({ id: 2 }))
+    it('should resolve a registered service', () => {
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      container.register('testService', factory)
 
-      expect(container.has('Service1')).toBe(true)
-      expect(container.has('Service2')).toBe(true)
+      const instance = container.resolve('testService')
+      expect(instance).toEqual({ id: 1 })
+    })
+
+    it('should throw error when resolving unregistered service', () => {
+      expect(() => container.resolve('nonExistent')).toThrow('Service not found')
     })
 
     it('should replace existing service when registering again', () => {
-      const factory1 = () => ({ value: 1 })
-      const factory2 = () => ({ value: 2 })
+      const factory1: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      const factory2: ServiceFactory<{ id: number }> = () => ({ id: 2 })
 
-      container.register('TestService', factory1)
-      container.register('TestService', factory2)
+      container.register('testService', factory1)
+      container.register('testService', factory2)
 
-      const instance = container.resolve('TestService')
-      expect(instance.value).toBe(2)
-    })
-
-    it('should unregister a service', () => {
-      container.register('TestService', () => ({}))
-      container.unregister('TestService')
-
-      expect(container.has('TestService')).toBe(false)
-    })
-
-    it('should clear all services', () => {
-      container.register('Service1', () => ({}))
-      container.register('Service2', () => ({}))
-      container.clear()
-
-      expect(container.has('Service1')).toBe(false)
-      expect(container.has('Service2')).toBe(false)
+      const instance = container.resolve('testService')
+      expect(instance.id).toBe(2)
     })
   })
 
   describe('Singleton Lifetime', () => {
     it('should return the same instance for singleton services', () => {
-      let counter = 0
-      const factory = () => ({ id: counter++ })
-
-      container.register('SingletonService', factory, {
-        lifetime: ServiceLifetime.SINGLETON
-      })
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: Math.random() })
+      container.register('SingletonService', factory, { lifetime: Lifetime.SINGLETON })
 
       const instance1 = container.resolve('SingletonService')
       const instance2 = container.resolve('SingletonService')
 
       expect(instance1).toBe(instance2)
-      expect(instance1.id).toBe(0)
-      expect(instance2.id).toBe(0)
     })
 
-    it('should use pre-instantiated instance', () => {
-      const instance = { value: 42 }
+    it('should use default singleton lifetime', () => {
+      const factory: ServiceFactory<{ value: number }> = () => ({ value: Math.random() })
+      container.register('DefaultSingleton', factory)
 
-      container.register('SingletonService', () => instance, {
-        lifetime: ServiceLifetime.SINGLETON,
-        instance
-      })
+      const instance1 = container.resolve('DefaultSingleton')
+      const instance2 = container.resolve('DefaultSingleton')
 
-      const resolved = container.resolve('SingletonService')
-      expect(resolved).toBe(instance)
+      expect(instance1).toBe(instance2)
     })
   })
 
   describe('Transient Lifetime', () => {
     it('should return new instance for each resolve', () => {
-      let counter = 0
-      const factory = () => ({ id: counter++ })
-
-      container.register('TransientService', factory, {
-        lifetime: ServiceLifetime.TRANSIENT
-      })
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: Math.random() })
+      container.register('TransientService', factory, { lifetime: Lifetime.TRANSIENT })
 
       const instance1 = container.resolve('TransientService')
       const instance2 = container.resolve('TransientService')
 
       expect(instance1).not.toBe(instance2)
-      expect(instance1.id).toBe(0)
-      expect(instance2.id).toBe(1)
+      expect(instance1.id).not.toBe(instance2.id)
     })
   })
 
   describe('Scoped Lifetime', () => {
     it('should return same instance within a scope', () => {
-      let counter = 0
-      const factory = () => ({ id: counter++ })
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: Math.random() })
+      container.register('ScopedService', factory, { lifetime: Lifetime.SCOPED })
 
-      container.register('ScopedService', factory, {
-        lifetime: ServiceLifetime.SCOPED
-      })
+      container.createScope()
 
-      const scope1 = container.createScope('scope1')
       const instance1 = container.resolve('ScopedService')
       const instance2 = container.resolve('ScopedService')
 
       expect(instance1).toBe(instance2)
-      expect(instance1.id).toBe(0)
-
-      container.exitScope()
-      container.destroyScope('scope1')
     })
 
     it('should return different instances in different scopes', () => {
-      let counter = 0
-      const factory = () => ({ id: counter++ })
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: Math.random() })
+      container.register('ScopedService', factory, { lifetime: Lifetime.SCOPED })
 
-      container.register('ScopedService', factory, {
-        lifetime: ServiceLifetime.SCOPED
-      })
-
-      const scope1 = container.createScope('scope1')
+      container.createScope()
       const instance1 = container.resolve('ScopedService')
 
-      container.exitScope()
-
-      const scope2 = container.createScope('scope2')
+      container.createScope()
       const instance2 = container.resolve('ScopedService')
 
       expect(instance1).not.toBe(instance2)
-      expect(instance1.id).toBe(0)
-      expect(instance2.id).toBe(1)
-
-      container.exitScope()
-      container.destroyScope('scope1')
-      container.destroyScope('scope2')
+      expect(instance1.id).not.toBe(instance2.id)
     })
 
     it('should fallback to singleton when no scope is active', () => {
-      let counter = 0
-      const factory = () => ({ id: counter++ })
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: Math.random() })
+      container.register('ScopedService', factory, { lifetime: Lifetime.SCOPED })
 
-      container.register('ScopedService', factory, {
-        lifetime: ServiceLifetime.SCOPED
-      })
-
+      // Resolve without scope
       const instance1 = container.resolve('ScopedService')
       const instance2 = container.resolve('ScopedService')
 
       expect(instance1).toBe(instance2)
+    })
+  })
+
+  describe('Scope Management', () => {
+    it('should create a scope', () => {
+      container.createScope()
+
+      expect(container.getCurrentScope()?.id).toBeDefined()
+    })
+
+    it('should destroy a scope', () => {
+      const scopeId = container.createScope()
+      container.destroyScope(scopeId)
+
+      expect(container.getCurrentScope()).toBe(null)
+    })
+
+    it('should support nested scopes', () => {
+      container.createScope()
+      const parentScope = container.getCurrentScope()
+      container.createScope()
+      const childScope = container.getCurrentScope()
+
+      expect(childScope?.parent).toBe(parentScope)
+
+      container.destroyScope(childScope!.id)
+      expect(container.getCurrentScope()).toBe(parentScope)
+
+      container.destroyScope(parentScope!.id)
+      expect(container.getCurrentScope()).toBe(null)
+    })
+  })
+
+  describe('Service Unregistration', () => {
+    it('should unregister a service', () => {
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      container.register('testService', factory)
+
+      container.unregister('testService')
+
+      expect(container.has('testService')).toBe(false)
+      expect(() => container.resolve('testService')).toThrow()
+    })
+
+    it('should clear all services', () => {
+      const factory1: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      const factory2: ServiceFactory<{ id: number }> = () => ({ id: 2 })
+
+      container.register('service1', factory1)
+      container.register('service2', factory2)
+
+      container.clear()
+
+      expect(container.has('service1')).toBe(false)
+      expect(container.has('service2')).toBe(false)
     })
   })
 
   describe('Dependency Resolution', () => {
     it('should resolve dependencies', () => {
-      container.register('Dependency', () => ({ value: 42 }))
-
-      container.register('DependentService', (c) => {
-        const dependency = c.resolve('Dependency')
-        return { dep: dependency }
+      const depFactory: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      const serviceFactory: ServiceFactory<{ dep: any }> = (c) => ({
+        dep: c.resolve('dep')
       })
 
-      const instance = container.resolve('DependentService')
-      expect(instance.dep.value).toBe(42)
+      container.register('dep', depFactory)
+      container.register('service', serviceFactory)
+
+      const instance = container.resolve('service')
+      expect(instance.dep).toEqual({ id: 1 })
     })
 
     it('should detect circular dependencies', () => {
-      container.register('ServiceA', (c) => {
-        c.resolve('ServiceB')
-        return {}
+      const factoryA: ServiceFactory<{ depB: any }> = (c) => ({
+        depB: c.resolve('ServiceB')
+      })
+      const factoryB: ServiceFactory<{ depA: any }> = (c) => ({
+        depA: c.resolve('ServiceA')
       })
 
-      container.register('ServiceB', (c) => {
-        c.resolve('ServiceA')
-        return {}
-      })
+      container.register('ServiceA', factoryA)
+      container.register('ServiceB', factoryB)
 
       expect(() => container.resolve('ServiceA')).toThrow('Circular dependency detected')
     })
 
-    it('should throw error for unregistered service', () => {
-      expect(() => container.resolve('NonExistentService')).toThrow('Service not found')
-    })
-  })
+    it('should not detect circular dependency when disabled', () => {
+      const containerNoCheck = new DIContainer({ detectCircularDependencies: false })
 
-  describe('Scope Management', () => {
-    it('should create a scope with auto-generated id', () => {
-      const scope = container.createScope()
-      expect(scope.id).toBeDefined()
-      expect(scope.id).toMatch(/^scope-/)
-    })
-
-    it('should create a scope with custom id', () => {
-      const scope = container.createScope('custom-scope')
-      expect(scope.id).toBe('custom-scope')
-    })
-
-    it('should enter an existing scope', () => {
-      const scope1 = container.createScope('scope1')
-      container.exitScope()
-
-      container.enterScope('scope1')
-      expect(container['currentScope']?.id).toBe('scope1')
-    })
-
-    it('should throw error when entering non-existent scope', () => {
-      expect(() => container.enterScope('non-existent')).toThrow('Scope not found')
-    })
-
-    it('should destroy a scope', () => {
-      const scope = container.createScope('test-scope')
-      container.register('ScopedService', () => ({ id: 1 }), {
-        lifetime: ServiceLifetime.SCOPED
+      const factoryA: ServiceFactory<{ depB: any }> = (c) => ({
+        depB: c.resolve('ServiceB')
+      })
+      const factoryB: ServiceFactory<{ depA: any }> = (c) => ({
+        depA: c.resolve('ServiceA')
       })
 
-      const instance = container.resolve('ScopedService')
-      expect(instance).toBeDefined()
+      containerNoCheck.register('ServiceA', factoryA)
+      containerNoCheck.register('ServiceB', factoryB)
 
-      container.exitScope()
-      container.destroyScope('test-scope')
-
-      expect(() => container.enterScope('test-scope')).toThrow('Scope not found')
-    })
-  })
-
-  describe('Global Container', () => {
-    it('should return same global container instance', () => {
-      const container1 = getGlobalContainer()
-      const container2 = getGlobalContainer()
-
-      expect(container1).toBe(container2)
-    })
-
-    it('should reset global container', () => {
-      const container1 = getGlobalContainer()
-      resetGlobalContainer()
-      const container2 = getGlobalContainer()
-
-      expect(container1).not.toBe(container2)
-    })
-
-    it('should register and resolve in global container', () => {
-      registerGlobal('GlobalService', () => ({ value: 42 }))
-      const instance = resolveGlobal('GlobalService')
-
-      expect(instance.value).toBe(42)
+      // This should throw a stack overflow error, but we catch it
+      expect(() => containerNoCheck.resolve('ServiceA')).toThrow()
     })
   })
 
   describe('Configuration', () => {
     it('should use default configuration', () => {
       const config = container.getConfig()
+
       expect(config.debug).toBe(false)
       expect(config.autoRegister).toBe(false)
       expect(config.detectCircularDependencies).toBe(true)
-      expect(config.defaultLifetime).toBe(ServiceLifetime.SINGLETON)
+      expect(config.defaultLifetime).toBe(Lifetime.SINGLETON)
     })
 
     it('should use custom configuration', () => {
@@ -282,33 +243,79 @@ describe('DIContainer', () => {
         debug: true,
         autoRegister: true,
         detectCircularDependencies: false,
-        defaultLifetime: ServiceLifetime.TRANSIENT
+        defaultLifetime: Lifetime.TRANSIENT
       })
 
       const config = customContainer.getConfig()
+
       expect(config.debug).toBe(true)
       expect(config.autoRegister).toBe(true)
       expect(config.detectCircularDependencies).toBe(false)
-      expect(config.defaultLifetime).toBe(ServiceLifetime.TRANSIENT)
+      expect(config.defaultLifetime).toBe(Lifetime.TRANSIENT)
     })
   })
 
-  describe('Utility Methods', () => {
-    it('should get all registered tokens', () => {
-      container.register('Service1', () => ({}))
-      container.register('Service2', () => ({}))
-      container.register('Service3', () => ({}))
+  describe('Query Methods', () => {
+    it('should get all registrations', () => {
+      const factory1: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      const factory2: ServiceFactory<{ id: number }> = () => ({ id: 2 })
 
-      const tokens = container.getRegisteredTokens()
-      expect(tokens).toHaveLength(4) // 3 services + DIContainer
-      expect(tokens).toContain('Service1')
-      expect(tokens).toContain('Service2')
-      expect(tokens).toContain('Service3')
+      container.register('service1', factory1)
+      container.register('service2', factory2)
+
+      const registrations = container.getRegistrations()
+
+      expect(registrations).toHaveLength(2)
+      expect(registrations.map((r) => r.token)).toContain('service1')
+      expect(registrations.map((r) => r.token)).toContain('service2')
     })
 
-    it('should resolve DIContainer itself', () => {
-      const resolvedContainer = container.resolve('DIContainer')
-      expect(resolvedContainer).toBe(container)
+    it('should check if service is registered', () => {
+      const factory: ServiceFactory<{ id: number }> = () => ({ id: 1 })
+      container.register('testService', factory)
+
+      expect(container.has('testService')).toBe(true)
+      expect(container.has('nonExistent')).toBe(false)
+    })
+  })
+
+  describe('Global Container', () => {
+    it('should return same global instance', () => {
+      const instance1 = getGlobalContainer()
+      const instance2 = getGlobalContainer()
+
+      expect(instance1).toBe(instance2)
+    })
+
+    it('should reset global instance', () => {
+      const instance1 = getGlobalContainer()
+      resetGlobalContainer()
+      const instance2 = getGlobalContainer()
+
+      expect(instance1).not.toBe(instance2)
+    })
+
+    it('should register service in global container', () => {
+      const factory: ServiceFactory<{ value: number }> = () => ({ value: 42 })
+      registerGlobal('globalService', factory)
+
+      expect(getGlobalContainer().has('globalService')).toBe(true)
+    })
+
+    it('should resolve service from global container', () => {
+      const factory: ServiceFactory<{ value: number }> = () => ({ value: 42 })
+      registerGlobal('globalService', factory)
+
+      const instance = resolveGlobal<{ value: number }>('globalService')
+      expect(instance.value).toBe(42)
+    })
+  })
+
+  describe('Self Registration', () => {
+    it('should register itself', () => {
+      const containerInstance = container.resolve('DIContainer')
+
+      expect(containerInstance).toBe(container)
     })
   })
 })

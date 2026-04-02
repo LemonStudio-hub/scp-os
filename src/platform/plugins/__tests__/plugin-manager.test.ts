@@ -8,19 +8,9 @@ import {
   getGlobalPluginManager,
   resetGlobalPluginManager
 } from '../plugin-manager'
-import {
-  ExtensionRegistry,
-  getGlobalExtensionRegistry,
-  resetGlobalExtensionRegistry
-} from '../../extensions/extension-point'
-import { EventBus, getGlobalEventBus, resetGlobalEventBus } from '../../events/event-bus'
-import type {
-  CommandPlugin,
-  ThemePlugin,
-  DataSourcePlugin,
-  UIPlugin,
-  CommandDefinition
-} from '../types'
+import { ExtensionRegistry } from '../../extensions/extension-point'
+import { EventBus } from '../../events/event-bus'
+import type { CommandPlugin, ThemePlugin } from '../types'
 import { PluginStatus } from '../types'
 
 describe('PluginManager', () => {
@@ -36,8 +26,6 @@ describe('PluginManager', () => {
       extensionRegistry
     })
     resetGlobalPluginManager()
-    resetGlobalExtensionRegistry()
-    resetGlobalEventBus()
   })
 
   describe('Plugin Registration', () => {

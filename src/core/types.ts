@@ -37,6 +37,8 @@ export interface ServiceRegistrationOptions<T = any> {
  * Service registration
  */
 export interface ServiceRegistration<T = any> {
+  /** Service token */
+  token: string
   /** Factory function */
   factory: ServiceFactory<T>
   /** Service lifetime */
@@ -45,6 +47,8 @@ export interface ServiceRegistration<T = any> {
   dependencies: string[]
   /** Instance (for singleton) */
   instance?: T
+  /** Whether the service has been instantiated */
+  instantiated?: boolean
 }
 
 /**
@@ -56,7 +60,7 @@ export interface ContainerScope {
   /** Scoped instances */
   instances: Map<string, any>
   /** Parent scope */
-  parent?: ContainerScope
+  parent?: ContainerScope | undefined
 }
 
 /**
