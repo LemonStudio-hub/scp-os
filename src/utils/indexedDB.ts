@@ -78,13 +78,15 @@ class IndexedDBService {
 
       clearRequest.onsuccess = () => {
         // Add all tabs
-        const addRequests = tabs.map(tab => {
-          return new Promise<void>((addResolve, addReject) => {
-            const request = store.add(tab)
-            request.onsuccess = () => addResolve()
-            request.onerror = () => addReject(request.error)
-          })
+      const addRequests = tabs.map(tab => {
+        return new Promise<void>((addResolve, addReject) => {
+          // Convert tab to plain object to avoid DataCloneError
+          const plainTab = JSON.parse(JSON.stringify(tab))
+          const request = store.add(plainTab)
+          request.onsuccess = () => addResolve()
+          request.onerror = () => addReject(request.error)
         })
+      })
 
         Promise.all(addRequests)
           .then(() => {
