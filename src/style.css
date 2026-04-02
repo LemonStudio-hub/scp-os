@@ -12,6 +12,13 @@
   --scp-gray: #888888;
   --scp-bg: #0a0a0a;
   --scp-dark-bg: #000000;
+  
+  /* Tab system colors */
+  --tab-bar-height: 44px;
+  --sidebar-width: 320px;
+  --tab-active: #e94560;
+  --tab-bg: #16213e;
+  --tab-item-bg: #0f3460;
 }
 
 * {
@@ -46,9 +53,11 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Terminal container */
+/* Terminal container with tab bar adjustment */
 #terminal-container {
   width: 100%;
   height: 100%;
@@ -78,6 +87,58 @@ body {
   background: var(--scp-dark-red);
 }
 
+/* Main content container (for terminal + tab bar) */
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar z-index to ensure it appears above everything */
+.sidebar {
+  z-index: 9999;
+}
+
+/* Tab bar z-index to ensure it appears above content but below sidebar */
+.tab-bar {
+  z-index: 1000;
+}
+
+/* Virtual keyboard z-index */
+.virtual-keyboard {
+  z-index: 1001;
+}
+
+/* Sidebar transition support */
+.sidebar-content {
+  will-change: transform;
+}
+
+/* Tab transitions */
+.tab {
+  will-change: transform, background;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+}
+
+/* Prevent layout shift when sidebar opens */
+.sidebar-open ~ .main-content {
+  pointer-events: none;
+}
+
+/* Touch gesture optimization */
+#app {
+  touch-action: pan-y;
+}
+
+.sidebar-open #app {
+  touch-action: none;
+}
+
 /* Mobile optimizations */
 @media (max-width: 768px) {
   body {
@@ -96,6 +157,10 @@ body {
   .xterm-viewport::-webkit-scrollbar {
     display: none;
   }
+  
+  :root {
+    --sidebar-width: 280px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -108,6 +173,10 @@ body {
   textarea,
   .xterm-textarea {
     font-size: 16px !important;
+  }
+  
+  :root {
+    --tab-bar-height: 40px;
   }
 }
 
@@ -132,4 +201,16 @@ body {
   .xterm {
     font-weight: 600;
   }
+}
+
+/* Smooth transitions for tab system */
+* {
+  transition-property: color, background, border-color, opacity;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Prevent transitions during initial load */
+body.loading * {
+  transition: none !important;
 }

@@ -31,11 +31,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useTerminal } from '../composables/useTerminal'
 import { updateTerminalFontSize } from '../utils/terminal'
+import { useTabsStore } from '../stores/tabs'
 
+const tabsStore = useTabsStore()
 const terminalContainer = ref<HTMLDivElement>()
+
+// 存储每个标签页的终端状态
+const terminalStates = ref<Record<string, string>>({})
 
 // Detect if device is mobile
 const isMobile = computed(() => {
@@ -160,6 +165,30 @@ onMounted(async () => {
   await displayBootLog()
   displayWelcomeMessage()
   setupCommandHandler()
+})
+
+// 监听标签页切换，保存和恢复终端状态
+watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
+  const terminal = getTerminal()
+  if (!terminal) return
+
+  // 保存旧标签页的终端状态（保存当前行）
+  if (oldTabId && terminal.buffer.active) {
+    const cursorLine = terminal.buffer.active.getLine(terminal.buffer.active.cursorY)
+    if (cursorLine) {
+      terminalStates.value[oldTabId] = cursorLine.translateToString()
+    }
+  }
+
+  // 恢复新标签页的终端状态
+  if (newTabId && terminalStates.value[newTabId]) {
+    clear()
+    displayWelcomeMessage()
+  } else if (newTabId) {
+    // 新标签页，显示欢迎信息
+    clear()
+    displayWelcomeMessage()
+  }
 })
 
 onBeforeUnmount(() => {
