@@ -2,12 +2,53 @@ import axios from 'axios'
 import { OBJECT_CLASSES } from '../constants/scraperConfig'
 import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
 import { config } from '../config'
+import { isMobileDevice } from './terminal'
 
 // Worker 统一配置（与 Worker 保持一致）
 const WORKER_CONFIG = {
   timeout: 30000, // 与 Worker 一致
   retryAttempts: 3, // 与 Worker 一致
   retryDelay: 2000, // 与 Worker 一致
+}
+
+// PC端边框样式（全宽度）
+const BORDERS_DESKTOP = {
+  maxWidth: 76,
+  horizontal: '═══════════════════════════════════════════════════════════════',
+  topLeft: '╔',
+  topRight: '╗',
+  bottomLeft: '╚',
+  bottomRight: '╝',
+  verticalLeft: '║',
+  verticalRight: '║',
+  boxTopLeft: '┌',
+  boxTopRight: '┐',
+  boxBottomLeft: '└',
+  boxBottomRight: '┘',
+  boxHorizontal: '─────────────────────────────────────────────────────────────',
+  boxVertical: '│',
+  separator: '│',
+  middle: '├',
+}
+
+// 移动端边框样式（紧凑）
+const BORDERS_MOBILE = {
+  maxWidth: 40,
+  horizontal: '═════════════════════════════════',
+  topLeft: '╔',
+  topRight: '╗',
+  bottomLeft: '╚',
+  bottomRight: '╝',
+  verticalLeft: '║',
+  verticalRight: '║',
+  boxTopLeft: '┌',
+  boxTopRight: '┐',
+  boxBottomLeft: '└',
+  boxBottomRight: '┘',
+  boxHorizontal: '─────────────────────────────────',
+  boxVertical: '│',
+  separator: '│',
+  middle: '├',
 }
 
 class SCPScraper {
@@ -235,21 +276,46 @@ class SCPScraper {
   formatForTerminal(data: SCPWikiData): string[] {
     const lines: string[] = []
     const classInfo = OBJECT_CLASSES[data.objectClass] || OBJECT_CLASSES.UNKNOWN
-    const maxWidth = 76 // 终端最大宽度（减去边框和缩进）
+    
+    // 根据设备类型选择边框样式
+    const borders = isMobileDevice() ? BORDERS_MOBILE : BORDERS_DESKTOP
+    const maxWidth = borders.maxWidth
 
     // 顶部边框
-    lines.push('╔═══════════════════════════════════════════════════════════════╗')
-    lines.push(`║  ${data.id} - ${data.name} - ${classInfo.displayName.padEnd(20)} ║`)
-    lines.push('╚═══════════════════════════════════════════════════════════════╝')
+    lines.push(`${borders.topLeft}${borders.horizontal}${borders.topRight}`)
+    
+    // 标题行 - 根据设备类型调整
+    if (isMobileDevice()) {
+      // 移动端：紧凑格式
+      const title = `${data.id} - ${data.name}`
+      lines.push(`${borders.verticalLeft} ${title.padEnd(maxWidth - 2)} ${borders.verticalRight}`)
+    } else {
+      // PC端：完整格式
+      lines.push(`${borders.verticalLeft}  ${data.id} - ${data.name} - ${classInfo.displayName.padEnd(20)} ${borders.verticalRight}`)
+    }
+    
+    lines.push(`${borders.bottomLeft}${borders.horizontal}${borders.bottomRight}`)
     lines.push('')
 
     // 项目等级
-    lines.push('┌─────────────────────────────────────────────────────────────┐')
-    lines.push('│ 项目等级                                                      │')
-    lines.push('├─────────────────────────────────────────────────────────────┤')
-    lines.push(`│  等级: [${data.objectClass.padEnd(10)}] ${classInfo.displayName.padEnd(8)} │`)
-    lines.push(`│  说明: ${this.wrapText(classInfo.description, maxWidth - 9).join('\n│        ')} │`)
-    lines.push('└─────────────────────────────────────────────────────────────┘')
+    lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
+    lines.push(`${borders.separator} 项目等级${' '.repeat(maxWidth - 6)}${borders.separator}`)
+    lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
+    
+    if (isMobileDevice()) {
+      // 移动端：简化显示
+      lines.push(`${borders.separator} [${data.objectClass}]${borders.separator}`)
+      const descLines = this.wrapText(classInfo.displayName, maxWidth - 4)
+      descLines.forEach(line => {
+        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
+      })
+    } else {
+      // PC端：详细显示
+      lines.push(`${borders.separator}  等级: [${data.objectClass.padEnd(10)}] ${classInfo.displayName.padEnd(8)} ${borders.separator}`)
+      lines.push(`${borders.separator}  说明: ${this.wrapText(classInfo.description, maxWidth - 9).join('\n' + borders.separator + '        ')} ${borders.separator}`)
+    }
+    
+    lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
     lines.push('')
 
     // 作者
@@ -260,71 +326,75 @@ class SCPScraper {
 
     // 收容协议
     if (data.containment.length > 0) {
-      lines.push('┌─────────────────────────────────────────────────────────────┐')
-      lines.push('│ 收容协议                                                      │')
-      lines.push('├─────────────────────────────────────────────────────────────┤')
+      lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
+      lines.push(`${borders.separator} 收容协议${' '.repeat(maxWidth - 6)}${borders.separator}`)
+      lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
       
       const containmentLines: string[] = []
       data.containment.forEach(text => {
-        const wrapped = this.wrapText(text, maxWidth - 6)
+        const wrapped = this.wrapText(text, maxWidth - 4)
         containmentLines.push(...wrapped)
       })
       
       containmentLines.forEach(line => {
-        lines.push(`│  ${line.padEnd(maxWidth - 3)} │`)
+        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
       })
       
-      lines.push('└─────────────────────────────────────────────────────────────┘')
+      lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
       lines.push('')
     }
 
     // 描述
     if (data.description.length > 0) {
-      lines.push('┌─────────────────────────────────────────────────────────────┐')
-      lines.push('│ 描述                                                          │')
-      lines.push('├─────────────────────────────────────────────────────────────┤')
+      lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
+      lines.push(`${borders.separator} 描述${' '.repeat(maxWidth - 4)}${borders.separator}`)
+      lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
       
       const descriptionLines: string[] = []
       data.description.forEach(text => {
-        const wrapped = this.wrapText(text, maxWidth - 6)
+        const wrapped = this.wrapText(text, maxWidth - 4)
         descriptionLines.push(...wrapped)
       })
       
       descriptionLines.forEach(line => {
-        lines.push(`│  ${line.padEnd(maxWidth - 3)} │`)
+        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
       })
       
-      lines.push('└─────────────────────────────────────────────────────────────┘')
+      lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
       lines.push('')
     }
 
     // 附录
     if (data.appendix.length > 0) {
-      lines.push('┌─────────────────────────────────────────────────────────────┐')
-      lines.push('│ 附录                                                          │')
-      lines.push('├─────────────────────────────────────────────────────────────┤')
+      lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
+      lines.push(`${borders.separator} 附录${' '.repeat(maxWidth - 4)}${borders.separator}`)
+      lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
       
       const appendixLines: string[] = []
       data.appendix.forEach(text => {
-        const wrapped = this.wrapText(text, maxWidth - 6)
+        const wrapped = this.wrapText(text, maxWidth - 4)
         appendixLines.push(...wrapped)
       })
       
       appendixLines.forEach(line => {
-        lines.push(`│  ${line.padEnd(maxWidth - 3)} │`)
+        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
       })
       
-      lines.push('└─────────────────────────────────────────────────────────────┘')
+      lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
       lines.push('')
     }
 
     // 来源
     if (data.url) {
-      lines.push(`数据来源: ${data.url}`)
+      if (isMobileDevice()) {
+        lines.push(`来源: ${data.url}`)
+      } else {
+        lines.push(`数据来源: ${data.url}`)
+      }
       lines.push('')
     }
     
-    lines.push('═══════════════════════════════════════════════════════════════')
+    lines.push(borders.horizontal)
     lines.push('')
     
     return lines
