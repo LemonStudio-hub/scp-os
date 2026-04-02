@@ -2,8 +2,82 @@ import type { CommandType, CommandHandler, CommandMap } from '../types/command'
 import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { scraper } from '../utils/scraper'
+import { useTabsStore } from '../stores/tabs'
+import { useSystemStore } from '../stores/system'
 
 export const commandHandlers: CommandMap = {
+  start: async (_args, _write, writeln) => {
+    // Clear screen first
+    if (window.__terminalController) {
+      window.__terminalController.clear()
+    }
+    
+    // Mark system as running
+    const systemStore = useSystemStore()
+    systemStore.markSystemRunning()
+    
+    // Use global terminal controller to display boot log and welcome message
+    if (window.__terminalController) {
+      await window.__terminalController.displayBootLog()
+      window.__terminalController.markBootLogShown()
+      window.__terminalController.displayWelcomeMessage()
+    } else {
+      writeln(`${ANSICode.red}Error: Terminal controller not available.${ANSICode.reset}`)
+      writeln('')
+    }
+  },
+
+  restart: async (_args, _write, writeln) => {
+    // Reset boot log shown flag so boot log shows again after restart
+    const systemStore = useSystemStore()
+    systemStore.resetBootLogShown()
+    systemStore.markSystemRunning()
+    
+    // Use global terminal controller to clear terminal and display boot log
+    if (window.__terminalController) {
+      window.__terminalController.clear()
+      await window.__terminalController.displayBootLog()
+      window.__terminalController.markBootLogShown()
+      window.__terminalController.displayWelcomeMessage()
+    } else {
+      writeln(`${ANSICode.red}Error: Terminal controller not available.${ANSICode.reset}`)
+      writeln('')
+    }
+  },
+
+  shutdown: async (args, _write, writeln) => {
+    const confirmation = args[0]?.toLowerCase()
+    
+    if (confirmation === 'now') {
+      writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
+      writeln('')
+      
+      // Get stores
+      const tabsStore = useTabsStore()
+      const systemStore = useSystemStore()
+      
+      // Clear all tabs
+      tabsStore.clearAllTabs()
+      
+      // Mark system as shutdown
+      systemStore.markSystemShutdown()
+      systemStore.resetBootLogShown()
+      
+      // Use global terminal controller to display shutdown log and startup prompt
+      if (window.__terminalController) {
+        await window.__terminalController.displayShutdownLog()
+        window.__terminalController.displayStartupPrompt()
+      } else {
+        writeln(`${ANSICode.red}Error: Terminal controller not available.${ANSICode.reset}`)
+        writeln('')
+      }
+    } else {
+      writeln(`${ANSICode.yellow}Usage: shutdown now${ANSICode.reset}`)
+      writeln('')
+      writeln(`${ANSICode.gray}This will shutdown the system and clear all tabs.${ANSICode.reset}`)
+    }
+  },
+
   help: (_args, _write, writeln) => {
     const helpText = [
       `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
@@ -96,16 +170,16 @@ export const commandHandlers: CommandMap = {
       '',
       '  Popular Objects:',
       '',
-      '  SCP-173 - 雕像 (雕像)',
-      '  SCP-096 - 羞涩的人 (人形)',
-      '  SCP-682 - 不灭孽蜥 (爬行动物)',
-      '  SCP-999 - 痒痒怪 (橙色生物)',
-      '  SCP-049 - 疫医 (人形)',
-      '  SCP-914 - 万能加工机 (机器)',
-      '  SCP-3008 - 无限宜家 (建筑)',
-      '  SCP-087 - 楼梯间 (空间)',
-      '  SCP-106 - 老人 (人形)',
-      '  SCP-1471 - 恶魔 (数字实体)',
+      '  SCP-173 - The Sculpture (Statue)',
+      '  SCP-096 - The Shy Guy (Humanoid)',
+      '  SCP-682 - The Hard-to-Destroy Reptile (Reptile)',
+      '  SCP-999 - The Tickle Monster (Orange Creature)',
+      '  SCP-049 - The Plague Doctor (Humanoid)',
+      '  SCP-914 - The万能加工机 (Machine)',
+      '  SCP-3008 - The Infinite IKEA (Structure)',
+      '  SCP-087 - The Staircase (Space)',
+      '  SCP-106 - The Old Man (Humanoid)',
+      '  SCP-1471 - The Demon (Digital Entity)',
       '',
       `${ANSICode.cyan}  Tip: Use "info <number>" to view details${ANSICode.reset}`,
       `${ANSICode.cyan}  Use "search <keyword>" to search for specific objects${ANSICode.reset}`,

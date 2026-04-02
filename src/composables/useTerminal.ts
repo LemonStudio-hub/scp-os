@@ -9,8 +9,26 @@ import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
-import { getBootLogs } from '../constants/bootLogs'
+import { getBootLogs, getShutdownLogs } from '../constants/bootLogs'
 import { config } from '../config'
+import { useTabsStore } from '../stores/tabs'
+import { useSystemStore } from '../stores/system'
+
+// Global terminal controller for command handlers
+export interface TerminalController {
+  displayBootLog: (fastMode?: boolean) => Promise<void>
+  displayShutdownLog: (fastMode?: boolean) => Promise<void>
+  displayWelcomeMessage: () => void
+  displayStartupPrompt: () => void
+  clear: () => void
+  markBootLogShown: () => void
+}
+
+declare global {
+  interface Window {
+    __terminalController?: TerminalController
+  }
+}
 
 // ASCII Art Constants - Desktop (Full width)
 const SCP_LOGO_ART_DESKTOP = [
@@ -70,6 +88,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
   const { addToHistory, navigateHistory: navHistory, resetIndex } = useCommandHistory()
   const currentInput = ref('')
+  const systemStore = useSystemStore()
 
   // 标记：防止重复绑定事件监听器
   let commandHandlerSetup = false
@@ -110,6 +129,28 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       errorHandler.setTerminalWriter((data: string) => {
         terminalInstance.value.terminal?.write(data)
       })
+
+      // Initialize global terminal controller
+      window.__terminalController = {
+        displayBootLog: async (fastMode?: boolean) => {
+          await displayBootLog(fastMode)
+        },
+        displayShutdownLog: async (fastMode?: boolean) => {
+          await displayShutdownLog(fastMode)
+        },
+        displayWelcomeMessage: () => {
+          displayWelcomeMessage()
+        },
+        displayStartupPrompt: () => {
+          displayStartupPrompt()
+        },
+        clear: () => {
+          clear()
+        },
+        markBootLogShown: () => {
+          systemStore.markBootLogShown()
+        }
+      }
     } catch (error) {
       const errorObj = errorHandler.handleError({
         type: ErrorType.TERMINAL_INIT_FAILED,
@@ -243,6 +284,169 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
   }
 
+  /**
+   * Display startup prompt for first-time users
+   */
+  const displayStartupPrompt = () => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    terminal.writeln(`${ANSICode.yellow}SCP Foundation Terminal System${ANSICode.reset}`)
+    terminal.writeln('')
+    terminal.writeln(`${ANSICode.cyan}Type 'start' to boot the system${ANSICode.reset}`)
+    terminal.writeln('')
+    writePrompt()
+  }
+
+  /**
+   * Display shutdown log
+   */
+  const displayShutdownLog = async (fastMode: boolean = false) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) {
+      errorHandler.handleError({
+        type: ErrorType.TERMINAL_NOT_AVAILABLE,
+        severity: ErrorSeverity.HIGH,
+        message: 'Terminal not available, cannot display shutdown log',
+      })
+      return
+    }
+
+    const shutdownLogs = getShutdownLogs(fastMode || config.app.fastBoot)
+    
+    // Dynamic speed configuration
+    const baseDelay = fastMode || config.app.fastBoot ? 50 : 150
+    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.97
+    const minDelay = fastMode || config.app.fastBoot ? 20 : 50
+    const maxDelay = fastMode || config.app.fastBoot ? 100 : 300
+    
+    let currentSpeedMultiplier = 1.0
+
+    for (const line of shutdownLogs) {
+      try {
+        terminal.writeln(line)
+        
+        // Calculate dynamic delay
+        let dynamicDelay = baseDelay
+        
+        // Adjust based on line length
+        const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length
+        const lengthMultiplier = Math.min(Math.max(lineLength / 50, 0.8), 1.5)
+        
+        // Adjust based on empty lines
+        const isEmptyLine = line.trim().length === 0
+        if (isEmptyLine) {
+          dynamicDelay = minDelay
+        }
+        
+        // Adjust based on important info
+        const hasImportantInfo = line.includes('[  OK  ]') || 
+                                line.includes('[FAILED]') ||
+                                line.includes('System halted')
+        if (hasImportantInfo) {
+          dynamicDelay *= 1.2
+        }
+        
+        // Apply length multiplier
+        if (!isEmptyLine) {
+          dynamicDelay *= lengthMultiplier
+        }
+        
+        // Apply current speed multiplier
+        dynamicDelay *= currentSpeedMultiplier
+        
+        // Ensure delay is within reasonable range
+        dynamicDelay = Math.max(minDelay, Math.min(maxDelay, dynamicDelay))
+        
+        // Apply random variation
+        if (!fastMode) {
+          dynamicDelay *= (0.9 + Math.random() * 0.2)
+        }
+        
+        await sleep(Math.round(dynamicDelay))
+        
+        // Update speed multiplier
+        if (!fastMode) {
+          currentSpeedMultiplier *= speedDecay
+          currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier)
+        }
+        
+      } catch (error) {
+        errorHandler.handleError({
+          type: ErrorType.SYSTEM_ERROR,
+          severity: ErrorSeverity.LOW,
+          message: 'Shutdown log output failed',
+          details: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+    
+    try {
+      await sleep(fastMode || config.app.fastBoot ? 200 : 500)
+    } catch (error) {
+      errorHandler.handleError({
+        type: ErrorType.SYSTEM_ERROR,
+        severity: ErrorSeverity.LOW,
+        message: 'Shutdown delay failed',
+        details: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
+
+  /**
+   * Restart the system
+   */
+  const restartSystem = async () => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    terminal.writeln(`${ANSICode.yellow}Restarting system...${ANSICode.reset}`)
+    await sleep(500)
+    
+    clear()
+    
+    // Reset first launch flag to show boot log again
+    systemStore.markSystemRunning()
+    
+    // Display boot log and welcome message
+    await displayBootLog()
+    displayWelcomeMessage()
+  }
+
+  /**
+   * Shutdown the system
+   */
+  const shutdownSystem = async (confirmed: boolean = false) => {
+    const terminal = terminalInstance.value.terminal
+    if (!terminal) return
+
+    if (!confirmed) {
+      terminal.writeln(`${ANSICode.yellow}Are you sure you want to shutdown? (yes/no)${ANSICode.reset}`)
+      return
+    }
+
+    terminal.writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
+    await sleep(500)
+    
+    // Clear all tabs
+    const tabsStore = useTabsStore()
+    tabsStore.clearAllTabs()
+    
+    // Mark system as shutdown
+    systemStore.markSystemShutdown()
+    
+    terminal.writeln(`${ANSICode.red}System shutdown complete.${ANSICode.reset}`)
+    terminal.writeln('')
+    terminal.writeln(`${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`)
+    terminal.writeln('')
+    
+    // Clear the terminal
+    clear()
+    
+    // Display startup prompt again
+    displayStartupPrompt()
+  }
+
   const displayWelcomeMessage = () => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
@@ -291,6 +495,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     lines.forEach(line => terminal.writeln(line))
     writePrompt()
+    
+    // Mark system as running after welcome message
+    systemStore.markSystemRunning()
   }
 
   const writePrompt = () => {
@@ -403,30 +610,31 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       errorHandler.handleError({
         type: ErrorType.TERMINAL_NOT_AVAILABLE,
         severity: ErrorSeverity.HIGH,
-        message: '终端不可用，无法执行命令',
-        details: `尝试执行的命令: ${command}`,
+        message: 'Terminal not available, cannot execute command',
+        details: `Attempted command: ${command}`,
       })
       return
     }
 
     try {
       const [cmd, ...args] = command.toLowerCase().split(' ')
+      
       const handler = getCommandHandler(cmd as any)
 
       if (handler) {
         executeCommandHandler(handler, args, cmd)
       } else {
-        terminal.writeln(`${ANSICode.red}未知命令: ${cmd}. 输入 "help" 查看可用命令.${ANSICode.reset}`)
+        terminal.writeln(`${ANSICode.red}Unknown command: ${cmd}. Type "help" to see available commands.${ANSICode.reset}`)
       }
     } catch (error) {
       errorHandler.handleError({
         type: ErrorType.COMMAND_PARSING_FAILED,
         severity: ErrorSeverity.MEDIUM,
-        message: '命令解析失败',
+        message: 'Command parsing failed',
         details: error instanceof Error ? error.message : String(error),
         logToConsole: true,
       })
-      terminal.writeln(`${ANSICode.red}命令解析失败${ANSICode.reset}`)
+      terminal.writeln(`${ANSICode.red}Command parsing failed${ANSICode.reset}`)
     }
   }
 
@@ -497,6 +705,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     destroyTerminal,
     displayBootLog,
     displayWelcomeMessage,
+    displayStartupPrompt,
+    restartSystem,
+    shutdownSystem,
     setupCommandHandler,
     focus,
     clear,
@@ -504,6 +715,14 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     autocomplete,
     getTerminal,
     sendKey,
-    sendText
+    sendText,
+    isFirstLaunch: () => systemStore.isFirstLaunch,
+    markSystemLaunched: () => systemStore.markSystemLaunched(),
+    isSystemRunning: () => systemStore.isRunning,
+    markSystemRunning: () => systemStore.markSystemRunning(),
+    markSystemShutdown: () => systemStore.markSystemShutdown(),
+    resetFirstLaunch: () => systemStore.resetFirstLaunch(),
+    hasBootLogBeenShown: () => systemStore.bootLogShown,
+    resetBootLogShown: () => systemStore.resetBootLogShown()
   }
 }

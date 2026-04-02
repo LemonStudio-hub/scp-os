@@ -1,4 +1,7 @@
 export type CommandType =
+  | 'start'
+  | 'restart'
+  | 'shutdown'
   | 'help'
   | 'status'
   | 'clear'

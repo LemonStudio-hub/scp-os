@@ -78,14 +78,15 @@ const modifiers = ref({
 const {
   initTerminal,
   destroyTerminal,
-  displayBootLog,
   displayWelcomeMessage,
+  displayStartupPrompt,
   setupCommandHandler,
   clear,
   navigateHistory,
   getTerminal,
   sendKey,
-  sendText
+  sendText,
+  hasBootLogBeenShown
 } = useTerminal(terminalContainer)
 
 const handleKeyPress = (key: any) => {
@@ -175,8 +176,15 @@ onMounted(async () => {
   // Add resize listener for responsive font size
   window.addEventListener('resize', handleResize)
   
-  await displayBootLog()
-  displayWelcomeMessage()
+  // Check system status and display appropriate screen
+  if (hasBootLogBeenShown()) {
+    // Boot log has been shown, display welcome message without boot log
+    displayWelcomeMessage()
+  } else {
+    // Boot log has not been shown (first launch or after shutdown), display startup prompt
+    displayStartupPrompt()
+  }
+  
   setupCommandHandler()
 })
 

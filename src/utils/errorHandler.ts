@@ -137,37 +137,37 @@ export class ErrorHandler {
   private getErrorSuggestions(type: string): string[] {
     const suggestionsMap: Record<string, string[]> = {
       [ErrorType.NETWORK_ERROR]: [
-        '检查网络连接是否正常',
-        '使用 "network" 命令测试连接',
-        '稍后重试或检查防火墙设置',
-        '尝试刷新页面重新加载',
+        'Check if your network connection is normal',
+        'Use "network" command to test connection',
+        'Try again later or check firewall settings',
+        'Try refreshing the page to reload',
       ],
       [ErrorType.COMMAND_NOT_FOUND]: [
-        '使用 "help" 命令查看可用命令',
-        '检查命令拼写是否正确',
-        '查看命令使用帮助',
+        'Use "help" command to see available commands',
+        'Check if the command is spelled correctly',
+        'See command usage help',
       ],
       [ErrorType.DATA_NOT_FOUND]: [
-        '检查SCP编号是否正确',
-        '使用 "search" 命令搜索相关SCP',
-        '尝试使用 "scp-list" 查看已知SCP',
+        'Check if the SCP number is correct',
+        'Use "search" command to search for related SCP',
+        'Try using "scp-list" to view known SCPs',
       ],
       [ErrorType.TERMINAL_WRITE_FAILED]: [
-        '刷新页面重试',
-        '检查浏览器兼容性',
-        '清除浏览器缓存',
+        'Refresh the page and try again',
+        'Check browser compatibility',
+        'Clear browser cache',
       ],
       [ErrorType.COMMAND_INVALID_ARGS]: [
-        '使用 "help <命令>" 查看用法',
-        '检查命令参数格式',
-        '参考命令示例',
+        'Use "help <command>" to see usage',
+        'Check command parameter format',
+        'Refer to command examples',
       ],
     }
     
     return suggestionsMap[type] || [
-      '如果是网络问题，请检查连接',
-      '如果问题持续，请刷新页面',
-      '使用 "help" 命令获取帮助',
+      'If it\'s a network issue, please check your connection',
+      'If the problem persists, please refresh the page',
+      'Use "help" command to get help',
     ]
   }
 
