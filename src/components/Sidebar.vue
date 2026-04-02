@@ -202,12 +202,12 @@ const handleCleanup = () => {
   left: 0;
   width: 320px;
   height: 100%;
-  background: #1a1a2e;
+  background: #0a0a0a;
   transform: translateX(-100%);
   transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar-open .sidebar-content {
@@ -219,20 +219,20 @@ const handleCleanup = () => {
   justify-content: space-between;
   align-items: center;
   padding: 20px;
-  border-bottom: 1px solid #333;
-  background: #16213e;
+  border-bottom: 1px solid #2a2a2a;
+  background: #1a1a1a;
 }
 
 .sidebar-header h2 {
   margin: 0;
   font-size: 18px;
-  color: #e94560;
+  color: #ffffff;
   font-weight: 600;
 }
 
 .sidebar-actions {
   padding: 15px 20px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 .tabs-list {
@@ -247,7 +247,7 @@ const handleCleanup = () => {
   align-items: center;
   padding: 12px 15px;
   margin-bottom: 8px;
-  background: #0f3460;
+  background: #1a1a1a;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -255,13 +255,13 @@ const handleCleanup = () => {
 }
 
 .tab-item:hover {
-  background: #16213e;
+  background: #2a2a2a;
   transform: translateX(2px);
 }
 
 .tab-active {
-  border-color: #e94560;
-  background: #16213e;
+  border-color: #ffffff;
+  background: #2a2a2a;
 }
 
 .tab-locked {
@@ -279,11 +279,12 @@ const handleCleanup = () => {
 .tab-icon {
   font-size: 16px;
   flex-shrink: 0;
+  color: #ffffff;
 }
 
 .tab-title {
   font-size: 14px;
-  color: #fff;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -292,10 +293,10 @@ const handleCleanup = () => {
 .tab-title-input {
   font-size: 14px;
   padding: 4px 8px;
-  background: #1a1a2e;
-  border: 1px solid #e94560;
+  background: #0a0a0a;
+  border: 1px solid #2a2a2a;
   border-radius: 4px;
-  color: #fff;
+  color: #ffffff;
   width: 100%;
   outline: none;
 }
@@ -308,22 +309,24 @@ const handleCleanup = () => {
 
 .sidebar-footer {
   padding: 15px 20px;
-  border-top: 1px solid #333;
-  background: #16213e;
+  border-top: 1px solid #2a2a2a;
+  background: #1a1a1a;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
 }
 
 .tabs-count {
   font-size: 12px;
-  color: #888;
+  color: #ffffff;
+  flex-shrink: 0;
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #888;
+  color: #ffffff;
 }
 
 .empty-state p {
@@ -334,9 +337,9 @@ const handleCleanup = () => {
 .btn-primary {
   width: 100%;
   padding: 10px;
-  background: #e94560;
-  color: #fff;
-  border: none;
+  background: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #3a3a3a;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -344,7 +347,7 @@ const handleCleanup = () => {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #ff6b6b;
+  background: #3a3a3a;
 }
 
 .btn-primary:disabled {
@@ -354,17 +357,22 @@ const handleCleanup = () => {
 
 .btn-secondary {
   padding: 8px 12px;
-  background: #0f3460;
-  color: #fff;
-  border: none;
+  background: #1a1a1a;
+  color: #ffffff;
+  border: 1px solid #2a2a2a;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
   transition: background 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .btn-secondary:hover {
-  background: #16213e;
+  background: #2a2a2a;
 }
 
 .btn-icon {
@@ -374,7 +382,7 @@ const handleCleanup = () => {
   align-items: center;
   justify-content: center;
   background: transparent;
-  color: #fff;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -383,7 +391,7 @@ const handleCleanup = () => {
 }
 
 .btn-icon:hover {
-  background: rgba(233, 69, 96, 0.2);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .btn-small {
@@ -392,28 +400,43 @@ const handleCleanup = () => {
   font-size: 14px;
 }
 
-/* 滚动条样式 */
+/* Scrollbar styles */
 .tabs-list::-webkit-scrollbar {
   width: 6px;
 }
 
 .tabs-list::-webkit-scrollbar-track {
-  background: #1a1a2e;
+  background: #0a0a0a;
 }
 
 .tabs-list::-webkit-scrollbar-thumb {
-  background: #0f3460;
+  background: #2a2a2a;
   border-radius: 3px;
 }
 
 .tabs-list::-webkit-scrollbar-thumb:hover {
-  background: #16213e;
+  background: #3a3a3a;
 }
 
-/* 响应式设计 */
+/* Responsive design */
 @media (max-width: 480px) {
   .sidebar-content {
     width: 280px;
+  }
+
+  .sidebar-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .tabs-count {
+    text-align: center;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    text-align: center;
   }
 }
 </style>
