@@ -29,24 +29,10 @@ export interface EventSubscription {
   handler: EventHandler
   /** Whether this is a one-time subscription */
   once: boolean
-  /** Subscription ID */
-  id: string
 }
 
 /**
- * Event emitter options
- */
-export interface EventEmitterOptions {
-  /** Enable debug mode */
-  debug?: boolean
-  /** Default error handler */
-  errorHandler?: (error: Error, event: string, data: any) => void
-  /** Maximum listeners per event */
-  maxListeners?: number
-}
-
-/**
- * Event data types
+ * Command event data
  */
 export interface CommandEventData {
   command: string
@@ -54,31 +40,45 @@ export interface CommandEventData {
   timestamp: number
 }
 
+/**
+ * Terminal event data
+ */
 export interface TerminalEventData {
-  action: 'write' | 'clear' | 'resize'
-  data?: string
-  size?: { rows: number; cols: number }
+  action: 'init' | 'write' | 'clear' | 'resize'
+  data?: any
   timestamp: number
 }
 
+/**
+ * Tab event data
+ */
 export interface TabEventData {
   action: 'create' | 'switch' | 'close'
-  tabId: string
+  tabId?: string
   timestamp: number
 }
 
+/**
+ * Plugin event data
+ */
 export interface PluginEventData {
   action: 'load' | 'enable' | 'disable' | 'unload'
   pluginName: string
   timestamp: number
 }
 
+/**
+ * Theme event data
+ */
 export interface ThemeEventData {
   action: 'change'
   themeName: string
   timestamp: number
 }
 
+/**
+ * App event data
+ */
 export interface AppEventData {
   action: 'init' | 'ready' | 'error'
   data?: any
@@ -86,36 +86,38 @@ export interface AppEventData {
 }
 
 /**
- * Event types enum
+ * Event types
  */
-export enum EventType {
+export const EventType = {
   // Command events
-  COMMAND_EXECUTE = 'command:execute',
-  COMMAND_COMPLETE = 'command:complete',
-  COMMAND_ERROR = 'command:error',
+  COMMAND_EXECUTE: 'command:execute',
+  COMMAND_COMPLETE: 'command:complete',
+  COMMAND_ERROR: 'command:error',
 
   // Terminal events
-  TERMINAL_INIT = 'terminal:init',
-  TERMINAL_WRITE = 'terminal:write',
-  TERMINAL_CLEAR = 'terminal:clear',
-  TERMINAL_RESIZE = 'terminal:resize',
+  TERMINAL_INIT: 'terminal:init',
+  TERMINAL_WRITE: 'terminal:write',
+  TERMINAL_CLEAR: 'terminal:clear',
+  TERMINAL_RESIZE: 'terminal:resize',
 
   // Tab events
-  TAB_CREATE = 'tab:create',
-  TAB_SWITCH = 'tab:switch',
-  TAB_CLOSE = 'tab:close',
+  TAB_CREATE: 'tab:create',
+  TAB_SWITCH: 'tab:switch',
+  TAB_CLOSE: 'tab:close',
 
   // Plugin events
-  PLUGIN_LOAD = 'plugin:load',
-  PLUGIN_ENABLE = 'plugin:enable',
-  PLUGIN_DISABLE = 'plugin:disable',
-  PLUGIN_UNLOAD = 'plugin:unload',
+  PLUGIN_LOAD: 'plugin:load',
+  PLUGIN_ENABLE: 'plugin:enable',
+  PLUGIN_DISABLE: 'plugin:disable',
+  PLUGIN_UNLOAD: 'plugin:unload',
 
   // Theme events
-  THEME_CHANGE = 'theme:change',
+  THEME_CHANGE: 'theme:change',
 
-  // Application events
-  APP_INIT = 'app:init',
-  APP_READY = 'app:ready',
-  APP_ERROR = 'app:error'
-}
+  // App events
+  APP_INIT: 'app:init',
+  APP_READY: 'app:ready',
+  APP_ERROR: 'app:error'
+} as const
+
+export type EventType = typeof EventType[keyof typeof EventType]

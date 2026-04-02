@@ -20,7 +20,7 @@ class EnvironmentSource implements ConfigSource {
   name = 'environment'
   priority = 1000
 
-  constructor(private environment: Environment) {}
+  constructor(private _environment: Environment) {}
 
   get(key: string): ConfigValue | undefined {
     const envKey = key.toUpperCase().replace(/-/g, '_')
@@ -40,14 +40,14 @@ class DefaultSource implements ConfigSource {
   name = 'default'
   priority = 0
 
-  constructor(private defaults: Record<string, ConfigValue> = {}) {}
+  constructor(private _defaults: Record<string, ConfigValue> = {}) {}
 
   get(key: string): ConfigValue | undefined {
-    return this.defaults[key]
+    return this._defaults[key]
   }
 
   has(key: string): boolean {
-    return key in this.defaults
+    return key in this._defaults
   }
 }
 
@@ -58,22 +58,22 @@ class MemorySource implements ConfigSource {
   name = 'memory'
   priority = 500
 
-  constructor(private values: Record<string, ConfigValue> = {}) {}
+  constructor(private _values: Record<string, ConfigValue> = {}) {}
 
   get(key: string): ConfigValue | undefined {
-    return this.values[key]
+    return this._values[key]
   }
 
   set(key: string, value: ConfigValue): void {
-    this.values[key] = value
+    this._values[key] = value
   }
 
   has(key: string): boolean {
-    return key in this.values
+    return key in this._values
   }
 
   clear(): void {
-    this.values = {}
+    this._values = {}
   }
 }
 

@@ -5,19 +5,21 @@
 /**
  * Service lifecycle types
  */
-export enum ServiceLifetime {
+export const ServiceLifetime = {
   /** Singleton - same instance for all resolves */
-  SINGLETON = 'singleton',
+  SINGLETON: 'singleton',
   /** Transient - new instance for each resolve */
-  TRANSIENT = 'transient',
+  TRANSIENT: 'transient',
   /** Scoped - same instance within a scope */
-  SCOPED = 'scoped'
-}
+  SCOPED: 'scoped'
+} as const
+
+export type ServiceLifetime = typeof ServiceLifetime[keyof typeof ServiceLifetime]
 
 /**
  * Service factory function type
  */
-export type ServiceFactory<T = any> = (container: DIContainer) => T
+export type ServiceFactory<T = any> = (container: any) => T
 
 /**
  * Service registration options
@@ -29,37 +31,31 @@ export interface ServiceRegistrationOptions<T = any> {
   lifetime?: ServiceLifetime
   /** Dependencies (service tokens that this service depends on) */
   dependencies?: string[]
-  /** Whether the service is already instantiated */
-  instance?: T
 }
 
 /**
  * Service registration
  */
-export interface ServiceRegistration {
-  /** Service token */
-  token: string
-  /** Service factory */
-  factory: ServiceFactory
+export interface ServiceRegistration<T = any> {
+  /** Factory function */
+  factory: ServiceFactory<T>
   /** Service lifetime */
   lifetime: ServiceLifetime
-  /** Service dependencies */
+  /** Dependencies */
   dependencies: string[]
-  /** Service instance (for singleton) */
-  instance?: any
-  /** Whether the service is instantiated */
-  instantiated: boolean
+  /** Instance (for singleton) */
+  instance?: T
 }
 
 /**
- * Container scope for scoped services
+ * Container scope
  */
 export interface ContainerScope {
-  /** Unique scope identifier */
+  /** Scope ID */
   id: string
   /** Scoped instances */
   instances: Map<string, any>
-  /** Parent scope (for nested scopes) */
+  /** Parent scope */
   parent?: ContainerScope
 }
 
@@ -69,9 +65,9 @@ export interface ContainerScope {
 export interface ContainerConfig {
   /** Enable debug mode */
   debug?: boolean
-  /** Enable auto-registration */
+  /** Auto-register services from type information */
   autoRegister?: boolean
-  /** Enable circular dependency detection */
+  /** Detect circular dependencies */
   detectCircularDependencies?: boolean
   /** Default service lifetime */
   defaultLifetime?: ServiceLifetime

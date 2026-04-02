@@ -34,7 +34,7 @@ export interface ExtensionPoint<T = any> {
  * Generic extension point implementation
  */
 export class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
-  private extensions = new Map<string, T>()
+  protected extensions = new Map<string, T>()
 
   constructor(
     public name: string,
@@ -72,7 +72,7 @@ export class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
     this.extensions.clear()
   }
 
-  private getExtensionName(extension: T): string {
+  protected getExtensionName(extension: T): string {
     // Handle different extension types
     if (typeof extension === 'object' && extension !== null) {
       if ('name' in extension && typeof extension.name === 'string') {

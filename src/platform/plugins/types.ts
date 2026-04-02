@@ -7,20 +7,22 @@ import type { Component } from 'vue'
 /**
  * Plugin lifecycle status
  */
-export enum PluginStatus {
+export const PluginStatus = {
   /** Plugin is registered but not loaded */
-  REGISTERED = 'registered',
+  REGISTERED: 'registered',
   /** Plugin is loaded and ready */
-  LOADED = 'loaded',
+  LOADED: 'loaded',
   /** Plugin is enabled and active */
-  ENABLED = 'enabled',
+  ENABLED: 'enabled',
   /** Plugin is disabled but still loaded */
-  DISABLED = 'disabled',
+  DISABLED: 'disabled',
   /** Plugin failed to load */
-  ERROR = 'error',
+  ERROR: 'error',
   /** Plugin is unloaded */
-  UNLOADED = 'unloaded'
-}
+  UNLOADED: 'unloaded'
+} as const
+
+export type PluginStatus = typeof PluginStatus[keyof typeof PluginStatus]
 
 /**
  * Plugin configuration
@@ -33,7 +35,7 @@ export interface PluginConfig {
  * Base plugin interface
  */
 export interface Plugin {
-  /** Unique plugin name */
+  /** Plugin name (unique identifier) */
   name: string
   /** Plugin version */
   version: string
@@ -41,24 +43,30 @@ export interface Plugin {
   description?: string
   /** Plugin author */
   author?: string
-  /** Plugin homepage URL */
-  homepage?: string
-  /** Plugin license */
-  license?: string
-
-  /** Lifecycle hook: called when plugin is loaded */
-  onLoad?(): Promise<void> | void
-  /** Lifecycle hook: called when plugin is unloaded */
-  onUnload?(): Promise<void> | void
-  /** Lifecycle hook: called when plugin is enabled */
-  onEnable?(): Promise<void> | void
-  /** Lifecycle hook: called when plugin is disabled */
-  onDisable?(): Promise<void> | void
-
-  /** Plugin dependencies (other plugin names) */
+  /** Plugin dependencies */
   dependencies?: string[]
   /** Plugin configuration */
   config?: PluginConfig
+
+  /**
+   * Called when plugin is loaded
+   */
+  onLoad?(): Promise<void> | void
+
+  /**
+   * Called when plugin is enabled
+   */
+  onEnable?(): Promise<void> | void
+
+  /**
+   * Called when plugin is disabled
+   */
+  onDisable?(): Promise<void> | void
+
+  /**
+   * Called when plugin is unloaded
+   */
+  onUnload?(): Promise<void> | void
 }
 
 /**
@@ -76,14 +84,16 @@ export type CommandHandler = (
 export interface CommandOption {
   /** Option name */
   name: string
-  /** Option aliases */
-  aliases?: string[]
+  /** Option alias */
+  alias?: string
   /** Option description */
   description: string
-  /** Whether option requires a value */
-  requiresValue?: boolean
+  /** Option type */
+  type: 'string' | 'number' | 'boolean'
+  /** Option is required */
+  required?: boolean
   /** Default value */
-  defaultValue?: any
+  default?: any
 }
 
 /**
@@ -100,24 +110,24 @@ export interface CommandDefinition {
   usage?: string
   /** Command handler */
   handler: CommandHandler
-  /** Required permission */
+  /** Command permission */
   permission?: string
   /** Command options */
   options?: CommandOption[]
 }
 
 /**
- * Command plugin interface
+ * Command plugin
  */
 export interface CommandPlugin extends Plugin {
   /** Plugin type */
   type: 'command'
-  /** Provided commands */
+  /** Commands provided by this plugin */
   commands: CommandDefinition[]
 }
 
 /**
- * ANSI color code
+ * ANSI color mapping
  */
 export interface ANSIColors {
   black: string
@@ -132,9 +142,21 @@ export interface ANSIColors {
 }
 
 /**
- * Theme color definition
+ * Terminal configuration
  */
-export interface ThemeColors {
+export interface TerminalConfig {
+  /** ANSI colors */
+  ansiColors: ANSIColors
+  /** Font family */
+  fontFamily: string
+  /** Font size */
+  fontSize: number
+}
+
+/**
+ * Color palette
+ */
+export interface ColorPalette {
   primary: string
   secondary: string
   background: string
@@ -146,78 +168,39 @@ export interface ThemeColors {
 }
 
 /**
- * Terminal theme configuration
- */
-export interface TerminalTheme {
-  ansiColors: ANSIColors
-  fontFamily: string
-  fontSize: number
-  cursorBlink?: boolean
-  cursorStyle?: 'block' | 'underline' | 'bar'
-}
-
-/**
  * Theme definition
  */
 export interface ThemeDefinition {
   /** Theme name */
   name: string
-  /** Theme display name */
-  displayName?: string
-  /** Theme colors */
-  colors: ThemeColors
-  /** Terminal theme */
-  terminal: TerminalTheme
+  /** Colors */
+  colors: ColorPalette
+  /** Terminal configuration */
+  terminal: TerminalConfig
 }
 
 /**
- * Theme plugin interface
+ * Theme plugin
  */
 export interface ThemePlugin extends Plugin {
   /** Plugin type */
   type: 'theme'
-  /** Theme definition */
+  /** Theme configuration */
   theme: ThemeDefinition
 }
 
 /**
- * Data query interface
- */
-export interface DataQuery<T = any> {
-  /** Query filter */
-  filter?: (item: T) => boolean
-  /** Query sort */
-  sort?: (a: T, b: T) => number
-  /** Query limit */
-  limit?: number
-  /** Query offset */
-  offset?: number
-}
-
-/**
- * Batch operation
- */
-export interface BatchOperation<T = any> {
-  /** Operation type */
-  type: 'create' | 'update' | 'delete'
-  /** Data */
-  data: T
-}
-
-/**
- * Data source client interface
+ * Data source client
  */
 export interface DataSourceClient {
-  /** Query data */
-  query<T>(query: DataQuery<T>): Promise<T[]>
-  /** Get data by ID */
-  get<T>(id: string): Promise<T | null>
-  /** Save data */
-  save<T>(id: string, data: T): Promise<void>
+  /** Get data */
+  get<T>(key: string): Promise<T | null>
+  /** Set data */
+  set<T>(key: string, value: T): Promise<void>
   /** Delete data */
-  delete(id: string): Promise<void>
-  /** Batch operations */
-  batch<T>(operations: BatchOperation<T>[]): Promise<void>
+  delete(key: string): Promise<void>
+  /** Query data */
+  query<T>(query: any): Promise<T[]>
 }
 
 /**
@@ -230,24 +213,17 @@ export interface DataSourceDefinition {
   type: 'api' | 'local' | 'custom'
   /** Data source client */
   client: DataSourceClient
-  /** Data source description */
-  description?: string
 }
 
 /**
- * Data source plugin interface
+ * Data source plugin
  */
 export interface DataSourcePlugin extends Plugin {
   /** Plugin type */
   type: 'datasource'
-  /** Data source definition */
+  /** Data source configuration */
   source: DataSourceDefinition
 }
-
-/**
- * UI component position
- */
-export type ComponentPosition = 'sidebar' | 'toolbar' | 'statusbar' | 'modal'
 
 /**
  * UI component definition
@@ -258,15 +234,13 @@ export interface UIComponentDefinition {
   /** Vue component */
   component: Component
   /** Component position */
-  position?: ComponentPosition
-  /** Component priority */
+  position?: 'sidebar' | 'toolbar' | 'statusbar'
+  /** Component priority (higher = more important) */
   priority?: number
-  /** Component props */
-  props?: Record<string, any>
 }
 
 /**
- * UI plugin interface
+ * UI plugin
  */
 export interface UIPlugin extends Plugin {
   /** Plugin type */
@@ -276,7 +250,7 @@ export interface UIPlugin extends Plugin {
 }
 
 /**
- * Plugin manifest (from plugin package)
+ * Plugin manifest
  */
 export interface PluginManifest {
   /** Plugin name */
@@ -289,31 +263,29 @@ export interface PluginManifest {
   author?: string
   /** Plugin type */
   type: 'command' | 'theme' | 'datasource' | 'ui'
-  /** Plugin entry point */
-  main: string
   /** Plugin dependencies */
   dependencies?: string[]
-  /** Plugin configuration */
-  config?: PluginConfig
+  /** Minimum platform version */
+  minPlatformVersion?: string
 }
 
 /**
  * Plugin load result
  */
 export interface PluginLoadResult {
-  /** Success */
+  /** Load success */
   success: boolean
-  /** Error message */
-  error?: string
-  /** Loaded plugin */
+  /** Plugin instance (if successful) */
   plugin?: Plugin
+  /** Error message (if failed) */
+  error?: string
 }
 
 /**
  * Plugin validation result
  */
 export interface PluginValidationResult {
-  /** Valid */
+  /** Validation passed */
   valid: boolean
   /** Validation errors */
   errors: string[]
