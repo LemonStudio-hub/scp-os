@@ -2,6 +2,7 @@ import type { CommandType, CommandHandler, CommandMap } from '../types/command'
 import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { scraper } from '../utils/scraper'
+import { filesystem } from '../utils/filesystem'
 import { useTabsStore } from '../stores/tabs'
 import { useSystemStore } from '../stores/system'
 
@@ -458,6 +459,263 @@ export const commandHandlers: CommandMap = {
     writeln('')
     writeln(`${ANSICode.green}Secure. Contain. Protect.${ANSICode.reset}`)
     writeln('')
+  },
+
+  ls: (_args, _write, writeln) => {
+    const path = _args[0] || ''
+    const files = filesystem.listDirectory(path)
+    
+    files.forEach(file => {
+      const permissions = [
+        file.type === 'directory' ? 'd' : '-',
+        file.permissions.user.read ? 'r' : '-',
+        file.permissions.user.write ? 'w' : '-',
+        file.permissions.user.execute ? 'x' : '-',
+        file.permissions.group.read ? 'r' : '-',
+        file.permissions.group.write ? 'w' : '-',
+        file.permissions.group.execute ? 'x' : '-',
+        file.permissions.others.read ? 'r' : '-',
+        file.permissions.others.write ? 'w' : '-',
+        file.permissions.others.execute ? 'x' : '-'
+      ].join('')
+      
+      const size = file.size.toString().padStart(10)
+      const mtime = new Date(file.mtime).toLocaleString()
+      const name = file.type === 'directory' ? `${file.name}/` : file.name
+      
+      writeln(`${permissions} ${file.owner} ${file.group} ${size} ${mtime} ${name}`)
+    })
+  },
+
+  cd: (_args, _write, writeln) => {
+    const path = _args[0]
+    if (!path) {
+      writeln(`${ANSICode.yellow}Usage: cd <path>${ANSICode.reset}`)
+      return
+    }
+    
+    if (filesystem.changeDirectory(path)) {
+      // 目录更改成功，不输出任何内容
+    } else {
+      writeln(`${ANSICode.red}cd: ${path}: No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  pwd: (_args, _write, writeln) => {
+    writeln(filesystem.getCurrentDirectory())
+  },
+
+  mkdir: (_args, _write, writeln) => {
+    const dirPath = _args[0]
+    if (!dirPath) {
+      writeln(`${ANSICode.yellow}Usage: mkdir <directory>${ANSICode.reset}`)
+      return
+    }
+    
+    if (filesystem.createDirectory(dirPath)) {
+      writeln(`${ANSICode.green}Created directory: ${dirPath}${ANSICode.reset}`)
+    } else {
+      writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  rm: (_args, _write, writeln) => {
+    const path = _args[0]
+    if (!path) {
+      writeln(`${ANSICode.yellow}Usage: rm <file|directory>${ANSICode.reset}`)
+      return
+    }
+    
+    if (filesystem.deleteNode(path)) {
+      writeln(`${ANSICode.green}Removed: ${path}${ANSICode.reset}`)
+    } else {
+      writeln(`${ANSICode.red}rm: cannot remove '${path}': No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  cat: (_args, _write, writeln) => {
+    const filePath = _args[0]
+    if (!filePath) {
+      writeln(`${ANSICode.yellow}Usage: cat <file>${ANSICode.reset}`)
+      return
+    }
+    
+    const content = filesystem.readFile(filePath)
+    if (content !== null) {
+      writeln(content)
+    } else {
+      writeln(`${ANSICode.red}cat: ${filePath}: No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  echo: (_args, _write, writeln) => {
+    if (_args.length === 0) {
+      writeln('')
+      return
+    }
+    
+    const redirectIndex = _args.indexOf('>')
+    if (redirectIndex !== -1) {
+      const text = _args.slice(0, redirectIndex).join(' ')
+      const filePath = _args[redirectIndex + 1]
+      
+      if (filesystem.writeFile(filePath, text)) {
+        // 重定向成功，不输出任何内容
+      } else {
+        writeln(`${ANSICode.red}echo: cannot write to '${filePath}': No such file or directory${ANSICode.reset}`)
+      }
+    } else {
+      writeln(_args.join(' '))
+    }
+  },
+
+  touch: (_args, _write, writeln) => {
+    const filePath = _args[0]
+    if (!filePath) {
+      writeln(`${ANSICode.yellow}Usage: touch <file>${ANSICode.reset}`)
+      return
+    }
+    
+    if (filesystem.createFile(filePath)) {
+      // 文件创建成功，不输出任何内容
+    } else {
+      writeln(`${ANSICode.red}touch: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  cp: (_args, _write, writeln) => {
+    const source = _args[0]
+    const destination = _args[1]
+    
+    if (!source || !destination) {
+      writeln(`${ANSICode.yellow}Usage: cp <source> <destination>${ANSICode.reset}`)
+      return
+    }
+    
+    if (filesystem.copyNode(source, destination)) {
+      writeln(`${ANSICode.green}Copied ${source} to ${destination}${ANSICode.reset}`)
+    } else {
+      writeln(`${ANSICode.red}cp: cannot copy '${source}': No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  mv: (_args, _write, writeln) => {
+    const source = _args[0]
+    const destination = _args[1]
+    
+    if (!source || !destination) {
+      writeln(`${ANSICode.yellow}Usage: mv <source> <destination>${ANSICode.reset}`)
+      return
+    }
+    
+    if (filesystem.moveNode(source, destination)) {
+      writeln(`${ANSICode.green}Moved ${source} to ${destination}${ANSICode.reset}`)
+    } else {
+      writeln(`${ANSICode.red}mv: cannot move '${source}': No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  uname: (_args, _write, writeln) => {
+    const all = _args.includes('-a')
+    if (all) {
+      writeln(`Linux scp-terminal 5.15.0-100-generic #110-Ubuntu SMP Wed Jun 14 15:30:30 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux`)
+    } else {
+      writeln(`Linux`)
+    }
+  },
+
+  df: (_args, _write, writeln) => {
+    writeln(`${ANSICode.green}Filesystem     1K-blocks    Used Available Use% Mounted on${ANSICode.reset}`)
+    writeln(`/dev/sda1       20971520  524288  20447232   3% /`)
+    writeln(`tmpfs            1048576       0   1048576   0% /dev/shm`)
+    writeln(`tmpfs             524288    1024    523264   1% /run`)
+  },
+
+  free: (_args, _write, writeln) => {
+    writeln(`${ANSICode.green}              total        used        free      shared  buff/cache   available${ANSICode.reset}`)
+    writeln(`Mem:        4194304      524288     3145728        8192      524288     3670016`)
+    writeln(`Swap:       2097152           0     2097152`)
+  },
+
+  uptime: (_args, _write, writeln) => {
+    const uptime = '10:30:45 up 2 days,  4:30,  1 user,  load average: 0.00, 0.01, 0.05'
+    writeln(uptime)
+  },
+
+  find: (_args, _write, writeln) => {
+    const path = _args[0] || ''
+    const patternIndex = _args.indexOf('-name')
+    const pattern = patternIndex !== -1 ? _args[patternIndex + 1] : ''
+    
+    if (!pattern) {
+      writeln(`${ANSICode.yellow}Usage: find <path> -name <pattern>${ANSICode.reset}`)
+      return
+    }
+    
+    const results = filesystem.findFiles(pattern, path)
+    results.forEach(file => writeln(file))
+  },
+
+  grep: (_args, _write, writeln) => {
+    const pattern = _args[0]
+    const files = _args.slice(1)
+    
+    if (!pattern || files.length === 0) {
+      writeln(`${ANSICode.yellow}Usage: grep <pattern> <file>${ANSICode.reset}`)
+      return
+    }
+    
+    const results = filesystem.grepContent(pattern, files)
+    results.forEach(result => {
+      result.lines.forEach(line => {
+        writeln(`${result.file}:${line}`)
+      })
+    })
+  },
+
+  chmod: (_args, _write, writeln) => {
+    const permissions = _args[0]
+    const filePath = _args[1]
+    
+    if (!permissions || !filePath) {
+      writeln(`${ANSICode.yellow}Usage: chmod <permissions> <file>${ANSICode.reset}`)
+      return
+    }
+    
+    // 简化的权限设置
+    const newPermissions = {
+      user: { read: true, write: true, execute: true },
+      group: { read: true, write: false, execute: true },
+      others: { read: true, write: false, execute: false }
+    }
+    
+    if (filesystem.changePermissions(filePath, newPermissions)) {
+      writeln(`${ANSICode.green}Changed permissions for ${filePath}${ANSICode.reset}`)
+    } else {
+      writeln(`${ANSICode.red}chmod: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+    }
+  },
+
+  chown: (_args, _write, writeln) => {
+    const ownerGroup = _args[0]
+    const filePath = _args[1]
+    
+    if (!ownerGroup || !filePath) {
+      writeln(`${ANSICode.yellow}Usage: chown <owner>:<group> <file>${ANSICode.reset}`)
+      return
+    }
+    
+    const [owner, group] = ownerGroup.split(':')
+    if (!owner || !group) {
+      writeln(`${ANSICode.yellow}Usage: chown <owner>:<group> <file>${ANSICode.reset}`)
+      return
+    }
+    
+    if (filesystem.changeOwner(filePath, owner, group)) {
+      writeln(`${ANSICode.green}Changed owner for ${filePath} to ${owner}:${group}${ANSICode.reset}`)
+    } else {
+      writeln(`${ANSICode.red}chown: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+    }
   }
 }
 

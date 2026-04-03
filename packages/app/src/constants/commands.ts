@@ -18,7 +18,25 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
   'about',
   'search',
   'network',
-  'performance'
+  'performance',
+  'ls',
+  'cd',
+  'pwd',
+  'mkdir',
+  'rm',
+  'cat',
+  'echo',
+  'touch',
+  'cp',
+  'mv',
+  'uname',
+  'df',
+  'free',
+  'uptime',
+  'find',
+  'grep',
+  'chmod',
+  'chown'
 ]
 
 export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
@@ -39,7 +57,25 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   about: 'Display system information',
   search: 'Search SCP database (supports Chinese keywords)',
   network: 'Test network connection to Foundation Wiki',
-  performance: 'Open Performance Monitor Dashboard'
+  performance: 'Open Performance Monitor Dashboard',
+  ls: 'List directory contents',
+  cd: 'Change current directory',
+  pwd: 'Print current working directory',
+  mkdir: 'Create directory',
+  rm: 'Remove file or directory',
+  cat: 'Display file content',
+  echo: 'Print text or write to file',
+  touch: 'Create empty file',
+  cp: 'Copy file or directory',
+  mv: 'Move or rename file or directory',
+  uname: 'Display system information',
+  df: 'Display disk space usage',
+  free: 'Display memory usage',
+  uptime: 'Display system uptime',
+  find: 'Find files',
+  grep: 'Search file content',
+  chmod: 'Change file permissions',
+  chown: 'Change file owner'
 }
 
 export const COMMAND_USAGE: Record<CommandType, string> = {
@@ -60,5 +96,23 @@ export const COMMAND_USAGE: Record<CommandType, string> = {
   about: 'about',
   search: 'search <keyword>',
   network: 'network',
-  performance: 'performance'
+  performance: 'performance',
+  ls: 'ls [path]',
+  cd: 'cd <path>',
+  pwd: 'pwd',
+  mkdir: 'mkdir <directory>',
+  rm: 'rm <file|directory>',
+  cat: 'cat <file>',
+  echo: 'echo <text> [> <file>]',
+  touch: 'touch <file>',
+  cp: 'cp <source> <destination>',
+  mv: 'mv <source> <destination>',
+  uname: 'uname [-a]',
+  df: 'df',
+  free: 'free',
+  uptime: 'uptime',
+  find: 'find <path> -name <pattern>',
+  grep: 'grep <pattern> <file>',
+  chmod: 'chmod <permissions> <file>',
+  chown: 'chown <owner>:<group> <file>'
 }
