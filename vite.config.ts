@@ -1,7 +1,11 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { copyFileSync, existsSync } from 'fs'
-import { join } from 'path'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,8 +15,8 @@ export default defineConfig({
       name: 'copy-service-worker',
       generateBundle() {
         // 复制 Service Worker 到 dist 目录
-        const swSource = join(process.cwd(), 'public/sw.ts')
-        const swDest = join(process.cwd(), 'dist/sw.js')
+        const swSource = join(__dirname, 'packages/app/public/sw.ts')
+        const swDest = join(__dirname, 'dist/sw.js')
         
         if (existsSync(swSource)) {
           copyFileSync(swSource, swDest)
@@ -20,8 +24,8 @@ export default defineConfig({
         }
         
         // 复制 manifest.json
-        const manifestSource = join(process.cwd(), 'public/manifest.json')
-        const manifestDest = join(process.cwd(), 'dist/manifest.json')
+        const manifestSource = join(__dirname, 'packages/app/public/manifest.json')
+        const manifestDest = join(__dirname, 'dist/manifest.json')
         
         if (existsSync(manifestSource)) {
           copyFileSync(manifestSource, manifestDest)
@@ -29,8 +33,8 @@ export default defineConfig({
         }
         
         // 复制离线页面
-        const offlineSource = join(process.cwd(), 'public/offline.html')
-        const offlineDest = join(process.cwd(), 'dist/offline.html')
+        const offlineSource = join(__dirname, 'packages/app/public/offline.html')
+        const offlineDest = join(__dirname, 'dist/offline.html')
         
         if (existsSync(offlineSource)) {
           copyFileSync(offlineSource, offlineDest)
@@ -39,7 +43,10 @@ export default defineConfig({
       }
     }
   ],
+  root: 'packages/app',
+  publicDir: 'public',
   build: {
+    outDir: '../../dist',
     rollupOptions: {
       output: {
         manualChunks(id) {
