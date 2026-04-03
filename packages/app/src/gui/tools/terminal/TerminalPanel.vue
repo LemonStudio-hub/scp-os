@@ -4,8 +4,8 @@
       <!-- Toolbar -->
       <div class="terminal-panel__toolbar">
         <div class="terminal-panel__toolbar-left">
-          <SCPButton variant="ghost" size="sm" icon="🗑️" title="Clear" @click="onClear" />
-          <SCPButton variant="ghost" size="sm" icon="🔄" title="Restart" @click="onRestart" />
+          <SCPButton variant="ghost" size="sm" icon="trash" title="Clear" @click="onClear" />
+          <SCPButton variant="ghost" size="sm" icon="refresh" title="Restart" @click="onRestart" />
         </div>
         <div class="terminal-panel__toolbar-right">
           <SCPButton variant="ghost" size="sm" :title="`Font: ${fontSize}px`" @click="onToggleFontSize">

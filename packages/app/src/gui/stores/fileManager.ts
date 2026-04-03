@@ -194,17 +194,17 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     const isDir = file?.isDirectory ?? false
 
     return [
-      { id: 'open', label: isDir ? 'Open' : 'Edit', icon: isDir ? '📁' : '📝', action: () => openFile(fileName) },
-      { id: 'rename', label: 'Rename', icon: '✏️', action: () => promptRename(fileName) },
-      { id: 'delete', label: 'Delete', icon: '🗑️', action: () => deleteSelected() },
+      { id: 'open', label: isDir ? 'Open' : 'Edit', icon: isDir ? 'folder-open' : 'edit', action: () => openFile(fileName) },
+      { id: 'rename', label: 'Rename', icon: 'edit', action: () => promptRename(fileName) },
+      { id: 'delete', label: 'Delete', icon: 'trash', action: () => deleteSelected() },
     ]
   }
 
   function getDirectoryContextItems(): ContextMenuItem[] {
     return [
-      { id: 'new-file', label: 'New File', icon: '📄', action: () => promptNewFile() },
-      { id: 'new-folder', label: 'New Folder', icon: '📁', action: () => promptNewFolder() },
-      { id: 'refresh', label: 'Refresh', icon: '🔄', action: () => loadDirectory() },
+      { id: 'new-file', label: 'New File', icon: 'file', action: () => promptNewFile() },
+      { id: 'new-folder', label: 'New Folder', icon: 'folder', action: () => promptNewFolder() },
+      { id: 'refresh', label: 'Refresh', icon: 'refresh', action: () => loadDirectory() },
     ]
   }
 

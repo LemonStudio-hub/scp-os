@@ -44,7 +44,7 @@ function onToolbarLaunch(item: DockItemDef): void {
         id: `filemanager-${Date.now()}`,
         tool: 'filemanager',
         title: 'File Manager',
-        icon: '📁',
+        iconName: 'folder',
         width: 750,
         height: 480,
       })
@@ -54,7 +54,7 @@ function onToolbarLaunch(item: DockItemDef): void {
         id: `editor-${Date.now()}`,
         tool: 'editor',
         title: 'Text Editor',
-        icon: '📝',
+        iconName: 'edit',
         width: 700,
         height: 500,
       })
@@ -64,7 +64,7 @@ function onToolbarLaunch(item: DockItemDef): void {
         id: `terminal-${Date.now()}`,
         tool: 'terminal',
         title: 'Terminal Panel',
-        icon: '⬛',
+        iconName: 'terminal',
         width: 650,
         height: 380,
       })
@@ -122,6 +122,18 @@ onMounted(async () => {
 
   // Load saved GUI windows
   await wmStore.loadWindowStates()
+
+  // Default: open File Manager on first launch
+  if (wmStore.windowCount === 0) {
+    wmStore.openWindow({
+      id: `filemanager-init`,
+      tool: 'filemanager',
+      title: 'File Manager',
+      iconName: 'folder',
+      width: Math.min(800, window.innerWidth - 40),
+      height: Math.min(520, window.innerHeight - 160),
+    })
+  }
 
   // Set global function for performance dashboard
   window.openPerformanceDashboard = openPerformanceDashboard
@@ -194,8 +206,8 @@ html, body {
 }
 
 body {
-  font-family: 'Courier New', Consolas, monospace;
-  background: #0a0a0a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #060606;
   color: #ffffff;
 }
 

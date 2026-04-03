@@ -16,23 +16,27 @@
         </circle>
       </svg>
     </span>
-    <span v-if="icon && !loading" class="scp-btn__icon" v-html="icon"></span>
+    <GUIIcon v-if="iconName && !loading" :name="iconName" :size="iconSize" class="scp-btn__icon" />
     <span v-if="$slots.default" class="scp-btn__label"><slot /></span>
   </button>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import GUIIcon from './GUIIcon.vue'
+import type { IconName } from '../../icons'
+
 interface Props {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
-  icon?: string
+  icon?: IconName
   block?: boolean
   disabled?: boolean
   loading?: boolean
   title?: string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   variant: 'secondary',
   size: 'md',
   icon: undefined,
@@ -41,6 +45,9 @@ withDefaults(defineProps<Props>(), {
   loading: false,
   title: undefined,
 })
+
+const iconName = computed<IconName | undefined>(() => props.icon as IconName | undefined)
+const iconSize = computed(() => props.size === 'sm' ? 14 : props.size === 'lg' ? 18 : 16)
 
 defineEmits<{
   click: [event: MouseEvent]

@@ -40,7 +40,7 @@
         <button class="mobile-editor__kb-btn" @click="moveCursor('right')">→</button>
         <button class="mobile-editor__kb-btn" @click="moveCursor('up')">↑</button>
         <button class="mobile-editor__kb-btn" @click="moveCursor('down')">↓</button>
-        <button class="mobile-editor__kb-btn" @click="saveFile">💾</button>
+        <button class="mobile-editor__kb-btn" @click="saveFile"><GUIIcon name="save" :size="16" /></button>
       </div>
     </div>
   </MobileWindow>
@@ -49,6 +49,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
+import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useTextEditorStore } from '../../stores/textEditor'
 
 interface Props {

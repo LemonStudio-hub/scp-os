@@ -21,13 +21,13 @@
       <!-- Metrics Grid -->
       <div class="metrics-section">
         <h3 class="section-title">
-          <span class="title-icon">📊</span>
+          <span class="title-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
           Real-time Metrics
         </h3>
         <div class="metrics-grid">
           <!-- Memory Metric -->
           <MetricCard
-            icon="💾"
+            :icon="ICON_MEMORY"
             name="Memory Usage"
             :value="memoryMetric?.value || 0"
             type="memory"
@@ -40,7 +40,7 @@
 
           <!-- Page Load Time -->
           <MetricCard
-            icon="⏱️"
+            :icon="ICON_TIME"
             name="Page Load"
             :value="pageLoadMetric?.value || 0"
             unit="ms"
@@ -51,7 +51,7 @@
 
           <!-- Resource Count -->
           <MetricCard
-            icon="📦"
+            :icon="ICON_BOX"
             name="Resources"
             :value="resourceCountMetric?.value || 0"
             type="count"
@@ -60,7 +60,7 @@
 
           <!-- Avg Resource Time -->
           <MetricCard
-            icon="📊"
+            :icon="ICON_CHART"
             name="Avg Resource"
             :value="avgResourceMetric?.value || 0"
             unit="ms"
@@ -99,6 +99,12 @@ import { PerformanceMonitorService } from '../platform/performance/performance-m
 import { PerformanceOptimizerService } from '../platform/performance/performance-optimizer.service'
 import { PerformanceApiService } from '../platform/performance/performance-api.service'
 import type { PerformanceIssue } from '../platform/performance/performance-monitor.service'
+
+// SVG icon constants (flat, no emoji)
+const ICON_MEMORY = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4"/><path d="M14 12h4"/></svg>'
+const ICON_TIME = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+const ICON_BOX = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>'
+const ICON_CHART = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>'
 
 // Import dashboard components
 import {

@@ -24,7 +24,7 @@
           class="mobile-file-manager__row"
           @click="fmStore.navigateTo('/')"
         >
-          <span class="mobile-file-manager__row-icon">📁</span>
+          <GUIIcon name="folder-open" :size="20" class="mobile-file-manager__row-icon" />
           <span class="mobile-file-manager__row-label">..</span>
           <svg class="mobile-file-manager__chevron" width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
@@ -51,7 +51,7 @@
 
         <!-- Empty state -->
         <div v-if="fmStore.sortedFiles.length === 0" class="mobile-file-manager__empty">
-          <span>📂</span>
+          <GUIIcon name="empty-folder" :size="48" />
           <p>This folder is empty</p>
         </div>
       </div>
@@ -59,10 +59,10 @@
       <!-- Action Buttons -->
       <div class="mobile-file-manager__actions">
         <button class="mobile-file-manager__action-btn" @click="fmStore.promptNewFile">
-          <span>📄</span> New File
+          <GUIIcon name="plus" :size="16" /> New File
         </button>
         <button class="mobile-file-manager__action-btn" @click="fmStore.promptNewFolder">
-          <span>📁</span> New Folder
+          <GUIIcon name="folder" :size="16" /> New Folder
         </button>
       </div>
     </div>
@@ -88,6 +88,7 @@ import { ref, computed } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
 import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
+import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useFileManagerStore } from '../../stores/fileManager'
 import type { FileItem } from '../../types'
 
@@ -150,9 +151,9 @@ function onLongPress(file: FileItem): void {
   }
   contextSheetTitle.value = file.name
   contextActions.value = [
-    { id: 'open', icon: '📝', label: 'Open', fn: () => openFile(file) },
-    { id: 'rename', icon: '✏️', label: 'Rename', fn: () => {} },
-    { id: 'delete', icon: '🗑️', label: 'Delete', fn: () => deleteFile(file) },
+    { id: 'open', icon: 'edit', label: 'Open', fn: () => openFile(file) },
+    { id: 'rename', icon: 'edit', label: 'Rename', fn: () => {} },
+    { id: 'delete', icon: 'trash', label: 'Delete', fn: () => deleteFile(file) },
   ]
   contextSheetVisible.value = true
 }

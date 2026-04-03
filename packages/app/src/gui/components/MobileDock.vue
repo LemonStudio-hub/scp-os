@@ -11,7 +11,7 @@
         @click="onTap(item)"
         @touchstart="onTouchStart"
       >
-        <span class="mobile-dock__icon">{{ item.icon }}</span>
+        <GUIIcon :name="item.iconName" :size="24" class="mobile-dock__icon" />
         <span class="mobile-dock__label">{{ item.label }}</span>
         <span v-if="activeTools.includes(item.tool)" class="mobile-dock__dot" />
       </button>
@@ -21,23 +21,25 @@
 
 <script lang="ts">
 import type { ToolType } from '../types'
+import type { IconName } from '../icons'
 
 export interface MobileDockItem {
   id: string
   tool: ToolType
   label: string
-  icon: string
+  iconName: IconName
   disabled?: boolean
 }
 
 export const defaultMobileDockItems: MobileDockItem[] = [
-  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
-  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
-  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
+  { id: 'terminal', tool: 'terminal', label: 'Terminal', iconName: 'terminal' },
+  { id: 'files', tool: 'filemanager', label: 'Files', iconName: 'folder' },
+  { id: 'editor', tool: 'editor', label: 'Editor', iconName: 'edit' },
 ]
 </script>
 
 <script setup lang="ts">
+import GUIIcon from './ui/GUIIcon.vue'
 interface Props {
   items?: MobileDockItem[]
   activeTools?: ToolType[]

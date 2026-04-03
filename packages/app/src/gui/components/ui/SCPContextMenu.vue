@@ -15,7 +15,7 @@
             :disabled="item.disabled"
             @click="onItemClick(item)"
           >
-            <span v-if="item.icon" class="scp-context-menu__icon">{{ item.icon }}</span>
+            <GUIIcon v-if="item.icon" :name="item.icon" :size="16" class="scp-context-menu__icon" />
             <span class="scp-context-menu__label">{{ item.label }}</span>
           </button>
         </template>
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue'
+import GUIIcon from './GUIIcon.vue'
 import type { ContextMenuItem } from '../../types'
 
 interface Props {
@@ -114,10 +115,11 @@ onBeforeUnmount(() => {
 }
 
 .scp-context-menu__icon {
-  font-size: 14px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
   width: 16px;
-  text-align: center;
+  height: 16px;
+  color: var(--gui-text-secondary, #a8a8a8);
 }
 
 .scp-context-menu__label {

@@ -20,7 +20,7 @@ export interface WindowConfig {
   id: string
   tool: ToolType
   title: string
-  icon?: string
+  iconName?: string
   width?: number
   height?: number
   minWidth?: number
@@ -127,10 +127,14 @@ export interface EditorState {
 
 // Context Menu Types
 
+export type ContextMenuIcon =
+  | 'folder' | 'edit' | 'trash' | 'file' | 'refresh'
+  | 'plus' | 'folder-open' | 'x' | 'save' | 'search'
+
 export interface ContextMenuItem {
   id: string
   label: string
-  icon?: string
+  icon?: ContextMenuIcon
   disabled?: boolean
   divider?: boolean
   action?: () => void

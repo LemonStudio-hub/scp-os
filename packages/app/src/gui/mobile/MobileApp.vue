@@ -72,7 +72,7 @@ function onDockLaunch(item: MobileDockItem): void {
     id: `${item.tool}-${Date.now()}`,
     tool: item.tool,
     title: item.label,
-    icon: item.icon,
+    iconName: item.iconName,
     width: window.innerWidth,
     height: window.innerHeight,
   })

@@ -3,7 +3,7 @@
     <div class="footer-content">
       <div class="footer-info">
         <div class="info-item">
-          <span class="info-icon">📊</span>
+          <span class="info-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
           <span class="info-label">Metrics:</span>
           <span class="info-value">{{ metricCount }}</span>
         </div>
@@ -13,7 +13,7 @@
           <span class="info-value">{{ lastUpdated }}</span>
         </div>
         <div class="info-item" v-if="apiStatus">
-          <span class="info-icon">🌐</span>
+          <span class="info-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
           <span class="info-label">API:</span>
           <span class="info-value" :class="apiStatusClass">{{ apiStatus }}</span>
         </div>
@@ -34,7 +34,7 @@
           @click="$emit('refresh')"
           title="Refresh data"
         >
-          <span class="btn-icon">🔄</span>
+          <span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
           <span class="btn-text">Refresh</span>
         </button>
         
@@ -43,7 +43,7 @@
           @click="$emit('clear')"
           title="Clear all data"
         >
-          <span class="btn-icon">🗑️</span>
+          <span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
           <span class="btn-text">Clear</span>
         </button>
       </div>

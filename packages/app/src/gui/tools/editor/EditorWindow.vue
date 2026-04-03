@@ -21,7 +21,7 @@
       <div class="text-editor__area">
         <template v-if="editorStore.openFiles.length === 0">
           <div class="text-editor__empty">
-            <span class="text-editor__empty-icon">📝</span>
+            <GUIIcon name="empty-doc" :size="48" class="text-editor__empty-icon" />
             <p>No files open</p>
             <p class="text-editor__empty-hint">Click "File" to create a new file</p>
           </div>
@@ -53,6 +53,7 @@ import { ref, computed } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import SCPTabs from '../../components/ui/SCPTabs.vue'
 import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
+import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useTextEditorStore } from '../../stores/textEditor'
 import type { WindowInstance } from '../../types'
 

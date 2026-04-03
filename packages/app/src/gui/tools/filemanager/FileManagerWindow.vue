@@ -5,19 +5,19 @@
       <div class="file-manager__toolbar">
         <SCPBreadcrumbs :segments="fmStore.breadcrumbs" @navigate="fmStore.navigateTo" />
         <div class="file-manager__toolbar-actions">
-          <SCPButton variant="ghost" size="sm" icon="📄" title="New File" @click="fmStore.promptNewFile" />
-          <SCPButton variant="ghost" size="sm" icon="📁" title="New Folder" @click="fmStore.promptNewFolder" />
+          <SCPButton variant="ghost" size="sm" icon="file" title="New File" @click="fmStore.promptNewFile" />
+          <SCPButton variant="ghost" size="sm" icon="folder" title="New Folder" @click="fmStore.promptNewFolder" />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
             size="sm"
-            icon="⊞"
+            icon="grid"
             title="Grid View"
             @click="fmStore.setViewMode('grid')"
           />
           <SCPButton
             :variant="fmStore.viewMode === 'list' ? 'primary' : 'ghost'"
             size="sm"
-            icon="☰"
+            icon="list"
             title="List View"
             @click="fmStore.setViewMode('list')"
           />
@@ -58,7 +58,7 @@
 
         <!-- Empty state for grid -->
         <div v-if="fmStore.viewMode === 'grid' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
-          <span class="file-manager__empty-icon">📂</span>
+          <GUIIcon name="empty-folder" :size="48" class="file-manager__empty-icon" />
           <p>This folder is empty</p>
         </div>
 
@@ -96,7 +96,7 @@
 
         <!-- Empty state for list -->
         <div v-if="fmStore.viewMode === 'list' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
-          <span class="file-manager__empty-icon">📂</span>
+          <GUIIcon name="empty-folder" :size="48" class="file-manager__empty-icon" />
           <p>This folder is empty</p>
         </div>
       </div>
@@ -123,6 +123,7 @@
 import { ref, watch } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import SCPButton from '../../components/ui/SCPButton.vue'
+import GUIIcon from '../../components/ui/GUIIcon.vue'
 import SCPInput from '../../components/ui/SCPInput.vue'
 import SCPBreadcrumbs from '../../components/ui/SCPBreadcrumbs.vue'
 import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
@@ -190,7 +191,7 @@ function openInEditor(file: FileItem): void {
     id: `editor-${Date.now()}`,
     tool: 'editor',
     title: file.name,
-    icon: '📝',
+    iconName: 'edit',
     width: 700,
     height: 450,
   })

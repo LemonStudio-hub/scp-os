@@ -1,37 +1,3 @@
-<template>
-  <div class="scp-dock">
-    <div class="scp-dock__inner">
-      <div class="scp-dock__group">
-        <button
-          v-for="item in items"
-          :key="item.id"
-          :class="['scp-dock__item', {
-            'scp-dock__item--active': activeTools.includes(item.tool),
-            'scp-dock__item--disabled': item.disabled,
-          }]"
-          :disabled="item.disabled"
-          :title="item.label"
-          @click="$emit('launch', item)"
-        >
-          <span class="scp-dock__icon">{{ item.icon }}</span>
-          <span class="scp-dock__label">{{ item.label }}</span>
-          <span v-if="item.badge && item.badge > 0" class="scp-dock__badge">{{ item.badge }}</span>
-          <!-- Active indicator dot -->
-          <span v-if="activeTools.includes(item.tool)" class="scp-dock__dot" />
-        </button>
-      </div>
-
-      <div class="scp-dock__divider" />
-
-      <!-- Status -->
-      <div class="scp-dock__status">
-        <span class="scp-dock__status-dot" :class="`scp-dock__status-dot--${status}`"></span>
-        <span class="scp-dock__status-text">{{ statusText }}</span>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
 import type { ToolType } from '../types'
 
@@ -39,19 +5,21 @@ export interface DockItemDef {
   id: string
   tool: ToolType
   label: string
-  icon: string
+  iconName: string
   badge?: number
   disabled?: boolean
 }
 
 export const defaultDockItems: DockItemDef[] = [
-  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
-  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
-  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
+  { id: 'terminal', tool: 'terminal', label: 'Terminal', iconName: 'terminal' },
+  { id: 'files', tool: 'filemanager', label: 'Files', iconName: 'folder' },
+  { id: 'editor', tool: 'editor', label: 'Editor', iconName: 'edit' },
 ]
 </script>
 
 <script setup lang="ts">
+import GUIIcon from './ui/GUIIcon.vue'
+
 interface Props {
   items?: DockItemDef[]
   activeTools?: ToolType[]
@@ -69,10 +37,48 @@ withDefaults(defineProps<Props>(), {
 defineEmits<{
   launch: [item: DockItemDef]
 }>()
+
+function onTap(_item: DockItemDef) {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(10)
+  }
+}
 </script>
 
+<template>
+  <div class="scp-dock">
+    <div class="scp-dock__inner">
+      <div class="scp-dock__group">
+        <button
+          v-for="item in items"
+          :key="item.id"
+          :class="['scp-dock__item', {
+            'scp-dock__item--active': activeTools.includes(item.tool),
+            'scp-dock__item--disabled': item.disabled,
+          }]"
+          :disabled="item.disabled"
+          :title="item.label"
+          @click="$emit('launch', item)"
+          @touchstart="onTap(item)"
+        >
+          <GUIIcon :name="item.iconName as any" :size="24" class="scp-dock__icon" />
+          <span class="scp-dock__label">{{ item.label }}</span>
+          <span v-if="item.badge && item.badge > 0" class="scp-dock__badge">{{ item.badge }}</span>
+          <span v-if="activeTools.includes(item.tool)" class="scp-dock__dot" />
+        </button>
+      </div>
+
+      <div class="scp-dock__divider" />
+
+      <div class="scp-dock__status">
+        <span class="scp-dock__status-dot" :class="`scp-dock__status-dot--${status}`"></span>
+        <span class="scp-dock__status-text">{{ statusText }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
 <style scoped>
-/* ── Dock Shell ─────────────────────────────────────────────────────── */
 .scp-dock {
   position: fixed;
   bottom: var(--gui-spacing-sm, 8px);
@@ -95,7 +101,6 @@ defineEmits<{
   box-shadow: var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6));
 }
 
-/* ── Tool Items ─────────────────────────────────────────────────────── */
 .scp-dock__group {
   display: flex;
   align-items: center;
@@ -139,11 +144,11 @@ defineEmits<{
   cursor: not-allowed;
 }
 
-/* ── Icon & Label ──────────────────────────────────────────────────── */
 .scp-dock__icon {
-  font-size: 16px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
   transition: transform var(--gui-transition-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  color: currentColor;
 }
 
 .scp-dock__item:hover .scp-dock__icon {
@@ -154,7 +159,6 @@ defineEmits<{
   letter-spacing: 0.02em;
 }
 
-/* ── Active Dot Indicator ──────────────────────────────────────────── */
 .scp-dock__dot {
   position: absolute;
   bottom: 2px;
@@ -167,7 +171,6 @@ defineEmits<{
   animation: dotPulse 2s ease-in-out infinite;
 }
 
-/* ── Badge ─────────────────────────────────────────────────────────── */
 .scp-dock__badge {
   display: flex;
   align-items: center;
@@ -183,14 +186,12 @@ defineEmits<{
   line-height: 1;
 }
 
-/* ── Divider ───────────────────────────────────────────────────────── */
 .scp-dock__divider {
   width: 1px;
   height: 20px;
   background: var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
-/* ── Status ────────────────────────────────────────────────────────── */
 .scp-dock__status {
   display: flex;
   align-items: center;
@@ -224,7 +225,6 @@ defineEmits<{
   box-shadow: 0 0 6px var(--gui-warning, #fbbf24);
 }
 
-/* ── Mobile ────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .scp-dock {
     bottom: var(--gui-spacing-xs, 4px);
@@ -240,10 +240,6 @@ defineEmits<{
 
   .scp-dock__item {
     padding: var(--gui-spacing-sm, 8px);
-  }
-
-  .scp-dock__icon {
-    font-size: 20px;
   }
 
   .scp-dock__status-text {
