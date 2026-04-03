@@ -19,6 +19,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      enabled: false,  // Disable coverage to avoid memory issues
       exclude: [
         'node_modules/',
         'dist/',
