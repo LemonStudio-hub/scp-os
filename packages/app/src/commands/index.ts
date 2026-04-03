@@ -202,44 +202,98 @@ export const commandHandlers: CommandMap = {
     }
 
     // 解析分部和编号
-    let branch = 'en' // 默认英文分部
+    let forcedBranch: string | null = null // 用户是否强制指定了分部
     let scpNumber = input
 
     // 检查是否是中文分部 (CN-xxx 格式)
     if (input.toUpperCase().startsWith('CN-')) {
-      branch = 'cn'
+      forcedBranch = 'cn'
       scpNumber = input.slice(3) // 移除 CN- 前缀
+    } else if (input.toUpperCase().startsWith('EN-')) {
+      forcedBranch = 'en'
+      scpNumber = input.slice(3) // 移除 EN- 前缀
     }
 
-    writeln(`${ANSICode.cyan}Querying SCP-${scpNumber} (${branch.toUpperCase()} Branch)...${ANSICode.reset}`)
+    writeln(`${ANSICode.cyan}Querying SCP-${scpNumber}...${ANSICode.reset}`)
     writeln('')
 
     try {
-      // Fetch from Foundation Wiki API
-      writeln(`${ANSICode.cyan}Connecting to Foundation Wiki (${branch.toUpperCase()} Branch)...${ANSICode.reset}`)
-      writeln('')
+      if (forcedBranch) {
+        // 用户强制指定了分部，直接查询
+        writeln(`${ANSICode.cyan}Connecting to ${forcedBranch.toUpperCase()} Branch Wiki...${ANSICode.reset}`)
+        writeln('')
 
-      const result = await scraper.scrapeSCP(scpNumber, branch)
+        const result = await scraper.scrapeSCP(scpNumber, forcedBranch)
 
-      if (result.success && result.data) {
-        if (result.cached) {
-          writeln(`${ANSICode.yellow}[From Cache]${ANSICode.reset}`)
+        if (result.success && result.data) {
+          if (result.cached) {
+            writeln(`${ANSICode.yellow}[From Cache]${ANSICode.reset}`)
+            writeln('')
+          }
+
+          const formattedLines = scraper.formatForTerminal(result.data)
+          formattedLines.forEach(line => writeln(line))
+        } else {
+          writeln(`${ANSICode.red}Query failed: ${result.error}${ANSICode.reset}`)
           writeln('')
+          writeln(`${ANSICode.yellow}Tips:${ANSICode.reset}`)
+          writeln(`  - Ensure the SCP number is correct, e.g.: 173, 096, 682`)
+          writeln(`  - For Chinese branch SCPs, use CN- prefix, e.g.: CN-001`)
+          writeln(`  - For English branch SCPs, use EN- prefix, e.g.: EN-173`)
+          writeln(`  - Check your internet connection`)
+          writeln(`  - Try again later (server might be busy)`)
+          writeln('')
+          writeln(`${ANSICode.red}Network query failed${ANSICode.reset}`)
         }
-
-        const formattedLines = scraper.formatForTerminal(result.data)
-        formattedLines.forEach(line => writeln(line))
       } else {
-        writeln(`${ANSICode.red}Query failed: ${result.error}${ANSICode.reset}`)
+        // 未指定分部，优先查询中文分部，找不到再查英文主站点
+        writeln(`${ANSICode.cyan}Connecting to Chinese Branch Wiki...${ANSICode.reset}`)
         writeln('')
-        writeln(`${ANSICode.yellow}Tips:${ANSICode.reset}`)
-        writeln(`  - Ensure the SCP number is correct, e.g.: 173, 096, 682`)
-        writeln(`  - For Chinese branch SCPs, use CN- prefix, e.g.: CN-001`)
-        writeln(`  - Check your internet connection`)
-        writeln(`  - Try again later (server might be busy)`)
-        writeln(`  - Check if SCP-${scpNumber} exists on ${branch.toUpperCase()} Wiki`)
-        writeln('')
-        writeln(`${ANSICode.red}Network query failed${ANSICode.reset}`)
+
+        const cnResult = await scraper.scrapeSCP(scpNumber, 'cn')
+
+        if (cnResult.success && cnResult.data) {
+          if (cnResult.cached) {
+            writeln(`${ANSICode.yellow}[From Cache - Chinese Branch]${ANSICode.reset}`)
+            writeln('')
+          } else {
+            writeln(`${ANSICode.green}[Source: Chinese Branch Wiki]${ANSICode.reset}`)
+            writeln('')
+          }
+
+          const formattedLines = scraper.formatForTerminal(cnResult.data)
+          formattedLines.forEach(line => writeln(line))
+        } else {
+          // 中文分部找不到，尝试英文主站点
+          writeln(`${ANSICode.yellow}Not found on Chinese Branch, trying English Main Site...${ANSICode.reset}`)
+          writeln('')
+
+          const enResult = await scraper.scrapeSCP(scpNumber, 'en')
+
+          if (enResult.success && enResult.data) {
+            if (enResult.cached) {
+              writeln(`${ANSICode.yellow}[From Cache - English Main Site]${ANSICode.reset}`)
+              writeln('')
+            } else {
+              writeln(`${ANSICode.green}[Source: English Main Site]${ANSICode.reset}`)
+              writeln('')
+            }
+
+            const formattedLines = scraper.formatForTerminal(enResult.data)
+            formattedLines.forEach(line => writeln(line))
+          } else {
+            writeln(`${ANSICode.red}Query failed: SCP-${scpNumber} not found on both Chinese and English Wikis${ANSICode.reset}`)
+            writeln('')
+            writeln(`${ANSICode.yellow}Tips:${ANSICode.reset}`)
+            writeln(`  - Ensure the SCP number is correct, e.g.: 173, 096, 682`)
+            writeln(`  - For Chinese branch SCPs, use CN- prefix, e.g.: CN-001`)
+            writeln(`  - For English branch SCPs, use EN- prefix, e.g.: EN-173`)
+            writeln(`  - Check your internet connection`)
+            writeln(`  - Try again later (server might be busy)`)
+            writeln('')
+            writeln(`${ANSICode.red}Network query failed${ANSICode.reset}`)
+          }
+        }
       }
     } catch (error) {
       writeln(`${ANSICode.red}Query failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
