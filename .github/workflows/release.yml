@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,16 +28,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.15.0
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: npm test
+        run: pnpm run test
 
       - name: Build for production
-        run: npm run build:production
+        run: pnpm run build:production
 
       - name: Create release notes
         id: release_notes
@@ -65,7 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Worker
-        working-directory: ./worker
+        working-directory: ./packages/worker
         run: |
           echo "Checking Cloudflare credentials..."
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
@@ -77,7 +81,7 @@ jobs:
             exit 1
           fi
           echo "Deploying to Cloudflare Workers..."
-          wrangler deploy --verbose
+          pnpm run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
