@@ -137,6 +137,7 @@ Object.defineProperty(window, 'location', {
 // Mock setInterval and clearInterval
 let mockIntervalId = 0
 const mockIntervals: Map<number, NodeJS.Timeout> = new Map()
+const originalClearInterval = global.clearInterval
 
 global.setInterval = vi.fn((callback: () => void, delay: number): number => {
   const id = ++mockIntervalId
@@ -148,7 +149,7 @@ global.setInterval = vi.fn((callback: () => void, delay: number): number => {
 global.clearInterval = vi.fn((id: number | NodeJS.Timeout) => {
   const intervalId = typeof id === 'number' ? mockIntervals.get(id) : id
   if (intervalId) {
-    clearInterval(intervalId)
+    originalClearInterval(intervalId)
     if (typeof id === 'number') {
       mockIntervals.delete(id)
     }
