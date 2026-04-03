@@ -2,6 +2,9 @@
 
 [![CI](https://github.com/LemonStudio-hub/scp-os/actions/workflows/ci.yml/badge.svg)](https://github.com/LemonStudio-hub/scp-os/actions/workflows/ci.yml)
 [![Release](https://github.com/LemonStudio-hub/scp-os/actions/workflows/release.yml/badge.svg)](https://github.com/LemonStudio-hub/scp-os/actions/workflows/release.yml)
+[![Tauri Build](https://github.com/LemonStudio-hub/scp-os/actions/workflows/tauri-release.yml/badge.svg)](https://github.com/LemonStudio-hub/scp-os/actions/workflows/tauri-release.yml)
+[![Release Version](https://img.shields.io/github/v/release/LemonStudio-hub/scp-os)](https://github.com/LemonStudio-hub/scp-os/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 A professional web-based terminal application themed around the SCP Foundation, featuring advanced command-line interface with comprehensive mobile support and optimized performance.
 
