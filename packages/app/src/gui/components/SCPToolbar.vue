@@ -51,6 +51,12 @@ interface Props {
   statusText?: string
 }
 
+const defaultItems: DockItemDef[] = [
+  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
+  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
+  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
+]
+
 withDefaults(defineProps<Props>(), {
   items: () => defaultItems,
   activeTools: () => [],
@@ -61,12 +67,6 @@ withDefaults(defineProps<Props>(), {
 defineEmits<{
   launch: [item: DockItemDef]
 }>()
-
-const defaultItems: DockItemDef[] = [
-  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
-  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
-  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
-]
 </script>
 
 <style scoped>
