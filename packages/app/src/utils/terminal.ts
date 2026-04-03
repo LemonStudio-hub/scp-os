@@ -3,11 +3,18 @@ import { SCP_THEME } from '../constants/theme'
 import { config } from '../config'
 
 export function isMobileDevice(): boolean {
+  if (typeof window === 'undefined' || typeof window.innerWidth === 'undefined') {
+    return false
+  }
   const screenWidth = window.innerWidth
   return screenWidth < 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 }
 
 export function getResponsiveFontSize(): number {
+  if (typeof window === 'undefined' || typeof window.innerWidth === 'undefined') {
+    return 14  // Default to desktop/tablet size in test environment
+  }
+  
   const screenWidth = window.innerWidth
   
   if (screenWidth >= 1200) {

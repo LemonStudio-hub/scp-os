@@ -132,6 +132,9 @@ export class ConfigManager {
    * Detect current environment
    */
   private detectEnvironment(): Environment {
+    if (typeof window === 'undefined' || typeof window.location === 'undefined' || typeof window.location.hostname === 'undefined') {
+      return 'development'  // Default to development in test environment
+    }
     const hostname = window.location.hostname
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return 'development'
