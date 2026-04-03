@@ -188,29 +188,17 @@ class SCPScraper {
       // 先消毒 HTML（防止 XSS）
       const sanitizedHTML = this.htmlSanitizer.sanitize(html)
 
-      // 清理 HTML
-      const cleanedHTML = this.htmlCleaner.clean(sanitizedHTML)
-
-      // 提取文本
-      const text = this.htmlParser.extractText(cleanedHTML)
-
-      // 解析章节
-      const sections = this.sectionParser.parseSections(text)
-
-      // 构建数据
-      const branchUrl = branch === 'cn' 
-        ? 'https://scp-wiki-cn.wikidot.com' 
-        : 'https://scp-wiki.wikidot.com'
-      
-      const data: SCPWikiData = {
-        id: `SCP-${scpNumber}`,
-        name: sections.title || `SCP-${scpNumber}`,
-        objectClass: sections.objectClass,
-        containment: sections.containment,
-        description: sections.description,
-        appendix: sections.appendix,
-        author: sections.author,
-        url: `${branchUrl}/scp-${scpNumber}`,
+      // 根据分支使用不同的解析策略
+      let data: SCPWikiData
+      if (branch === 'en') {
+        // 英文站点使用直接 HTML 解析（在清理之前）
+        data = await this.parseEnglishPage(sanitizedHTML, scpNumber, branch)
+      } else {
+        // 中文站点使用清理后的文本
+        const cleanedHTML = this.htmlCleaner.clean(sanitizedHTML)
+        const text = this.htmlParser.extractText(cleanedHTML)
+        const sections = this.sectionParser.parseSections(text)
+        data = this.buildDataFromSections(sections, scpNumber, branch)
       }
 
       // 验证数据
@@ -221,6 +209,159 @@ class SCPScraper {
     } catch (error) {
       parseTimer()
       throw ScraperError.parseError((error as Error).message)
+    }
+  }
+
+  /**
+   * 解析英文页面（直接使用 HTML 结构）
+   */
+  private async parseEnglishPage(html: string, scpNumber: string, branch: string): Promise<SCPWikiData> {
+    const cheerioModule = await import('cheerio')
+    const $ = cheerioModule.load(html)
+
+    // 找到主内容区域
+    const $content = $('#page-content')
+    if ($content.length === 0) {
+      throw new Error('Page content not found')
+    }
+
+    // 获取所有段落和块级元素（包括嵌套的）
+    const elements: string[] = []
+    $content.find('p, div, blockquote, h1, h2, h3, h4, h5, h6').each((_, el) => {
+      // 只处理最内层的元素，避免重复
+      const $el = $(el)
+      if ($el.children('p, div, blockquote, h1, h2, h3, h4, h5, h6').length === 0) {
+        const text = $el.text().trim()
+        if (text) {
+          elements.push(text)
+        }
+      }
+    })
+
+    // 将内容分为几个部分
+    let currentSection: 'header' | 'containment' | 'description' | 'appendix' = 'header'
+    const sections = {
+      header: [] as string[],
+      containment: [] as string[],
+      description: [] as string[],
+      appendix: [] as string[],
+    }
+
+    for (const text of elements) {
+      // 检测章节标题 - 支持章节标题在文本开头的情况
+      const containmentMatch = text.match(/^(Special\s+)?Containment\s+Procedures[:：]?\s*(.*)/i)
+      if (containmentMatch) {
+        currentSection = 'containment'
+        const remaining = containmentMatch[2]
+        if (remaining && remaining.length > 10) {
+          sections.containment.push(remaining)
+        }
+        continue
+      }
+
+      const descMatch = text.match(/^Description[:：]?\s*(.*)/i)
+      if (descMatch) {
+        currentSection = 'description'
+        const remaining = descMatch[1]
+        if (remaining && remaining.length > 10) {
+          sections.description.push(remaining)
+        }
+        continue
+      }
+
+      const appendixMatch = text.match(/^(Appendix|Addendum|Document\s*#?|Interview\s+Log|Experiment\s+Log|Recovery\s+Log)[:：]?\s*(.*)/i)
+      if (appendixMatch) {
+        currentSection = 'appendix'
+        const remaining = appendixMatch[2]
+        if (remaining && remaining.length > 10) {
+          sections.appendix.push(remaining)
+        }
+        continue
+      }
+
+      // 检查文本中是否包含章节标题（不仅是在开头）
+      if (currentSection === 'containment' && /[\s。]Description[:：]/i.test(text)) {
+        // 文本中包含 Description 标记，分割内容
+        const parts = text.split(/[\s。]Description[:：]/i)
+        if (parts[0] && parts[0].length > 10) {
+          sections.containment.push(parts[0].trim())
+        }
+        if (parts[1] && parts[1].length > 10) {
+          sections.description.push(parts[1].trim())
+        }
+        currentSection = 'description'
+        continue
+      }
+
+      // 添加到当前部分（过滤太短的文本和导航文本）
+      if (text.length > 20 && !/^[«»|]/.test(text) && !/scp-.*«/i.test(text)) {
+        sections[currentSection].push(text)
+      }
+    }
+
+    // 从头部提取项目等级 - 在整个内容中搜索
+    const fullContent = elements.join(' ')
+    const objectClassMatch = fullContent.match(/Object\s+Class[:：]?\s*([A-Z]+)/i)
+    const objectClass = objectClassMatch ? objectClassMatch[1].toUpperCase() : 'UNKNOWN'
+
+    const branchUrl = branch === 'cn'
+      ? 'https://scp-wiki-cn.wikidot.com'
+      : 'https://scp-wiki.wikidot.com'
+
+    return {
+      id: `SCP-${scpNumber}`,
+      name: `SCP-${scpNumber}`,
+      objectClass,
+      containment: sections.containment,
+      description: sections.description,
+      appendix: sections.appendix,
+      author: undefined, // 暂时不提取作者
+      url: `${branchUrl}/scp-${scpNumber}`,
+    }
+  }
+
+  /**
+   * 从页面中提取作者信息
+   */
+  private extractAuthorFromPage($content: ReturnType<typeof import('cheerio').load>['$']): string | undefined {
+    // 查找作者信息通常在页面底部
+    const authorSelectors = [
+      'p strong:contains("Author")',
+      'p:contains("Author:")',
+      '.rate-box-with-credits-button',
+    ]
+
+    for (const selector of authorSelectors) {
+      const $author = $(selector).first()
+      if ($author.length > 0) {
+        const text = $author.text()
+        const match = text.match(/Author[:：]\s*([^,\n]+)/i)
+        if (match) {
+          return match[1].trim()
+        }
+      }
+    }
+
+    return undefined
+  }
+
+  /**
+   * 从章节数据构建 SCPWikiData
+   */
+  private buildDataFromSections(sections: any, scpNumber: string, branch: string): SCPWikiData {
+    const branchUrl = branch === 'cn'
+      ? 'https://scp-wiki-cn.wikidot.com'
+      : 'https://scp-wiki.wikidot.com'
+
+    return {
+      id: `SCP-${scpNumber}`,
+      name: sections.title || `SCP-${scpNumber}`,
+      objectClass: sections.objectClass,
+      containment: sections.containment,
+      description: sections.description,
+      appendix: sections.appendix,
+      author: sections.author,
+      url: `${branchUrl}/scp-${scpNumber}`,
     }
   }
 

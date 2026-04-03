@@ -82,9 +82,15 @@ export class SectionParser {
    */
   private parseContainment(text: string): string[] {
     const patterns = [
+      // 中文格式
       /\*\*特殊收容措施[:：]\*\*[\s\S]*?(?=\*\*描述[:：]\*\*|\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/is,
       /\*\*收容措施[:：]\*\*[\s\S]*?(?=\*\*描述[:：]\*\*|\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/is,
       /特殊收容措施[:：][\s\S]*?(?=\*\*描述[:：]\*\*|\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/is,
+      // 英文格式
+      /\*\*Special Containment Procedures[:：]\*\*[\s\S]*?(?=\*\*Description[:：]\*\*|\*\*Appendix|\*\*Author|\*\*Dr|$)/is,
+      /\*\*Containment Procedures[:：]\*\*[\s\S]*?(?=\*\*Description[:：]\*\*|\*\*Appendix|\*\*Author|$)/is,
+      /Special Containment Procedures[:：][\s\S]*?(?=\*\*Description|\*\*Appendix|\*\*Author|$)/is,
+      /Containment Procedures[:：][\s\S]*?(?=\*\*Description|\*\*Appendix|\*\*Author|$)/is,
     ]
 
     for (const pattern of patterns) {
@@ -92,6 +98,7 @@ export class SectionParser {
       if (match) {
         const containmentText = match[0]
           .replace(/\*\*特殊收容措施[:：]\*\*|\*\*收容措施[:：]\*\*/gi, '')
+          .replace(/\*\*Special Containment Procedures[:：]\*\*|\*\*Containment Procedures[:：]\*\*/gi, '')
           .trim()
 
         const paragraphs = this.parseParagraphs(containmentText)
@@ -109,9 +116,12 @@ export class SectionParser {
    */
   private parseDescription(text: string): string[] {
     const patterns = [
-      /\*\*描述[:：]\*\*[\s\S]*?(?=\*\*附录|\*\*作者|\*\*创作|\*\*附|\*\*附录|$)/is,
-      /\*\*Description[:：]\*\*[\s\S]*?(?=\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/is,
+      // 中文格式
+      /\*\*描述[:：]\*\*[\s\S]*?(?=\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/is,
       /描述[:：][\s\S]*?(?=\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/is,
+      // 英文格式
+      /\*\*Description[:：]\*\*[\s\S]*?(?=\*\*Appendix|\*\*Author|\*\*Dr\.|$)/is,
+      /Description[:：][\s\S]*?(?=\*\*Appendix|\*\*Author|\*\*Dr\.|$)/is,
     ]
 
     for (const pattern of patterns) {
@@ -119,6 +129,7 @@ export class SectionParser {
       if (match) {
         const descriptionText = match[0]
           .replace(/\*\*描述[:：]\*\*/gi, '')
+          .replace(/\*\*Description[:：]\*\*/gi, '')
           .trim()
 
         const paragraphs = this.parseParagraphs(descriptionText)
@@ -135,17 +146,34 @@ export class SectionParser {
    * 解析附录
    */
   private parseAppendix(text: string): string[] {
-    const appendixPattern = /\*\*附录[^：:]*[:：]*\*\*[\s\S]*?(?=\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/gis
+    // 中文格式
+    const cnAppendixPattern = /\*\*附录[^：:]*[:：]*\*\*[\s\S]*?(?=\*\*附录|\*\*作者|\*\*创作|\*\*附|$)/gis
+    // 英文格式
+    const enAppendixPattern = /\*\*Appendix[^：:]*[:：]*\*\*[\s\S]*?(?=\*\*Appendix|\*\*Author|\*\*Dr\.|$)/gis
+    
     const appendix: string[] = []
 
     let match
-    while ((match = appendixPattern.exec(text)) !== null) {
+    // 尝试中文格式
+    while ((match = cnAppendixPattern.exec(text)) !== null) {
       const appendixText = match[0]
         .replace(/\*\*附录[^：:]*[:：]*\*\*/gi, '')
         .trim()
 
       const paragraphs = this.parseParagraphs(appendixText)
       appendix.push(...paragraphs)
+    }
+
+    // 如果没有找到，尝试英文格式
+    if (appendix.length === 0) {
+      while ((match = enAppendixPattern.exec(text)) !== null) {
+        const appendixText = match[0]
+          .replace(/\*\*Appendix[^：:]*[:：]*\*\*/gi, '')
+          .trim()
+
+        const paragraphs = this.parseParagraphs(appendixText)
+        appendix.push(...paragraphs)
+      }
     }
 
     return appendix
