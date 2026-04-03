@@ -1,0 +1,236 @@
+<template>
+  <MobileWindow
+    :visible="visible"
+    title="Terminal"
+    :show-back="true"
+    @close="$emit('close')"
+  >
+    <div class="mobile-terminal">
+      <!-- Terminal Container -->
+      <div ref="terminalRef" class="mobile-terminal__container" />
+
+      <!-- Virtual Keyboard (iOS style) -->
+      <div class="mobile-terminal__keyboard">
+        <div class="mobile-terminal__kb-row">
+          <button class="mobile-terminal__key" @click="sendKey('\x1b')">ESC</button>
+          <button class="mobile-terminal__key" @click="sendKey('\t')">TAB</button>
+          <button class="mobile-terminal__key" @click="sendKey('\x1b[D')">←</button>
+          <button class="mobile-terminal__key" @click="sendKey('\x1b[C')">→</button>
+          <button class="mobile-terminal__key" @click="sendKey('\x1b[A')">↑</button>
+          <button class="mobile-terminal__key" @click="sendKey('\x1b[B')">↓</button>
+        </div>
+        <div class="mobile-terminal__kb-row">
+          <button class="mobile-terminal__key" @click="sendKey('\x1b[H')">HOME</button>
+          <button class="mobile-terminal__key" @click="sendKey('\x1b[F')">END</button>
+          <button class="mobile-terminal__key" @click="clearTerminal">CLS</button>
+          <button class="mobile-terminal__key" @click="sendKey('\r')">↵</button>
+        </div>
+      </div>
+    </div>
+  </MobileWindow>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { Terminal } from 'xterm'
+import { FitAddon } from 'xterm-addon-fit'
+import MobileWindow from '../../components/MobileWindow.vue'
+import { commandHandlers } from '../../../commands/index'
+import { ANSICode } from '../../../constants/theme'
+
+interface Props {
+  visible: boolean
+}
+
+defineProps<Props>()
+defineEmits<{
+  close: []
+}>()
+
+const terminalRef = ref<HTMLDivElement | null>(null)
+const terminal = ref<Terminal | null>(null)
+const fitAddon = ref<FitAddon | null>(null)
+const inputBuffer = ref('')
+
+function initTerminal(): void {
+  if (!terminalRef.value) return
+
+  const term = new Terminal({
+    cursorBlink: true,
+    fontSize: 14,
+    fontFamily: "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
+    theme: {
+      background: '#0a0a0a',
+      foreground: '#f0f0f0',
+      cursor: '#e94560',
+      selectionBackground: 'rgba(96, 165, 250, 0.25)',
+    },
+    scrollback: 1000,
+  })
+
+  const fit = new FitAddon()
+  term.loadAddon(fit)
+  term.open(terminalRef.value)
+
+  // Fit with safe area consideration
+  setTimeout(() => {
+    fit.fit()
+  }, 100)
+
+  terminal.value = term
+  fitAddon.value = fit
+
+  term.writeln(`${ANSICode.green}Welcome to SCP Terminal${ANSICode.reset}`)
+  term.writeln('')
+  writePrompt()
+
+  term.onData(handleInput)
+}
+
+function writePrompt(): void {
+  const term = terminal.value
+  if (!term) return
+  term.write(`\r\n${ANSICode.red}scp@foundation${ANSICode.reset}:${ANSICode.cyan}~${ANSICode.reset}$ `)
+  inputBuffer.value = ''
+}
+
+function handleInput(data: string): void {
+  const term = terminal.value
+  if (!term) return
+
+  if (data === '\r') {
+    term.writeln('')
+    executeCommand(inputBuffer.value.trim())
+  } else if (data === '\x7f' || data === '\b') {
+    if (inputBuffer.value.length > 0) {
+      inputBuffer.value = inputBuffer.value.slice(0, -1)
+      term.write('\b \b')
+    }
+  } else if (data === '\x03') {
+    term.writeln('^C')
+    writePrompt()
+  } else if (data.charCodeAt(0) >= 32 && data.charCodeAt(0) <= 126) {
+    inputBuffer.value += data
+    term.write(data)
+  }
+}
+
+async function executeCommand(cmd: string): Promise<void> {
+  const term = terminal.value
+  if (!term) return
+
+  if (!cmd) {
+    writePrompt()
+    return
+  }
+
+  const [command, ...args] = cmd.split(/\s+/)
+  const handler = commandHandlers[command as keyof typeof commandHandlers]
+
+  if (handler) {
+    try {
+      await handler(
+        args,
+        (data: string) => term.write(data),
+        (data: string) => term.writeln(data)
+      )
+    } catch (error) {
+      term.writeln(`${ANSICode.red}Error: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+    }
+  } else {
+    term.writeln(`${ANSICode.yellow}Command not found: ${command}${ANSICode.reset}`)
+  }
+
+  writePrompt()
+}
+
+function sendKey(key: string): void {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(8)
+  }
+  terminal.value?.write(key)
+  handleInput(key)
+}
+
+function clearTerminal(): void {
+  terminal.value?.clear()
+  writePrompt()
+}
+
+onMounted(() => {
+  setTimeout(() => initTerminal(), 50)
+})
+
+onBeforeUnmount(() => {
+  terminal.value?.dispose()
+  terminal.value = null
+})
+</script>
+
+<style scoped>
+/* ── Layout ─────────────────────────────────────────────────────────── */
+.mobile-terminal {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--gui-bg-base, #060606);
+}
+
+.mobile-terminal__container {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.mobile-terminal__container :deep(.xterm) {
+  height: 100%;
+  padding: var(--gui-spacing-sm, 8px);
+}
+
+.mobile-terminal__container :deep(.xterm-viewport) {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Virtual Keyboard (iOS Style) ───────────────────────────────────── */
+.mobile-terminal__keyboard {
+  padding: var(--gui-spacing-xs, 4px);
+  padding-bottom: calc(var(--gui-spacing-xs, 4px) + env(safe-area-inset-bottom, 0px));
+  background: var(--gui-glass-bg, rgba(16, 16, 16, 0.85));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+}
+
+.mobile-terminal__kb-row {
+  display: flex;
+  gap: var(--gui-spacing-xxs, 4px);
+  margin-bottom: var(--gui-spacing-xxs, 4px);
+}
+
+.mobile-terminal__kb-row:last-child {
+  margin-bottom: 0;
+}
+
+.mobile-terminal__key {
+  flex: 1;
+  height: 40px;
+  background: var(--gui-bg-surface-raised, #111111);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: var(--gui-radius-sm, 6px);
+  color: var(--gui-text-primary, #f0f0f0);
+  font-family: var(--gui-font-mono, "JetBrains Mono", Consolas, monospace);
+  font-size: var(--gui-font-xs, 11px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all var(--gui-transition-fast, 120ms ease);
+  box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
+}
+
+.mobile-terminal__key:active {
+  background: var(--gui-bg-surface-active, #222222);
+  transform: scale(0.95);
+  box-shadow: none;
+}
+</style>

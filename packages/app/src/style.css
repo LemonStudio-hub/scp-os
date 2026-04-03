@@ -370,3 +370,148 @@ body.loading * {
 .stagger-children > *:nth-child(7) { animation-delay: 180ms; }
 .stagger-children > *:nth-child(8) { animation-delay: 210ms; }
 .stagger-children > *:nth-child(n+9) { animation-delay: 240ms; }
+
+/* ═══════════════════════════════════════════════════════════════
+   iOS Mobile Styles & Spring Transitions
+   ═══════════════════════════════════════════════════════════════ */
+
+/* iOS Spring Curve — matches UIKit animation timing */
+:root {
+  --ios-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ios-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ios-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* iOS-style slide transition (used for mobile window transitions) */
+.ios-slide-enter-active {
+  animation: iosSlideIn 0.45s var(--ios-spring) both;
+}
+.ios-slide-leave-active {
+  animation: iosSlideOut 0.35s var(--ios-ease-in-out) both;
+}
+
+/* iOS-style sheet presentation (bottom sheet slide up) */
+.ios-sheet-enter-active {
+  animation: iosSheetIn 0.4s var(--ios-spring) both;
+}
+.ios-sheet-leave-active {
+  animation: iosSheetOut 0.25s var(--ios-ease-in-out) both;
+}
+
+/* iOS-style fade transition */
+.ios-fade-enter-active,
+.ios-fade-leave-active {
+  transition: opacity 0.25s var(--ios-ease-in-out);
+}
+.ios-fade-enter-from,
+.ios-fade-leave-to {
+  opacity: 0;
+}
+
+/* iOS keyframe animations */
+@keyframes iosSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes iosSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(30%);
+    opacity: 0;
+  }
+}
+
+@keyframes iosSlideInFromBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes iosSlideOutToBottom {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes iosSheetIn {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes iosSheetOut {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes iosDismissSwipe {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0.5;
+  }
+}
+
+/* Mobile safe area utility classes */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.safe-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Prevent text selection on UI elements (iOS long-press fix) */
+.no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* iOS tap highlight removal */
+.no-tap-highlight {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile viewport height (accounts for browser chrome) */
+.dvh {
+  height: 100dvh;
+}
+
+.dvh-min {
+  min-height: 100dvh;
+}
