@@ -19,7 +19,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import type { ToolType } from '../types'
 
 export interface MobileDockItem {
@@ -30,13 +30,21 @@ export interface MobileDockItem {
   disabled?: boolean
 }
 
+export const defaultMobileDockItems: MobileDockItem[] = [
+  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
+  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
+  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
+]
+</script>
+
+<script setup lang="ts">
 interface Props {
   items?: MobileDockItem[]
   activeTools?: ToolType[]
 }
 
 withDefaults(defineProps<Props>(), {
-  items: () => defaultItems,
+  items: () => defaultMobileDockItems,
   activeTools: () => [],
 })
 
@@ -54,12 +62,6 @@ function onTap(item: MobileDockItem) {
 function onTouchStart() {
   // Subtle scale on touch
 }
-
-const defaultItems: MobileDockItem[] = [
-  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
-  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
-  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
-]
 </script>
 
 <style scoped>

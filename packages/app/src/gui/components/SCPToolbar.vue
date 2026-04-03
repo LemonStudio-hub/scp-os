@@ -32,7 +32,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts">
 import type { ToolType } from '../types'
 
 export interface DockItemDef {
@@ -44,6 +44,14 @@ export interface DockItemDef {
   disabled?: boolean
 }
 
+export const defaultDockItems: DockItemDef[] = [
+  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
+  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
+  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
+]
+</script>
+
+<script setup lang="ts">
 interface Props {
   items?: DockItemDef[]
   activeTools?: ToolType[]
@@ -51,14 +59,8 @@ interface Props {
   statusText?: string
 }
 
-const defaultItems: DockItemDef[] = [
-  { id: 'terminal', tool: 'terminal', label: 'Terminal', icon: '⬛' },
-  { id: 'files', tool: 'filemanager', label: 'Files', icon: '📁' },
-  { id: 'editor', tool: 'editor', label: 'Editor', icon: '📝' },
-]
-
 withDefaults(defineProps<Props>(), {
-  items: () => defaultItems,
+  items: () => defaultDockItems,
   activeTools: () => [],
   status: 'online',
   statusText: 'SCP-OS',
