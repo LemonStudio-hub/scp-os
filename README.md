@@ -52,7 +52,7 @@ git clone https://github.com/LemonStudio-hub/scp-os.git
 cd scpos
 
 # Install dependencies
-npm install
+pnpm install
 ```
 
 ### Environment Configuration
@@ -91,13 +91,13 @@ VITE_APP_NAME=SCP Foundation Terminal
 
 ```bash
 # Start development server (development mode)
-npm run dev:development
+pnpm run dev:development
 
 # Start development server (production mode)
-npm run dev:production
+pnpm run dev:production
 
 # Start default development server
-npm run dev
+pnpm run dev
 
 # Open http://localhost:5173
 ```
@@ -106,32 +106,32 @@ npm run dev
 
 ```bash
 # Build for development
-npm run build:development
+pnpm run build:development
 
 # Build for production
-npm run build:production
+pnpm run build:production
 
 # Build with default configuration
-npm run build
+pnpm run build
 
 # Preview production build
-npm run preview
+pnpm run preview
 ```
 
 ### Testing
 
 ```bash
 # Run tests
-npm test
+pnpm run test
 
 # Run tests with UI
-npm run test:ui
+pnpm run test:ui
 
 # Run tests with coverage report
-npm run test:coverage
+pnpm run test:coverage
 
 # Type checking
-npm run lint
+pnpm run lint
 ```
 
 ## 📋 Available Commands
@@ -260,94 +260,55 @@ curl "https://api.woodcat.online/"
 
 ```
 scpos/
-├── src/
-│   ├── commands/              # Command handlers
-│   │   ├── index.ts          # Main command processor
-│   │   └── index.test.ts     # Command tests
-│   ├── composables/           # Vue composables
-│   │   ├── useTerminal.ts        # Terminal logic
-│   │   ├── useCommandHistory.ts # Command history management
-│   │   └── useGestures.ts        # Gesture handling
-│   ├── components/            # Vue components
-│   │   ├── SCPTerminal.vue       # Main terminal component
-│   │   ├── Sidebar.vue           # Sidebar component
-│   │   └── TabBar.vue            # Tab bar component
-│   ├── config/                # Configuration management
-│   │   └── index.ts              # Centralized config
-│   ├── constants/             # Constants and configurations
-│   │   ├── commands.ts            # Command definitions
-│   │   ├── theme.ts               # Theme configuration
-│   │   ├── scpDatabase.ts         # SCP data
-│   │   ├── bootLogs.ts            # Boot log messages
-│   │   └── scraperConfig.ts       # Scraper configuration
-│   ├── stores/                # Pinia state management
-│   │   ├── index.ts              # Store exports
-│   │   ├── command.ts             # Command state
-│   │   ├── terminal.ts            # Terminal state
-│   │   ├── scraper.ts             # Scraper state
-│   │   └── tabs.ts                # Tabs state
-│   ├── types/                  # TypeScript type definitions
-│   │   ├── command.ts             # Command types
-│   │   ├── error.ts               # Error handling types
-│   │   ├── scraper.ts             # Scraper types
-│   │   ├── scp.ts                 # SCP data types
-│   │   ├── terminal.ts            # Terminal types
-│   │   └── global.d.ts            # Global type definitions
-│   ├── utils/                  # Utility functions
-│   │   ├── commandFormatter.ts    # Command output formatting
-│   │   ├── errorHandler.ts        # Error handling
-│   │   ├── gestures.ts            # Gesture utilities
-│   │   ├── scraper.ts             # API scraper
-│   │   └── terminal.ts            # Terminal utilities
-│   ├── platform/               # Platform layer (Phase 1-5)
-│   │   ├── capabilities/         # Capability abstractions
-│   │   ├── deployment/           # Deployment configurations
-│   │   ├── events/               # Event system
-│   │   ├── multi-tenant/         # Multi-tenant support
-│   │   ├── performance/          # Performance monitoring & optimization
-│   │   ├── plugins/              # Plugin system
-│   │   ├── services/             # Platform services
-│   │   └── templates/            # Application templates
-│   ├── core/                   # Core infrastructure
-│   │   ├── container.ts          # Dependency injection
-│   │   └── types.ts              # Core type definitions
-│   ├── domain/                 # Domain layer
-│   │   ├── entities/            # Domain entities
-│   │   ├── repositories/        # Repository interfaces
-│   │   └── repositories-impl/    # Repository implementations
-│   ├── application/            # Application layer
-│   │   ├── controllers/         # Application controllers
-│   │   └── services/            # Application services
-│   ├── infrastructure/         # Infrastructure layer
-│   │   ├── datasources/         # Data source implementations
-│   │   ├── events/              # Event implementations
-│   │   └── http/                # HTTP client
-│   ├── presentation/           # Presentation layer
-│   │   ├── components/          # Vue components
-│   │   └── stores/              # Pinia stores
->>>>>>> master
-│   ├── App.vue                 # Root component
-│   ├── main.ts                 # Application entry point
-│   └── style.css               # Global styles
-├── public/                     # Static assets
-│   ├── scp-logo.jpg           # Logo (146KB)
-│   ├── icon-512x512.png        # App icon (62KB)
-│   └── ...                     # Other static files
-├── worker/                     # Cloudflare Worker
-│   ├── index.ts               # Worker implementation
-│   ├── package.json           # Worker dependencies
-│   ├── wrangler.toml          # Worker configuration
-│   ├── parsers/               # HTML parsers
-│   ├── utils/                 # Worker utilities
-│   ├── security/              # Security modules
-│   ├── scripts/               # Database scripts
-│   └── migrations/            # Database migrations
-├── .env.example               # Environment variables template
-├── .env.development           # Development environment config
-├── .env.production            # Production environment config
-├── vite.config.ts             # Vite build configuration
-├── vitest.config.ts           # Vitest test configuration
-└── package.json               # Project dependencies
+├── packages/                  # Monorepo packages
+│   ├── app/                   # Vue Web Application
+│   │   ├── src/              # Main source code
+│   │   │   ├── commands/     # Command handlers
+│   │   │   ├── composables/  # Vue composables
+│   │   │   ├── components/   # Vue components
+│   │   │   ├── config/       # Configuration management
+│   │   │   ├── constants/    # Constants and configurations
+│   │   │   ├── stores/       # Pinia state management
+│   │   │   ├── types/        # TypeScript type definitions
+│   │   │   ├── utils/        # Utility functions
+│   │   │   ├── platform/     # Platform layer (Phase 1-5)
+│   │   │   ├── core/         # Core infrastructure
+│   │   │   ├── domain/       # Domain layer
+│   │   │   ├── application/  # Application layer
+│   │   │   ├── infrastructure/ # Infrastructure layer
+│   │   │   ├── shared/       # Shared utilities
+│   │   │   ├── App.vue       # Root component
+│   │   │   └── main.ts       # Application entry point
+│   │   ├── public/           # Static assets
+│   │   │   ├── scp-logo.jpg  # Logo (146KB)
+│   │   │   ├── icon-512x512.png # App icon (62KB)
+│   │   │   └── ...          # Other static files
+│   │   ├── index.html        # Entry HTML
+│   │   ├── vite.config.ts    # Vite build configuration
+│   │   ├── tsconfig.json     # TypeScript configuration
+│   │   └── package.json      # App dependencies
+│   ├── desktop/              # Tauri Desktop Application
+│   │   ├── src/             # Rust source code
+│   │   ├── Cargo.toml       # Rust dependencies
+│   │   ├── tauri.conf.json  # Tauri configuration
+│   │   └── package.json      # Desktop scripts
+│   ├── worker/               # Cloudflare Worker
+│   │   ├── index.ts         # Worker implementation
+│   │   ├── package.json     # Worker dependencies
+│   │   ├── wrangler.toml    # Worker configuration
+│   │   ├── parsers/         # HTML parsers
+│   │   ├── utils/           # Worker utilities
+│   │   ├── security/        # Security modules
+│   │   ├── scripts/         # Database scripts
+│   │   └── migrations/      # Database migrations
+│   └── shared/               # Shared utilities
+├── .env.example              # Environment variables template
+├── .env.development          # Development environment config
+├── .env.production           # Production environment config
+├── .github/workflows/        # CI/CD configurations
+├── package.json              # Root workspace configuration
+├── pnpm-workspace.yaml       # Workspace definition
+└── pnpm-lock.yaml            # Lock file
 ```
 
 ## 🚀 Platform Architecture (Phase 1-5)
