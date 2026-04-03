@@ -7,6 +7,7 @@ import { createTerminalConfig, sleep, isPrintableCharacter, isMobileDevice } fro
 import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
+import { autocompleteService } from '../utils/commandAutocomplete'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 import { getBootLogs, getShutdownLogs } from '../constants/bootLogs'
@@ -89,6 +90,10 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const { addToHistory, navigateHistory: navHistory, resetIndex } = useCommandHistory()
   const currentInput = ref('')
   const systemStore = useSystemStore()
+
+  // 补全相关状态
+  const autocompleteSuggestions = ref<string[]>([])
+  const autocompleteIndex = ref(0)
 
   // 标记：防止重复绑定事件监听器
   let commandHandlerSetup = false
@@ -511,11 +516,11 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     if (!terminal) return
     terminal.write('\r\x1b[K')
     writePrompt()
-    
+
     // 检查输入是否是有效命令
     const inputLower = newInput.toLowerCase().trim()
     const isCommand = AVAILABLE_COMMANDS.some(cmd => cmd === inputLower)
-    
+
     if (isCommand && newInput.trim() !== '') {
       // 命令高亮：绿色
       terminal.write(`${ANSICode.command}${newInput}${ANSICode.reset}`)
@@ -523,8 +528,17 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       // 普通输入：白色
       terminal.write(newInput)
     }
-    
+
     currentInput.value = newInput
+
+    // 如果输入发生变化，清除补全建议
+    if (autocompleteSuggestions.value.length > 0) {
+      const lastSuggestion = autocompleteSuggestions.value[autocompleteIndex.value]
+      if (newInput !== lastSuggestion) {
+        autocompleteSuggestions.value = []
+        autocompleteIndex.value = 0
+      }
+    }
   }
 
   const navigateHistory = (direction: number) => {
@@ -537,18 +551,46 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     const terminal = terminalInstance.value.terminal
     if (!terminal || currentInput.value.trim() === '') return
 
-    const matches = AVAILABLE_COMMANDS.filter(cmd =>
-      cmd.startsWith(currentInput.value.toLowerCase())
-    )
+    // 获取补全建议
+    const suggestions = autocompleteService.getSuggestions(currentInput.value)
 
-    if (matches.length === 1) {
-      currentInput.value = matches[0]
+    if (suggestions.length === 0) {
+      // 没有匹配的建议
+      return
+    }
+
+    if (suggestions.length === 1) {
+      // 单个匹配，直接应用
+      const suggestion = suggestions[0]
+      currentInput.value = suggestion.text
       replaceCurrentLine(currentInput.value)
-    } else if (matches.length > 1) {
-      terminal.writeln('\r\n')
-      terminal.writeln(`${ANSICode.cyan}可能的命令: ${matches.join(', ')}${ANSICode.reset}`)
-      writePrompt()
-      replaceCurrentLine(currentInput.value)
+      autocompleteService.recordChoice(currentInput.value, suggestion.text)
+      autocompleteSuggestions.value = []
+      autocompleteIndex.value = 0
+    } else {
+      // 多个匹配
+      const formatted = autocompleteService.formatSuggestions(suggestions)
+      
+      // 如果已经有显示的建议，循环选择
+      if (autocompleteSuggestions.value.length > 0) {
+        autocompleteIndex.value = autocompleteService.cycleSuggestions(
+          suggestions,
+          autocompleteIndex.value
+        )
+        const selected = autocompleteService.getSuggestionAt(suggestions, autocompleteIndex.value)
+        if (selected) {
+          currentInput.value = selected
+          replaceCurrentLine(currentInput.value)
+        }
+      } else {
+        // 第一次显示建议列表
+        terminal.writeln('\r\n')
+        formatted.forEach(line => terminal.writeln(line))
+        writePrompt()
+        replaceCurrentLine(currentInput.value)
+        autocompleteSuggestions.value = suggestions.map(s => s.text)
+        autocompleteIndex.value = 0
+      }
     }
   }
 
@@ -565,6 +607,10 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     addToHistory(command)
     resetIndex()
     currentInput.value = ''
+
+    // 清除补全建议
+    autocompleteSuggestions.value = []
+    autocompleteIndex.value = 0
 
     processCommand(command)
     writePrompt()
@@ -665,8 +711,14 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         executeCommand()
       } else if (data === '\x1b[A') { // Arrow Up
         navigateHistory(-1)
+        // 清除补全建议
+        autocompleteSuggestions.value = []
+        autocompleteIndex.value = 0
       } else if (data === '\x1b[B') { // Arrow Down
         navigateHistory(1)
+        // 清除补全建议
+        autocompleteSuggestions.value = []
+        autocompleteIndex.value = 0
       } else if (data === '\t') { // Tab
         autocomplete()
       } else if (data === '\x7f') { // Backspace
@@ -674,9 +726,17 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
           currentInput.value = currentInput.value.slice(0, -1)
           replaceCurrentLine(currentInput.value)
         }
+        // 清除补全建议
+        if (autocompleteSuggestions.value.length > 0) {
+          autocompleteSuggestions.value = []
+          autocompleteIndex.value = 0
+        }
       } else if (data === '\x03') { // Ctrl+C
         terminal.write('^C\r\n')
         currentInput.value = ''
+        // 清除补全建议
+        autocompleteSuggestions.value = []
+        autocompleteIndex.value = 0
         writePrompt()
       } else if (isPrintableCharacter(data)) {
         currentInput.value += data
