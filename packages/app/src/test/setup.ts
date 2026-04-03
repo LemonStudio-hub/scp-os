@@ -105,3 +105,50 @@ globalThis.ResizeObserver = class ResizeObserver {
   unobserve() {}
   disconnect() {}
 } as any
+
+// Mock window properties for responsive tests
+Object.defineProperty(window, 'innerWidth', {
+  writable: true,
+  configurable: true,
+  value: 1920,
+})
+
+Object.defineProperty(window, 'innerHeight', {
+  writable: true,
+  configurable: true,
+  value: 1080,
+})
+
+Object.defineProperty(window, 'location', {
+  writable: true,
+  configurable: true,
+  value: {
+    hostname: 'localhost',
+    href: 'http://localhost:5173',
+    origin: 'http://localhost:5173',
+    protocol: 'http:',
+    host: 'localhost:5173',
+    pathname: '/',
+    search: '',
+    hash: '',
+  },
+})
+
+// Mock setInterval and clearInterval
+let mockIntervalId = 0
+const mockIntervals: Map<number, NodeJS.Timeout> = new Map()
+
+global.setInterval = vi.fn((callback: () => void, delay: number) => {
+  const id = ++mockIntervalId
+  const intervalId = setInterval(callback, delay) as unknown as NodeJS.Timeout
+  mockIntervals.set(id, intervalId)
+  return id
+})
+
+global.clearInterval = vi.fn((id: number) => {
+  const intervalId = mockIntervals.get(id)
+  if (intervalId) {
+    clearInterval(intervalId)
+    mockIntervals.delete(id)
+  }
+})
