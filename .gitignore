@@ -26,3 +26,13 @@ dist-ssr
 # Coverage
 coverage
 **/coverage
+
+# Rust/Tauri
+**/target
+**/*.rs.bk
+*.rlib
+*.so
+*.pdb
+
+# Tauri
+**/gen/schemas
