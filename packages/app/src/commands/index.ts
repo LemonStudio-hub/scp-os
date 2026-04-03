@@ -463,41 +463,87 @@ export const commandHandlers: CommandMap = {
 
   ls: (_args, _write, writeln) => {
     const path = _args[0] || ''
-    const files = filesystem.listDirectory(path)
     
-    files.forEach(file => {
-      const permissions = [
-        file.type === 'directory' ? 'd' : '-',
-        file.permissions.user.read ? 'r' : '-',
-        file.permissions.user.write ? 'w' : '-',
-        file.permissions.user.execute ? 'x' : '-',
-        file.permissions.group.read ? 'r' : '-',
-        file.permissions.group.write ? 'w' : '-',
-        file.permissions.group.execute ? 'x' : '-',
-        file.permissions.others.read ? 'r' : '-',
-        file.permissions.others.write ? 'w' : '-',
-        file.permissions.others.execute ? 'x' : '-'
-      ].join('')
+    try {
+      // 检查路径是否存在
+      if (path) {
+        const node = filesystem.getNodeByPath(path)
+        if (!node) {
+          writeln(`${ANSICode.red}ls: cannot access '${path}': No such file or directory${ANSICode.reset}`)
+          return
+        }
+        if (node.type !== 'directory') {
+          writeln(`${ANSICode.red}ls: cannot access '${path}': Not a directory${ANSICode.reset}`)
+          return
+        }
+      }
       
-      const size = file.size.toString().padStart(10)
-      const mtime = new Date(file.mtime).toLocaleString()
-      const name = file.type === 'directory' ? `${file.name}/` : file.name
+      const files = filesystem.listDirectory(path)
       
-      writeln(`${permissions} ${file.owner} ${file.group} ${size} ${mtime} ${name}`)
-    })
+      if (files.length === 0) {
+        writeln(`${ANSICode.gray}total 0${ANSICode.reset}`)
+        return
+      }
+      
+      // 计算总大小
+      const totalSize = files.reduce((sum, file) => sum + file.size, 0)
+      writeln(`${ANSICode.gray}total ${Math.ceil(totalSize / 1024)}${ANSICode.reset}`)
+      
+      files.forEach(file => {
+        const permissions = [
+          file.type === 'directory' ? 'd' : '-',
+          file.permissions.user.read ? 'r' : '-',
+          file.permissions.user.write ? 'w' : '-',
+          file.permissions.user.execute ? 'x' : '-',
+          file.permissions.group.read ? 'r' : '-',
+          file.permissions.group.write ? 'w' : '-',
+          file.permissions.group.execute ? 'x' : '-',
+          file.permissions.others.read ? 'r' : '-',
+          file.permissions.others.write ? 'w' : '-',
+          file.permissions.others.execute ? 'x' : '-'
+        ].join('')
+        
+        const size = file.size.toString().padStart(10)
+        const mtime = new Date(file.mtime).toLocaleString()
+        const name = file.type === 'directory' ? `${ANSICode.blue}${file.name}/${ANSICode.reset}` : file.name
+        
+        writeln(`${permissions} ${file.owner} ${file.group} ${size} ${mtime} ${name}`)
+      })
+    } catch (error) {
+      writeln(`${ANSICode.red}ls: error reading directory '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+    }
   },
 
   cd: (_args, _write, writeln) => {
     const path = _args[0]
     if (!path) {
+      // 如果没有参数，切换到用户主目录
+      if (filesystem.changeDirectory('~')) {
+        return
+      }
       writeln(`${ANSICode.yellow}Usage: cd <path>${ANSICode.reset}`)
       return
     }
     
-    if (filesystem.changeDirectory(path)) {
-      // 目录更改成功，不输出任何内容
-    } else {
-      writeln(`${ANSICode.red}cd: ${path}: No such file or directory${ANSICode.reset}`)
+    try {
+      const node = filesystem.getNodeByPath(path)
+      if (!node) {
+        writeln(`${ANSICode.red}cd: ${path}: No such file or directory${ANSICode.reset}`)
+        return
+      }
+      
+      if (node.type !== 'directory') {
+        writeln(`${ANSICode.red}cd: ${path}: Not a directory${ANSICode.reset}`)
+        return
+      }
+      
+      if (filesystem.changeDirectory(path)) {
+        // 目录更改成功，不输出任何内容
+      } else {
+        writeln(`${ANSICode.red}cd: ${path}: Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}cd: error changing directory '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -512,24 +558,75 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    if (filesystem.createDirectory(dirPath)) {
-      writeln(`${ANSICode.green}Created directory: ${dirPath}${ANSICode.reset}`)
-    } else {
-      writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': No such file or directory${ANSICode.reset}`)
+    try {
+      // 检查父目录是否存在
+      const parts = dirPath.split('/').filter(p => p !== '')
+      parts.pop()
+      const parentPath = parts.join('/')
+      
+      if (parentPath) {
+        const parentNode = filesystem.getNodeByPath(parentPath)
+        if (!parentNode) {
+          writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': No such file or directory${ANSICode.reset}`)
+          return
+        }
+        if (parentNode.type !== 'directory') {
+          writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': Not a directory${ANSICode.reset}`)
+          return
+        }
+      }
+      
+      // 检查目录是否已存在
+      const existingNode = filesystem.getNodeByPath(dirPath)
+      if (existingNode) {
+        writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': File exists${ANSICode.reset}`)
+        return
+      }
+      
+      if (filesystem.createDirectory(dirPath)) {
+        writeln(`${ANSICode.green}Created directory: ${dirPath}${ANSICode.reset}`)
+      } else {
+        writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}mkdir: error creating directory '${dirPath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
   rm: (_args, _write, writeln) => {
     const path = _args[0]
-    if (!path) {
-      writeln(`${ANSICode.yellow}Usage: rm <file|directory>${ANSICode.reset}`)
+    const recursive = _args.includes('-r') || _args.includes('-rf')
+    
+    if (!path || path.startsWith('-')) {
+      writeln(`${ANSICode.yellow}Usage: rm [-r] <file|directory>${ANSICode.reset}`)
       return
     }
     
-    if (filesystem.deleteNode(path)) {
-      writeln(`${ANSICode.green}Removed: ${path}${ANSICode.reset}`)
-    } else {
-      writeln(`${ANSICode.red}rm: cannot remove '${path}': No such file or directory${ANSICode.reset}`)
+    try {
+      const node = filesystem.getNodeByPath(path)
+      if (!node) {
+        writeln(`${ANSICode.red}rm: cannot remove '${path}': No such file or directory${ANSICode.reset}`)
+        return
+      }
+      
+      // 检查是否是目录且没有递归选项
+      if (node.type === 'directory' && !recursive) {
+        // 检查目录是否为空
+        const children = Object.keys(node.children || {})
+        if (children.length > 0) {
+          writeln(`${ANSICode.red}rm: cannot remove '${path}': Is a directory${ANSICode.reset}`)
+          writeln(`${ANSICode.gray}Use 'rm -r ${path}' to remove directories and their contents${ANSICode.reset}`)
+          return
+        }
+      }
+      
+      if (filesystem.deleteNode(path)) {
+        writeln(`${ANSICode.green}Removed: ${path}${ANSICode.reset}`)
+      } else {
+        writeln(`${ANSICode.red}rm: cannot remove '${path}': Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}rm: error removing '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -540,11 +637,26 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    const content = filesystem.readFile(filePath)
-    if (content !== null) {
-      writeln(content)
-    } else {
-      writeln(`${ANSICode.red}cat: ${filePath}: No such file or directory${ANSICode.reset}`)
+    try {
+      const node = filesystem.getNodeByPath(filePath)
+      if (!node) {
+        writeln(`${ANSICode.red}cat: ${filePath}: No such file or directory${ANSICode.reset}`)
+        return
+      }
+      
+      if (node.type === 'directory') {
+        writeln(`${ANSICode.red}cat: ${filePath}: Is a directory${ANSICode.reset}`)
+        return
+      }
+      
+      const content = filesystem.readFile(filePath)
+      if (content !== null) {
+        writeln(content)
+      } else {
+        writeln(`${ANSICode.red}cat: ${filePath}: Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}cat: error reading '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -554,15 +666,55 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    const redirectIndex = _args.indexOf('>')
+    // 解析重定向操作符
+    let redirectIndex = -1
+    let appendMode = false
+    
+    for (let i = 0; i < _args.length; i++) {
+      if (_args[i] === '>' || _args[i] === '>>') {
+        redirectIndex = i
+        appendMode = _args[i] === '>>'
+        break
+      }
+    }
+    
     if (redirectIndex !== -1) {
       const text = _args.slice(0, redirectIndex).join(' ')
       const filePath = _args[redirectIndex + 1]
       
-      if (filesystem.writeFile(filePath, text)) {
-        // 重定向成功，不输出任何内容
+      if (!filePath) {
+        writeln(`${ANSICode.red}echo: missing file operand${ANSICode.reset}`)
+        return
+      }
+      
+      // 检查文件是否存在
+      const existingContent = filesystem.readFile(filePath)
+      
+      if (appendMode && existingContent !== null) {
+        // 追加模式
+        const newContent = existingContent + (existingContent.endsWith('\n') ? '' : '\n') + text
+        if (filesystem.writeFile(filePath, newContent)) {
+          // 重定向成功，不输出任何内容
+        } else {
+          writeln(`${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`)
+        }
       } else {
-        writeln(`${ANSICode.red}echo: cannot write to '${filePath}': No such file or directory${ANSICode.reset}`)
+        // 覆盖模式或创建新文件
+        if (existingContent !== null) {
+          // 文件存在，直接写入
+          if (filesystem.writeFile(filePath, text)) {
+            // 重定向成功，不输出任何内容
+          } else {
+            writeln(`${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`)
+          }
+        } else {
+          // 文件不存在，创建新文件
+          if (filesystem.createFile(filePath, text)) {
+            // 重定向成功，不输出任何内容
+          } else {
+            writeln(`${ANSICode.red}echo: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`)
+          }
+        }
       }
     } else {
       writeln(_args.join(' '))
@@ -576,10 +728,44 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    if (filesystem.createFile(filePath)) {
-      // 文件创建成功，不输出任何内容
-    } else {
-      writeln(`${ANSICode.red}touch: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`)
+    try {
+      // 检查父目录是否存在
+      const parts = filePath.split('/').filter(p => p !== '')
+      parts.pop()
+      const parentPath = parts.join('/')
+      
+      if (parentPath) {
+        const parentNode = filesystem.getNodeByPath(parentPath)
+        if (!parentNode) {
+          writeln(`${ANSICode.red}touch: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`)
+          return
+        }
+        if (parentNode.type !== 'directory') {
+          writeln(`${ANSICode.red}touch: cannot create file '${filePath}': Not a directory${ANSICode.reset}`)
+          return
+        }
+      }
+      
+      // 检查文件是否已存在
+      const existingNode = filesystem.getNodeByPath(filePath)
+      if (existingNode) {
+        if (existingNode.type === 'directory') {
+          writeln(`${ANSICode.red}touch: cannot create file '${filePath}': Is a directory${ANSICode.reset}`)
+          return
+        }
+        // 文件已存在，更新修改时间
+        existingNode.mtime = Date.now()
+        writeln(`${ANSICode.green}Updated: ${filePath}${ANSICode.reset}`)
+        return
+      }
+      
+      if (filesystem.createFile(filePath)) {
+        writeln(`${ANSICode.green}Created: ${filePath}${ANSICode.reset}`)
+      } else {
+        writeln(`${ANSICode.red}touch: cannot create file '${filePath}': Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}touch: error creating file '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -592,10 +778,45 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    if (filesystem.copyNode(source, destination)) {
-      writeln(`${ANSICode.green}Copied ${source} to ${destination}${ANSICode.reset}`)
-    } else {
-      writeln(`${ANSICode.red}cp: cannot copy '${source}': No such file or directory${ANSICode.reset}`)
+    try {
+      // 检查源文件是否存在
+      const sourceNode = filesystem.getNodeByPath(source)
+      if (!sourceNode) {
+        writeln(`${ANSICode.red}cp: cannot stat '${source}': No such file or directory${ANSICode.reset}`)
+        return
+      }
+      
+      // 检查目标父目录是否存在
+      const destParts = destination.split('/').filter(p => p !== '')
+      destParts.pop()
+      const destParentPath = destParts.join('/')
+      
+      if (destParentPath) {
+        const destParentNode = filesystem.getNodeByPath(destParentPath)
+        if (!destParentNode) {
+          writeln(`${ANSICode.red}cp: cannot copy to '${destination}': No such file or directory${ANSICode.reset}`)
+          return
+        }
+        if (destParentNode.type !== 'directory') {
+          writeln(`${ANSICode.red}cp: cannot copy to '${destination}': Not a directory${ANSICode.reset}`)
+          return
+        }
+      }
+      
+      // 检查目标是否已存在
+      const existingNode = filesystem.getNodeByPath(destination)
+      if (existingNode) {
+        writeln(`${ANSICode.red}cp: cannot copy to '${destination}': File exists${ANSICode.reset}`)
+        return
+      }
+      
+      if (filesystem.copyNode(source, destination)) {
+        writeln(`${ANSICode.green}Copied ${source} to ${destination}${ANSICode.reset}`)
+      } else {
+        writeln(`${ANSICode.red}cp: cannot copy '${source}' to '${destination}': Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}cp: error copying '${source}' to '${destination}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -608,10 +829,38 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    if (filesystem.moveNode(source, destination)) {
-      writeln(`${ANSICode.green}Moved ${source} to ${destination}${ANSICode.reset}`)
-    } else {
-      writeln(`${ANSICode.red}mv: cannot move '${source}': No such file or directory${ANSICode.reset}`)
+    try {
+      // 检查源文件是否存在
+      const sourceNode = filesystem.getNodeByPath(source)
+      if (!sourceNode) {
+        writeln(`${ANSICode.red}mv: cannot stat '${source}': No such file or directory${ANSICode.reset}`)
+        return
+      }
+      
+      // 检查目标父目录是否存在
+      const destParts = destination.split('/').filter(p => p !== '')
+      destParts.pop()
+      const destParentPath = destParts.join('/')
+      
+      if (destParentPath) {
+        const destParentNode = filesystem.getNodeByPath(destParentPath)
+        if (!destParentNode) {
+          writeln(`${ANSICode.red}mv: cannot move to '${destination}': No such file or directory${ANSICode.reset}`)
+          return
+        }
+        if (destParentNode.type !== 'directory') {
+          writeln(`${ANSICode.red}mv: cannot move to '${destination}': Not a directory${ANSICode.reset}`)
+          return
+        }
+      }
+      
+      if (filesystem.moveNode(source, destination)) {
+        writeln(`${ANSICode.green}Moved ${source} to ${destination}${ANSICode.reset}`)
+      } else {
+        writeln(`${ANSICode.red}mv: cannot move '${source}' to '${destination}': Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}mv: error moving '${source}' to '${destination}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -652,8 +901,31 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    const results = filesystem.findFiles(pattern, path)
-    results.forEach(file => writeln(file))
+    try {
+      // 检查起始路径是否存在
+      if (path) {
+        const node = filesystem.getNodeByPath(path)
+        if (!node) {
+          writeln(`${ANSICode.red}find: '${path}': No such file or directory${ANSICode.reset}`)
+          return
+        }
+        if (node.type !== 'directory') {
+          writeln(`${ANSICode.red}find: '${path}': Not a directory${ANSICode.reset}`)
+          return
+        }
+      }
+      
+      const results = filesystem.findFiles(pattern, path)
+      
+      if (results.length === 0) {
+        writeln(`${ANSICode.gray}No files matching '${pattern}' found${ANSICode.reset}`)
+        return
+      }
+      
+      results.forEach(file => writeln(file))
+    } catch (error) {
+      writeln(`${ANSICode.red}find: error searching for files: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+    }
   },
 
   grep: (_args, _write, writeln) => {
@@ -665,12 +937,46 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    const results = filesystem.grepContent(pattern, files)
-    results.forEach(result => {
-      result.lines.forEach(line => {
-        writeln(`${result.file}:${line}`)
+    try {
+      // 验证所有文件是否存在且可读
+      const validFiles: string[] = []
+      for (const file of files) {
+        const node = filesystem.getNodeByPath(file)
+        if (!node) {
+          writeln(`${ANSICode.red}grep: ${file}: No such file or directory${ANSICode.reset}`)
+          continue
+        }
+        if (node.type === 'directory') {
+          writeln(`${ANSICode.red}grep: ${file}: Is a directory${ANSICode.reset}`)
+          continue
+        }
+        validFiles.push(file)
+      }
+      
+      if (validFiles.length === 0) {
+        return
+      }
+      
+      const results = filesystem.grepContent(pattern, validFiles)
+      
+      if (results.length === 0) {
+        writeln(`${ANSICode.gray}No matches found for '${pattern}'${ANSICode.reset}`)
+        return
+      }
+      
+      results.forEach(result => {
+        result.lines.forEach(line => {
+          // 高亮匹配的部分
+          const highlightedLine = line.replace(
+            new RegExp(pattern, 'gi'),
+            match => `${ANSICode.red}${match}${ANSICode.reset}`
+          )
+          writeln(`${ANSICode.green}${result.file}:${ANSICode.reset}${highlightedLine}`)
+        })
       })
-    })
+    } catch (error) {
+      writeln(`${ANSICode.red}grep: error searching content: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+    }
   },
 
   chmod: (_args, _write, writeln) => {
@@ -682,17 +988,28 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    // 简化的权限设置
-    const newPermissions = {
-      user: { read: true, write: true, execute: true },
-      group: { read: true, write: false, execute: true },
-      others: { read: true, write: false, execute: false }
-    }
-    
-    if (filesystem.changePermissions(filePath, newPermissions)) {
-      writeln(`${ANSICode.green}Changed permissions for ${filePath}${ANSICode.reset}`)
-    } else {
-      writeln(`${ANSICode.red}chmod: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+    try {
+      // 检查文件是否存在
+      const node = filesystem.getNodeByPath(filePath)
+      if (!node) {
+        writeln(`${ANSICode.red}chmod: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+        return
+      }
+      
+      // 简化的权限设置
+      const newPermissions = {
+        user: { read: true, write: true, execute: true },
+        group: { read: true, write: false, execute: true },
+        others: { read: true, write: false, execute: false }
+      }
+      
+      if (filesystem.changePermissions(filePath, newPermissions)) {
+        writeln(`${ANSICode.green}Changed permissions for ${filePath}${ANSICode.reset}`)
+      } else {
+        writeln(`${ANSICode.red}chmod: cannot change permissions of '${filePath}': Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}chmod: error changing permissions of '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   },
 
@@ -711,10 +1028,21 @@ export const commandHandlers: CommandMap = {
       return
     }
     
-    if (filesystem.changeOwner(filePath, owner, group)) {
-      writeln(`${ANSICode.green}Changed owner for ${filePath} to ${owner}:${group}${ANSICode.reset}`)
-    } else {
-      writeln(`${ANSICode.red}chown: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+    try {
+      // 检查文件是否存在
+      const node = filesystem.getNodeByPath(filePath)
+      if (!node) {
+        writeln(`${ANSICode.red}chown: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+        return
+      }
+      
+      if (filesystem.changeOwner(filePath, owner, group)) {
+        writeln(`${ANSICode.green}Changed owner for ${filePath} to ${owner}:${group}${ANSICode.reset}`)
+      } else {
+        writeln(`${ANSICode.red}chown: cannot change ownership of '${filePath}': Permission denied${ANSICode.reset}`)
+      }
+    } catch (error) {
+      writeln(`${ANSICode.red}chown: error changing ownership of '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
     }
   }
 }

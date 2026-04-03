@@ -4,10 +4,11 @@
  */
 
 const DB_NAME = 'scp-terminal-db'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const STORES = {
   TABS: 'tabs',
-  TERMINAL_STATES: 'terminal_states'
+  TERMINAL_STATES: 'terminal_states',
+  FILESYSTEM: 'filesystem'
 }
 
 class IndexedDBService {
@@ -49,6 +50,13 @@ class IndexedDBService {
           const terminalStore = db.createObjectStore(STORES.TERMINAL_STATES, { keyPath: 'tabId' })
           terminalStore.createIndex('updatedAt', 'updatedAt', { unique: false })
           console.log('[IndexedDB] Created terminal states store')
+        }
+
+        // Create filesystem store
+        if (!db.objectStoreNames.contains(STORES.FILESYSTEM)) {
+          const fsStore = db.createObjectStore(STORES.FILESYSTEM, { keyPath: 'key' })
+          fsStore.createIndex('updatedAt', 'updatedAt', { unique: false })
+          console.log('[IndexedDB] Created filesystem store')
         }
       }
     })
@@ -251,11 +259,11 @@ class IndexedDBService {
   async getStorageSize(): Promise<number> {
     const db = this.getDB()
     return new Promise((resolve) => {
-      const transaction = db.transaction([STORES.TABS, STORES.TERMINAL_STATES], 'readonly')
+      const transaction = db.transaction([STORES.TABS, STORES.TERMINAL_STATES, STORES.FILESYSTEM], 'readonly')
 
       let totalSize = 0
       let completed = 0
-      const totalStores = 2
+      const totalStores = 3
 
       const checkComplete = () => {
         completed++
@@ -300,6 +308,56 @@ class IndexedDBService {
 
       estimateSize(STORES.TABS)
       estimateSize(STORES.TERMINAL_STATES)
+      estimateSize(STORES.FILESYSTEM)
+    })
+  }
+
+  /**
+   * Save filesystem data
+   */
+  async saveFilesystem(root: any, currentPath: string[]): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.FILESYSTEM], 'readwrite')
+      const store = transaction.objectStore(STORES.FILESYSTEM)
+
+      const data = {
+        key: 'filesystem',
+        root,
+        currentPath,
+        updatedAt: Date.now()
+      }
+
+      const request = store.put(data)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * Load filesystem data
+   */
+  async loadFilesystem(): Promise<{ root: any, currentPath: string[] } | null> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.FILESYSTEM], 'readonly')
+      const store = transaction.objectStore(STORES.FILESYSTEM)
+
+      const request = store.get('filesystem')
+
+      request.onsuccess = () => {
+        const data = request.result
+        if (data) {
+          resolve({
+            root: data.root,
+            currentPath: data.currentPath
+          })
+        } else {
+          resolve(null)
+        }
+      }
+
+      request.onerror = () => reject(request.error)
     })
   }
 }

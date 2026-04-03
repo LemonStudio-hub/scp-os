@@ -1,4 +1,4 @@
-import { useTabsStore } from '../stores/tabs'
+import { indexedDBService } from './indexedDB'
 
 // 文件系统节点类型
 export type FileSystemNodeType = 'file' | 'directory'
@@ -39,11 +39,17 @@ export interface FileSystemNode {
 export class FileSystem {
   private root: FileSystemNode
   private currentPath: string[] = ['']
-  private tabsStore = useTabsStore()
+  private isInitialized = false
 
   constructor() {
     // 初始化根目录
-    this.root = {
+    this.root = this.createDefaultFilesystem()
+    this.loadFromStorage()
+  }
+
+  // 创建默认文件系统
+  private createDefaultFilesystem(): FileSystemNode {
+    return {
       name: '',
       type: 'directory',
       permissions: {
@@ -183,7 +189,7 @@ export class FileSystem {
               size: 0,
               mtime: Date.now(),
               children: {
-                system.log: {
+                'system.log': {
                   name: 'system.log',
                   type: 'file',
                   permissions: {
@@ -205,6 +211,31 @@ export class FileSystem {
     }
   }
 
+  // 从存储加载文件系统
+  private async loadFromStorage(): Promise<void> {
+    try {
+      const data = await indexedDBService.loadFilesystem()
+      if (data) {
+        this.root = data.root
+        this.currentPath = data.currentPath
+      }
+      this.isInitialized = true
+    } catch (error) {
+      console.error('[Filesystem] Failed to load from storage:', error)
+      this.isInitialized = true
+    }
+  }
+
+  // 保存到存储
+  private async saveToStorage(): Promise<void> {
+    if (!this.isInitialized) return
+    try {
+      await indexedDBService.saveFilesystem(this.root, this.currentPath)
+    } catch (error) {
+      console.error('[Filesystem] Failed to save to storage:', error)
+    }
+  }
+
   // 获取当前工作目录
   getCurrentDirectory(): string {
     return this.currentPath.join('/') || '/'
@@ -214,6 +245,7 @@ export class FileSystem {
   changeDirectory(path: string): boolean {
     if (path === '~') {
       this.currentPath = ['', 'home', 'scp']
+      this.saveToStorage()
       return true
     }
 
@@ -245,6 +277,7 @@ export class FileSystem {
     }
 
     this.currentPath = newPath
+    this.saveToStorage()
     return true
   }
 
@@ -344,6 +377,12 @@ export class FileSystem {
       return false
     }
 
+    // 检查父目录的写入权限
+    if (!this.hasWritePermission(parentNode)) {
+      console.warn(`[Filesystem] Permission denied: cannot create directory '${path}'`)
+      return false
+    }
+
     if (dirName in parentNode.children) {
       return false // 目录已存在
     }
@@ -364,6 +403,7 @@ export class FileSystem {
     }
 
     parentNode.mtime = Date.now()
+    this.saveToStorage()
     return true
   }
 
@@ -377,6 +417,12 @@ export class FileSystem {
     const parentNode = this.getNode(parentPath)
 
     if (!parentNode || parentNode.type !== 'directory' || !parentNode.children) {
+      return false
+    }
+
+    // 检查父目录的写入权限
+    if (!this.hasWritePermission(parentNode)) {
+      console.warn(`[Filesystem] Permission denied: cannot create file '${path}'`)
       return false
     }
 
@@ -396,6 +442,7 @@ export class FileSystem {
     }
 
     parentNode.mtime = Date.now()
+    this.saveToStorage()
     return true
   }
 
@@ -416,10 +463,31 @@ export class FileSystem {
       return false // 节点不存在
     }
 
+    // 检查父目录的写入权限（需要父目录的写入权限才能删除子项）
+    if (!this.hasWritePermission(parentNode)) {
+      console.warn(`[Filesystem] Permission denied: cannot delete '${path}'`)
+      return false
+    }
+
     delete parentNode.children[nodeName]
     parentNode.mtime = Date.now()
+    this.saveToStorage()
     return true
   }
+
+  // 检查读取权限
+  private hasReadPermission(node: FileSystemNode): boolean {
+    // 简化的权限检查，假设当前用户是 scp
+    return node.permissions.user.read || node.permissions.group.read || node.permissions.others.read
+  }
+
+  // 检查写入权限
+  private hasWritePermission(node: FileSystemNode): boolean {
+    // 简化的权限检查，假设当前用户是 scp
+    return node.permissions.user.write || node.permissions.group.write || node.permissions.others.write
+  }
+
+
 
   // 读取文件内容
   readFile(path: string): string | null {
@@ -427,6 +495,13 @@ export class FileSystem {
     if (!node || node.type !== 'file') {
       return null
     }
+    
+    // 检查读取权限
+    if (!this.hasReadPermission(node)) {
+      console.warn(`[Filesystem] Permission denied: cannot read '${path}'`)
+      return null
+    }
+    
     return node.content || ''
   }
 
@@ -434,6 +509,12 @@ export class FileSystem {
   writeFile(path: string, content: string): boolean {
     const node = this.getNodeByPath(path)
     if (!node || node.type !== 'file') {
+      return false
+    }
+
+    // 检查写入权限
+    if (!this.hasWritePermission(node)) {
+      console.warn(`[Filesystem] Permission denied: cannot write '${path}'`)
       return false
     }
 
@@ -453,6 +534,7 @@ export class FileSystem {
       }
     }
 
+    this.saveToStorage()
     return true
   }
 
@@ -460,6 +542,12 @@ export class FileSystem {
   copyNode(sourcePath: string, destinationPath: string): boolean {
     const sourceNode = this.getNodeByPath(sourcePath)
     if (!sourceNode) return false
+
+    // 检查源文件的读取权限
+    if (!this.hasReadPermission(sourceNode)) {
+      console.warn(`[Filesystem] Permission denied: cannot read source '${sourcePath}'`)
+      return false
+    }
 
     const destParts = this.resolvePath(destinationPath)
     const destName = destParts.pop()
@@ -469,6 +557,12 @@ export class FileSystem {
     const destParentNode = this.getNode(destParentPath)
 
     if (!destParentNode || destParentNode.type !== 'directory' || !destParentNode.children) {
+      return false
+    }
+
+    // 检查目标父目录的写入权限
+    if (!this.hasWritePermission(destParentNode)) {
+      console.warn(`[Filesystem] Permission denied: cannot write to destination '${destinationPath}'`)
       return false
     }
 
@@ -495,6 +589,7 @@ export class FileSystem {
 
     destParentNode.children[destName] = copyNode(sourceNode)
     destParentNode.mtime = Date.now()
+    this.saveToStorage()
     return true
   }
 
@@ -502,6 +597,23 @@ export class FileSystem {
   moveNode(sourcePath: string, destinationPath: string): boolean {
     const sourceNode = this.getNodeByPath(sourcePath)
     if (!sourceNode) return false
+
+    // 检查源文件的读取权限
+    if (!this.hasReadPermission(sourceNode)) {
+      console.warn(`[Filesystem] Permission denied: cannot read source '${sourcePath}'`)
+      return false
+    }
+
+    // 获取源文件的父目录
+    const sourceParts = this.resolvePath(sourcePath)
+    sourceParts.pop()
+    const sourceParentNode = this.getNode(sourceParts)
+    
+    // 检查源父目录的写入权限（需要写入权限才能删除）
+    if (sourceParentNode && !this.hasWritePermission(sourceParentNode)) {
+      console.warn(`[Filesystem] Permission denied: cannot delete source '${sourcePath}'`)
+      return false
+    }
 
     // 先复制
     if (!this.copyNode(sourcePath, destinationPath)) {
@@ -517,8 +629,15 @@ export class FileSystem {
     const node = this.getNodeByPath(path)
     if (!node) return false
 
+    // 检查是否有权限修改权限（简化为检查写入权限）
+    if (!this.hasWritePermission(node)) {
+      console.warn(`[Filesystem] Permission denied: cannot change permissions of '${path}'`)
+      return false
+    }
+
     node.permissions = permissions
     node.mtime = Date.now()
+    this.saveToStorage()
     return true
   }
 
@@ -527,9 +646,16 @@ export class FileSystem {
     const node = this.getNodeByPath(path)
     if (!node) return false
 
+    // 检查是否有权限修改所有者（简化为检查写入权限）
+    if (!this.hasWritePermission(node)) {
+      console.warn(`[Filesystem] Permission denied: cannot change owner of '${path}'`)
+      return false
+    }
+
     node.owner = owner
     node.group = group
     node.mtime = Date.now()
+    this.saveToStorage()
     return true
   }
 
