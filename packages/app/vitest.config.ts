@@ -9,13 +9,13 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,ts}'],
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: true,  // Disable parallel test execution to reduce memory usage
+      forks: {
+        singleFork: true,
       },
     },
-    maxConcurrency: 1,  // Run tests one at a time
-    pool: 'forks',  // Use forks instead of threads for better memory management
+    maxConcurrency: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
