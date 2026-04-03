@@ -1,5 +1,5 @@
 <template>
-  <div class="home-screen">
+  <div ref="homeRef" class="home-screen">
     <!-- Status Bar -->
     <div class="status-bar">
       <span class="status-bar__time">{{ currentTime }}</span>
@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useHammer } from '../composables/useHammer'
 
 export interface HomeApp {
   id: string
@@ -81,7 +82,15 @@ const emit = defineEmits<{
   launch: [app: HomeApp]
 }>()
 
+const homeRef = ref<HTMLDivElement | null>(null)
 const currentTime = ref('')
+
+// Hammer.js gesture setup
+const { setup: setupGestures } = useHammer(homeRef, {
+  swipeThreshold: 60,
+  swipeVelocity: 0.4,
+  directions: ['swipe', 'tap'],
+})
 
 function updateTime(): void {
   const now = new Date()
@@ -102,6 +111,7 @@ function onAppTap(app: HomeApp): void {
 onMounted(() => {
   updateTime()
   setInterval(updateTime, 10000)
+  setupGestures()
 })
 </script>
 

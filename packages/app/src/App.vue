@@ -123,18 +123,6 @@ onMounted(async () => {
   // Load saved GUI windows
   await wmStore.loadWindowStates()
 
-  // Default: open File Manager on first launch
-  if (wmStore.windowCount === 0) {
-    wmStore.openWindow({
-      id: `filemanager-init`,
-      tool: 'filemanager',
-      title: 'File Manager',
-      iconName: 'folder',
-      width: Math.min(800, window.innerWidth - 40),
-      height: Math.min(520, window.innerHeight - 160),
-    })
-  }
-
   // Set global function for performance dashboard
   window.openPerformanceDashboard = openPerformanceDashboard
 
