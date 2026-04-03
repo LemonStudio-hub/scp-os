@@ -139,7 +139,7 @@ class IndexedDBService {
   /**
    * Save terminal state for a specific tab
    */
-  async saveTerminalState(tabId: string, content: string): Promise<void> {
+  async saveTerminalState(tabId: string, content: string | string[]): Promise<void> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TERMINAL_STATES], 'readwrite')
@@ -160,7 +160,7 @@ class IndexedDBService {
   /**
    * Load terminal state for a specific tab
    */
-  async loadTerminalState(tabId: string): Promise<string | null> {
+  async loadTerminalState(tabId: string): Promise<string | string[] | null> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TERMINAL_STATES], 'readonly')
@@ -180,7 +180,7 @@ class IndexedDBService {
   /**
    * Load all terminal states
    */
-  async loadAllTerminalStates(): Promise<Record<string, string>> {
+  async loadAllTerminalStates(): Promise<Record<string, string | string[]>> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TERMINAL_STATES], 'readonly')
@@ -189,7 +189,7 @@ class IndexedDBService {
       const request = store.getAll()
 
       request.onsuccess = () => {
-        const states: Record<string, string> = {}
+        const states: Record<string, string | string[]> = {}
         request.result.forEach((item: any) => {
           states[item.tabId] = item.content
         })

@@ -40,8 +40,8 @@ import indexedDBService from '../utils/indexedDB'
 const tabsStore = useTabsStore()
 const terminalContainer = ref<HTMLDivElement>()
 
-// 存储每个标签页的终端状态（内存缓存）
-const terminalStates = ref<Record<string, string>>({})
+// 存储每个标签页的终端状态（内存缓存）- 使用行数组而不是完整字符串
+const terminalStates = ref<Record<string, string | string[]>>({})
 
 // Detect if device is mobile
 const isMobile = computed(() => {
@@ -149,7 +149,7 @@ const handleResize = () => {
   if (resizeTimeout) {
     clearTimeout(resizeTimeout)
   }
-  
+
   resizeTimeout = window.setTimeout(() => {
     const terminal = getTerminal()
     if (terminal) {
@@ -162,7 +162,7 @@ onMounted(async () => {
   // Initialize IndexedDB
   try {
     await indexedDBService.init()
-    
+
     // Load all terminal states
     const allStates = await indexedDBService.loadAllTerminalStates()
     terminalStates.value = allStates
@@ -172,10 +172,10 @@ onMounted(async () => {
   }
 
   initTerminal()
-  
+
   // Add resize listener for responsive font size
   window.addEventListener('resize', handleResize)
-  
+
   // Check system status and display appropriate screen
   if (hasBootLogBeenShown()) {
     // Boot log has been shown, display welcome message without boot log
@@ -184,7 +184,7 @@ onMounted(async () => {
     // Boot log has not been shown (first launch or after shutdown), display startup prompt
     displayStartupPrompt()
   }
-  
+
   setupCommandHandler()
 })
 
@@ -193,61 +193,82 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
   if (!terminal) return
 
-  // 保存旧标签页的终端状态到IndexedDB（保存整个缓冲区）
-  if (oldTabId && terminal.buffer.active) {
-    const buffer = terminal.buffer.active
-    let fullContent = ''
-    
-    // 遍历所有行，保存完整内容
-    for (let i = 0; i < buffer.length; i++) {
-      const line = buffer.getLine(i)
-      if (line) {
-        fullContent += line.translateToString() + '\n'
-      }
-    }
-    
-    // 保存到内存缓存和IndexedDB
-    terminalStates.value[oldTabId] = fullContent
+  // 保存旧标签页的终端状态
+  if (oldTabId) {
     try {
-      await indexedDBService.saveTerminalState(oldTabId, fullContent)
+      // 使用 xterm 的 serialize 插件（如果可用）或直接保存文本
+      const buffer = terminal.buffer.active
+      if (buffer) {
+        const lines: string[] = []
+        for (let i = 0; i < buffer.length; i++) {
+          const line = buffer.getLine(i)
+          if (line) {
+            lines.push(line.translateToString(true))
+          } else {
+            lines.push('')
+          }
+        }
+        terminalStates.value[oldTabId] = lines
+        
+        // 保存到 IndexedDB
+        await indexedDBService.saveTerminalState(oldTabId, lines)
+      }
     } catch (error) {
-      console.error('[Terminal] Failed to save state to IndexedDB:', error)
+      console.error('[Terminal] Failed to save state:', error)
     }
   }
 
-  // 恢复新标签页的终端状态
+    // 恢复新标签页的终端状态
   if (newTabId) {
-    // 首先加载新内容到内存
-    let contentToLoad = ''
-    
+    let savedLines: string | string[] | null = null
+
     // 首先尝试从内存缓存加载
     if (terminalStates.value[newTabId]) {
-      contentToLoad = terminalStates.value[newTabId]
+      const cached = terminalStates.value[newTabId]
+      savedLines = Array.isArray(cached) ? cached : (typeof cached === 'string' ? cached : null)
     } else {
-      // 从IndexedDB加载
+      // 从 IndexedDB 加载
       try {
         const savedContent = await indexedDBService.loadTerminalState(newTabId)
         if (savedContent) {
-          contentToLoad = savedContent
-          terminalStates.value[newTabId] = savedContent
+          // 如果是数组格式
+          savedLines = Array.isArray(savedContent) ? savedContent : (typeof savedContent === 'string' ? savedContent : null)
+          if (savedLines) {
+            terminalStates.value[newTabId] = savedLines
+          }
         }
       } catch (error) {
         console.error('[Terminal] Failed to load state from IndexedDB:', error)
       }
     }
-    
-    // 如果没有保存的内容，显示欢迎信息
-    if (!contentToLoad) {
+
+    // 清空终端
+    clear()
+
+    // 转换为数组格式
+    const linesArray: string[] = Array.isArray(savedLines) 
+      ? savedLines 
+      : (typeof savedLines === 'string' ? savedLines.split('\n') : [])
+
+    if (linesArray.length > 0) {
+      // 逐行恢复终端内容（保持格式）
+      for (const line of linesArray) {
+        if (line) {
+          terminal.writeln(line)
+        } else {
+          terminal.writeln('')
+        }
+      }
+    } else {
+      // 没有保存的内容，显示欢迎信息
       displayWelcomeMessage()
       return
     }
-    
-    // 清空终端并立即写入新内容
-    clear()
-    terminal.write(contentToLoad)
-    
+
     // 确保滚动到底部
-    terminal.scrollToBottom()
+    setTimeout(() => {
+      terminal.scrollToBottom()
+    }, 50)
   }
 })
 

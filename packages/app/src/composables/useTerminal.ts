@@ -514,8 +514,10 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const replaceCurrentLine = (newInput: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
-    terminal.write('\r\x1b[K')
-    writePrompt()
+    
+    // 清除当前行并重新写入提示和新内容
+    terminal.write('\r\x1b[K')  // 回车并清除行
+    terminal.write(`${ANSICode.prompt}SCP-ROOT>${ANSICode.reset} `)
 
     // 检查输入是否是有效命令
     const inputLower = newInput.toLowerCase().trim()
@@ -543,6 +545,8 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
   const navigateHistory = (direction: number) => {
     navHistory(direction, (command) => {
+      // 更新当前输入
+      currentInput.value = command
       replaceCurrentLine(command)
     })
   }
