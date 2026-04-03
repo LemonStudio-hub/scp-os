@@ -64,7 +64,7 @@
 import { ref } from 'vue'
 import type { PerformanceIssue } from '../../platform/performance/performance-monitor.service'
 
-const props = defineProps<{
+defineProps<{
   issues: PerformanceIssue[]
 }>()
 

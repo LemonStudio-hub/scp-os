@@ -15,8 +15,8 @@ export default defineConfig({
       name: 'copy-service-worker',
       generateBundle() {
         // 复制 Service Worker 到 dist 目录
-        const swSource = join(__dirname, 'packages/app/public/sw.ts')
-        const swDest = join(__dirname, 'dist/sw.js')
+        const swSource = join(__dirname, 'public/sw.ts')
+        const swDest = join(__dirname, '../../dist/sw.js')
         
         if (existsSync(swSource)) {
           copyFileSync(swSource, swDest)
@@ -24,8 +24,8 @@ export default defineConfig({
         }
         
         // 复制 manifest.json
-        const manifestSource = join(__dirname, 'packages/app/public/manifest.json')
-        const manifestDest = join(__dirname, 'dist/manifest.json')
+        const manifestSource = join(__dirname, 'public/manifest.json')
+        const manifestDest = join(__dirname, '../../dist/manifest.json')
         
         if (existsSync(manifestSource)) {
           copyFileSync(manifestSource, manifestDest)
@@ -33,8 +33,8 @@ export default defineConfig({
         }
         
         // 复制离线页面
-        const offlineSource = join(__dirname, 'packages/app/public/offline.html')
-        const offlineDest = join(__dirname, 'dist/offline.html')
+        const offlineSource = join(__dirname, 'public/offline.html')
+        const offlineDest = join(__dirname, '../../dist/offline.html')
         
         if (existsSync(offlineSource)) {
           copyFileSync(offlineSource, offlineDest)
@@ -43,10 +43,10 @@ export default defineConfig({
       }
     }
   ],
-  root: 'packages/app',
   publicDir: 'public',
   build: {
     outDir: '../../dist',
+    minify: 'terser',
     rollupOptions: {
       output: {
         manualChunks(id) {

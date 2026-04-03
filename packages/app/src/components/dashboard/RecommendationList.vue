@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-const props = defineProps<{
+defineProps<{
   recommendations: Array<{
     id: string
     name: string
