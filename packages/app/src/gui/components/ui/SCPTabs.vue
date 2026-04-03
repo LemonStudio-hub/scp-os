@@ -8,13 +8,17 @@
     >
       <span v-if="tab.icon" class="scp-tabs__icon">{{ tab.icon }}</span>
       <span class="scp-tabs__label">{{ tab.label }}</span>
-      <span v-if="tab.dirty" class="scp-tabs__dirty">●</span>
+      <span v-if="tab.dirty" class="scp-tabs__dirty" />
       <button
         v-if="closable"
         class="scp-tabs__close"
         title="Close"
         @click.stop="$emit('close', tab.id)"
-      >×</button>
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2.5 2.5L7.5 7.5M7.5 2.5L2.5 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   </div>
 </template>
@@ -50,37 +54,43 @@ defineEmits<{
 .scp-tabs {
   display: flex;
   align-items: stretch;
-  background: var(--gui-color-bg-tertiary, #1a1a1a);
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  background: var(--gui-bg-surface, #0c0c0c);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   overflow-x: auto;
   overflow-y: hidden;
+  scrollbar-width: none;
 }
 
+.scp-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Tab ───────────────────────────────────────────────────────────── */
 .scp-tabs__tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: var(--gui-spacing-xs, 6px);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
   background: none;
   border: none;
-  border-right: 1px solid var(--gui-color-border-default, #2a2a2a);
-  color: var(--gui-color-text-secondary, #a0a0a0);
-  font-family: inherit;
-  font-size: var(--gui-font-sm, 12px);
+  border-right: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
+  color: var(--gui-text-tertiary, #6a6a6a);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--gui-font-xs, 11px);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 150ms ease);
+  transition: all var(--gui-transition-fast, 120ms ease);
   white-space: nowrap;
   position: relative;
 }
 
 .scp-tabs__tab:hover {
-  background: var(--gui-color-bg-hover, #1e1e1e);
-  color: var(--gui-color-text-primary, #e0e0e0);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
+  color: var(--gui-text-secondary, #a8a8a8);
 }
 
 .scp-tabs__tab--active {
-  background: var(--gui-color-window-bg, #0d0d0d);
-  color: var(--gui-color-text-primary, #e0e0e0);
+  background: var(--gui-bg-surface-raised, #111111);
+  color: var(--gui-text-primary, #f0f0f0);
   font-weight: var(--gui-font-weight-medium, 500);
 }
 
@@ -88,17 +98,23 @@ defineEmits<{
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: var(--gui-spacing-sm, 8px);
+  right: var(--gui-spacing-sm, 8px);
   height: 2px;
-  background: var(--gui-color-border-active, #e94560);
+  background: var(--gui-accent, #e94560);
+  border-radius: var(--gui-radius-full, 9999px);
 }
 
+/* ── Dirty Indicator ───────────────────────────────────────────────── */
 .scp-tabs__dirty {
-  color: var(--gui-color-warning, #ffff00);
-  font-size: 10px;
+  width: 6px;
+  height: 6px;
+  background: var(--gui-warning, #fbbf24);
+  border-radius: var(--gui-radius-full, 9999px);
+  flex-shrink: 0;
 }
 
+/* ── Close Button ──────────────────────────────────────────────────── */
 .scp-tabs__close {
   display: flex;
   align-items: center;
@@ -107,15 +123,15 @@ defineEmits<{
   height: 16px;
   background: none;
   border: none;
-  border-radius: var(--gui-radius-full, 9999px);
-  color: var(--gui-color-text-muted, #666666);
-  font-size: 12px;
+  border-radius: var(--gui-radius-xs, 4px);
+  color: var(--gui-text-tertiary, #6a6a6a);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 150ms ease);
+  transition: all var(--gui-transition-fast, 120ms ease);
+  flex-shrink: 0;
 }
 
 .scp-tabs__close:hover {
-  background: var(--gui-color-error, #ff4444);
-  color: #fff;
+  background: var(--gui-error-bg, rgba(248, 113, 113, 0.15));
+  color: var(--gui-error, #f87171);
 }
 </style>

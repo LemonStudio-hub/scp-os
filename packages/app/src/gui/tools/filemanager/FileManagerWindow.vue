@@ -36,12 +36,12 @@
 
       <!-- File Grid/List View -->
       <div
-        class="file-manager__content"
+        class="file-manager__content gui-scrollable"
         @contextmenu.prevent="onContextMenu($event)"
         @click="fmStore.clearSelection"
       >
         <!-- Grid View -->
-        <div v-if="fmStore.viewMode === 'grid'" class="file-manager__grid">
+        <div v-if="fmStore.viewMode === 'grid'" class="file-manager__grid stagger-children">
           <div
             v-for="file in fmStore.sortedFiles"
             :key="file.name"
@@ -54,10 +54,12 @@
             <span class="file-grid-item__name">{{ file.name }}</span>
             <span class="file-grid-item__size">{{ formatSize(file.size) }}</span>
           </div>
-          <div v-if="fmStore.sortedFiles.length === 0" class="file-manager__empty">
-            <span>📂</span>
-            <p>This folder is empty</p>
-          </div>
+        </div>
+
+        <!-- Empty state for grid -->
+        <div v-if="fmStore.viewMode === 'grid' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
+          <span class="file-manager__empty-icon">📂</span>
+          <p>This folder is empty</p>
         </div>
 
         <!-- List View -->
@@ -91,8 +93,10 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Empty state for list -->
         <div v-if="fmStore.viewMode === 'list' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
-          <span>📂</span>
+          <span class="file-manager__empty-icon">📂</span>
           <p>This folder is empty</p>
         </div>
       </div>
@@ -171,21 +175,17 @@ function onFileDblClick(file: FileItem): void {
   if (file.isDirectory) {
     fmStore.navigateTo(file.path)
   } else {
-    // Open file in text editor
     openInEditor(file)
   }
 }
 
 function openInEditor(file: FileItem): void {
-  // Check if editor window is already open
   const existingEditor = wmStore.getWindowByTool('editor')
   if (existingEditor) {
     wmStore.focusWindow(existingEditor.config.id)
-    // TODO: Send event to editor to open file
     return
   }
 
-  // Open new editor window
   wmStore.openWindow({
     id: `editor-${Date.now()}`,
     tool: 'editor',
@@ -205,7 +205,6 @@ function onFileContextMenu(event: MouseEvent, fileName: string): void {
 }
 
 function onContextSelect(item: ContextMenuItem): void {
-  // Context menu items have their own action handlers in the store
   console.log('[FileManager] Context menu select:', item.label)
 }
 
@@ -215,71 +214,76 @@ function onClose(): void {
 </script>
 
 <style scoped>
+/* ── Layout ────────────────────────────────────────────────────────── */
 .file-manager {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-color-window-bg, #0d0d0d);
+  background: var(--gui-window-bg, #0e0e0e);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
 }
 
 .file-manager__toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 8px;
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  gap: var(--gui-spacing-sm, 8px);
+  padding: var(--gui-spacing-sm, 8px);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  background: var(--gui-bg-surface, #0c0c0c);
 }
 
 .file-manager__toolbar-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--gui-spacing-xxs, 2px);
+  flex-shrink: 0;
 }
 
 .file-manager__search {
-  padding: 8px;
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  padding: var(--gui-spacing-sm, 8px);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
 .file-manager__content {
   flex: 1;
   overflow: auto;
-  padding: 12px;
+  padding: var(--gui-spacing-base, 16px);
   position: relative;
 }
 
-/* Grid View */
+/* ── Grid View ──────────────────────────────────────────────────────── */
 .file-manager__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: var(--gui-spacing-sm, 8px);
 }
 
 .file-grid-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px;
-  border-radius: var(--gui-radius-base, 6px);
+  gap: var(--gui-spacing-xs, 4px);
+  padding: var(--gui-spacing-md, 12px) var(--gui-spacing-sm, 8px);
+  border-radius: var(--gui-radius-base, 8px);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 150ms ease);
+  transition: all var(--gui-transition-fast, 120ms cubic-bezier(0.4, 0, 0.2, 1));
   text-align: center;
 }
 
 .file-grid-item:hover {
-  background: var(--gui-color-bg-hover, #1e1e1e);
+  background: var(--gui-file-hover, rgba(255, 255, 255, 0.04));
 }
 
 .file-grid-item--selected {
-  background: var(--gui-color-file-selected, #1e1e2e);
-  outline: 1px solid var(--gui-color-border-active, #e94560);
+  background: var(--gui-file-selected, rgba(233, 69, 96, 0.08));
+  outline: 1.5px solid var(--gui-accent, #e94560);
+  outline-offset: -1px;
 }
 
 .file-grid-item__name {
   font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-color-text-primary, #e0e0e0);
+  color: var(--gui-text-primary, #f0f0f0);
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -288,10 +292,10 @@ function onClose(): void {
 
 .file-grid-item__size {
   font-size: 10px;
-  color: var(--gui-color-text-muted, #666666);
+  color: var(--gui-text-tertiary, #6a6a6a);
 }
 
-/* List View */
+/* ── List View ──────────────────────────────────────────────────────── */
 .file-manager__list {
   width: 100%;
   border-collapse: collapse;
@@ -300,61 +304,74 @@ function onClose(): void {
 
 .file-manager__list th {
   text-align: left;
-  padding: 6px 12px;
-  background: var(--gui-color-bg-tertiary, #1a1a1a);
-  color: var(--gui-color-text-secondary, #a0a0a0);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
+  background: var(--gui-bg-surface, #0c0c0c);
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-weight: var(--gui-font-weight-semibold, 600);
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  font-size: var(--gui-font-xs, 11px);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   cursor: pointer;
   user-select: none;
-  transition: color var(--gui-transition-fast, 150ms ease);
+  transition: color var(--gui-transition-fast, 120ms ease);
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .file-manager__list th:hover {
-  color: var(--gui-color-text-primary, #e0e0e0);
+  color: var(--gui-text-primary, #f0f0f0);
 }
 
 .file-manager__list tr {
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  transition: background var(--gui-transition-fast, 120ms ease);
 }
 
 .file-manager__list-row--selected {
-  background: var(--gui-color-file-selected, #1e1e2e);
+  background: var(--gui-file-selected, rgba(233, 69, 96, 0.08));
 }
 
 .file-manager__list td {
-  padding: 6px 12px;
-  color: var(--gui-color-text-primary, #e0e0e0);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
+  color: var(--gui-text-primary, #f0f0f0);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.03));
 }
 
 .file-list-name {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gui-spacing-sm, 8px);
 }
 
-/* Empty State */
+/* ── Empty State ────────────────────────────────────────────────────── */
 .file-manager__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
-  color: var(--gui-color-text-muted, #666666);
+  padding: var(--gui-spacing-3xl, 48px) var(--gui-spacing-xl, 24px);
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-size: var(--gui-font-sm, 12px);
   text-align: center;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.file-manager__empty span {
+.file-manager__empty-icon {
   font-size: 48px;
-  margin-bottom: 12px;
+  margin-bottom: var(--gui-spacing-base, 16px);
+  opacity: 0.5;
 }
 
-/* Mobile */
+/* ── Mobile ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .file-manager__grid {
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+    gap: var(--gui-spacing-xs, 4px);
+  }
+
+  .file-manager__content {
+    padding: var(--gui-spacing-sm, 8px);
   }
 }
 </style>

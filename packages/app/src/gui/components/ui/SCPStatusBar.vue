@@ -1,14 +1,10 @@
 <template>
   <div class="scp-status-bar">
     <div class="scp-status-bar__left">
-      <span v-for="(item, i) in leftItems" :key="i" class="scp-status-bar__item">
-        {{ item }}
-      </span>
+      <span v-for="(item, i) in leftItems" :key="i" class="scp-status-bar__item">{{ item }}</span>
     </div>
     <div class="scp-status-bar__right">
-      <span v-for="(item, i) in rightItems" :key="i" class="scp-status-bar__item">
-        {{ item }}
-      </span>
+      <span v-for="(item, i) in rightItems" :key="i" class="scp-status-bar__item">{{ item }}</span>
     </div>
   </div>
 </template>
@@ -30,20 +26,22 @@ withDefaults(defineProps<Props>(), {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 24px;
-  padding: 0 12px;
-  background: var(--gui-color-bg-tertiary, #1a1a1a);
-  border-top: 1px solid var(--gui-color-border-default, #2a2a2a);
+  height: 26px;
+  padding: 0 var(--gui-spacing-md, 12px);
+  background: var(--gui-bg-surface, #0c0c0c);
+  border-top: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-color-text-secondary, #a0a0a0);
+  color: var(--gui-text-tertiary, #6a6a6a);
   flex-shrink: 0;
+  letter-spacing: 0.02em;
 }
 
 .scp-status-bar__left,
 .scp-status-bar__right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--gui-spacing-md, 12px);
 }
 
 .scp-status-bar__item {

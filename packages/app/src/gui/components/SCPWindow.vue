@@ -17,33 +17,40 @@
       @touchstart.passive="onTitleBarTouchStart"
     >
       <div class="scp-window__header-title">
-        <span v-if="windowInstance.config.icon" class="scp-window__icon">{{ windowInstance.config.icon }}</span>
         <span class="scp-window__title">{{ windowInstance.config.title }}</span>
       </div>
       <div class="scp-window__header-actions">
         <button
           v-if="windowInstance.config.minimizable"
-          class="scp-window__btn scp-window__btn--minimize"
+          class="scp-window__btn scp-window__btn--icon scp-window__btn--minimize"
           title="Minimize"
           @click.stop="onMinimize"
         >
-          <span>─</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="6" width="8" height="1.5" rx="0.75"/></svg>
         </button>
         <button
           v-if="windowInstance.config.maximizable"
-          class="scp-window__btn scp-window__btn--maximize"
+          class="scp-window__btn scp-window__btn--icon scp-window__btn--maximize"
           :title="windowInstance.maximized ? 'Restore' : 'Maximize'"
           @click.stop="onMaximize"
         >
-          <span>{{ windowInstance.maximized ? '❐' : '□' }}</span>
+          <svg v-if="!windowInstance.maximized" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect x="2" y="2" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+          <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect x="1" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3 3V2C3 1.45 3.45 1 4 1H11V4L10 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
         </button>
         <button
           v-if="windowInstance.config.closable !== false"
-          class="scp-window__btn scp-window__btn--close"
+          class="scp-window__btn scp-window__btn--icon scp-window__btn--close"
           title="Close"
           @click.stop="onClose"
         >
-          <span>×</span>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -91,7 +98,6 @@ const windowManager = useWindowManagerStore()
 const windowRef = ref<HTMLElement>()
 const titleBarRef = ref<HTMLElement>()
 
-// Draggable setup
 const { dragState, handleMouseDown: onTitleBarMouseDown, handleTouchStart: onTitleBarTouchStart } = useDraggable(
   windowRef,
   {
@@ -102,7 +108,6 @@ const { dragState, handleMouseDown: onTitleBarMouseDown, handleTouchStart: onTit
   }
 )
 
-// Resizable setup
 const { handleMouseDown: onResizeStart } = useResizable(
   windowRef,
   {
@@ -114,14 +119,11 @@ const { handleMouseDown: onResizeStart } = useResizable(
   }
 )
 
-// Computed style
 const windowStyle = computed(() => {
-  const { position, size, zIndex, focused, minimized, maximized } = props.windowInstance
+  const { position, size, zIndex, minimized, maximized } = props.windowInstance
 
   if (minimized) {
-    return {
-      display: 'none',
-    }
+    return { display: 'none' as const }
   }
 
   if (maximized) {
@@ -140,12 +142,6 @@ const windowStyle = computed(() => {
     width: `${size.width}px`,
     height: `${size.height}px`,
     zIndex,
-    boxShadow: focused
-      ? '0 8px 32px rgba(233, 69, 96, 0.15), 0 2px 8px rgba(0, 0, 0, 0.4)'
-      : '0 2px 8px rgba(0, 0, 0, 0.4)',
-    borderColor: focused
-      ? 'var(--gui-color-window-border-active, #e94560)'
-      : 'var(--gui-color-window-border, #2a2a2a)',
   }
 })
 
@@ -171,7 +167,6 @@ function onMaximize() {
   emit('maximize')
 }
 
-// Initialize position from window instance
 onMounted(() => {
   if (windowRef.value && !props.windowInstance.maximized) {
     windowRef.value.style.left = `${props.windowInstance.position.x}px`
@@ -187,34 +182,49 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* ── Window Shell ──────────────────────────────────────────────────── */
 .scp-window {
   position: fixed;
   display: flex;
   flex-direction: column;
-  background: var(--gui-color-window-bg, #0d0d0d);
-  border: 1px solid var(--gui-color-window-border, #2a2a2a);
-  border-radius: var(--gui-radius-md, 8px);
+  background: var(--gui-window-bg, #0e0e0e);
+  border: 1px solid var(--gui-window-border, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-xl, 16px);
   overflow: hidden;
-  transition: box-shadow var(--gui-transition-base, 200ms ease),
-              border-color var(--gui-transition-base, 200ms ease);
+  animation: windowOpen 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+  transition: border-color var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1)),
+              box-shadow var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.scp-window--focused {
+  border-color: var(--gui-window-border-active, rgba(233, 69, 96, 0.4));
+  box-shadow: var(--gui-window-shadow-active, 0 16px 48px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(233, 69, 96, 0.1));
+}
+
+.scp-window:not(.scp-window--focused) {
+  box-shadow: var(--gui-window-shadow, 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4));
 }
 
 .scp-window--minimized {
   display: none !important;
 }
 
-/* Header / Title Bar */
+/* ── Header / Title Bar ────────────────────────────────────────────── */
 .scp-window__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 36px;
-  padding: 0 12px;
-  background: var(--gui-color-window-header-bg, #151515);
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  height: 40px;
+  padding: 0 14px;
+  background: var(--gui-window-header-bg, rgba(18, 18, 18, 0.95));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   cursor: grab;
   user-select: none;
   flex-shrink: 0;
+  transition: background var(--gui-transition-fast, 120ms ease);
 }
 
 .scp-window__header:active {
@@ -222,8 +232,7 @@ onBeforeUnmount(() => {
 }
 
 .scp-window__header--dragging {
-  cursor: grabbing;
-  opacity: 0.9;
+  background: var(--gui-bg-surface-raised, #111111);
 }
 
 .scp-window__header-title {
@@ -233,137 +242,97 @@ onBeforeUnmount(() => {
   min-width: 0;
 }
 
-.scp-window__icon {
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
 .scp-window__title {
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-color-text-primary, #e0e0e0);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #f0f0f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 0.01em;
 }
 
-/* Header Actions */
+/* ── Header Actions ────────────────────────────────────────────────── */
 .scp-window__header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
-.scp-window__btn {
+.scp-window__btn--icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 28px;
-  height: 24px;
+  height: 28px;
   background: transparent;
   border: none;
-  border-radius: var(--gui-radius-sm, 4px);
-  color: var(--gui-color-text-secondary, #a0a0a0);
-  font-size: 14px;
+  border-radius: var(--gui-radius-base, 8px);
+  color: var(--gui-text-secondary, #a8a8a8);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 150ms ease);
-  line-height: 1;
+  transition: all var(--gui-transition-fast, 120ms cubic-bezier(0.4, 0, 0.2, 1));
 }
 
-.scp-window__btn:hover {
-  background: var(--gui-color-bg-hover, #1e1e1e);
-  color: var(--gui-color-text-primary, #e0e0e0);
+.scp-window__btn--icon:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #f0f0f0);
+}
+
+.scp-window__btn--icon:active {
+  transform: scale(0.92);
 }
 
 .scp-window__btn--close:hover {
-  background: var(--gui-color-error, #ff4444);
-  color: #fff;
+  background: var(--gui-error-bg, rgba(248, 113, 113, 0.15));
+  color: var(--gui-error, #f87171);
 }
 
 .scp-window__btn--minimize:hover {
-  background: var(--gui-color-warning, #ffff00);
-  color: #000;
+  background: var(--gui-warning-bg, rgba(251, 191, 36, 0.15));
+  color: var(--gui-warning, #fbbf24);
 }
 
-/* Content Area */
+/* ── Content Area ──────────────────────────────────────────────────── */
 .scp-window__content {
   flex: 1;
   overflow: auto;
-  background: var(--gui-color-window-bg, #0d0d0d);
+  background: var(--gui-window-bg, #0e0e0e);
   min-height: 0;
 }
 
-/* Resize Handles */
+/* ── Resize Handles ────────────────────────────────────────────────── */
 .scp-window__resize {
   position: absolute;
   z-index: 1;
 }
 
 .scp-window__resize--n {
-  top: -3px;
-  left: 8px;
-  right: 8px;
-  height: 6px;
-  cursor: n-resize;
+  top: -3px; left: 12px; right: 12px; height: 6px; cursor: n-resize;
 }
-
 .scp-window__resize--s {
-  bottom: -3px;
-  left: 8px;
-  right: 8px;
-  height: 6px;
-  cursor: s-resize;
+  bottom: -3px; left: 12px; right: 12px; height: 6px; cursor: s-resize;
 }
-
 .scp-window__resize--e {
-  top: 8px;
-  right: -3px;
-  bottom: 8px;
-  width: 6px;
-  cursor: e-resize;
+  top: 12px; right: -3px; bottom: 12px; width: 6px; cursor: e-resize;
 }
-
 .scp-window__resize--w {
-  top: 8px;
-  left: -3px;
-  bottom: 8px;
-  width: 6px;
-  cursor: w-resize;
+  top: 12px; left: -3px; bottom: 12px; width: 6px; cursor: w-resize;
 }
-
 .scp-window__resize--ne {
-  top: -3px;
-  right: -3px;
-  width: 12px;
-  height: 12px;
-  cursor: ne-resize;
+  top: -3px; right: -3px; width: 16px; height: 16px; cursor: ne-resize;
 }
-
 .scp-window__resize--nw {
-  top: -3px;
-  left: -3px;
-  width: 12px;
-  height: 12px;
-  cursor: nw-resize;
+  top: -3px; left: -3px; width: 16px; height: 16px; cursor: nw-resize;
 }
-
 .scp-window__resize--se {
-  bottom: -3px;
-  right: -3px;
-  width: 12px;
-  height: 12px;
-  cursor: se-resize;
+  bottom: -3px; right: -3px; width: 16px; height: 16px; cursor: se-resize;
 }
-
 .scp-window__resize--sw {
-  bottom: -3px;
-  left: -3px;
-  width: 12px;
-  height: 12px;
-  cursor: sw-resize;
+  bottom: -3px; left: -3px; width: 16px; height: 16px; cursor: sw-resize;
 }
 
-/* Mobile adjustments */
+/* ── Mobile ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .scp-window {
     left: 0 !important;
@@ -375,6 +344,11 @@ onBeforeUnmount(() => {
 
   .scp-window__resize {
     display: none;
+  }
+
+  .scp-window__header {
+    height: 44px;
+    padding: 0 12px;
   }
 }
 </style>

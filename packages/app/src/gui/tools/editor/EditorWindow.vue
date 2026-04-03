@@ -21,7 +21,7 @@
       <div class="text-editor__area">
         <template v-if="editorStore.openFiles.length === 0">
           <div class="text-editor__empty">
-            <span>📝</span>
+            <span class="text-editor__empty-icon">📝</span>
             <p>No files open</p>
             <p class="text-editor__empty-hint">Click "File" to create a new file</p>
           </div>
@@ -30,7 +30,7 @@
           <textarea
             ref="textareaRef"
             :value="activeFileContent"
-            class="text-editor__textarea"
+            class="text-editor__textarea gui-scrollable"
             :style="{ fontSize: `${editorStore.fontSize}px` }"
             spellcheck="false"
             @input="onInput"
@@ -81,7 +81,7 @@ const statusLeftItems = computed(() => {
   const items: string[] = []
   if (editorStore.activeFile) {
     items.push(editorStore.activeFile.language)
-    items.push(`Ln ${countLines()}, Col ${1}`)
+    items.push(`Ln ${countLines()}, Col 1`)
   }
   return items
 })
@@ -91,7 +91,7 @@ const statusRightItems = computed(() => {
   if (editorStore.hasUnsavedChanges) {
     items.push('● Unsaved')
   }
-  items.push(`UTF-8`)
+  items.push('UTF-8')
   return items
 })
 
@@ -108,12 +108,10 @@ function onInput(event: Event): void {
 }
 
 function onKeydown(event: KeyboardEvent): void {
-  // Ctrl+S / Cmd+S to save
   if ((event.ctrlKey || event.metaKey) && event.key === 's') {
     event.preventDefault()
     saveActive()
   }
-  // Tab key inserts spaces
   if (event.key === 'Tab') {
     event.preventDefault()
     const textarea = textareaRef.value
@@ -149,34 +147,38 @@ function onClose(): void {
 </script>
 
 <style scoped>
+/* ── Layout ─────────────────────────────────────────────────────────── */
 .text-editor {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-color-editor-bg, #0d0d0d);
+  background: var(--gui-window-bg, #0e0e0e);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
 }
 
 .text-editor__menu {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: var(--gui-color-bg-tertiary, #1a1a1a);
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  gap: var(--gui-spacing-xxs, 2px);
+  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
+  background: var(--gui-bg-surface, #0c0c0c);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
 .text-editor__menu-item {
-  padding: 4px 10px;
-  font-size: var(--gui-font-sm, 12px);
-  color: var(--gui-color-text-secondary, #a0a0a0);
+  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
+  font-size: var(--gui-font-xs, 11px);
+  color: var(--gui-text-secondary, #a8a8a8);
   cursor: pointer;
-  border-radius: var(--gui-radius-sm, 4px);
-  transition: all var(--gui-transition-fast, 150ms ease);
+  border-radius: var(--gui-radius-sm, 6px);
+  transition: all var(--gui-transition-fast, 120ms ease);
+  font-weight: var(--gui-font-weight-medium, 500);
+  letter-spacing: 0.02em;
 }
 
 .text-editor__menu-item:hover {
-  background: var(--gui-color-bg-hover, #1e1e1e);
-  color: var(--gui-color-text-primary, #e0e0e0);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-text-primary, #f0f0f0);
 }
 
 .text-editor__area {
@@ -186,43 +188,50 @@ function onClose(): void {
   min-height: 0;
 }
 
+/* ── Textarea ───────────────────────────────────────────────────────── */
 .text-editor__textarea {
   width: 100%;
   height: 100%;
-  background: var(--gui-color-editor-bg, #0d0d0d);
-  color: var(--gui-color-text-primary, #e0e0e0);
+  background: var(--gui-editor-bg, #0a0a0a);
+  color: var(--gui-text-primary, #f0f0f0);
   border: none;
   outline: none;
   resize: none;
-  padding: 12px 16px;
-  font-family: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace;
-  line-height: 1.6;
+  padding: var(--gui-spacing-base, 16px);
+  font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, monospace);
+  font-size: var(--gui-font-base, 13px);
+  line-height: var(--gui-line-height-relaxed, 1.7);
   tab-size: 2;
   white-space: pre;
   overflow: auto;
+  letter-spacing: 0.01em;
 }
 
 .text-editor__textarea::placeholder {
-  color: var(--gui-color-text-muted, #666666);
+  color: var(--gui-text-tertiary, #6a6a6a);
 }
 
+/* ── Empty State ────────────────────────────────────────────────────── */
 .text-editor__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--gui-color-text-muted, #666666);
+  color: var(--gui-text-tertiary, #6a6a6a);
   font-size: var(--gui-font-sm, 12px);
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.text-editor__empty span {
+.text-editor__empty-icon {
   font-size: 48px;
-  margin-bottom: 12px;
+  margin-bottom: var(--gui-spacing-base, 16px);
+  opacity: 0.5;
 }
 
 .text-editor__empty-hint {
   font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-color-text-disabled, #444444);
+  color: var(--gui-text-disabled, #444444);
+  margin-top: var(--gui-spacing-xs, 4px);
 }
 </style>

@@ -23,14 +23,10 @@ const icon = computed(() => {
   const ext = props.name.split('.').pop()?.toLowerCase() || ''
 
   const iconMap: Record<string, string> = {
-    // Code
     ts: '📘', js: '📗', json: '📋', html: '🌐', css: '🎨',
     vue: '💚', py: '🐍', rs: '🦀', go: '🔵', sh: '⚙️',
-    // Documents
     md: '📝', txt: '📄', log: '📃', csv: '📊',
-    // Images
     png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', svg: '🖼️', webp: '🖼️',
-    // Archives
     zip: '📦', tar: '📦', gz: '📦',
   }
 
@@ -66,21 +62,28 @@ const fileType = computed(() => {
   width: 32px;
   height: 32px;
   font-size: 20px;
+  transition: transform var(--gui-transition-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
 .scp-file-icon__emoji {
   line-height: 1;
 }
 
-.scp-file-icon--folder .scp-file-icon__emoji {
-  filter: drop-shadow(0 1px 2px rgba(233, 165, 96, 0.3));
+/* Subtle hover lift */
+.scp-file-icon:hover {
+  transform: scale(1.1);
 }
 
-.scp-file-icon--code .scp-file-icon__emoji {
-  filter: drop-shadow(0 1px 2px rgba(68, 136, 255, 0.3));
+/* Type-specific subtle glows */
+.scp-file-icon--folder:hover .scp-file-icon__emoji {
+  filter: drop-shadow(0 2px 4px rgba(233, 165, 96, 0.3));
 }
 
-.scp-file-icon--image .scp-file-icon__emoji {
-  filter: drop-shadow(0 1px 2px rgba(0, 255, 0, 0.3));
+.scp-file-icon--code:hover .scp-file-icon__emoji {
+  filter: drop-shadow(0 2px 4px rgba(96, 165, 250, 0.3));
+}
+
+.scp-file-icon--image:hover .scp-file-icon__emoji {
+  filter: drop-shadow(0 2px 4px rgba(52, 211, 153, 0.3));
 }
 </style>

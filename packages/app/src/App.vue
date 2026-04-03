@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, ref, computed } from 'vue'
 import SCPTerminal from './components/SCPTerminal.vue'
 import Sidebar from './components/Sidebar.vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
-import SCPToolbar, { type ToolbarItemDef } from './gui/components/SCPToolbar.vue'
+import SCPToolbar, { type DockItemDef } from './gui/components/SCPToolbar.vue'
 import FileManagerWindow from './gui/tools/filemanager/FileManagerWindow.vue'
 import EditorWindow from './gui/tools/editor/EditorWindow.vue'
 import TerminalPanel from './gui/tools/terminal/TerminalPanel.vue'
@@ -29,7 +29,7 @@ const activeTools = computed<ToolType[]>(() => {
 })
 
 // Handle toolbar item launch
-function onToolbarLaunch(item: ToolbarItemDef): void {
+function onToolbarLaunch(item: DockItemDef): void {
   // Check if window already exists for this tool
   const existing = wmStore.getWindowByTool(item.tool)
   if (existing) {

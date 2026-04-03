@@ -8,7 +8,9 @@
           <SCPButton variant="ghost" size="sm" icon="🔄" title="Restart" @click="onRestart" />
         </div>
         <div class="terminal-panel__toolbar-right">
-          <SCPButton variant="ghost" size="sm" :icon="fontSize > 14 ? 'A-' : 'A+'" :title="`Font: ${fontSize}px`" @click="onToggleFontSize" />
+          <SCPButton variant="ghost" size="sm" :title="`Font: ${fontSize}px`" @click="onToggleFontSize">
+            <span class="terminal-panel__font-size">{{ fontSize > 14 ? 'A-' : 'A+' }}</span>
+          </SCPButton>
         </div>
       </div>
 
@@ -17,7 +19,7 @@
 
       <!-- Status Bar -->
       <SCPStatusBar
-        :left-items="[`Terminal`, `bash`]"
+        :left-items="['Terminal', 'bash']"
         :right-items="[`${fontSize}px`]"
       />
     </div>
@@ -56,12 +58,29 @@ function initTerminal(): void {
   const term = new Terminal({
     cursorBlink: true,
     fontSize: tpStore.fontSize,
-    fontFamily: "'Cascadia Code', 'Fira Code', 'JetBrains Mono', 'Consolas', monospace",
+    fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'SF Mono', Consolas, monospace",
     theme: {
       background: '#0a0a0a',
-      foreground: '#e0e0e0',
+      foreground: '#f0f0f0',
       cursor: '#e94560',
-      selectionBackground: '#264f78',
+      cursorAccent: '#0a0a0a',
+      selectionBackground: 'rgba(96, 165, 250, 0.25)',
+      black: '#1a1a1a',
+      red: '#e94560',
+      green: '#34d399',
+      yellow: '#fbbf24',
+      blue: '#60a5fa',
+      magenta: '#c084fc',
+      cyan: '#22d3ee',
+      white: '#f0f0f0',
+      brightBlack: '#555555',
+      brightRed: '#ff5a73',
+      brightGreen: '#6ee7b7',
+      brightYellow: '#fcd34d',
+      brightBlue: '#93c5fd',
+      brightMagenta: '#d8b4fe',
+      brightCyan: '#67e8f9',
+      brightWhite: '#ffffff',
     },
     scrollback: 1000,
   })
@@ -76,12 +95,10 @@ function initTerminal(): void {
 
   tpStore.registerTerminal(props.windowInstance.config.id, term)
 
-  // Welcome message
   term.writeln(`${ANSICode.green}Welcome to SCP Terminal Panel${ANSICode.reset}`)
   term.writeln('')
   writePrompt()
 
-  // Input handler
   term.onData(handleInput)
 }
 
@@ -97,21 +114,17 @@ function handleInput(data: string): void {
   if (!term) return
 
   if (data === '\r') {
-    // Enter - execute command
     term.writeln('')
     executeCommand(inputBuffer.value.trim())
   } else if (data === '\x7f' || data === '\b') {
-    // Backspace
     if (inputBuffer.value.length > 0) {
       inputBuffer.value = inputBuffer.value.slice(0, -1)
       term.write('\b \b')
     }
   } else if (data === '\x03') {
-    // Ctrl+C
     term.writeln('^C')
     writePrompt()
   } else if (data.charCodeAt(0) >= 32 && data.charCodeAt(0) <= 126) {
-    // Printable character
     inputBuffer.value += data
     term.write(data)
   }
@@ -185,27 +198,35 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* ── Layout ─────────────────────────────────────────────────────────── */
 .terminal-panel {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #0a0a0a;
+  background: var(--gui-window-bg, #0e0e0e);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
 }
 
 .terminal-panel__toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px;
-  background: var(--gui-color-bg-tertiary, #1a1a1a);
-  border-bottom: 1px solid var(--gui-color-border-default, #2a2a2a);
+  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
+  background: var(--gui-bg-surface, #0c0c0c);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
 .terminal-panel__toolbar-left,
 .terminal-panel__toolbar-right {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--gui-spacing-xxs, 2px);
+}
+
+.terminal-panel__font-size {
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: var(--gui-font-sm, 12px);
+  font-weight: var(--gui-font-weight-semibold, 600);
 }
 
 .terminal-panel__terminal {
@@ -216,7 +237,7 @@ onBeforeUnmount(() => {
 
 .terminal-panel__terminal :deep(.xterm) {
   height: 100%;
-  padding: 8px;
+  padding: var(--gui-spacing-sm, 8px);
 }
 
 .terminal-panel__terminal :deep(.xterm-viewport) {
