@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicklasxyz/tauri-plugin-schema/main/schema/v2/tauri.conf.json",
+  "productName": "SCP Foundation Terminal",
+  "version": "0.1.0",
+  "identifier": "online.scpos.terminal",
+  "build": {
+    "beforeBuildCommand": "cd ../../ && pnpm run build:production",
+    "beforeDevCommand": "cd ../../ && pnpm run dev",
+    "frontendDist": "../../dist",
+    "devUrl": "http://localhost:5173"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "SCP Foundation Terminal",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false,
+        "minWidth": 800,
+        "minHeight": 600
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self' 'unsafe-inline'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob:",
+        "connect-src": "'self' https://api.woodcat.online https://api.scpos.site"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb", "dmg", "msi", "nsis"],
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.ico"
+    ]
+  }
+}

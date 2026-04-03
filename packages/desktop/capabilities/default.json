@@ -1,0 +1,9 @@
+{
+  "identifier": "default",
+  "description": "Default capabilities for SCP Foundation Terminal",
+  "local": true,
+  "windows": ["main"],
+  "permissions": [
+    "core:default"
+  ]
+}

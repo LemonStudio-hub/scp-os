@@ -15,8 +15,6 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout code
@@ -28,17 +26,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 8.15.0
+          run_install: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
         run: pnpm run test
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
 
       - name: Build for production
         run: pnpm run build:production
@@ -47,12 +49,23 @@ jobs:
         id: release_notes
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
           echo "## Version $VERSION" > release_notes.md
           echo "" >> release_notes.md
-          echo "### 🚀 Changes" >> release_notes.md
-          echo "" >> release_notes.md
-          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0^) >> release_notes.md
-          echo "" >> release_notes.md
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "### 🚀 Changes" >> release_notes.md
+            echo "" >> release_notes.md
+            git log --pretty=format:"- %s" "$PREV_TAG"..HEAD >> release_notes.md
+            echo "" >> release_notes.md
+          else
+            echo "### 🎉 Initial Release" >> release_notes.md
+            echo "" >> release_notes.md
+            git log --pretty=format:"- %s" >> release_notes.md
+            echo "" >> release_notes.md
+          fi
+          
           echo "### 📦 Downloads" >> release_notes.md
           echo "" >> release_notes.md
           echo "Production build artifacts are attached below." >> release_notes.md
@@ -69,19 +82,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Worker
+        if: secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != ''
         working-directory: ./packages/worker
-        run: |
-          echo "Checking Cloudflare credentials..."
-          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
-            echo "Error: CLOUDFLARE_API_TOKEN is not set"
-            exit 1
-          fi
-          if [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "Error: CLOUDFLARE_ACCOUNT_ID is not set"
-            exit 1
-          fi
-          echo "Deploying to Cloudflare Workers..."
-          pnpm run deploy
+        run: pnpm run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -91,3 +94,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          publish_branch: gh-pages

@@ -18,7 +18,39 @@ permissions:
   security-events: write
 
 jobs:
+  check-desktop:
+    name: Check Desktop Package
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check desktop package files
+        id: check
+        run: |
+          READY=true
+          if [ ! -s "packages/desktop/Cargo.toml" ]; then
+            echo "⚠️ Cargo.toml is empty or missing"
+            READY=false
+          fi
+          if [ ! -s "packages/desktop/tauri.conf.json" ]; then
+            echo "⚠️ tauri.conf.json is empty or missing"
+            READY=false
+          fi
+          if [ ! -s "packages/desktop/src/main.rs" ]; then
+            echo "⚠️ src/main.rs is empty or missing"
+            READY=false
+          fi
+          echo "ready=$READY" >> $GITHUB_OUTPUT
+          if [ "$READY" = "false" ]; then
+            echo "::warning::Desktop package is not ready, skipping Tauri build"
+          fi
+
   build:
+    needs: check-desktop
+    if: needs.check-desktop.outputs.ready == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -26,9 +58,6 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             bundle: deb
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            bundle: appimage
           - os: macos-latest
             target: aarch64-apple-darwin
             bundle: dmg
@@ -43,8 +72,6 @@ jobs:
             bundle: nsis
 
     runs-on: ${{ matrix.platform.os }}
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout code
@@ -55,7 +82,7 @@ jobs:
         with:
           targets: ${{ matrix.platform.target }}
 
-      - name: Configure Rust to use USTC mirror
+      - name: Configure Cargo to use USTC mirror
         run: |
           mkdir -p ~/.cargo
           cat > ~/.cargo/config.toml << 'EOF'
@@ -68,23 +95,26 @@ jobs:
           [net]
           git-fetch-with-cli = true
           EOF
-          cat ~/.cargo/config.toml
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: 8.15.0
+          run_install: false
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
         run: pnpm run test
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
 
       - name: Run type check
         run: pnpm run lint
@@ -104,7 +134,10 @@ jobs:
             librsvg2-dev
 
       - name: Build Tauri app
-        run: pnpm run desktop:build
+        working-directory: packages/desktop
+        run: |
+          cargo install tauri-cli --version "^2"
+          cargo tauri build --target ${{ matrix.platform.target }} --bundles ${{ matrix.platform.bundle }}
         env:
           TAURI_BUNDLE: ${{ matrix.platform.bundle }}
           TAURI_TARGET: ${{ matrix.platform.target }}
@@ -118,11 +151,9 @@ jobs:
           retention-days: 90
 
   release:
-    needs: build
+    needs: [check-desktop, build]
+    if: always() && needs.check-desktop.outputs.ready == 'true' && (startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout code
@@ -150,23 +181,28 @@ jobs:
         id: release_notes
         run: |
           VERSION="${{ steps.version.outputs.version }}"
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
           echo "## SCP Foundation Terminal $VERSION" > release_notes.md
           echo "" >> release_notes.md
-          echo "### 🚀 Features" >> release_notes.md
+          echo "### 🖥️ Desktop Application" >> release_notes.md
           echo "" >> release_notes.md
-          echo "This release includes the desktop application of SCP Foundation Terminal." >> release_notes.md
+          echo "This release includes the desktop application for Linux, macOS, and Windows." >> release_notes.md
           echo "" >> release_notes.md
           echo "### 📦 Installation" >> release_notes.md
           echo "" >> release_notes.md
           echo "Choose the appropriate installer for your platform:" >> release_notes.md
           echo "" >> release_notes.md
-          echo "- **Linux**: Download the `.deb` or `.AppImage` file" >> release_notes.md
-          echo "- **macOS**: Download the `.dmg` file (Intel or Apple Silicon)" >> release_notes.md
-          echo "- **Windows**: Download the `.msi` or `.exe` file" >> release_notes.md
+          echo "- **Linux**: Download the \`.deb\` file" >> release_notes.md
+          echo "- **macOS**: Download the \`.dmg\` file (Intel or Apple Silicon)" >> release_notes.md
+          echo "- **Windows**: Download the \`.msi\` or \`.exe\` file" >> release_notes.md
           echo "" >> release_notes.md
-          echo "### 📝 Changelog" >> release_notes.md
-          echo "" >> release_notes.md
-          git log --pretty=format:"- %s" $(git describe --tags --abbrev=0^) >> release_notes.md || echo "No previous release found" >> release_notes.md
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "### 📝 Changelog" >> release_notes.md
+            echo "" >> release_notes.md
+            git log --pretty=format:"- %s" "$PREV_TAG"..HEAD >> release_notes.md
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
