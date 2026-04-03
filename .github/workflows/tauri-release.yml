@@ -82,20 +82,6 @@ jobs:
         with:
           targets: ${{ matrix.platform.target }}
 
-      - name: Configure Cargo to use USTC mirror
-        run: |
-          mkdir -p ~/.cargo
-          cat > ~/.cargo/config.toml << 'EOF'
-          [source.crates-io]
-          replace-with = 'ustc'
-
-          [source.ustc]
-          registry = "sparse+https://mirrors.ustc.edu.cn/crates.io-index/"
-
-          [net]
-          git-fetch-with-cli = true
-          EOF
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
