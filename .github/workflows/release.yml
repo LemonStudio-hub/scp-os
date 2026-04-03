@@ -22,17 +22,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8.15.0
-          run_install: false
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -50,10 +49,10 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
+
           echo "## Version $VERSION" > release_notes.md
           echo "" >> release_notes.md
-          
+
           if [ -n "$PREV_TAG" ]; then
             echo "### 🚀 Changes" >> release_notes.md
             echo "" >> release_notes.md
@@ -65,7 +64,7 @@ jobs:
             git log --pretty=format:"- %s" >> release_notes.md
             echo "" >> release_notes.md
           fi
-          
+
           echo "### 📦 Downloads" >> release_notes.md
           echo "" >> release_notes.md
           echo "Production build artifacts are attached below." >> release_notes.md

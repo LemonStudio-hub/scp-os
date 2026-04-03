@@ -96,17 +96,16 @@ jobs:
           git-fetch-with-cli = true
           EOF
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8.15.0
-          run_install: false
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
@@ -182,7 +181,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
+
           echo "## SCP Foundation Terminal $VERSION" > release_notes.md
           echo "" >> release_notes.md
           echo "### 🖥️ Desktop Application" >> release_notes.md
@@ -197,7 +196,7 @@ jobs:
           echo "- **macOS**: Download the \`.dmg\` file (Intel or Apple Silicon)" >> release_notes.md
           echo "- **Windows**: Download the \`.msi\` or \`.exe\` file" >> release_notes.md
           echo "" >> release_notes.md
-          
+
           if [ -n "$PREV_TAG" ]; then
             echo "### 📝 Changelog" >> release_notes.md
             echo "" >> release_notes.md
