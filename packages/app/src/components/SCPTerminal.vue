@@ -86,7 +86,8 @@ const {
   getTerminal,
   sendKey,
   sendText,
-  hasBootLogBeenShown
+  hasBootLogBeenShown,
+  terminalInstance
 } = useTerminal(terminalContainer)
 
 const handleKeyPress = (key: any) => {
@@ -193,49 +194,53 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
   if (!terminal) return
 
+  // 防止切换到同一个标签页时重复触发
+  if (newTabId === oldTabId) return
+
   // 保存旧标签页的终端状态
   if (oldTabId) {
     try {
-      // 使用 xterm 的 serialize 插件（如果可用）或直接保存文本
       const buffer = terminal.buffer.active
       if (buffer) {
         const lines: string[] = []
         for (let i = 0; i < buffer.length; i++) {
           const line = buffer.getLine(i)
           if (line) {
+            // translateToString(true) 会保留 ANSI 转义序列
             lines.push(line.translateToString(true))
           } else {
             lines.push('')
           }
         }
         terminalStates.value[oldTabId] = lines
-        
-        // 保存到 IndexedDB
-        await indexedDBService.saveTerminalState(oldTabId, lines)
+
+        // 异步保存到 IndexedDB（不阻塞切换）
+        indexedDBService.saveTerminalState(oldTabId, lines).catch(err => {
+          console.error('[Terminal] Failed to save state to IndexedDB:', err)
+        })
       }
     } catch (error) {
       console.error('[Terminal] Failed to save state:', error)
     }
   }
 
-    // 恢复新标签页的终端状态
+  // 恢复新标签页的终端状态
   if (newTabId) {
-    let savedLines: string | string[] | null = null
+    let savedLines: string[] | null = null
 
     // 首先尝试从内存缓存加载
     if (terminalStates.value[newTabId]) {
       const cached = terminalStates.value[newTabId]
-      savedLines = Array.isArray(cached) ? cached : (typeof cached === 'string' ? cached : null)
-    } else {
-      // 从 IndexedDB 加载
+      savedLines = Array.isArray(cached) ? cached : null
+    }
+
+    // 如果内存缓存没有，从 IndexedDB 加载
+    if (!savedLines) {
       try {
         const savedContent = await indexedDBService.loadTerminalState(newTabId)
-        if (savedContent) {
-          // 如果是数组格式
-          savedLines = Array.isArray(savedContent) ? savedContent : (typeof savedContent === 'string' ? savedContent : null)
-          if (savedLines) {
-            terminalStates.value[newTabId] = savedLines
-          }
+        if (savedContent && Array.isArray(savedContent)) {
+          savedLines = savedContent
+          terminalStates.value[newTabId] = savedLines
         }
       } catch (error) {
         console.error('[Terminal] Failed to load state from IndexedDB:', error)
@@ -245,19 +250,12 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
     // 清空终端
     clear()
 
-    // 转换为数组格式
-    const linesArray: string[] = Array.isArray(savedLines) 
-      ? savedLines 
-      : (typeof savedLines === 'string' ? savedLines.split('\n') : [])
-
-    if (linesArray.length > 0) {
-      // 逐行恢复终端内容（保持格式）
-      for (const line of linesArray) {
-        if (line) {
-          terminal.writeln(line)
-        } else {
-          terminal.writeln('')
-        }
+    if (savedLines && savedLines.length > 0) {
+      // 过滤掉空行尾部（减少不必要的写入）
+      const contentLines = savedLines
+      // 逐行恢复终端内容
+      for (const line of contentLines) {
+        terminal.writeln(line || '')
       }
     } else {
       // 没有保存的内容，显示欢迎信息
@@ -265,12 +263,27 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
       return
     }
 
-    // 确保滚动到底部
-    setTimeout(() => {
+    // 重新适配终端布局并滚动到底部
+    // 使用 requestAnimationFrame 确保终端完成渲染
+    requestAnimationFrame(() => {
+      // 重新适配终端尺寸（关键：修复切换后显示异常）
+      if (terminalInstance.value.fitAddon && terminal) {
+        try {
+          terminalInstance.value.fitAddon.fit()
+        } catch (e) {
+          // fit 可能在终端未完全初始化时失败
+        }
+      }
+      // 滚动到底部
       terminal.scrollToBottom()
-    }, 50)
+      // 更新全局终端实例信息
+      window.__terminalInstance = {
+        cols: terminal.cols,
+        rows: terminal.rows,
+      }
+    })
   }
-})
+}, { flush: 'post' }) // 使用 post flush 确保在 DOM 更新后执行
 
 onBeforeUnmount(() => {
   if (resizeTimeout) {

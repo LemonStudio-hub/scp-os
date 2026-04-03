@@ -116,13 +116,15 @@ export const useTabsStore = defineStore('tabs', () => {
 
   // Switch tab
   const switchTab = (tabId: string) => {
+    if (tabId === activeTabId.value) return // No-op if already active
+
     const tab = tabs.value.find(t => t.id === tabId)
     if (tab) {
       tabs.value.forEach(t => t.isActive = false)
       tab.isActive = true
       tab.lastActiveAt = Date.now()
       activeTabId.value = tabId
-      saveTabs()
+      // saveTabs() is handled by the deep watch on tabs
     }
   }
 
