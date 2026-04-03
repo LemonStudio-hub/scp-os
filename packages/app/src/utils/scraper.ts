@@ -6,49 +6,134 @@ import { isMobileDevice } from './terminal'
 
 // Worker 统一配置（与 Worker 保持一致）
 const WORKER_CONFIG = {
-  timeout: 30000, // 与 Worker 一致
-  retryAttempts: 3, // 与 Worker 一致
-  retryDelay: 2000, // 与 Worker 一致
+  timeout: 30000,
+  retryAttempts: 3,
+  retryDelay: 2000,
 }
 
-// PC端边框样式（全宽度）
-const BORDERS_DESKTOP = {
-  maxWidth: 76,
-  horizontal: '═══════════════════════════════════════════════════════════════',
-  topLeft: '╔',
-  topRight: '╗',
-  bottomLeft: '╚',
-  bottomRight: '╝',
-  verticalLeft: '║',
-  verticalRight: '║',
-  boxTopLeft: '┌',
-  boxTopRight: '┐',
-  boxBottomLeft: '└',
-  boxBottomRight: '┘',
-  boxHorizontal: '─────────────────────────────────────────────────────────────',
-  boxVertical: '│',
-  separator: '│',
-  middle: '├',
+/**
+ * 获取终端有效宽度（字符数）
+ * 优先使用终端实例的 cols，否则根据屏幕宽度估算
+ */
+function getTerminalWidth(): number {
+  // 尝试从全局终端实例获取实际列数
+  if (typeof window !== 'undefined' && window.__terminalInstance) {
+    const cols = window.__terminalInstance.cols
+    if (cols && cols > 0) {
+      return cols
+    }
+  }
+
+  // 回退：根据屏幕宽度估算
+  if (typeof window !== 'undefined') {
+    const screenWidth = window.innerWidth
+    const fontSize = screenWidth < 480 ? 10 : screenWidth < 768 ? 12 : screenWidth < 1200 ? 14 : 16
+    // 估算字符宽度（等宽字体宽度约为字号的 0.6 倍）
+    const charWidth = fontSize * 0.6
+    const padding = 20 // 终端容器左右内边距估算
+    const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
+    return Math.max(20, Math.min(120, estimatedCols))
+  }
+
+  // 默认桌面端宽度
+  return 80
 }
 
-// 移动端边框样式（紧凑）
-const BORDERS_MOBILE = {
-  maxWidth: 40,
-  horizontal: '═════════════════════════════════',
-  topLeft: '╔',
-  topRight: '╗',
-  bottomLeft: '╚',
-  bottomRight: '╝',
-  verticalLeft: '║',
-  verticalRight: '║',
-  boxTopLeft: '┌',
-  boxTopRight: '┐',
-  boxBottomLeft: '└',
-  boxBottomRight: '┘',
-  boxHorizontal: '─────────────────────────────────',
-  boxVertical: '│',
-  separator: '│',
-  middle: '├',
+/**
+ * 计算字符串在终端中的实际显示宽度（考虑 CJK 字符占 2 列）
+ */
+function getDisplayWidth(str: string): number {
+  let width = 0
+  for (const char of str) {
+    const code = char.codePointAt(0) || 0
+    // CJK 字符（中日韩统一表意文字）通常占 2 列
+    if (
+      (code >= 0x4E00 && code <= 0x9FFF) ||
+      (code >= 0x3400 && code <= 0x4DBF) ||
+      (code >= 0xF900 && code <= 0xFAFF) ||
+      (code >= 0x20000 && code <= 0x2A6DF) ||
+      (code >= 0x2A700 && code <= 0x2B73F) ||
+      (code >= 0x2B740 && code <= 0x2B81F) ||
+      (code >= 0x2B820 && code <= 0x2CEAF) ||
+      (code >= 0x2F00 && code <= 0x2FDF) ||
+      (code >= 0x3000 && code <= 0x303F) ||
+      (code >= 0xFF00 && code <= 0xFFEF)
+    ) {
+      width += 2
+    } else {
+      width += 1
+    }
+  }
+  return width
+}
+
+/**
+ * 去除 ANSI 转义序列后计算字符串显示宽度
+ */
+function getVisibleWidth(str: string): number {
+  const cleanStr = str.replace(/\x1b\[[0-9;]*m/g, '')
+  return getDisplayWidth(cleanStr)
+}
+
+/**
+ * 用空格填充字符串到指定显示宽度（考虑 CJK 字符宽度差异）
+ */
+function padToWidth(str: string, targetWidth: number): string {
+  const currentWidth = getVisibleWidth(str)
+  const paddingNeeded = Math.max(0, targetWidth - currentWidth)
+  return str + ' '.repeat(paddingNeeded)
+}
+
+/**
+ * 响应式边框生成器
+ * 根据终端实际宽度动态生成边框字符
+ */
+class BorderGenerator {
+  private width: number
+
+  constructor(width: number) {
+    this.width = width
+  }
+
+  // 顶部外边框: ╔═══════════════════╗
+  get topBorder(): string {
+    const innerWidth = Math.max(1, this.width - 2)
+    return `╔${'═'.repeat(innerWidth)}╗`
+  }
+
+  // 底部外边框: ╚═══════════════════╝
+  get bottomBorder(): string {
+    const innerWidth = Math.max(1, this.width - 2)
+    return `╚${'═'.repeat(innerWidth)}╝`
+  }
+
+  // 外边框垂直线（两侧）
+  verticalLine(content: string): string {
+    return `║ ${padToWidth(content, this.width - 4)} ║`
+  }
+
+  // 内框顶部: ┌───────────────────┐
+  get boxTop(): string {
+    const innerWidth = Math.max(1, this.width - 2)
+    return `┌${'─'.repeat(innerWidth)}┐`
+  }
+
+  // 内框底部: └───────────────────┘
+  get boxBottom(): string {
+    const innerWidth = Math.max(1, this.width - 2)
+    return `└${'─'.repeat(innerWidth)}┘`
+  }
+
+  // 内框分隔线: ├───────────────────┤
+  get boxSeparator(): string {
+    const innerWidth = Math.max(1, this.width - 2)
+    return `├${'─'.repeat(innerWidth)}┤`
+  }
+
+  // 内框内容行: │ 内容              │
+  boxContent(content: string): string {
+    return `│${padToWidth(content, this.width - 2)}│`
+  }
 }
 
 class SCPScraper {
@@ -62,116 +147,119 @@ class SCPScraper {
    * @param branch 分部（如 "cn" 表示中文分部，默认 "en"）
    * @returns 爬取结果
    */
-    async scrapeSCP(scpNumber: string, branch: string = 'en'): Promise<ScraperResult> {
-        const cacheKey = `scp-${branch}-${scpNumber}`
-    
-        // 检查缓存
-        const cached = this.getFromCache(cacheKey)
-        if (cached) {
-          return { success: true, data: cached, cached: true }
-        }
-    
-        // 重试机制
-        for (let attempt = 1; attempt <= WORKER_CONFIG.retryAttempts; attempt++) {        try {
-          const apiUrl = `${config.api.workerUrl}/scrape`
-          console.log(`[Scraper] [尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`)
-  
-          // 调用Cloudflare Worker API
-          const response = await axios.get(apiUrl, {
-            params: { number: scpNumber, branch },
-            timeout: this.API_TIMEOUT,
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-            withCredentials: false,
-          })
-  
-          console.log(`[Scraper] API 响应状态: ${response.status}`)
-          console.log(`[Scraper] API 响应数据:`, response.data)
-  
-          if (response.data.success && response.data.data) {
-            const data = this.normalizeData(response.data.data)
-  
-            // 保存到缓存
-            this.saveToCache(cacheKey, data)
-  
-            return { success: true, data }
-          } else {
-            return {
-              success: false,
-              error: response.data.error || '爬取失败'
-            }
+  async scrapeSCP(scpNumber: string, branch: string = 'en'): Promise<ScraperResult> {
+    const cacheKey = `scp-${branch}-${scpNumber}`
+
+    // 检查缓存
+    const cached = this.getFromCache(cacheKey)
+    if (cached) {
+      return { success: true, data: cached, cached: true }
+    }
+
+    // 重试机制
+    for (let attempt = 1; attempt <= WORKER_CONFIG.retryAttempts; attempt++) {
+      try {
+        const apiUrl = `${config.api.workerUrl}/scrape`
+        console.log(`[Scraper] [尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`)
+
+        // 调用Cloudflare Worker API
+        const response = await axios.get(apiUrl, {
+          params: { number: scpNumber, branch },
+          timeout: this.API_TIMEOUT,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          withCredentials: false,
+        })
+
+        console.log(`[Scraper] API 响应状态: ${response.status}`)
+        console.log(`[Scraper] API 响应数据:`, response.data)
+
+        if (response.data.success && response.data.data) {
+          const data = this.normalizeData(response.data.data)
+
+          // 保存到缓存
+          this.saveToCache(cacheKey, data)
+
+          return { success: true, data }
+        } else {
+          return {
+            success: false,
+            error: response.data.error || '爬取失败'
           }
-        } catch (error) {
-          // 详细的错误处理
-          if (axios.isAxiosError(error)) {
-            if (error.response) {
-              // 服务器响应了错误状态码 - 不重试
-              console.error(`[Scraper] API 错误响应:`, {
-                status: error.response.status,
-                data: error.response.data,
-                headers: error.response.headers,
-              })
-  
-              // 4xx 错误不重试
-              if (error.response.status >= 400 && error.response.status < 500) {
-                return {
-                  success: false,
-                  error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
-                }
-              }
-              // 5xx 错误可以重试
-            } else if (error.request) {
-                        // 请求已发出但没有收到响应 - 可以重试
-                        console.error(`[Scraper] 无响应:`, {
-                          message: error.message,
-                          code: error.code,
-                          attempt,
-                        })
-            
-                        // 如果是最后一次尝试，返回错误
-                        if (attempt === WORKER_CONFIG.retryAttempts) {
-                          const errorCode = error.code || 'NETWORK_ERROR'
-                          return {
-                            success: false,
-                            error: `网络错误: 无法连接到服务器 (${errorCode})`
-                          }
-                        }
-            
-                        // 等待后重试
-                        await this.sleep(WORKER_CONFIG.retryDelay * attempt)
-                      } else {              // 请求配置错误 - 不重试
-              console.error(`[Scraper] 请求配置错误:`, error.message)
+        }
+      } catch (error) {
+        // 详细的错误处理
+        if (axios.isAxiosError(error)) {
+          if (error.response) {
+            // 服务器响应了错误状态码 - 不重试
+            console.error(`[Scraper] API 错误响应:`, {
+              status: error.response.status,
+              data: error.response.data,
+              headers: error.response.headers,
+            })
+
+            // 4xx 错误不重试
+            if (error.response.status >= 400 && error.response.status < 500) {
               return {
                 success: false,
-                error: `请求配置错误: ${error.message}`
+                error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
               }
             }
+            // 5xx 错误可以重试
+          } else if (error.request) {
+            // 请求已发出但没有收到响应 - 可以重试
+            console.error(`[Scraper] 无响应:`, {
+              message: error.message,
+              code: error.code,
+              attempt,
+            })
+
+            // 如果是最后一次尝试，返回错误
+            if (attempt === WORKER_CONFIG.retryAttempts) {
+              const errorCode = error.code || 'NETWORK_ERROR'
+              return {
+                success: false,
+                error: `网络错误: 无法连接到服务器 (${errorCode})`
+              }
+            }
+
+            // 等待后重试
+            await this.sleep(WORKER_CONFIG.retryDelay * attempt)
           } else {
-            // 其他错误 - 不重试
-            console.error(`[Scraper] 未知错误:`, error)
+            // 请求配置错误 - 不重试
+            console.error(`[Scraper] 请求配置错误:`, error.message)
             return {
               success: false,
-              error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
+              error: `请求配置错误: ${error.message}`
             }
+          }
+        } else {
+          // 其他错误 - 不重试
+          console.error(`[Scraper] 未知错误:`, error)
+          return {
+            success: false,
+            error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
           }
         }
       }
-  
-      // 所有重试都失败了
-      return {
-        success: false,
-        error: `网络错误: 无法连接到服务器 (已重试 ${WORKER_CONFIG.retryAttempts} 次)`
-      }
     }
-  
-    /**
-     * 延迟函数
-     */
-    private sleep(ms: number): Promise<void> {
-      return new Promise(resolve => setTimeout(resolve, ms))
+
+    // 所有重试都失败了
+    return {
+      success: false,
+      error: `网络错误: 无法连接到服务器 (已重试 ${WORKER_CONFIG.retryAttempts} 次)`
     }
+  }
+
+  /**
+   * 延迟函数
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
   /**
    * 搜索SCP
    * @param keyword 搜索关键词
@@ -287,157 +375,155 @@ class SCPScraper {
   }
 
   /**
-   * 格式化SCP数据为终端输出
+   * 格式化SCP数据为终端输出（响应式设计）
+   * 根据终端实际宽度动态调整边框和文本布局
    */
   formatForTerminal(data: SCPWikiData): string[] {
     const lines: string[] = []
     const classInfo = OBJECT_CLASSES[data.objectClass] || OBJECT_CLASSES.UNKNOWN
-    
-    // 根据设备类型选择边框样式
-    const borders = isMobileDevice() ? BORDERS_MOBILE : BORDERS_DESKTOP
-    const maxWidth = borders.maxWidth
+    const terminalWidth = getTerminalWidth()
+    const border = new BorderGenerator(terminalWidth)
 
-    // 顶部边框
-    lines.push(`${borders.topLeft}${borders.horizontal}${borders.topRight}`)
-    
-    // 标题行 - 根据设备类型调整
+    // ===== 顶部外边框 =====
+    lines.push(border.topBorder)
+
+    // ===== 标题行 =====
     if (isMobileDevice()) {
-      // 移动端：紧凑格式
+      // 移动端：精简标题
       const title = `${data.id} - ${data.name}`
-      lines.push(`${borders.verticalLeft} ${title.padEnd(maxWidth - 2)} ${borders.verticalRight}`)
+      lines.push(border.verticalLine(title))
     } else {
-      // PC端：完整格式
-      lines.push(`${borders.verticalLeft}  ${data.id} - ${data.name} - ${classInfo.displayName.padEnd(20)} ${borders.verticalRight}`)
+      // 桌面端：完整标题 + 项目等级
+      const title = `${data.id} - ${data.name} — ${classInfo.displayName}`
+      lines.push(border.verticalLine(title))
     }
-    
-    lines.push(`${borders.bottomLeft}${borders.horizontal}${borders.bottomRight}`)
+
+    lines.push(border.bottomBorder)
     lines.push('')
 
-    // 项目等级
-    lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
-    lines.push(`${borders.separator} 项目等级${' '.repeat(maxWidth - 6)}${borders.separator}`)
-    lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
-    
+    // ===== 项目等级 =====
+    lines.push(border.boxTop)
+
     if (isMobileDevice()) {
-      // 移动端：简化显示
-      lines.push(`${borders.separator} [${data.objectClass}]${borders.separator}`)
-      const descLines = this.wrapText(classInfo.displayName, maxWidth - 4)
-      descLines.forEach(line => {
-        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
-      })
+      // 移动端：简化项目等级显示
+      lines.push(border.boxContent(' 项目等级'))
+      lines.push(border.boxSeparator)
+      lines.push(border.boxContent(` ${data.objectClass}`))
+      lines.push(border.boxContent(` ${classInfo.displayName}`))
     } else {
-      // PC端：详细显示
-      lines.push(`${borders.separator}  等级: [${data.objectClass.padEnd(10)}] ${classInfo.displayName.padEnd(8)} ${borders.separator}`)
-      lines.push(`${borders.separator}  说明: ${this.wrapText(classInfo.description, maxWidth - 9).join('\n' + borders.separator + '        ')} ${borders.separator}`)
+      // 桌面端：详细项目等级显示
+      lines.push(border.boxContent(' 项目等级'))
+      lines.push(border.boxSeparator)
+      lines.push(border.boxContent(` 等级: [${data.objectClass}] ${classInfo.displayName}`))
+      lines.push(border.boxContent(` 说明: ${classInfo.description}`))
     }
-    
-    lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
+
+    lines.push(border.boxBottom)
     lines.push('')
 
-    // 作者
+    // ===== 作者（如果有） =====
     if (data.author && data.author !== '未知作者') {
       lines.push(`作者: ${data.author}`)
       lines.push('')
     }
 
-    // 收容协议
+    // ===== 收容协议 =====
     if (data.containment.length > 0) {
-      lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
-      lines.push(`${borders.separator} 收容协议${' '.repeat(maxWidth - 6)}${borders.separator}`)
-      lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
-      
-      const containmentLines: string[] = []
+      lines.push(border.boxTop)
+      lines.push(border.boxContent(' 收容协议'))
+      lines.push(border.boxSeparator)
+
       data.containment.forEach(text => {
-        const wrapped = this.wrapText(text, maxWidth - 4)
-        containmentLines.push(...wrapped)
+        const wrapped = this.wrapText(text, terminalWidth - 4)
+        wrapped.forEach(line => {
+          lines.push(border.boxContent(` ${line}`))
+        })
       })
-      
-      containmentLines.forEach(line => {
-        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
-      })
-      
-      lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
+
+      lines.push(border.boxBottom)
       lines.push('')
     }
 
-    // 描述
+    // ===== 描述 =====
     if (data.description.length > 0) {
-      lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
-      lines.push(`${borders.separator} 描述${' '.repeat(maxWidth - 4)}${borders.separator}`)
-      lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
-      
-      const descriptionLines: string[] = []
+      lines.push(border.boxTop)
+      lines.push(border.boxContent(' 描述'))
+      lines.push(border.boxSeparator)
+
       data.description.forEach(text => {
-        const wrapped = this.wrapText(text, maxWidth - 4)
-        descriptionLines.push(...wrapped)
+        const wrapped = this.wrapText(text, terminalWidth - 4)
+        wrapped.forEach(line => {
+          lines.push(border.boxContent(` ${line}`))
+        })
       })
-      
-      descriptionLines.forEach(line => {
-        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
-      })
-      
-      lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
+
+      lines.push(border.boxBottom)
       lines.push('')
     }
 
-    // 附录
+    // ===== 附录 =====
     if (data.appendix.length > 0) {
-      lines.push(`${borders.boxTopLeft}${borders.boxHorizontal}${borders.boxTopRight}`)
-      lines.push(`${borders.separator} 附录${' '.repeat(maxWidth - 4)}${borders.separator}`)
-      lines.push(`${borders.middle}${borders.boxHorizontal}${borders.middle}`)
-      
-      const appendixLines: string[] = []
+      lines.push(border.boxTop)
+      lines.push(border.boxContent(' 附录'))
+      lines.push(border.boxSeparator)
+
       data.appendix.forEach(text => {
-        const wrapped = this.wrapText(text, maxWidth - 4)
-        appendixLines.push(...wrapped)
+        const wrapped = this.wrapText(text, terminalWidth - 4)
+        wrapped.forEach(line => {
+          lines.push(border.boxContent(` ${line}`))
+        })
       })
-      
-      appendixLines.forEach(line => {
-        lines.push(`${borders.separator} ${line.padEnd(maxWidth - 3)}${borders.separator}`)
-      })
-      
-      lines.push(`${borders.boxBottomLeft}${borders.boxHorizontal}${borders.boxBottomRight}`)
+
+      lines.push(border.boxBottom)
       lines.push('')
     }
-    
-    lines.push(borders.horizontal)
+
+    // ===== 底部边框 =====
+    lines.push(border.topBorder)
     lines.push('')
-    
+
     return lines
   }
 
   /**
-   * 文本自动换行
+   * 文本自动换行（考虑 CJK 字符宽度）
    * @param text 要换行的文本
-   * @param maxWidth 最大宽度
+   * @param maxWidth 最大显示宽度
    * @returns 换行后的文本数组
    */
   private wrapText(text: string, maxWidth: number): string[] {
     if (!text) return ['']
-    
+
     const lines: string[] = []
-    const words = text.split('')
     let currentLine = ''
-    
-    for (const char of words) {
+    let currentWidth = 0
+
+    for (const char of text) {
       if (char === '\n') {
         lines.push(currentLine)
         currentLine = ''
+        currentWidth = 0
         continue
       }
-      
-      if (currentLine.length + 1 <= maxWidth) {
-        currentLine += char
-      } else {
+
+      const charWidth = getDisplayWidth(char)
+
+      // 如果当前行加上这个字符会超出最大宽度，换行
+      if (currentWidth + charWidth > maxWidth && currentLine.length > 0) {
         lines.push(currentLine)
         currentLine = char
+        currentWidth = charWidth
+      } else {
+        currentLine += char
+        currentWidth += charWidth
       }
     }
-    
+
+    // 添加最后一行
     if (currentLine) {
       lines.push(currentLine)
     }
-    
+
     return lines.length > 0 ? lines : ['']
   }
 

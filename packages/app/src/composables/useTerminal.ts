@@ -102,7 +102,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     try {
       const config = createTerminalConfig()
       terminalInstance.value.terminal = new Terminal(config)
-      
+
       const fitAddon = new FitAddon()
       terminalInstance.value.terminal.loadAddon(fitAddon)
       terminalInstance.value.fitAddon = fitAddon
@@ -110,6 +110,11 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       if (container.value) {
         terminalInstance.value.terminal.open(container.value)
         fitAddon.fit()
+        // Set global terminal instance for responsive formatting
+        window.__terminalInstance = {
+          cols: terminalInstance.value.terminal.cols,
+          rows: terminalInstance.value.terminal.rows,
+        }
         terminalInstance.value.terminal.focus()
       } else {
         throw new Error('容器元素未找到')
@@ -119,6 +124,11 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         try {
           if (terminalInstance.value.fitAddon && terminalInstance.value.terminal) {
             terminalInstance.value.fitAddon.fit()
+            // Update global terminal instance on resize
+            window.__terminalInstance = {
+              cols: terminalInstance.value.terminal.cols,
+              rows: terminalInstance.value.terminal.rows,
+            }
           }
         } catch (error) {
           errorHandler.handleError({

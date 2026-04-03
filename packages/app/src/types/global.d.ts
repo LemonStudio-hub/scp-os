@@ -11,6 +11,8 @@ declare global {
       scrollToBottom: () => void
     }
     openPerformanceDashboard?: () => void
+    __terminalController?: any
+    __terminalInstance?: { cols: number; rows: number }
   }
 
   interface Performance {
