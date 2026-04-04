@@ -276,6 +276,10 @@ function getActiveTerminal() {
   return (window as any).__terminalInstance?.terminal || null
 }
 
+// Track previous settings to detect changes
+let prevFontSize = settings.fontSize
+let prevAccent = settings.accent
+
 // Persist settings
 watch(settings, () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
@@ -283,9 +287,24 @@ watch(settings, () => {
 }, { deep: true })
 
 function applySettings(): void {
-  terminalStore.fontSize = settings.fontSize
-  // Apply accent color theme via useTheme
-  applyTheme(settings.accent, getActiveTerminal())
+  const terminal = getActiveTerminal()
+
+  // Update terminal font size if changed
+  if (settings.fontSize !== prevFontSize && terminal) {
+    terminalStore.fontSize = settings.fontSize
+    try {
+      // Apply the user's chosen font size directly to the terminal
+      terminal.options.fontSize = settings.fontSize
+      terminal.refresh(0, terminal.rows - 1)
+    } catch { /* terminal may be disposed */ }
+    prevFontSize = settings.fontSize
+  }
+
+  // Update accent color theme if changed
+  if (settings.accent !== prevAccent) {
+    applyTheme(settings.accent, terminal)
+    prevAccent = settings.accent
+  }
 }
 
 // Slider sheets
