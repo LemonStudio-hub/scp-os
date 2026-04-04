@@ -3,6 +3,8 @@
  * Provides persistent storage for tabs and terminal content
  */
 
+import { v4 as uuidv4 } from 'uuid'
+
 const DB_NAME = 'scp-terminal-db'
 const DB_VERSION = 4
 const STORES = {
@@ -428,18 +430,6 @@ class IndexedDBService {
   // ==================== User ID Management ====================
 
   /**
-   * 生成唯一的用户 ID (UUID v4)
-   */
-  private generateUUID(): string {
-    // 使用浏览器原生 crypto API 生成 UUID v4
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 15)
-      const v = c === 'x' ? r : (r & 0x3) | 0x8
-      return v.toString(16)
-    })
-  }
-
-  /**
    * 获取用户 ID，如果不存在则自动生成并存储
    */
   async getUserId(): Promise<string> {
@@ -451,15 +441,15 @@ class IndexedDBService {
         return savedId
       }
 
-      // 首次访问，生成新的用户 ID
-      const newUserId = this.generateUUID()
+      // 首次访问，使用 uuid 包生成新的用户 ID
+      const newUserId = uuidv4()
       await this.saveSetting('user_id', newUserId)
       console.log('[IndexedDB] Generated new user ID:', newUserId)
       return newUserId
     } catch (error) {
       console.error('[IndexedDB] Failed to get user ID:', error)
-      // 降级方案：使用内存生成的 UUID
-      return this.generateUUID()
+      // 降级方案：使用 uuid 包生成 UUID
+      return uuidv4()
     }
   }
 
