@@ -36,9 +36,15 @@ const className = computed(() => `gui-icon--${props.name}`)
   line-height: 1;
 }
 
+/* Ensure SVG inherits color for currentColor stroke/fill */
 .gui-icon :deep(svg) {
   width: 100%;
   height: 100%;
+  color: inherit;
+}
+
+.gui-icon :deep(svg) * {
+  color: inherit;
 }
 
 /* Context-specific color overrides */
@@ -51,23 +57,23 @@ const className = computed(() => `gui-icon--${props.name}`)
 }
 
 .gui-icon--edit {
-  color: var(--gui-info, #60a5fa);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--trash {
-  color: var(--gui-error, #f87171);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--refresh {
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--save {
-  color: var(--gui-success, #34d399);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--search {
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--terminal {
@@ -75,15 +81,15 @@ const className = computed(() => `gui-icon--${props.name}`)
 }
 
 .gui-icon--settings {
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--file {
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--list {
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-accent, #e94560);
 }
 
 .gui-icon--empty-folder {
