@@ -52,19 +52,16 @@
         <!-- Appearance Section -->
         <div class="k-ios-block__title">Appearance</div>
         <div class="k-ios-list">
-          <!-- Accent Color -->
-          <div class="k-ios-list__item" @click="openSlider('accent')">
+          <!-- Theme Selection -->
+          <div v-for="theme in themeStore.availableThemes" :key="theme.id" class="k-ios-list__item" @click="themeStore.setTheme(theme.id)">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Accent Color</div>
+                <div class="k-ios-list__item-label">{{ theme.icon }} {{ theme.name }}</div>
+                <div class="k-ios-list__item-description">{{ theme.description }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <span class="k-ios-list__item-color-dot" :style="{ background: settings.accent }" />
-              <span class="k-ios-list__item-value">{{ getAccentLabel(settings.accent) }}</span>
-              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <div class="k-ios-list__item-radio" :class="{ 'k-ios-list__item-radio--active': themeStore.currentThemeId === theme.id }" />
             </div>
           </div>
           <!-- Haptic Feedback -->
@@ -229,26 +226,6 @@
           </div>
         </div>
       </Sheet>
-
-      <!-- Accent Color Picker Sheet -->
-      <Sheet v-model:visible="sliderSheets.accent">
-        <div class="settings-color-sheet">
-          <div class="k-ios-color-grid">
-            <button
-              v-for="color in accentOptions"
-              :key="color.value"
-              :class="['k-ios-color-swatch', { 'k-ios-color-swatch--active': settings.accent === color.value }]"
-              :style="{ background: color.value }"
-              @click="setAccent(color.value)"
-            >
-              <svg v-if="settings.accent === color.value" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8L7 12L13 4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-          </div>
-          <p class="settings-color-sheet__label">Tap to select accent color</p>
-        </div>
-      </Sheet>
     </div>
   </MobileWindow>
 </template>
@@ -259,7 +236,7 @@ import MobileWindow from '../../components/MobileWindow.vue'
 import Sheet from '../../konsta/Sheet.vue'
 import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import { useTerminalStore } from '../../../stores/terminal'
-import { useTheme } from '../../composables/useTheme'
+import { useThemeStore } from '../../stores/themeStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 
@@ -285,17 +262,6 @@ interface AppSettings {
 
 const STORAGE_KEY = 'scp-os-app-settings'
 
-const accentOptions = [
-  { value: '#8e8e93', label: 'Gray' },
-  { value: '#0a84ff', label: 'Blue' },
-  { value: '#34c759', label: 'Green' },
-  { value: '#ffcc00', label: 'Yellow' },
-  { value: '#af52de', label: 'Purple' },
-  { value: '#ff3b30', label: 'Red' },
-  { value: '#ff9500', label: 'Orange' },
-  { value: '#5ac8fa', label: 'Teal' },
-]
-
 const defaultSettings: AppSettings = {
   fontSize: 14,
   cursorBlink: true,
@@ -308,7 +274,10 @@ const defaultSettings: AppSettings = {
 defineProps<Props>()
 
 const terminalStore = useTerminalStore()
-const { applyTheme } = useTheme()
+const themeStore = useThemeStore()
+
+// Initialize theme store
+themeStore.init()
 
 function loadSettings(): AppSettings {
   try {
@@ -321,7 +290,6 @@ function loadSettings(): AppSettings {
 const settings = reactive<AppSettings>(loadSettings())
 
 let prevFontSize = settings.fontSize
-let prevAccent = settings.accent
 
 watch(settings, () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
@@ -343,36 +311,20 @@ function applySettings(): void {
     } catch { /* ignore */ }
     prevFontSize = settings.fontSize
   }
-
-  if (settings.accent !== prevAccent) {
-    applyTheme(settings.accent, terminal)
-    prevAccent = settings.accent
-  }
 }
 
-const sliderSheets = reactive({ fontSize: false, accent: false })
+const sliderSheets = reactive({ fontSize: false })
 const sliderValues = reactive({ fontSize: settings.fontSize })
 
-function openSlider(type: 'fontSize' | 'accent'): void {
+function openSlider(type: 'fontSize'): void {
   if (type === 'fontSize') {
     sliderValues.fontSize = settings.fontSize
     sliderSheets.fontSize = true
-  } else if (type === 'accent') {
-    sliderSheets.accent = true
   }
 }
 
 function onFontSizeChange(): void {
   settings.fontSize = sliderValues.fontSize
-}
-
-function setAccent(color: string): void {
-  settings.accent = color
-  sliderSheets.accent = false
-}
-
-function getAccentLabel(color: string): string {
-  return accentOptions.find(c => c.value === color)?.label || color
 }
 
 function toggleSetting(key: keyof AppSettings): void {
@@ -490,6 +442,21 @@ function formatBytes(bytes: number): string {
 .k-ios-list__item-label--centered {
   text-align: center;
   width: 100%;
+}
+
+/* Radio indicator for theme selection */
+.k-ios-list__item-radio {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--gui-radius-full, 9999px);
+  border: 2px solid var(--gui-text-tertiary, #636366);
+  transition: all var(--gui-transition-fast, 120ms ease);
+}
+
+.k-ios-list__item-radio--active {
+  border-color: var(--gui-accent, #8E8E93);
+  background: var(--gui-accent, #8E8E93);
+  box-shadow: inset 0 0 0 3px var(--gui-bg-surface-raised, #3A3A3C);
 }
 
 /* Confirm Dialog */

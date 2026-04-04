@@ -1,7 +1,9 @@
 <template>
-  <div class="scp-terminal w-screen h-dvh relative flex flex-col bg-[#000000] overflow-hidden">
+  <div class="scp-terminal w-screen h-dvh relative flex flex-col overflow-hidden"
+       :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
     <!-- Terminal Header -->
-    <div class="scp-terminal__header flex items-center justify-between h-11 px-4 bg-[#000000] border-b border-white/[0.08] flex-shrink-0"
+    <div class="scp-terminal__header flex items-center justify-between h-11 px-4 border-b flex-shrink-0"
+         :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg, borderColor: themeStore.currentTheme.colors.borderSubtle }"
          style="padding-top: env(safe-area-inset-top, 0px);">
       <!-- Traffic Lights -->
       <div class="flex items-center gap-1">
@@ -25,13 +27,16 @@
     </div>
 
     <!-- Terminal Body -->
-    <div class="scp-terminal__body flex-1 relative overflow-hidden bg-[#000000]">
-      <div id="terminal-container" ref="terminalContainer" class="w-full h-full bg-[#000000] touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch scroll-smooth" />
+    <div class="scp-terminal__body flex-1 relative overflow-hidden"
+         :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
+      <div id="terminal-container" ref="terminalContainer" class="w-full h-full touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch scroll-smooth"
+           :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }" />
     </div>
 
     <!-- Virtual Keyboard (Termux-style) -->
     <Transition name="scp-terminal__keyboard">
-      <div v-if="isMobile" class="scp-terminal__keyboard">
+      <div v-if="isMobile" class="scp-terminal__keyboard"
+           :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
         <!-- Extra Keys Row (ESC, TAB, CTRL, ALT, HOME, END, PGUP, PGDN, ←, →, ↑, ↓) -->
         <div class="scp-terminal__extra-keys">
           <button class="scp-terminal__key" @click="handleKey('esc')">ESC</button>
@@ -68,11 +73,16 @@ import { useTerminal } from '../composables/useTerminal'
 import { updateTerminalFontSize } from '../utils/terminal'
 import { useTabsStore } from '../stores/tabs'
 import { useSystemStore } from '../stores/system'
+import { useThemeStore } from '../gui/stores/themeStore'
 import indexedDBService from '../utils/indexedDB'
 
 const tabsStore = useTabsStore()
 const systemStore = useSystemStore()
+const themeStore = useThemeStore()
 const terminalContainer = ref<HTMLDivElement>()
+
+// Initialize theme store
+themeStore.init()
 
 const terminalStates = ref<Record<string, string | string[]>>({})
 const modifiers = ref({ ctrl: false, alt: false })
@@ -174,6 +184,36 @@ onMounted(async () => {
   }
 })
 
+// Watch for theme changes and update terminal colors
+watch(() => themeStore.currentTheme.colors, (newColors) => {
+  const terminal = getTerminal()
+  if (terminal) {
+    terminal.options.theme = {
+      background: newColors.terminalBg,
+      foreground: newColors.terminalFg,
+      cursor: newColors.terminalCursor,
+      cursorAccent: newColors.terminalCursorAccent,
+      selectionBackground: newColors.terminalSelection,
+      black: newColors.terminalBlack,
+      red: newColors.terminalRed,
+      green: newColors.terminalGreen,
+      yellow: newColors.terminalYellow,
+      blue: newColors.terminalBlue,
+      magenta: newColors.terminalMagenta,
+      cyan: newColors.terminalCyan,
+      white: newColors.terminalWhite,
+      brightBlack: newColors.terminalBrightBlack,
+      brightRed: newColors.terminalBrightRed,
+      brightGreen: newColors.terminalBrightGreen,
+      brightYellow: newColors.terminalBrightYellow,
+      brightBlue: newColors.terminalBrightBlue,
+      brightMagenta: newColors.terminalBrightMagenta,
+      brightCyan: newColors.terminalBrightCyan,
+      brightWhite: newColors.terminalBrightWhite,
+    }
+  }
+}, { deep: true })
+
 // Tab switching — save and restore terminal state
 watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
@@ -266,17 +306,16 @@ onBeforeUnmount(() => {
 }
 
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
-  background: rgba(142, 142, 147, 0.5);
+  background: var(--gui-accent, #8E8E93);
   border-radius: 999px;
 }
 
 #terminal-container :deep(.xterm-screen) {
-  background-color: #000000 !important;
+  background-color: var(--gui-terminal-bg, #000000) !important;
 }
 
 /* ── Termux-style Virtual Keyboard ─────────────────────────────────── */
 .scp-terminal__keyboard {
-  background: #000000;
   padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
 }
 
@@ -298,9 +337,8 @@ onBeforeUnmount(() => {
   flex: 0 0 auto;
   min-width: 52px;
   height: 38px;
-  background: #000000;
+  background: transparent;
   border: none;
-  color: #FFFFFF;
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
   font-size: 12px;
   font-weight: 500;
@@ -312,10 +350,11 @@ onBeforeUnmount(() => {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   transition: background 100ms ease;
+  color: var(--gui-text-primary, #FFFFFF);
 }
 
 .scp-terminal__key:active {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.15));
 }
 
 /* Enter key row */
@@ -328,10 +367,10 @@ onBeforeUnmount(() => {
 .scp-terminal__enter-key {
   width: 64px;
   height: 48px;
-  background: #000000;
+  background: transparent;
   border: none;
   border-radius: 4px;
-  color: #FFFFFF;
+  color: var(--gui-text-primary, #FFFFFF);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -341,7 +380,7 @@ onBeforeUnmount(() => {
 }
 
 .scp-terminal__enter-key:active {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.15));
 }
 
 /* Keyboard transition */
