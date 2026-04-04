@@ -251,11 +251,8 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
       for (const line of contentLines) {
         terminal.writeln(line || '')
       }
-    } else {
-      // 没有保存的内容，显示欢迎信息
-      displayWelcomeMessage()
-      return
     }
+    // If no saved content, leave terminal as-is (startup prompt already shown on mount)
 
     // 重新适配终端布局并滚动到底部
     // 使用 requestAnimationFrame 确保终端完成渲染
