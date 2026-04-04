@@ -146,17 +146,15 @@
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <span class="k-ios-list__item-value">v0.1.0</span>
+              <span class="k-ios-list__item-value">0.1.0</span>
             </div>
           </div>
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
                 <div class="k-ios-list__item-label">User ID</div>
+                <div class="k-ios-list__item-description">{{ userId }}</div>
               </div>
-            </div>
-            <div class="k-ios-list__item-right">
-              <span class="k-ios-list__item-value" style="font-size: 10px; max-width: 150px; word-break: break-all;">{{ userId }}</span>
             </div>
           </div>
           <div class="k-ios-list__item">

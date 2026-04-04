@@ -21,7 +21,7 @@ export const config = {
     tabStopWidth: Number(import.meta.env.VITE_TERMINAL_TAB_STOP_WIDTH) || 4,
   },
   app: {
-    version: import.meta.env.VITE_APP_VERSION || 'v0.1.0',
+    version: import.meta.env.VITE_APP_VERSION || '0.1.0',
     name: import.meta.env.VITE_APP_NAME || 'SCP Foundation Terminal',
     fastBoot: import.meta.env.VITE_FAST_BOOT === 'true' || false,
   },
