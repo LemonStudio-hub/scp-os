@@ -3,12 +3,8 @@
 /* Import xterm styles */
 @import 'xterm/css/xterm.css';
 
-/* iOS squircle clip path utility */
-@layer utilities {
-  .squircle {
-    clip-path: url(#squircle-clip);
-  }
-}
+/* Import Konsta UI iOS frosted glass design system */
+@import './gui/konsta/ios.css';
 
 /* Custom scrollbar */
 .gui-scrollable {
