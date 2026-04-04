@@ -14,12 +14,10 @@ import { icon, type IconName } from '../../icons'
 interface Props {
   name: IconName
   size?: number
-  color?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   size: 20,
-  color: undefined,
 })
 
 const svg = computed(() => icon(props.name, props.size))
@@ -31,12 +29,11 @@ const className = computed(() => `gui-icon--${props.name}`)
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-text-secondary, #8e8e93);
   flex-shrink: 0;
   line-height: 1;
 }
 
-/* Ensure SVG inherits color for currentColor stroke/fill */
 .gui-icon :deep(svg) {
   width: 100%;
   height: 100%;
@@ -47,56 +44,14 @@ const className = computed(() => `gui-icon--${props.name}`)
   color: inherit;
 }
 
-/* Context-specific color overrides */
-.gui-icon--folder {
-  color: var(--gui-accent, #e94560);
+/* All icons use gray accent color for iOS aesthetic */
+.gui-icon {
+  color: var(--gui-accent, #8e8e93);
 }
 
-.gui-icon--folder-open {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--edit {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--trash {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--refresh {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--save {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--search {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--terminal {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--settings {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--file {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--list {
-  color: var(--gui-accent, #e94560);
-}
-
-.gui-icon--empty-folder {
-  color: var(--gui-text-disabled, #444444);
-}
-
+/* Muted icons for empty states */
+.gui-icon--empty-folder,
 .gui-icon--empty-doc {
-  color: var(--gui-text-disabled, #444444);
+  color: var(--gui-text-disabled, #48484a);
 }
 </style>

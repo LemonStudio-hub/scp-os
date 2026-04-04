@@ -1,109 +1,121 @@
 /**
- * GUI Design Tokens v3 — Unified, iOS-Inspired, SCP Foundation Theme
+ * GUI Design Tokens v4 — iOS Frosted Glass (Konsta UI Aesthetic)
  *
- * All components MUST use these CSS variables. No hardcoded values.
- * Fallbacks in components MUST match the token values below.
+ * Dark mode first, all components use CSS variables from this file.
+ * Icon colors are gray (#8e8e93) per iOS system design.
  */
 
-// ── Color Palette ─────────────────────────────────────────────────────
 export const colors = {
-  // Background layers (dark mode)
-  bgBase: '#060606',
-  bgSurface: '#0c0c0c',
-  bgSurfaceRaised: '#111111',
-  bgSurfaceOverlay: '#161616',
-  bgSurfaceHover: '#1a1a1a',
-  bgSurfaceActive: '#222222',
+  // iOS Dark backgrounds
+  bgBase: '#000000',
+  bgSurface: '#1c1c1e',
+  bgSurfaceRaised: '#2c2c2e',
+  bgSurfaceOverlay: '#3a3a3c',
+  bgSurfaceHover: '#3a3a3c',
+  bgSurfaceActive: '#48484a',
 
   // Text hierarchy
-  textPrimary: '#f0f0f0',
-  textSecondary: '#a0a0a0',
-  textTertiary: '#666666',
-  textDisabled: '#444444',
-  textInverse: '#ffffff',
+  textPrimary: '#ffffff',
+  textSecondary: '#8e8e93',
+  textTertiary: '#636366',
+  textDisabled: '#48484a',
+  textInverse: '#000000',
 
-  // SCP Brand
-  accent: '#e94560',
-  accentHover: '#ff5a73',
-  accentMuted: '#c73a52',
-  accentGlow: 'rgba(233, 69, 96, 0.25)',
-  accentSoft: 'rgba(233, 69, 96, 0.08)',
+  // Accent (gray per iOS system design)
+  accent: '#8e8e93',
+  accentHover: '#aeaeb2',
+  accentSoft: 'rgba(142, 142, 147, 0.1)',
+  accentGlow: 'rgba(142, 142, 147, 0.15)',
 
   // Semantic
-  success: '#34d399',
-  successBg: 'rgba(52, 211, 153, 0.1)',
-  warning: '#fbbf24',
-  warningBg: 'rgba(251, 191, 36, 0.1)',
-  error: '#f87171',
-  errorBg: 'rgba(248, 113, 113, 0.1)',
-  info: '#60a5fa',
-  infoBg: 'rgba(96, 165, 250, 0.1)',
+  success: '#34c759',
+  successBg: 'rgba(52, 199, 89, 0.1)',
+  warning: '#ffcc00',
+  warningBg: 'rgba(255, 204, 0, 0.1)',
+  error: '#ff3b30',
+  errorBg: 'rgba(255, 59, 48, 0.1)',
+  info: '#0a84ff',
+  infoBg: 'rgba(10, 132, 255, 0.1)',
 
   // Borders
   borderSubtle: 'rgba(255, 255, 255, 0.06)',
-  borderDefault: 'rgba(255, 255, 255, 0.1)',
-  borderStrong: 'rgba(255, 255, 255, 0.16)',
+  borderDefault: 'rgba(255, 255, 255, 0.08)',
+  borderStrong: 'rgba(255, 255, 255, 0.12)',
+
+  // iOS grouped list
+  iosGroupedBg: '#1c1c1e',
+  iosGroupedItemBg: '#2c2c2e',
+  iosGroupedItemBgActive: '#3a3a3c',
+  iosSeparator: 'rgba(255, 255, 255, 0.12)',
 
   // Window
-  windowBg: '#0e0e0e',
-  windowHeaderBg: 'rgba(18, 18, 18, 0.95)',
+  windowBg: '#000000',
+  windowHeaderBg: 'rgba(28, 28, 30, 0.85)',
   windowBorder: 'rgba(255, 255, 255, 0.08)',
-  windowBorderActive: 'rgba(233, 69, 96, 0.4)',
+  windowBorderActive: 'rgba(255, 255, 255, 0.12)',
   windowShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4)',
-  windowShadowActive: '0 16px 48px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(233, 69, 96, 0.1)',
+  windowShadowActive: '0 16px 48px rgba(0, 0, 0, 0.7)',
 
-  // Dock / Toolbar
-  dockBg: 'rgba(12, 12, 12, 0.85)',
+  // Dock
+  dockBg: 'rgba(28, 28, 30, 0.85)',
   dockBorder: 'rgba(255, 255, 255, 0.08)',
   dockItemBg: 'rgba(255, 255, 255, 0.04)',
-  dockItemHover: 'rgba(255, 255, 255, 0.1)',
-  dockItemActive: 'rgba(233, 69, 96, 0.15)',
+  dockItemHover: 'rgba(255, 255, 255, 0.08)',
+  dockItemActive: 'rgba(142, 142, 147, 0.15)',
 
-  // Glass / Blur (overlays, context menus, bottom sheets)
-  glassBg: 'rgba(16, 16, 16, 0.75)',
+  // Glass
+  glassBg: 'rgba(28, 28, 30, 0.75)',
   glassBorder: 'rgba(255, 255, 255, 0.08)',
   glassShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
 
   // Editor
-  editorBg: '#0a0a0a',
-  editorGutter: '#111111',
+  editorBg: '#000000',
+  editorGutter: '#1c1c1e',
   editorLineHighlight: 'rgba(255, 255, 255, 0.03)',
-  editorSelection: 'rgba(96, 165, 250, 0.2)',
-  editorCursor: '#e94560',
+  editorSelection: 'rgba(10, 132, 255, 0.3)',
+  editorCursor: '#ffffff',
 
   // File Manager
-  fileSelected: 'rgba(233, 69, 96, 0.08)',
+  fileSelected: 'rgba(142, 142, 147, 0.1)',
   fileHover: 'rgba(255, 255, 255, 0.04)',
 
-  // Backdrop (modal overlays)
+  // Backdrop
   backdropBg: 'rgba(0, 0, 0, 0.4)',
 
-  // Handle bar (bottom sheets)
+  // Handle bar
   handleBar: 'rgba(255, 255, 255, 0.2)',
 
   // Home indicator
   homeIndicator: 'rgba(255, 255, 255, 0.3)',
 
-  // App icon gradients
-  appIconTerminalFrom: '#8b0000',
-  appIconTerminalTo: '#e94560',
-  appIconFilesFrom: '#1e3a5f',
-  appIconFilesTo: '#60a5fa',
-  appIconSettingsFrom: '#3a3a3a',
-  appIconSettingsTo: '#6a6a6a',
+  // App icon gradients (gray)
+  appIconTerminalFrom: '#636366',
+  appIconTerminalTo: '#8e8e93',
+  appIconFilesFrom: '#48484a',
+  appIconFilesTo: '#636366',
+  appIconSettingsFrom: '#3a3a3c',
+  appIconSettingsTo: '#48484a',
 
   // Status bar
-  statusBarText: '#f0f0f0',
-  statusBarBattery: '#34d399',
+  statusBarText: '#ffffff',
+  statusBarBattery: '#34c759',
 
   // Wallpaper
-  wallpaperBase: '#060606',
-  wallpaperGradient1: 'rgba(139, 0, 0, 0.15)',
-  wallpaperGradient2: 'rgba(233, 69, 96, 0.08)',
-  wallpaperGradient3: 'rgba(96, 165, 250, 0.05)',
+  wallpaperBase: '#000000',
+  wallpaperGradient1: 'rgba(142, 142, 147, 0.08)',
+  wallpaperGradient2: 'rgba(142, 142, 147, 0.05)',
+  wallpaperGradient3: 'rgba(63, 63, 66, 0.03)',
+
+  // iOS Toggle
+  iosToggleOff: '#39393d',
+  iosToggleOn: '#34c759',
+  iosToggleThumb: '#ffffff',
+
+  // iOS Slider
+  iosSliderTrack: 'rgba(255, 255, 255, 0.15)',
+  iosSliderThumb: '#ffffff',
 } as const
 
-// ── Spacing Scale (4px base unit) ─────────────────────────────────────
 export const spacing = {
   xxs: '2px',
   xs: '4px',
@@ -118,7 +130,6 @@ export const spacing = {
   '5xl': '80px',
 } as const
 
-// ── Border Radius ─────────────────────────────────────────────────────
 export const radius = {
   none: '0px',
   xs: '4px',
@@ -131,31 +142,25 @@ export const radius = {
   full: '9999px',
 } as const
 
-// ── Shadows ───────────────────────────────────────────────────────────
 export const shadows = {
   sm: '0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)',
   base: '0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)',
   md: '0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3)',
   lg: '0 16px 40px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4)',
   xl: '0 24px 48px rgba(0, 0, 0, 0.7)',
-  glow: '0 0 20px rgba(233, 69, 96, 0.15)',
-  glowStrong: '0 0 32px rgba(233, 69, 96, 0.25)',
+  glow: '0 0 20px rgba(142, 142, 147, 0.15)',
+  glowStrong: '0 0 32px rgba(142, 142, 147, 0.25)',
 } as const
 
-// ── Transitions ───────────────────────────────────────────────────────
 export const transitions = {
   fast: '120ms cubic-bezier(0.4, 0, 0.2, 1)',
   base: '200ms cubic-bezier(0.4, 0, 0.2, 1)',
   slow: '300ms cubic-bezier(0.4, 0, 0.2, 1)',
-  // iOS spring — deceleration curve for dismiss animations
-  iosSpring: '400ms cubic-bezier(0.32, 0.72, 0, 1)',
-  // Bounce spring for icon taps
+  iosSpring: '350ms cubic-bezier(0.32, 0.72, 0, 1)',
   bounceSpring: '400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
-  // Smooth ease-out for page transitions
   smooth: '500ms cubic-bezier(0.16, 1, 0.3, 1)',
 } as const
 
-// ── Z-Index Layers ────────────────────────────────────────────────────
 export const zIndex = {
   desktop: 100,
   toolbar: 200,
@@ -166,7 +171,6 @@ export const zIndex = {
   toast: 600,
 } as const
 
-// ── Typography ────────────────────────────────────────────────────────
 export const fontSizes = {
   xs: '11px',
   sm: '12px',
@@ -179,7 +183,6 @@ export const fontSizes = {
 } as const
 
 export const fontFamilies = {
-  // iOS-first: SF Pro where available, fall back to system stack
   sans: '-apple-system, "SF Pro Display", "SF Pro Text", BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   mono: '"JetBrains Mono", "Cascadia Code", "Fira Code", "SF Mono", Consolas, monospace',
 } as const
@@ -197,7 +200,6 @@ export const lineHeights = {
   relaxed: 1.7,
 } as const
 
-// ── Icon Sizes ────────────────────────────────────────────────────────
 export const iconSizes = {
   xs: '14px',
   sm: '16px',
@@ -209,7 +211,6 @@ export const iconSizes = {
   homeScreen: '60px',
 } as const
 
-// ── Component Dimensions ──────────────────────────────────────────────
 export const dimensions = {
   statusBarHeight: '44px',
   statusBarPaddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
@@ -229,11 +230,12 @@ export const dimensions = {
   dotStatusSize: '6px',
   keyboardButtonHeight: '40px',
   keyboardButtonMinWidth: '40px',
-  sliderThumbSize: '20px',
+  sliderThumbSize: '28px',
   sliderTrackHeight: '4px',
+  toggleWidth: '51px',
+  toggleHeight: '31px',
 } as const
 
-// ── Window Defaults ───────────────────────────────────────────────────
 export const windowDefaults = {
   width: 800,
   height: 500,
@@ -243,7 +245,6 @@ export const windowDefaults = {
   yOffset: 40,
 } as const
 
-// ── CSS Custom Properties Injection ───────────────────────────────────
 export function injectGUITokens(): void {
   if (typeof document === 'undefined') return
 
@@ -280,7 +281,7 @@ export function injectGUITokens(): void {
     root.style.setProperty(`--gui-z-${key}`, String(value))
   })
 
-  // Font Sizes — also inject as --gui-font-<key> for backward compat
+  // Font Sizes
   Object.entries(fontSizes).forEach(([key, value]) => {
     root.style.setProperty(`--gui-font-${key}`, value)
   })
@@ -305,7 +306,7 @@ export function injectGUITokens(): void {
     root.style.setProperty(`--gui-icon-${key}`, value)
   })
 
-  // Component Dimensions
+  // Dimensions
   Object.entries(dimensions).forEach(([key, value]) => {
     const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase()
     root.style.setProperty(`--gui-dim-${cssKey}`, value)

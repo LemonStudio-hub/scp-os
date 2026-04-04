@@ -1,6 +1,9 @@
 /* Import xterm styles */
 @import 'xterm/css/xterm.css';
 
+/* iOS Frosted Glass Design System (Konsta UI Aesthetic) */
+@import './gui/konsta/ios.css';
+
 /* SCP Terminal Styles - Full Screen */
 :root {
   --scp-red: #8b0000;
