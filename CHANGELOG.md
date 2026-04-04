@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `default-config.ts` Cloudflare Workers deployment URL
   - All terminal commands (info, search, scp-list, network) now working properly
 
+- **CORS Configuration** (2026-04-04) - **CRITICAL FIX**
+  - Fixed CORS blocking all frontend requests to API
+  - Added `https://scpos.site` to CORS allowedOrigins
+  - Added `https://scpos.pages.dev` and wildcard `https://*.scpos.pages.dev`
+  - Removed obsolete `https://yourdomain.com`
+  - Root cause: Production domain was missing from CORS whitelist
+
 ## [0.1.0] - 2026-04-03
 
 ### 🎉 Initial Release
