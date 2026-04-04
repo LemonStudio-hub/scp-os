@@ -159,13 +159,16 @@ function formatTime(ms: number): string {
 
 <style scoped>
 .metric-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border-radius: 14px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--gui-bg-surface, #2C2C2E);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: var(--gui-radius-lg, 12px);
+  padding: 18px;
+  transition: transform 150ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              border-color 150ms ease;
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .metric-card::before {
@@ -175,82 +178,86 @@ function formatTime(ms: number): string {
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 200ms ease;
 }
 
 .metric-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: var(--gui-shadow-ios-card, 0 4px 16px rgba(0, 0, 0, 0.5));
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
 }
 
 .metric-card:hover::before {
   opacity: 1;
 }
 
+.metric-card:active {
+  transform: scale(0.98);
+}
+
 .metric-card.status-poor {
-  border-color: rgba(255, 68, 68, 0.3);
+  border-color: rgba(255, 59, 48, 0.2);
 }
 
 .metric-card.status-poor:hover {
-  box-shadow: 0 8px 24px rgba(255, 68, 68, 0.2);
+  box-shadow: 0 4px 16px rgba(255, 59, 48, 0.15);
+  border-color: rgba(255, 59, 48, 0.3);
 }
 
 .metric-card.status-good {
-  border-color: rgba(0, 255, 0, 0.3);
+  border-color: rgba(52, 199, 89, 0.2);
 }
 
 .metric-card.status-good:hover {
-  box-shadow: 0 8px 24px rgba(0, 255, 0, 0.2);
+  box-shadow: 0 4px 16px rgba(52, 199, 89, 0.15);
+  border-color: rgba(52, 199, 89, 0.3);
 }
 
 .metric-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .metric-icon-wrapper {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+  border-radius: var(--gui-radius-md, 10px);
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
 }
 
 .metric-card:hover .metric-icon-wrapper {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 .metric-icon-wrapper.status-good {
-  background: rgba(0, 255, 0, 0.1);
-  border-color: rgba(0, 255, 0, 0.3);
-  box-shadow: 0 0 12px rgba(0, 255, 0, 0.2);
+  background: var(--gui-success-bg, rgba(52, 199, 89, 0.12));
+  border-color: rgba(52, 199, 89, 0.25);
 }
 
 .metric-icon-wrapper.status-medium {
-  background: rgba(255, 255, 0, 0.1);
-  border-color: rgba(255, 255, 0, 0.3);
-  box-shadow: 0 0 12px rgba(255, 255, 0, 0.2);
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.1));
+  border-color: rgba(255, 204, 0, 0.2);
 }
 
 .metric-icon-wrapper.status-poor {
-  background: rgba(255, 68, 68, 0.1);
-  border-color: rgba(255, 68, 68, 0.3);
-  box-shadow: 0 0 12px rgba(255, 68, 68, 0.2);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
+  border-color: rgba(255, 59, 48, 0.25);
 }
 
 .metric-icon {
-  font-size: 22px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  display: flex;
+  align-items: center;
+  color: var(--gui-text-primary, #FFFFFF);
 }
 
 .metric-info {
@@ -262,60 +269,51 @@ function formatTime(ms: number): string {
 .metric-name {
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
-  opacity: 0.9;
-  letter-spacing: 0.3px;
+  color: var(--gui-text-primary, #FFFFFF);
+  letter-spacing: -0.01em;
 }
 
 .metric-unit {
   font-size: 11px;
-  color: #ffffff;
-  opacity: 0.5;
+  color: var(--gui-text-tertiary, #636366);
   text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .metric-value-container {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: baseline;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
 .metric-value {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
+  color: var(--gui-text-primary, #FFFFFF);
+  letter-spacing: -0.02em;
+  transition: color 200ms ease;
+  font-variant-numeric: tabular-nums;
 }
 
 .metric-value.value-good {
-  color: #00ff00;
-  text-shadow: 0 2px 8px rgba(0, 255, 0, 0.4);
+  color: var(--gui-success, #34C759);
 }
 
 .metric-value.value-medium {
-  color: #ffff00;
-  text-shadow: 0 2px 8px rgba(255, 255, 0, 0.4);
+  color: var(--gui-warning, #FFCC00);
 }
 
 .metric-value.value-poor {
-  color: #ff4444;
-  text-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+  color: var(--gui-error, #FF3B30);
 }
 
 .metric-trend {
-  font-size: 16px;
-  opacity: 0.8;
-  transition: all 0.3s ease;
-}
-
-.metric-trend.trend-up {
-  filter: drop-shadow(0 0 4px rgba(0, 255, 0, 0.4));
-}
-
-.metric-trend.trend-down {
-  filter: drop-shadow(0 0 4px rgba(255, 68, 68, 0.4));
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 150ms ease;
+  display: flex;
+  align-items: center;
 }
 
 .metric-meta {
@@ -323,37 +321,37 @@ function formatTime(ms: number): string {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+  border-radius: var(--gui-radius-sm, 6px);
 }
 
 .metric-label {
   font-size: 11px;
-  font-weight: 600;
-  color: #ffffff;
-  opacity: 0.5;
+  font-weight: 500;
+  color: var(--gui-text-tertiary, #636366);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03em;
 }
 
 .metric-detail {
   font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  color: var(--gui-text-secondary, #8E8E93);
+  font-variant-numeric: tabular-nums;
+  transition: color 200ms ease;
 }
 
 .metric-detail.status-good {
-  color: #00ff00;
+  color: var(--gui-success, #34C759);
 }
 
 .metric-detail.status-medium {
-  color: #ffff00;
+  color: var(--gui-warning, #FFCC00);
 }
 
 .metric-detail.status-poor {
-  color: #ff4444;
+  color: var(--gui-error, #FF3B30);
 }
 
 .metric-progress {
@@ -364,34 +362,30 @@ function formatTime(ms: number): string {
 
 .progress-bg {
   flex: 1;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  height: 4px;
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.06));
+  border-radius: var(--gui-radius-full, 999px);
   overflow: hidden;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .progress-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--gui-radius-full, 999px);
   position: relative;
-  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow: hidden;
 }
 
 .progress-fill.status-good {
-  background: linear-gradient(90deg, #00cc00, #00ff00);
-  box-shadow: 0 0 12px rgba(0, 255, 0, 0.4);
+  background: var(--gui-success, #34C759);
 }
 
 .progress-fill.status-medium {
-  background: linear-gradient(90deg, #cccc00, #ffff00);
-  box-shadow: 0 0 12px rgba(255, 255, 0, 0.4);
+  background: var(--gui-warning, #FFCC00);
 }
 
 .progress-fill.status-poor {
-  background: linear-gradient(90deg, #cc0000, #ff4444);
-  box-shadow: 0 0 12px rgba(255, 68, 68, 0.4);
+  background: var(--gui-error, #FF3B30);
 }
 
 .progress-glow {
@@ -400,65 +394,58 @@ function formatTime(ms: number): string {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   animation: progressShimmer 2s infinite;
 }
 
 @keyframes progressShimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .progress-text {
   font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
+  font-weight: 600;
+  color: var(--gui-text-secondary, #8E8E93);
   min-width: 36px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .metric-footer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 10px;
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
 .footer-icon {
-  font-size: 14px;
+  color: var(--gui-text-tertiary, #636366);
   opacity: 0.6;
+  flex-shrink: 0;
 }
 
 .footer-text {
   font-size: 11px;
-  color: #ffffff;
-  opacity: 0.5;
-  font-style: italic;
+  color: var(--gui-text-tertiary, #636366);
+  line-height: 1.4;
 }
 
-/* Responsive design */
+/* Responsive */
 @media (max-width: 768px) {
   .metric-card {
-    padding: 16px;
+    padding: 14px;
   }
 
   .metric-icon-wrapper {
-    width: 38px;
-    height: 38px;
-  }
-
-  .metric-icon {
-    font-size: 18px;
+    width: 36px;
+    height: 36px;
   }
 
   .metric-value {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .metric-meta {

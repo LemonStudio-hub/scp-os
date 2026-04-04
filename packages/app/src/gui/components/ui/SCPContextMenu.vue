@@ -126,11 +126,34 @@ onBeforeUnmount(() => {
   flex: 1;
 }
 
-/* ── Animations ─────────────────────────────────────────────────────── */
+/* ── Animations — iOS spring ───────────────────────────────────────── */
 .context-menu-enter-active {
-  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: contextMenuSpringIn 0.25s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
+
 .context-menu-leave-active {
-  animation: slideUp 0.15s cubic-bezier(0.16, 1, 0.3, 1) reverse both;
+  animation: contextMenuFadeOut 0.15s ease both;
+}
+
+@keyframes contextMenuSpringIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes contextMenuFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
 }
 </style>

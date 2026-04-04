@@ -54,8 +54,8 @@ defineEmits<{
 .scp-tabs {
   display: flex;
   align-items: stretch;
-  background: var(--gui-bg-surface, #0c0c0c);
-  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  background: var(--gui-bg-surface, #2C2C2E);
+  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
@@ -73,24 +73,31 @@ defineEmits<{
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
   background: none;
   border: none;
-  border-right: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
-  color: var(--gui-text-tertiary, #6a6a6a);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  border-right: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
+  color: var(--gui-text-tertiary, #636366);
+  font-family: var(--gui-font-sans);
   font-size: var(--gui-font-xs, 11px);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 120ms ease);
+  transition: color 120ms ease,
+              background 120ms ease,
+              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   white-space: nowrap;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scp-tabs__tab:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
-  color: var(--gui-text-secondary, #a8a8a8);
+  color: var(--gui-text-secondary, #8E8E93);
+}
+
+.scp-tabs__tab:active {
+  transform: scale(0.97);
 }
 
 .scp-tabs__tab--active {
-  background: var(--gui-bg-surface-raised, #111111);
-  color: var(--gui-text-primary, #f0f0f0);
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+  color: var(--gui-text-primary, #FFFFFF);
   font-weight: var(--gui-font-weight-medium, 500);
 }
 
@@ -101,17 +108,35 @@ defineEmits<{
   left: var(--gui-spacing-sm, 8px);
   right: var(--gui-spacing-sm, 8px);
   height: 2px;
-  background: var(--gui-accent, #e94560);
+  background: var(--gui-accent, #8E8E93);
   border-radius: var(--gui-radius-full, 9999px);
+  animation: tabBarIndicatorIn 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes tabBarIndicatorIn {
+  from {
+    transform: scaleX(0.3);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 
 /* ── Dirty Indicator ───────────────────────────────────────────────── */
 .scp-tabs__dirty {
   width: 6px;
   height: 6px;
-  background: var(--gui-warning, #fbbf24);
+  background: var(--gui-warning, #FFCC00);
   border-radius: var(--gui-radius-full, 9999px);
   flex-shrink: 0;
+  animation: dirtyPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes dirtyPop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
 }
 
 /* ── Close Button ──────────────────────────────────────────────────── */
@@ -123,15 +148,20 @@ defineEmits<{
   height: 16px;
   background: none;
   border: none;
-  border-radius: var(--gui-radius-xs, 4px);
-  color: var(--gui-text-tertiary, #6a6a6a);
+  border-radius: var(--gui-radius-full, 999px);
+  color: var(--gui-text-tertiary, #636366);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 120ms ease);
+  transition: all 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scp-tabs__close:hover {
-  background: var(--gui-error-bg, rgba(248, 113, 113, 0.15));
-  color: var(--gui-error, #f87171);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
+  color: var(--gui-error, #FF3B30);
+}
+
+.scp-tabs__close:active {
+  transform: scale(0.85);
 }
 </style>

@@ -89,17 +89,25 @@ defineExpose({ focus: () => inputRef.value?.focus() })
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #0c0c0c);
-  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.1));
-  border-radius: var(--gui-radius-base, 8px);
+  background: var(--gui-bg-surface, #2C2C2E);
+  border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: var(--gui-radius-md, 10px);
   padding: 0 var(--gui-spacing-md, 12px);
-  transition: all var(--gui-transition-fast, 120ms cubic-bezier(0.4, 0, 0.2, 1));
+  transition: border-color 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              background 150ms ease,
+              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  will-change: border-color, box-shadow;
 }
 
 .scp-input-wrapper--focus {
-  border-color: var(--gui-accent, #e94560);
-  box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(233, 69, 96, 0.15));
-  background: var(--gui-bg-surface-raised, #111111);
+  border-color: var(--gui-accent, #8E8E93);
+  box-shadow: 0 0 0 3px var(--gui-accent-soft, rgba(142, 142, 147, 0.12));
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+}
+
+.scp-input-wrapper:active {
+  transform: scale(0.99);
 }
 
 .scp-input-wrapper--disabled {
@@ -109,10 +117,18 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 
 /* ── Label ─────────────────────────────────────────────────────────── */
 .scp-input__label {
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans);
   font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-text-secondary, #a8a8a8);
+  color: var(--gui-text-secondary, #8E8E93);
   font-weight: var(--gui-font-weight-medium, 500);
+  margin-bottom: 4px;
+  display: block;
+  transition: color 150ms ease;
+}
+
+.scp-input-wrapper--focus + .scp-input__label,
+.scp-input-wrapper--focus ~ .scp-input__label {
+  color: var(--gui-accent, #8E8E93);
 }
 
 /* ── Input ─────────────────────────────────────────────────────────── */
@@ -121,14 +137,20 @@ defineExpose({ focus: () => inputRef.value?.focus() })
   background: transparent;
   border: none;
   outline: none;
-  color: var(--gui-text-primary, #f0f0f0);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  color: var(--gui-text-primary, #FFFFFF);
+  font-family: var(--gui-font-sans);
   font-size: var(--gui-font-base, 13px);
   padding: var(--gui-spacing-sm, 8px) 0;
+  transition: color 150ms ease;
 }
 
 .scp-input::placeholder {
-  color: var(--gui-text-tertiary, #6a6a6a);
+  color: var(--gui-text-tertiary, #636366);
+  transition: color 150ms ease;
+}
+
+.scp-input:focus::placeholder {
+  color: var(--gui-text-disabled, #48484A);
 }
 
 .scp-input:disabled {
@@ -138,10 +160,11 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 /* ── Prefix / Suffix ───────────────────────────────────────────────── */
 .scp-input__prefix,
 .scp-input__suffix {
-  color: var(--gui-text-tertiary, #6a6a6a);
+  color: var(--gui-text-tertiary, #636366);
   font-size: var(--gui-font-xs, 11px);
   user-select: none;
   flex-shrink: 0;
+  transition: color 150ms ease;
 }
 
 /* ── Clear Button ──────────────────────────────────────────────────── */
@@ -151,16 +174,21 @@ defineExpose({ focus: () => inputRef.value?.focus() })
   justify-content: center;
   background: none;
   border: none;
-  color: var(--gui-text-tertiary, #6a6a6a);
+  color: var(--gui-text-tertiary, #636366);
   cursor: pointer;
-  padding: 2px;
-  border-radius: var(--gui-radius-xs, 4px);
-  transition: all var(--gui-transition-fast, 120ms ease);
+  padding: 4px;
+  border-radius: var(--gui-radius-full, 999px);
+  transition: all 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scp-input__clear:hover {
-  color: var(--gui-text-primary, #f0f0f0);
+  color: var(--gui-text-secondary, #8E8E93);
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+.scp-input__clear:active {
+  transform: scale(0.85);
 }
 </style>

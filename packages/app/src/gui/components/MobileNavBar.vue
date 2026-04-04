@@ -90,21 +90,24 @@ defineEmits<{
   gap: var(--gui-spacing-xxs, 2px);
   background: none;
   border: none;
-  color: var(--gui-accent, #e94560);
+  color: var(--gui-accent, #8E8E93);
   cursor: pointer;
   padding: var(--gui-spacing-xs, 4px);
   margin-left: calc(-1 * var(--gui-spacing-sm, 8px));
   border-radius: var(--gui-radius-sm, 6px);
-  transition: opacity var(--gui-transition-fast, 120ms ease);
+  transition: opacity 100ms ease,
+              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   -webkit-tap-highlight-color: transparent;
+  will-change: transform;
 }
 
 .mobile-nav-bar__btn:active {
-  opacity: 0.5;
+  opacity: 0.6;
+  transform: scale(0.92);
 }
 
 .mobile-nav-bar__btn-label {
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans);
   font-size: var(--gui-font-base, 13px);
 }
 </style>
