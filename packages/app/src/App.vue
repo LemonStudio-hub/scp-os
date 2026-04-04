@@ -12,6 +12,7 @@ import { useTabsStore } from './stores/tabs'
 import { useWindowManagerStore } from './gui/stores/windowManager'
 import type { ToolType } from './gui/types'
 import { injectGUITokens } from './gui/design-tokens'
+import { registerAllTools, openTool } from './gui'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
@@ -31,46 +32,16 @@ const activeTools = computed<ToolType[]>(() => {
 
 // Handle toolbar item launch
 function onToolbarLaunch(item: DockItemDef): void {
-  // Check if window already exists for this tool
-  const existing = wmStore.getWindowByTool(item.tool)
-  if (existing) {
-    wmStore.focusWindow(existing.config.id)
-    return
-  }
-
-  // Open new window based on tool type
-  switch (item.tool) {
-    case 'filemanager':
-      wmStore.openWindow({
-        id: `filemanager-${Date.now()}`,
-        tool: 'filemanager',
-        title: 'File Manager',
-        iconName: 'folder',
-        width: 750,
-        height: 480,
-      })
-      break
-    case 'editor':
-      wmStore.openWindow({
-        id: `editor-${Date.now()}`,
-        tool: 'editor',
-        title: 'Text Editor',
-        iconName: 'edit',
-        width: 700,
-        height: 500,
-      })
-      break
-    case 'terminal':
-      wmStore.openWindow({
-        id: `terminal-${Date.now()}`,
-        tool: 'terminal',
-        title: 'Terminal Panel',
-        iconName: 'terminal',
-        width: 650,
-        height: 380,
-      })
-      break
-  }
+  openTool(item.tool, (config) => {
+    wmStore.openWindow({
+      id: config.id,
+      tool: config.tool,
+      title: config.title,
+      iconName: config.iconName,
+      width: config.width,
+      height: config.height,
+    })
+  })
 }
 
 // Touch gesture control
@@ -117,6 +88,9 @@ const handleTouchEnd = () => {
 onMounted(async () => {
   // Inject GUI design tokens
   injectGUITokens()
+
+  // Register all GUI tools with the ToolRegistry
+  registerAllTools()
 
   // Initialize tabs store with IndexedDB
   await tabsStore.initialize()
