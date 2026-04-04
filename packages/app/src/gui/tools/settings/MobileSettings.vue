@@ -209,6 +209,7 @@ import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useTerminalStore } from '../../../stores/terminal'
+import { useTheme } from '../../composables/useTheme'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 
@@ -257,6 +258,7 @@ const defaultSettings: AppSettings = {
 defineProps<Props>()
 
 const terminalStore = useTerminalStore()
+const { applyTheme } = useTheme()
 
 // Load settings from localStorage
 function loadSettings(): AppSettings {
@@ -269,6 +271,11 @@ function loadSettings(): AppSettings {
 
 const settings = reactive<AppSettings>(loadSettings())
 
+// Get the active terminal instance
+function getActiveTerminal() {
+  return (window as any).__terminalInstance?.terminal || null
+}
+
 // Persist settings
 watch(settings, () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
@@ -277,9 +284,9 @@ watch(settings, () => {
 
 function applySettings(): void {
   terminalStore.fontSize = settings.fontSize
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator && !settings.haptic) {
-    // Haptic disabled — no action needed
-  }
+  // Apply accent color theme
+  const terminal = getActiveTerminal()
+  applyTheme(settings.accent, terminal)
 }
 
 // Slider sheets
