@@ -203,8 +203,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-window-bg, #0e0e0e);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  background: var(--gui-editor-bg, #0a0a0a);
 }
 
 .terminal-panel__toolbar {
@@ -224,9 +223,10 @@ onBeforeUnmount(() => {
 }
 
 .terminal-panel__font-size {
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans);
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-semibold, 600);
+  color: var(--gui-text-primary, #f0f0f0);
 }
 
 .terminal-panel__terminal {
@@ -242,5 +242,20 @@ onBeforeUnmount(() => {
 
 .terminal-panel__terminal :deep(.xterm-viewport) {
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gui-accent, #e94560) transparent;
+}
+
+.terminal-panel__terminal :deep(.xterm-viewport)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminal-panel__terminal :deep(.xterm-viewport)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.terminal-panel__terminal :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
+  background: var(--gui-accent, #e94560);
+  border-radius: 999px;
 }
 </style>

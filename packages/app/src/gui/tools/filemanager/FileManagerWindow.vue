@@ -220,8 +220,7 @@ function onClose(): void {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-window-bg, #0e0e0e);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  background: var(--gui-bg-base, #060606);
 }
 
 .file-manager__toolbar {
