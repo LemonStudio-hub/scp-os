@@ -80,12 +80,14 @@ class SCPScraper {
    */
   async searchSCP(keyword: string, branch: string = 'en'): Promise<ScraperResult> {
     try {
-      const branchUrl = branch === 'cn' 
-        ? 'https://scp-wiki-cn.wikidot.com' 
+      const branchUrl = branch === 'cn'
+        ? 'https://scp-wiki-cn.wikidot.com'
         : 'https://scp-wiki.wikidot.com'
-      
+
       const url = `${branchUrl}/search:site/q/${encodeURIComponent(keyword)}`
-      const html = await this.fetchURL(url)
+      
+      // 获取搜索结果页面（不验证 HTML）
+      const html = await this.fetchURLWithoutValidation(url)
 
       // 提取搜索结果
       const results = this.extractSearchResults(html)
@@ -94,7 +96,7 @@ class SCPScraper {
         return { success: false, error: `未找到包含 "${keyword}" 的SCP对象` }
       }
 
-      // 返回第一个结果
+      // 返回第一个结果的详细信息
       const firstResult = results[0]
       const number = firstResult.replace('SCP-', '')
       return this.scrapeSCP(number, branch)
@@ -103,6 +105,45 @@ class SCPScraper {
       logger.error('Failed to search SCP', scraperError, { keyword })
       return { success: false, error: scraperError.message }
     }
+  }
+
+  /**
+   * 获取 URL 内容（不带HTML验证）
+   */
+  private async fetchURLWithoutValidation(url: string): Promise<string> {
+    return this.retryStrategy.executeWithRetry(async () => {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': this.config.userAgent,
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+            'Cache-Control': 'no-cache',
+          },
+          signal: controller.signal,
+          redirect: 'follow',
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          throw ScraperError.networkError(`HTTP ${response.status}: ${response.statusText}`, response.status)
+        }
+
+        return await response.text()
+      } catch (error) {
+        clearTimeout(timeoutId)
+
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw ScraperError.timeoutError()
+        }
+
+        throw error
+      }
+    }, this.config.retryAttempts, this.config.retryDelay)
   }
 
   /**
@@ -496,22 +537,23 @@ class SCPScraper {
     }
 
     try {
-      // 使用全文搜索，通过 JOIN 获取完整信息
+      // 使用 LIKE 进行模糊搜索
       let query = `
-        SELECT i.scp_id, i.name, i.object_class, i.tags, i.clearance_level, i.updated_at
-        FROM scp_search s
-        JOIN scp_index i ON s.rowid = i.scp_id
-        WHERE s MATCH ?
+        SELECT scp_id, name, object_class, tags, clearance_level, updated_at
+        FROM scp_index
+        WHERE name LIKE ? OR tags LIKE ?
       `
-      let params: any[] = [keyword]
+      
+      const likeKeyword = `%${keyword}%`
+      let params: any[] = [likeKeyword, likeKeyword]
 
       // 如果指定了权限等级，添加筛选条件
       if (clearanceLevel !== undefined) {
-        query += ' AND i.clearance_level <= ?'
+        query += ' AND clearance_level <= ?'
         params.push(clearanceLevel)
       }
 
-      query += ' ORDER BY i.scp_id ASC LIMIT 20'
+      query += ' ORDER BY scp_id ASC LIMIT 20'
 
       const result = await this.db.prepare(query)
         .bind(...params)
@@ -519,7 +561,7 @@ class SCPScraper {
 
       return {
         success: true,
-        data: result.results,
+        data: result.results || [],
       }
     } catch (error) {
       logger.error('Database search error', error as Error)
@@ -646,7 +688,7 @@ export default {
       } else if (path === '/search') {
         const keyword = url.searchParams.get('keyword')
         const branch = url.searchParams.get('branch') || 'en' // 默认英文分部
-        
+
         if (!keyword) {
           return corsManager.createErrorResponse('Missing keyword parameter', 400, context)
         }
@@ -656,16 +698,15 @@ export default {
           : undefined
 
         logger.info('Searching SCP', { keyword, branch, clearanceLevel, ip })
-        
+
         // 如果有 clearance_level，使用数据库搜索
         if (clearanceLevel !== undefined) {
           const result = await scraper.searchInDatabase(keyword, clearanceLevel)
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
         }
-        
+
         // 否则使用网页搜索
         const result = await scraper.searchSCP(keyword, branch)
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/debug') {
         const scpNumber = url.searchParams.get('number') || '173'
