@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Cloudflare Pages Deployment** (2026-04-04)
+  - Added missing `uuid@13.0.0` dependency (critical fix for build failures)
+  - Fixed Service Worker compilation: `sw.ts` now properly compiled to `sw.js` using esbuild
+  - Added memory limits: `NODE_OPTIONS='--max-old-space-size=4096'` to prevent OOM errors
+  - Added build output cleanup: `emptyOutDir: true` in vite config
+  - Deployment now successful and accessible at https://scpos.pages.dev
+
 ## [0.1.0] - 2026-04-03
 
 ### 🎉 Initial Release

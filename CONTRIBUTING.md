@@ -2,6 +2,64 @@
 
 Thank you for your interest in contributing to SCP-OS! This document provides guidelines and instructions for contributing.
 
+## 🌐 Project Links
+
+- **Production**: https://scpos.pages.dev
+- **API**: https://api.woodcat.online
+- **Repository**: https://github.com/LemonStudio-hub/scp-os
+
+## Development Setup
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm 8.15+
+- Git
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/LemonStudio-hub/scp-os.git
+cd scpos
+
+# Install dependencies
+pnpm install --frozen-lockfile
+
+# Start development server
+pnpm run dev
+
+# Build for production
+pnpm run build:production
+```
+
+### Testing Changes Locally
+
+Before pushing changes, always test your builds:
+
+```bash
+# Run type checking
+pnpm run lint
+
+# Run tests
+pnpm run test
+
+# Build for production
+pnpm run build:production
+
+# Verify build output
+ls -la dist/
+```
+
+### Cloudflare Pages Deployment
+
+The project is automatically deployed to Cloudflare Pages on push to `main` branch. Key points:
+
+- Build command: `pnpm install --frozen-lockfile && pnpm run build:production`
+- Output directory: `dist`
+- Memory limit: `NODE_OPTIONS='--max-old-space-size=4096'`
+- All dependencies must be declared in package.json
+
 ## Code of Conduct
 
 Please be respectful and constructive in all interactions. We follow a community-first approach and expect all contributors to maintain a positive environment.

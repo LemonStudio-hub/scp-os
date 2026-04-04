@@ -8,6 +8,11 @@
 
 A professional web-based terminal application themed around the SCP Foundation, featuring advanced command-line interface with comprehensive mobile support and optimized performance.
 
+## 🌐 Live Demo
+
+- **Production**: https://scpos.pages.dev (Cloudflare Pages)
+- **API**: https://api.woodcat.online (Cloudflare Worker)
+
 ## 🌟 Features
 
 ### Core Functionality
@@ -559,13 +564,28 @@ The project uses GitHub Actions for continuous integration and deployment.
 
 ### Deployment
 
+- **Cloudflare Pages**: Automatically deployed on push to `main` branch
+  - Production URL: https://scpos.pages.dev
+  - Build command: `pnpm install --frozen-lockfile && pnpm run build:production`
+  - Output directory: `dist`
+  
 - **Cloudflare Worker**: Automatically deployed on push to master
+  - API URL: https://api.woodcat.online
+  
 - **GitHub Pages**: Automatically deployed on push to master
-- **Manual Deployment**: Available via GitHub Actions UI
 
 ### Documentation
 
 See [`.github/workflows/README.md`](.github/workflows/README.md) for detailed CI/CD documentation.
+
+### Recent Deployment Fixes
+
+**2026-04-04**: Fixed Cloudflare Pages deployment failures
+- Added missing `uuid` dependency (critical fix)
+- Fixed Service Worker compilation (sw.ts → sw.js using esbuild)
+- Added memory limits (NODE_OPTIONS='--max-old-space-size=4096')
+- Added build output directory cleanup (emptyOutDir: true)
+- All fixes deployed successfully to production
 
 ## 🤝 Contributing
 

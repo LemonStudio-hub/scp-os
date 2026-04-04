@@ -14,6 +14,11 @@ A professional web-based terminal application themed around the SCP Foundation, 
 - Desktop application via Tauri
 - Cloudflare Worker API for live data
 
+### 🌐 Live Demos
+
+- **Web Application**: https://scpos.pages.dev (Cloudflare Pages)
+- **API Endpoint**: https://api.woodcat.online (Cloudflare Worker)
+
 ### Architecture
 
 This release implements a complete 6-layer architecture:

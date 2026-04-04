@@ -4,7 +4,7 @@
 
 1. 安装 Wrangler CLI
 ```bash
-npm install -g @cloudflare/wrangler
+npm install -g wrangler
 ```
 
 2. 登录 Cloudflare

@@ -2,6 +2,11 @@
 
 This repository uses GitHub Actions for continuous integration and deployment.
 
+## 🌐 Production Deployments
+
+- **Web Application**: https://scpos.pages.dev (Cloudflare Pages)
+- **API**: https://api.woodcat.online (Cloudflare Worker)
+
 ## Available Workflows
 
 ### 1. CI Workflow (`ci.yml`)
@@ -15,6 +20,8 @@ This repository uses GitHub Actions for continuous integration and deployment.
 - **security**: Runs security scans (npm audit, Trivy)
 - **worker-deploy**: Deploys Cloudflare Worker (master branch only)
 - **pages-deploy**: Deploys to GitHub Pages (master branch only)
+
+**Note:** The project also uses **Cloudflare Pages** for automatic deployments on push to `main` branch. Cloudflare Pages is configured separately in the Cloudflare Dashboard.
 
 **Secrets Required:**
 - `CLOUDFLARE_API_TOKEN`: Cloudflare API token
