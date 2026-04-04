@@ -49,11 +49,23 @@
         @click="onAppTap(app)"
       >
         <div class="home-screen__app-icon" :class="`home-screen__app-icon--${app.id}`">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path v-if="app.id === 'terminal'" d="M4 17L10 11L4 5M12 19h8"/>
-            <path v-else-if="app.id === 'files'" d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"/>
-            <path v-else-if="app.id === 'settings'" d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
+          <!-- Terminal icon: >_ text style -->
+          <template v-if="app.id === 'terminal'">
+            <span class="home-screen__app-icon--terminal-text">&gt;_</span>
+          </template>
+          <!-- Files icon: folder SVG -->
+          <template v-else-if="app.id === 'files'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"/>
+            </svg>
+          </template>
+          <!-- Settings icon: gear SVG -->
+          <template v-else-if="app.id === 'settings'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+            </svg>
+          </template>
         </div>
         <span class="home-screen__app-label">{{ app.label }}</span>
       </button>
@@ -76,9 +88,9 @@ export interface HomeApp {
 }
 
 const apps: HomeApp[] = [
-  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-app-icon-terminal-to, #e94560)' },
-  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-app-icon-files-to, #60a5fa)' },
-  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-text-secondary, #a0a0a0)' },
+  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-app-icon-to, #e94560)' },
+  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-app-icon-to, #e94560)' },
+  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-app-icon-to, #e94560)' },
 ]
 
 const emit = defineEmits<{
@@ -225,16 +237,21 @@ onMounted(() => {
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
-.home-screen__app-icon--terminal {
-  background: linear-gradient(135deg, var(--gui-app-icon-terminal-from, #8b0000), var(--gui-app-icon-terminal-to, #e94560));
-}
-
-.home-screen__app-icon--files {
-  background: linear-gradient(135deg, var(--gui-app-icon-files-from, #1e3a5f), var(--gui-app-icon-files-to, #60a5fa));
-}
-
+/* Unified gradient — SCP accent red tone for all apps */
+.home-screen__app-icon--terminal,
+.home-screen__app-icon--files,
 .home-screen__app-icon--settings {
-  background: linear-gradient(135deg, var(--gui-app-icon-settings-from, #3a3a3a), var(--gui-app-icon-settings-to, #6a6a6a));
+  background: linear-gradient(135deg, var(--gui-app-icon-from, #8b0000), var(--gui-app-icon-to, #e94560));
+}
+
+/* Terminal text icon: >_ */
+.home-screen__app-icon--terminal-text {
+  font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", "SF Mono", Consolas, monospace);
+  font-size: 28px;
+  font-weight: var(--gui-font-weight-bold, 700);
+  color: var(--gui-text-inverse, #ffffff);
+  letter-spacing: -1px;
+  line-height: 1;
 }
 
 .home-screen__app:hover .home-screen__app-icon {
