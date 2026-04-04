@@ -5,126 +5,184 @@
     :show-back="true"
     @close="$emit('close')"
   >
-    <div class="settings-app">
+    <div class="settings-app k-ios-page k-ios-page--dark">
       <div class="settings-app__content gui-scrollable">
 
-        <!-- Terminal -->
-        <div class="settings-section" style="--section-delay: 0ms;">
-          <div class="settings-section__header">
-            <GUIIcon name="terminal" :size="16" class="settings-section__icon" />
-            <span class="settings-section__label">Terminal</span>
-          </div>
-          <div class="settings-section__content">
-            <!-- Font Size -->
-            <div class="settings-row" @click="openSlider('fontSize')">
-              <span class="settings-row__label">Font Size</span>
-              <div class="settings-row__value-group">
-                <span class="settings-row__value">{{ settings.fontSize }}px</span>
-                <svg class="settings-row__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        <!-- Terminal Section -->
+        <div class="k-ios-block__title">Terminal</div>
+        <div class="k-ios-list">
+          <!-- Font Size -->
+          <div class="k-ios-list__item" @click="openSlider('fontSize')">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Font Size</div>
               </div>
             </div>
-            <!-- Cursor Blink -->
-            <div class="settings-row" @click="toggleSetting('cursorBlink')">
-              <span class="settings-row__label">Cursor Blink</span>
-              <ToggleSwitch :active="settings.cursorBlink" @toggle="toggleSetting('cursorBlink')" />
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">{{ settings.fontSize }}px</span>
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
-            <!-- Boot Animation -->
-            <div class="settings-row" @click="toggleSetting('bootAnimation')">
-              <span class="settings-row__label">Boot Animation</span>
-              <ToggleSwitch :active="settings.bootAnimation" @toggle="toggleSetting('bootAnimation')" />
+          </div>
+          <!-- Cursor Blink -->
+          <div class="k-ios-list__item" @click="toggleSetting('cursorBlink')">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Cursor Blink</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <ToggleSwitch v-model:active="settings.cursorBlink" />
+            </div>
+          </div>
+          <!-- Boot Animation -->
+          <div class="k-ios-list__item" @click="toggleSetting('bootAnimation')">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Boot Animation</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <ToggleSwitch v-model:active="settings.bootAnimation" />
             </div>
           </div>
         </div>
 
-        <!-- Appearance -->
-        <div class="settings-section" style="--section-delay: 60ms;">
-          <div class="settings-section__header">
-            <GUIIcon name="settings" :size="16" class="settings-section__icon" />
-            <span class="settings-section__label">Appearance</span>
-          </div>
-          <div class="settings-section__content">
-            <!-- Accent Color -->
-            <div class="settings-row" @click="openSlider('accent')">
-              <span class="settings-row__label">Accent Color</span>
-              <div class="settings-row__value-group">
-                <span class="settings-row__color-dot" :style="{ background: settings.accent }" />
-                <span class="settings-row__value">{{ getAccentLabel(settings.accent) }}</span>
-                <svg class="settings-row__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+        <!-- Appearance Section -->
+        <div class="k-ios-block__title">Appearance</div>
+        <div class="k-ios-list">
+          <!-- Accent Color -->
+          <div class="k-ios-list__item" @click="openSlider('accent')">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Accent Color</div>
               </div>
             </div>
-            <!-- Haptic Feedback -->
-            <div class="settings-row" @click="toggleSetting('haptic')">
-              <span class="settings-row__label">Haptic Feedback</span>
-              <ToggleSwitch :active="settings.haptic" @toggle="toggleSetting('haptic')" />
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-color-dot" :style="{ background: settings.accent }" />
+              <span class="k-ios-list__item-value">{{ getAccentLabel(settings.accent) }}</span>
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
-            <!-- Animations -->
-            <div class="settings-row" @click="toggleSetting('animations')">
-              <span class="settings-row__label">Animations</span>
-              <ToggleSwitch :active="settings.animations" @toggle="toggleSetting('animations')" />
+          </div>
+          <!-- Haptic Feedback -->
+          <div class="k-ios-list__item" @click="toggleSetting('haptic')">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Haptic Feedback</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <ToggleSwitch v-model:active="settings.haptic" />
+            </div>
+          </div>
+          <!-- Animations -->
+          <div class="k-ios-list__item" @click="toggleSetting('animations')">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Animations</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <ToggleSwitch v-model:active="settings.animations" />
             </div>
           </div>
         </div>
 
-        <!-- Storage -->
-        <div class="settings-section" style="--section-delay: 120ms;">
-          <div class="settings-section__header">
-            <GUIIcon name="save" :size="16" class="settings-section__icon" />
-            <span class="settings-section__label">Storage</span>
+        <!-- Storage Section -->
+        <div class="k-ios-block__title">Storage</div>
+        <div class="k-ios-list">
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Used Space</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">{{ storageUsed }}</span>
+            </div>
           </div>
-          <div class="settings-section__content">
-            <div class="settings-row">
-              <span class="settings-row__label">Used Space</span>
-              <span class="settings-row__value">{{ storageUsed }}</span>
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Terminal States</div>
+              </div>
             </div>
-            <div class="settings-row">
-              <span class="settings-row__label">Terminal States</span>
-              <span class="settings-row__value">{{ terminalStateCount }}</span>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">{{ terminalStateCount }}</span>
             </div>
-            <div class="settings-row" @click="confirmClearData">
-              <span class="settings-row__label settings-row__label--danger">Clear All Data</span>
-              <svg class="settings-row__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          </div>
+          <div class="k-ios-list__item" @click="confirmClearData">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">Clear All Data</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
           </div>
         </div>
 
-        <!-- About -->
-        <div class="settings-section" style="--section-delay: 180ms;">
-          <div class="settings-section__header">
-            <GUIIcon name="file" :size="16" class="settings-section__icon" />
-            <span class="settings-section__label">About</span>
+        <!-- About Section -->
+        <div class="k-ios-block__title">About</div>
+        <div class="k-ios-list">
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Application</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">SCP-OS</span>
+            </div>
           </div>
-          <div class="settings-section__content">
-            <div class="settings-row">
-              <span class="settings-row__label">Application</span>
-              <span class="settings-row__value">SCP-OS</span>
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Version</div>
+              </div>
             </div>
-            <div class="settings-row">
-              <span class="settings-row__label">Version</span>
-              <span class="settings-row__value">{{ config.app.version }}</span>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">{{ config.app.version }}</span>
             </div>
-            <div class="settings-row">
-              <span class="settings-row__label">Build</span>
-              <span class="settings-row__value">{{ buildDate }}</span>
+          </div>
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Build</div>
+              </div>
             </div>
-            <div class="settings-row">
-              <span class="settings-row__label">License</span>
-              <span class="settings-row__value">MIT / CC BY-SA 3.0</span>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">{{ buildDate }}</span>
+            </div>
+          </div>
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">License</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">MIT / CC BY-SA 3.0</span>
             </div>
           </div>
         </div>
 
         <!-- Reset -->
-        <div class="settings-section" style="--section-delay: 240ms;">
-          <div class="settings-section__content">
-            <div class="settings-row" @click="confirmResetSettings">
-              <span class="settings-row__label settings-row__label--danger">Reset All Settings</span>
-              <svg class="settings-row__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <div class="k-ios-list" style="margin-top: var(--gui-spacing-xl, 24px);">
+          <div class="k-ios-list__item" @click="confirmResetSettings">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label k-ios-list__item-label--centered">Reset All Settings</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
                 <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
@@ -142,7 +200,7 @@
             <p class="settings-confirm-text">{{ confirmDialog.text }}</p>
             <div class="settings-confirm-actions">
               <button class="settings-confirm-btn" @click="confirmDialog = null">Cancel</button>
-              <button class="settings-confirm-btn settings-confirm-btn--danger" @click="confirmDialog.action">
+              <button class="settings-confirm-btn settings-confirm-btn--destructive" @click="confirmDialog.action">
                 {{ confirmDialog.confirmText }}
               </button>
             </div>
@@ -151,11 +209,7 @@
       </Transition>
 
       <!-- Font Size Slider Sheet -->
-      <MobileBottomSheet
-        v-model:visible="sliderSheets.fontSize"
-        title="Font Size"
-        swipe-to-dismiss
-      >
+      <Sheet v-model:visible="sliderSheets.fontSize">
         <div class="settings-slider-sheet">
           <div class="settings-slider-sheet__preview" :style="{ fontSize: `${sliderValues.fontSize}px` }">
             Aa 123
@@ -166,7 +220,7 @@
             max="22"
             step="1"
             v-model.number="sliderValues.fontSize"
-            class="settings-slider-sheet__slider"
+            class="k-ios-slider"
             @input="onFontSizeChange"
           />
           <div class="settings-slider-sheet__labels">
@@ -174,20 +228,16 @@
             <span>22px</span>
           </div>
         </div>
-      </MobileBottomSheet>
+      </Sheet>
 
       <!-- Accent Color Picker Sheet -->
-      <MobileBottomSheet
-        v-model:visible="sliderSheets.accent"
-        title="Accent Color"
-        swipe-to-dismiss
-      >
+      <Sheet v-model:visible="sliderSheets.accent">
         <div class="settings-color-sheet">
-          <div class="settings-color-sheet__grid">
+          <div class="k-ios-color-grid">
             <button
               v-for="color in accentOptions"
               :key="color.value"
-              :class="['settings-color-sheet__swatch', { 'settings-color-sheet__swatch--active': settings.accent === color.value }]"
+              :class="['k-ios-color-swatch', { 'k-ios-color-swatch--active': settings.accent === color.value }]"
               :style="{ background: color.value }"
               @click="setAccent(color.value)"
             >
@@ -198,16 +248,16 @@
           </div>
           <p class="settings-color-sheet__label">Tap to select accent color</p>
         </div>
-      </MobileBottomSheet>
+      </Sheet>
     </div>
   </MobileWindow>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, defineComponent, h } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
-import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
-import GUIIcon from '../../components/ui/GUIIcon.vue'
+import Sheet from '../../konsta/Sheet.vue'
+import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import { useTerminalStore } from '../../../stores/terminal'
 import { useTheme } from '../../composables/useTheme'
 import { config } from '../../../config'
@@ -236,14 +286,14 @@ interface AppSettings {
 const STORAGE_KEY = 'scp-os-app-settings'
 
 const accentOptions = [
-  { value: '#e94560', label: 'Red' },
-  { value: '#60a5fa', label: 'Blue' },
-  { value: '#34d399', label: 'Green' },
-  { value: '#fbbf24', label: 'Yellow' },
-  { value: '#c084fc', label: 'Purple' },
-  { value: '#f87171', label: 'Coral' },
-  { value: '#22d3ee', label: 'Cyan' },
-  { value: '#a0a0a0', label: 'Gray' },
+  { value: '#8e8e93', label: 'Gray' },
+  { value: '#0a84ff', label: 'Blue' },
+  { value: '#34c759', label: 'Green' },
+  { value: '#ffcc00', label: 'Yellow' },
+  { value: '#af52de', label: 'Purple' },
+  { value: '#ff3b30', label: 'Red' },
+  { value: '#ff9500', label: 'Orange' },
+  { value: '#5ac8fa', label: 'Teal' },
 ]
 
 const defaultSettings: AppSettings = {
@@ -252,7 +302,7 @@ const defaultSettings: AppSettings = {
   bootAnimation: true,
   haptic: true,
   animations: true,
-  accent: '#e94560',
+  accent: '#8e8e93',
 }
 
 defineProps<Props>()
@@ -260,7 +310,6 @@ defineProps<Props>()
 const terminalStore = useTerminalStore()
 const { applyTheme } = useTheme()
 
-// Load settings from localStorage
 function loadSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -271,50 +320,38 @@ function loadSettings(): AppSettings {
 
 const settings = reactive<AppSettings>(loadSettings())
 
-// Get the active terminal instance
-function getActiveTerminal() {
-  return (window as any).__terminalInstance?.terminal || null
-}
-
-// Track previous settings to detect changes
 let prevFontSize = settings.fontSize
 let prevAccent = settings.accent
 
-// Persist settings
 watch(settings, () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
   applySettings()
 }, { deep: true })
 
+function getActiveTerminal() {
+  return (window as any).__terminalInstance?.terminal || null
+}
+
 function applySettings(): void {
   const terminal = getActiveTerminal()
 
-  // Update terminal font size if changed
   if (settings.fontSize !== prevFontSize && terminal) {
     terminalStore.fontSize = settings.fontSize
     try {
-      // Apply the user's chosen font size directly to the terminal
       terminal.options.fontSize = settings.fontSize
       terminal.refresh(0, terminal.rows - 1)
-    } catch { /* terminal may be disposed */ }
+    } catch { /* ignore */ }
     prevFontSize = settings.fontSize
   }
 
-  // Update accent color theme if changed
   if (settings.accent !== prevAccent) {
     applyTheme(settings.accent, terminal)
     prevAccent = settings.accent
   }
 }
 
-// Slider sheets
-const sliderSheets = reactive({
-  fontSize: false,
-  accent: false,
-})
-const sliderValues = reactive({
-  fontSize: settings.fontSize,
-})
+const sliderSheets = reactive({ fontSize: false, accent: false })
+const sliderValues = reactive({ fontSize: settings.fontSize })
 
 function openSlider(type: 'fontSize' | 'accent'): void {
   if (type === 'fontSize') {
@@ -338,7 +375,6 @@ function getAccentLabel(color: string): string {
   return accentOptions.find(c => c.value === color)?.label || color
 }
 
-// Toggle settings
 function toggleSetting(key: keyof AppSettings): void {
   if (typeof settings[key] === 'boolean') {
     (settings[key] as boolean) = !(settings[key] as boolean)
@@ -352,7 +388,6 @@ function triggerHaptic(): void {
   }
 }
 
-// Confirm dialog
 const confirmDialog = ref<ConfirmDialog | null>(null)
 
 function confirmClearData(): void {
@@ -392,7 +427,6 @@ function resetSettings(): void {
   triggerHaptic()
 }
 
-// Storage info
 const storageUsed = computed(() => {
   let total = 0
   for (let key in localStorage) {
@@ -412,31 +446,13 @@ const terminalStateCount = computed(() => {
   return count
 })
 
-const buildDate = computed(() => '2026-04-03')
+const buildDate = computed(() => '2026-04-04')
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
-
-// Toggle Switch component
-const ToggleSwitch = defineComponent({
-  props: {
-    active: { type: Boolean, default: false },
-  },
-  emits: ['toggle'],
-  setup(props, { emit }) {
-    return () => h('div', {
-      class: ['settings-toggle', { 'settings-toggle--active': props.active }],
-      onClick: () => emit('toggle'),
-    }, [
-      h('div', { class: 'settings-toggle__track' }, [
-        h('div', { class: 'settings-toggle__thumb' }),
-      ]),
-    ])
-  },
-})
 </script>
 
 <style scoped>
@@ -444,8 +460,6 @@ const ToggleSwitch = defineComponent({
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-bg-base, #060606);
-  font-family: var(--gui-font-sans);
 }
 
 .settings-app__content {
@@ -455,146 +469,30 @@ const ToggleSwitch = defineComponent({
   padding: var(--gui-spacing-base, 16px);
 }
 
-/* ── Section ────────────────────────────────────────────────────────── */
-.settings-section {
-  margin-bottom: var(--gui-spacing-xl, 24px);
-  opacity: 0;
-  transform: translateY(12px);
-  animation: settings-section-in 0.4s cubic-bezier(0.32, 0.72, 0, 1) both;
-  animation-delay: var(--section-delay, 0ms);
-}
-
-@keyframes settings-section-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.settings-section__header {
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-  font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-secondary, #a0a0a0);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--gui-spacing-sm, 8px);
-  padding-left: var(--gui-spacing-md, 12px);
-}
-
-.settings-section__icon {
-  color: var(--gui-text-tertiary, #6a6a6a);
-}
-
-.settings-section__content {
-  background: var(--gui-bg-surface, #0c0c0c);
-  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  border-radius: var(--gui-radius-lg, 12px);
-  overflow: hidden;
-}
-
-/* ── Row ────────────────────────────────────────────────────────────── */
-.settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--gui-spacing-md, 12px) var(--gui-spacing-base, 16px);
-  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
-  gap: var(--gui-spacing-md, 12px);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background var(--gui-transition-fast, 120ms ease);
-}
-
-.settings-row:last-child {
-  border-bottom: none;
-}
-
-.settings-row:active {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
-}
-
-.settings-row__label {
+/* iOS list item right value */
+.k-ios-list__item-value {
   font-size: var(--gui-font-base, 13px);
-  color: var(--gui-text-primary, #f0f0f0);
-  flex: 1;
-  min-width: 0;
-}
-
-.settings-row__label--danger {
-  color: var(--gui-error, #f87171);
-}
-
-.settings-row__value-group {
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-}
-
-.settings-row__value {
-  font-size: var(--gui-font-base, 13px);
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-text-secondary, #8e8e93);
   white-space: nowrap;
 }
 
-.settings-row__color-dot {
+.k-ios-list__item-color-dot {
   width: 12px;
   height: 12px;
   border-radius: var(--gui-radius-full, 9999px);
   flex-shrink: 0;
 }
 
-.settings-row__chevron {
-  color: var(--gui-text-disabled, #444444);
-  flex-shrink: 0;
-  margin-left: var(--gui-spacing-xxs, 2px);
+.k-ios-list__item-label--destructive {
+  color: var(--gui-error, #ff3b30);
 }
 
-/* ── Toggle Switch ─────────────────────────────────────────────────── */
-.settings-toggle {
-  display: flex;
-  align-items: center;
-  -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
+.k-ios-list__item-label--centered {
+  text-align: center;
+  width: 100%;
 }
 
-.settings-toggle__track {
-  width: 50px;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 15px;
-  position: relative;
-  transition: background var(--gui-transition-base, 200ms ease);
-  flex-shrink: 0;
-}
-
-.settings-toggle--active .settings-toggle__track {
-  background: var(--gui-accent, #e94560);
-}
-
-.settings-toggle__thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 26px;
-  height: 26px;
-  background: #ffffff;
-  border-radius: 13px;
-  box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
-  transition: transform var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
-}
-
-.settings-toggle--active .settings-toggle__thumb {
-  transform: translateX(20px);
-}
-
-/* ── Confirm Dialog ─────────────────────────────────────────────────── */
+/* Confirm Dialog */
 .settings-confirm-overlay {
   position: fixed;
   inset: 0;
@@ -609,8 +507,8 @@ const ToggleSwitch = defineComponent({
 .settings-confirm-dialog {
   width: 100%;
   max-width: 280px;
-  background: var(--gui-bg-surface-raised, #111111);
-  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-raised, #2c2c2e);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-xl, 14px);
   padding: var(--gui-spacing-xl, 24px);
   box-shadow: var(--gui-shadow-xl, 0 24px 48px rgba(0, 0, 0, 0.7));
@@ -620,14 +518,14 @@ const ToggleSwitch = defineComponent({
 .settings-confirm-title {
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-primary, #f0f0f0);
+  color: var(--gui-text-primary, #ffffff);
   margin: 0 0 var(--gui-spacing-sm, 8px);
   text-align: center;
 }
 
 .settings-confirm-text {
   font-size: var(--gui-font-base, 13px);
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-text-secondary, #8e8e93);
   margin: 0 0 var(--gui-spacing-lg, 20px);
   text-align: center;
   line-height: var(--gui-line-height-base, 1.5);
@@ -641,10 +539,10 @@ const ToggleSwitch = defineComponent({
 .settings-confirm-btn {
   flex: 1;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1c1c1e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-base, 8px);
-  color: var(--gui-text-primary, #f0f0f0);
+  color: var(--gui-text-primary, #ffffff);
   font-size: var(--gui-font-base, 13px);
   font-weight: var(--gui-font-weight-semibold, 600);
   cursor: pointer;
@@ -655,13 +553,13 @@ const ToggleSwitch = defineComponent({
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
-.settings-confirm-btn--danger {
-  background: var(--gui-error-bg, rgba(248, 113, 113, 0.15));
-  color: var(--gui-error, #f87171);
+.settings-confirm-btn--destructive {
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
+  color: var(--gui-error, #ff3b30);
   border-color: transparent;
 }
 
-/* ── Slider Sheet ───────────────────────────────────────────────────── */
+/* Slider Sheet */
 .settings-slider-sheet {
   padding: var(--gui-spacing-lg, 20px) var(--gui-spacing-base, 16px);
   display: flex;
@@ -671,36 +569,14 @@ const ToggleSwitch = defineComponent({
 }
 
 .settings-slider-sheet__preview {
-  font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", monospace);
-  color: var(--gui-text-primary, #f0f0f0);
+  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  color: var(--gui-text-primary, #ffffff);
   padding: var(--gui-spacing-xl, 24px);
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: var(--gui-radius-lg, 12px);
   min-width: 200px;
   text-align: center;
   transition: font-size var(--gui-transition-base, 200ms ease);
-}
-
-.settings-slider-sheet__slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  max-width: 280px;
-  height: var(--gui-dim-slider-track-height, 4px);
-  background: var(--gui-border-default, rgba(255, 255, 255, 0.1));
-  border-radius: var(--gui-radius-xs, 4px);
-  outline: none;
-}
-
-.settings-slider-sheet__slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: var(--gui-dim-slider-thumb-size, 20px);
-  height: var(--gui-dim-slider-thumb-size, 20px);
-  background: var(--gui-accent, #e94560);
-  border-radius: var(--gui-radius-full, 9999px);
-  cursor: pointer;
-  box-shadow: var(--gui-shadow-glow, 0 0 20px rgba(233, 69, 96, 0.15));
 }
 
 .settings-slider-sheet__labels {
@@ -709,10 +585,10 @@ const ToggleSwitch = defineComponent({
   width: 100%;
   max-width: 280px;
   font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-text-tertiary, #6a6a6a);
+  color: var(--gui-text-tertiary, #636366);
 }
 
-/* ── Color Picker Sheet ─────────────────────────────────────────────── */
+/* Color Picker Sheet */
 .settings-color-sheet {
   padding: var(--gui-spacing-lg, 20px) var(--gui-spacing-base, 16px);
   display: flex;
@@ -721,39 +597,8 @@ const ToggleSwitch = defineComponent({
   gap: var(--gui-spacing-md, 12px);
 }
 
-.settings-color-sheet__grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--gui-spacing-md, 12px);
-  width: 100%;
-  max-width: 280px;
-}
-
-.settings-color-sheet__swatch {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--gui-radius-lg, 12px);
-  border: 2px solid transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
-  -webkit-tap-highlight-color: transparent;
-}
-
-.settings-color-sheet__swatch:active {
-  transform: scale(0.9);
-}
-
-.settings-color-sheet__swatch--active {
-  border-color: #ffffff;
-  box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
-  transform: scale(1.08);
-}
-
 .settings-color-sheet__label {
   font-size: var(--gui-font-sm, 12px);
-  color: var(--gui-text-tertiary, #6a6a6a);
+  color: var(--gui-text-tertiary, #636366);
 }
 </style>
