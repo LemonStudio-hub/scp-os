@@ -1,86 +1,79 @@
 /**
- * GUI Design Tokens v4 — iOS Frosted Glass (Konsta UI Aesthetic)
- *
- * Dark mode first, all components use CSS variables from this file.
- * Icon colors are gray (#8e8e93) per iOS system design.
+ * GUI Design Tokens — iOS Frosted Glass with #1C1C1E background
+ * Squircle border radius, white foreground icons, gray app icons
  */
 
 export const colors = {
-  // iOS Dark backgrounds
-  bgBase: '#000000',
-  bgSurface: '#1c1c1e',
-  bgSurfaceRaised: '#2c2c2e',
-  bgSurfaceOverlay: '#3a3a3c',
-  bgSurfaceHover: '#3a3a3c',
-  bgSurfaceActive: '#48484a',
+  // Background
+  bgBase: '#1C1C1E',
+  bgSurface: '#2C2C2E',
+  bgSurfaceRaised: '#3A3A3C',
+  bgSurfaceOverlay: '#48484A',
+  bgSurfaceHover: 'rgba(255, 255, 255, 0.06)',
+  bgSurfaceActive: 'rgba(255, 255, 255, 0.1)',
 
-  // Text hierarchy
-  textPrimary: '#ffffff',
-  textSecondary: '#8e8e93',
+  // Text
+  textPrimary: '#FFFFFF',
+  textSecondary: '#8E8E93',
   textTertiary: '#636366',
-  textDisabled: '#48484a',
+  textDisabled: '#48484A',
   textInverse: '#000000',
 
-  // Accent (gray per iOS system design)
-  accent: '#8e8e93',
-  accentHover: '#aeaeb2',
+  // Accent (gray frosted glass)
+  accent: '#8E8E93',
+  accentHover: '#AEAEB2',
   accentSoft: 'rgba(142, 142, 147, 0.1)',
   accentGlow: 'rgba(142, 142, 147, 0.15)',
 
   // Semantic
-  success: '#34c759',
+  success: '#34C759',
   successBg: 'rgba(52, 199, 89, 0.1)',
-  warning: '#ffcc00',
+  warning: '#FFCC00',
   warningBg: 'rgba(255, 204, 0, 0.1)',
-  error: '#ff3b30',
+  error: '#FF3B30',
   errorBg: 'rgba(255, 59, 48, 0.1)',
-  info: '#0a84ff',
+  info: '#0A84FF',
   infoBg: 'rgba(10, 132, 255, 0.1)',
 
   // Borders
   borderSubtle: 'rgba(255, 255, 255, 0.06)',
   borderDefault: 'rgba(255, 255, 255, 0.08)',
   borderStrong: 'rgba(255, 255, 255, 0.12)',
-
-  // iOS grouped list
-  iosGroupedBg: '#1c1c1e',
-  iosGroupedItemBg: '#2c2c2e',
-  iosGroupedItemBgActive: '#3a3a3c',
-  iosSeparator: 'rgba(255, 255, 255, 0.12)',
+  separator: 'rgba(84, 84, 88, 0.65)',
 
   // Window
-  windowBg: '#000000',
-  windowHeaderBg: 'rgba(28, 28, 30, 0.85)',
+  windowBg: '#1C1C1E',
+  windowHeaderBg: 'rgba(44, 44, 46, 0.85)',
   windowBorder: 'rgba(255, 255, 255, 0.08)',
   windowBorderActive: 'rgba(255, 255, 255, 0.12)',
-  windowShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4)',
-  windowShadowActive: '0 16px 48px rgba(0, 0, 0, 0.7)',
+  windowShadow: '0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3)',
+  windowShadowActive: '0 16px 48px rgba(0, 0, 0, 0.6)',
 
   // Dock
-  dockBg: 'rgba(28, 28, 30, 0.85)',
+  dockBg: 'rgba(44, 44, 46, 0.85)',
   dockBorder: 'rgba(255, 255, 255, 0.08)',
   dockItemBg: 'rgba(255, 255, 255, 0.04)',
   dockItemHover: 'rgba(255, 255, 255, 0.08)',
   dockItemActive: 'rgba(142, 142, 147, 0.15)',
 
   // Glass
-  glassBg: 'rgba(28, 28, 30, 0.75)',
+  glassBg: 'rgba(44, 44, 46, 0.75)',
   glassBorder: 'rgba(255, 255, 255, 0.08)',
-  glassShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+  glassShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
 
   // Editor
-  editorBg: '#000000',
-  editorGutter: '#1c1c1e',
+  editorBg: '#1C1C1E',
+  editorGutter: '#2C2C2E',
   editorLineHighlight: 'rgba(255, 255, 255, 0.03)',
   editorSelection: 'rgba(10, 132, 255, 0.3)',
-  editorCursor: '#ffffff',
+  editorCursor: '#FFFFFF',
 
   // File Manager
   fileSelected: 'rgba(142, 142, 147, 0.1)',
   fileHover: 'rgba(255, 255, 255, 0.04)',
 
   // Backdrop
-  backdropBg: 'rgba(0, 0, 0, 0.4)',
+  backdropBg: 'rgba(0, 0, 0, 0.3)',
 
   // Handle bar
   handleBar: 'rgba(255, 255, 255, 0.2)',
@@ -88,32 +81,31 @@ export const colors = {
   // Home indicator
   homeIndicator: 'rgba(255, 255, 255, 0.3)',
 
-  // App icon gradients (gray)
-  appIconTerminalFrom: '#636366',
-  appIconTerminalTo: '#8e8e93',
-  appIconFilesFrom: '#48484a',
-  appIconFilesTo: '#636366',
-  appIconSettingsFrom: '#3a3a3c',
-  appIconSettingsTo: '#48484a',
+  // App icon gradients (frosted glass dark gray)
+  appIconFrom: '#4A4A4C',
+  appIconTo: '#636366',
+
+  // Foreground icons (white)
+  iconFg: '#FFFFFF',
 
   // Status bar
-  statusBarText: '#ffffff',
-  statusBarBattery: '#34c759',
+  statusBarText: '#FFFFFF',
+  statusBarBattery: '#34C759',
 
   // Wallpaper
-  wallpaperBase: '#000000',
+  wallpaperBase: '#1C1C1E',
   wallpaperGradient1: 'rgba(142, 142, 147, 0.08)',
   wallpaperGradient2: 'rgba(142, 142, 147, 0.05)',
   wallpaperGradient3: 'rgba(63, 63, 66, 0.03)',
 
   // iOS Toggle
-  iosToggleOff: '#39393d',
-  iosToggleOn: '#34c759',
-  iosToggleThumb: '#ffffff',
+  iosToggleOff: '#39393D',
+  iosToggleOn: '#34C759',
+  iosToggleThumb: '#FFFFFF',
 
   // iOS Slider
   iosSliderTrack: 'rgba(255, 255, 255, 0.15)',
-  iosSliderThumb: '#ffffff',
+  iosSliderThumb: '#FFFFFF',
 } as const
 
 export const spacing = {
@@ -136,9 +128,10 @@ export const radius = {
   sm: '6px',
   base: '8px',
   md: '10px',
-  lg: '12px',
-  xl: '14px',
-  '2xl': '20px',
+  lg: '14px',
+  xl: '18px',
+  '2xl': '24px',
+  '3xl': '32px',
   full: '9999px',
 } as const
 
@@ -250,63 +243,51 @@ export function injectGUITokens(): void {
 
   const root = document.documentElement
 
-  // Colors
   Object.entries(colors).forEach(([key, value]) => {
     const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase()
     root.style.setProperty(`--gui-${cssKey}`, value)
   })
 
-  // Spacing
   Object.entries(spacing).forEach(([key, value]) => {
     root.style.setProperty(`--gui-spacing-${key}`, value)
   })
 
-  // Radius
   Object.entries(radius).forEach(([key, value]) => {
     root.style.setProperty(`--gui-radius-${key}`, value)
   })
 
-  // Shadows
   Object.entries(shadows).forEach(([key, value]) => {
     root.style.setProperty(`--gui-shadow-${key}`, value)
   })
 
-  // Transitions
   Object.entries(transitions).forEach(([key, value]) => {
     root.style.setProperty(`--gui-transition-${key}`, value)
   })
 
-  // Z-Index
   Object.entries(zIndex).forEach(([key, value]) => {
     root.style.setProperty(`--gui-z-${key}`, String(value))
   })
 
-  // Font Sizes
   Object.entries(fontSizes).forEach(([key, value]) => {
     root.style.setProperty(`--gui-font-${key}`, value)
   })
 
-  // Font Weights
   Object.entries(fontWeights).forEach(([key, value]) => {
     root.style.setProperty(`--gui-font-weight-${key}`, String(value))
   })
 
-  // Line Heights
   Object.entries(lineHeights).forEach(([key, value]) => {
     root.style.setProperty(`--gui-line-height-${key}`, String(value))
   })
 
-  // Font Families
   Object.entries(fontFamilies).forEach(([key, value]) => {
     root.style.setProperty(`--gui-font-${key}`, value)
   })
 
-  // Icon Sizes
   Object.entries(iconSizes).forEach(([key, value]) => {
     root.style.setProperty(`--gui-icon-${key}`, value)
   })
 
-  // Dimensions
   Object.entries(dimensions).forEach(([key, value]) => {
     const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase()
     root.style.setProperty(`--gui-dim-${cssKey}`, value)

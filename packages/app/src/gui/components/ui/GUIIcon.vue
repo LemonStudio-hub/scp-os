@@ -29,7 +29,7 @@ const className = computed(() => `gui-icon--${props.name}`)
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--gui-text-secondary, #8e8e93);
+  color: var(--gui-icon-fg, #FFFFFF);
   flex-shrink: 0;
   line-height: 1;
 }
@@ -44,14 +44,9 @@ const className = computed(() => `gui-icon--${props.name}`)
   color: inherit;
 }
 
-/* All icons use gray accent color for iOS aesthetic */
-.gui-icon {
-  color: var(--gui-accent, #8e8e93);
-}
-
 /* Muted icons for empty states */
 .gui-icon--empty-folder,
 .gui-icon--empty-doc {
-  color: var(--gui-text-disabled, #48484a);
+  color: var(--gui-text-disabled, #48484A);
 }
 </style>

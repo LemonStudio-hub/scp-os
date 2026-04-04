@@ -1,346 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Import xterm styles */
 @import 'xterm/css/xterm.css';
 
-/* iOS Frosted Glass Design System (Konsta UI Aesthetic) */
-@import './gui/konsta/ios.css';
-
-/* SCP Terminal Styles - Full Screen */
-:root {
-  --scp-red: #8b0000;
-  --scp-dark-red: #5c0000;
-  --scp-green: #00ff00;
-  --scp-orange: #ffa500;
-  --scp-red-error: #ff4444;
-  --scp-white: #ffffff;
-  --scp-gray: #888888;
-  --scp-bg: #0a0a0a;
-  --scp-dark-bg: #000000;
-
-  /* Tab system colors */
-  --tab-bar-height: 44px;
-  --sidebar-width: 320px;
-  --tab-active: #e94560;
-  --tab-bg: #16213e;
-  --tab-item-bg: #0f3460;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html {
-  width: 100%;
-  height: 100%;
-  font-size: 16px;
-}
-
-body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: 'Courier New', 'Consolas', monospace;
-  background: var(--scp-bg);
-  color: var(--scp-white);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  touch-action: manipulation;
-  position: fixed;
-  overscroll-behavior: none;
-}
-
-#app {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Terminal container with tab bar adjustment */
-#terminal-container {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-}
-
-/* Custom scrollbar for xterm */
-.xterm-viewport {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scp-red) var(--scp-bg);
-}
-
-.xterm-viewport::-webkit-scrollbar {
-  width: 8px;
-}
-
-.xterm-viewport::-webkit-scrollbar-track {
-  background: var(--scp-bg);
-}
-
-.xterm-viewport::-webkit-scrollbar-thumb {
-  background: var(--scp-red);
-  border-radius: 4px;
-}
-
-.xterm-viewport::-webkit-scrollbar-thumb:hover {
-  background: var(--scp-dark-red);
-}
-
-/* Main content container (for terminal + tab bar) */
-.main-content {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Sidebar z-index to ensure it appears above everything */
-.sidebar {
-  z-index: 9999;
-}
-
-/* Tab bar z-index to ensure it appears above content but below sidebar */
-.tab-bar {
-  z-index: 1000;
-}
-
-/* Virtual keyboard z-index */
-.virtual-keyboard {
-  z-index: 1001;
-}
-
-/* Sidebar transition support */
-.sidebar-content {
-  will-change: transform;
-}
-
-/* Tab transitions */
-.tab {
-  will-change: transform, background;
-}
-
-.tab:hover {
-  transform: translateY(-1px);
-}
-
-/* Prevent layout shift when sidebar opens */
-.sidebar-open ~ .main-content {
-  pointer-events: none;
-}
-
-/* Touch gesture optimization */
-#app {
-  touch-action: pan-y;
-}
-
-.sidebar-open #app {
-  touch-action: none;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-
-  #terminal-container {
-    padding: 0;
-  }
-
-  /* Hide scrollbar on mobile for cleaner look */
-  .xterm-viewport {
-    scrollbar-width: none;
-  }
-
-  .xterm-viewport::-webkit-scrollbar {
-    display: none;
-  }
-
-  :root {
-    --sidebar-width: 280px;
+/* iOS squircle clip path utility */
+@layer utilities {
+  .squircle {
+    clip-path: url(#squircle-clip);
   }
 }
 
-@media (max-width: 480px) {
-  body {
-    font-size: 12px;
-  }
-
-  /* Prevent zoom on input focus */
-  input,
-  textarea,
-  .xterm-textarea {
-    font-size: 16px !important;
-  }
-
-  :root {
-    --tab-bar-height: 40px;
-  }
-}
-
-/* Prevent pull-to-refresh on mobile */
-#terminal-container {
-  overscroll-behavior-y: contain;
-  touch-action: none;
-}
-
-/* Cursor blink animation for better mobile visibility */
-@keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.xterm-cursor-layer .xterm-cursor {
-  animation: cursor-blink 1s infinite;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .xterm {
-    font-weight: 600;
-  }
-}
-
-/* Smooth transitions for tab system */
-* {
-  transition-property: color, background, border-color, opacity;
-  transition-duration: 0.2s;
-  transition-timing-function: ease;
-}
-
-/* Prevent transitions during initial load */
-body.loading * {
-  transition: none !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   GUI Window System — Animation Keyframes & Base Styles
-   ═══════════════════════════════════════════════════════════════ */
-
-/* Window open animation — fade in + scale up + slide up */
-@keyframes gui-window-open {
-  from {
-    opacity: 0;
-    transform: scale(0.92) translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Window close animation — fade out + scale down */
-@keyframes gui-window-close-anim {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-
-/* iOS slide in — for mobile page transitions */
-@keyframes gui-slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes gui-slide-out {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(30%);
-    opacity: 0;
-  }
-}
-
-/* iOS sheet presentation */
-@keyframes gui-sheet-in {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes gui-sheet-out {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(100%);
-  }
-}
-
-/* Fade in up — for list items, cards, grid items */
-@keyframes gui-fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Fade in — general purpose */
-@keyframes gui-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Pulse — for active indicators, loading states */
-@keyframes gui-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.85); }
-}
-
-/* Focus glow — subtle ring on focus gain */
-@keyframes gui-focus-glow {
-  0% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.3); }
-  70% { box-shadow: 0 0 0 6px rgba(233, 69, 96, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
-}
-
-/* Spinner loading */
-@keyframes gui-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Shimmer loading effect */
-@keyframes gui-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* ── GUI Base Styles ──────────────────────────────────────────────── */
-
-/* Smooth scrollbar for GUI panels */
+/* Custom scrollbar */
 .gui-scrollable {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
 .gui-scrollable::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
 }
 
 .gui-scrollable::-webkit-scrollbar-track {
@@ -348,86 +27,41 @@ body.loading * {
 }
 
 .gui-scrollable::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 999px;
-  transition: background 0.2s ease;
 }
 
-.gui-scrollable::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+/* iOS status dot pulse */
+@keyframes ios-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
 }
 
-/* Selection color to match SCP theme */
-::selection {
-  background: rgba(233, 69, 96, 0.3);
-  color: #f0f0f0;
+.animate-ios-pulse {
+  animation: ios-pulse 2s ease-in-out infinite;
 }
 
-/* Focus visible for accessibility */
-:focus-visible {
-  outline: 2px solid var(--gui-accent, #e94560);
-  outline-offset: 2px;
-  border-radius: var(--gui-radius-xs, 4px);
+/* iOS sheet slide up */
+@keyframes ios-sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
-/* Staggered animation utility — children animate in sequence */
-.gui-stagger > * {
-  animation: gui-fade-in-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+.ios-sheet-enter {
+  animation: ios-sheet-up 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
-.gui-stagger > *:nth-child(1) { animation-delay: 0ms; }
-.gui-stagger > *:nth-child(2) { animation-delay: 30ms; }
-.gui-stagger > *:nth-child(3) { animation-delay: 60ms; }
-.gui-stagger > *:nth-child(4) { animation-delay: 90ms; }
-.gui-stagger > *:nth-child(5) { animation-delay: 120ms; }
-.gui-stagger > *:nth-child(6) { animation-delay: 150ms; }
-.gui-stagger > *:nth-child(7) { animation-delay: 180ms; }
-.gui-stagger > *:nth-child(8) { animation-delay: 210ms; }
-.gui-stagger > *:nth-child(n+9) { animation-delay: 240ms; }
-
-/* ── iOS Transition Classes ─────────────────────────────────────────── */
-
-.gui-ios-slide-enter-active {
-  animation: gui-slide-in 0.45s cubic-bezier(0.32, 0.72, 0, 1) both;
-}
-.gui-ios-slide-leave-active {
-  animation: gui-slide-out 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+/* iOS fade in */
+@keyframes ios-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.gui-ios-sheet-enter-active {
-  animation: gui-sheet-in 0.4s cubic-bezier(0.32, 0.72, 0, 1) both;
-}
-.gui-ios-sheet-leave-active {
-  animation: gui-sheet-out 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+.ios-fade-enter {
+  animation: ios-fade-in 0.25s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
-.gui-ios-fade-enter-active,
-.gui-ios-fade-leave-active {
-  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.gui-ios-fade-enter-from,
-.gui-ios-fade-leave-to {
-  opacity: 0;
-}
-
-/* ── Safe Area Utility Classes ──────────────────────────────────────── */
-.gui-safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.gui-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.gui-safe-left {
-  padding-left: env(safe-area-inset-left, 0px);
-}
-.gui-safe-right {
-  padding-right: env(safe-area-inset-right, 0px);
-}
-
-/* ── Viewport Height Utilities ─────────────────────────────────────── */
-.gui-dvh {
-  height: 100dvh;
-}
-.gui-dvh-min {
-  min-height: 100dvh;
+/* SVG squircle filter for app icons */
+.squircle-app {
+  filter: url(#squircle);
 }

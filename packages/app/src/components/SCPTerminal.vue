@@ -1,19 +1,23 @@
 <template>
-  <div class="scp-terminal">
-    <!-- Terminal Header with Traffic Lights -->
-    <div class="scp-terminal__header">
-      <div class="scp-terminal__traffic-lights">
-        <span class="scp-terminal__dot scp-terminal__dot--red" />
-        <span class="scp-terminal__dot scp-terminal__dot--yellow" />
-        <span class="scp-terminal__dot scp-terminal__dot--green" />
+  <div class="scp-terminal w-screen h-dvh relative flex flex-col bg-[#1C1C1E] overflow-hidden">
+    <!-- Terminal Header -->
+    <div class="scp-terminal__header flex items-center justify-between h-11 px-4 bg-[rgba(44,44,46,0.85)] backdrop-blur-[20px] backdrop-saturate-[180%] border-b border-white/[0.06] flex-shrink-0"
+         style="padding-top: env(safe-area-inset-top, 0px);">
+      <!-- Traffic Lights -->
+      <div class="flex items-center gap-1">
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FF5F57] shadow-[0_0_4px_rgba(255,95,87,0.4)] transition-all duration-200" />
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FFBD2E] shadow-[0_0_4px_rgba(255,189,46,0.4)] transition-all duration-200" />
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#28C840] shadow-[0_0_4px_rgba(40,200,64,0.4)] transition-all duration-200" />
       </div>
-      <div class="scp-terminal__title">
-        <span class="scp-terminal__title-icon">⟩</span>
+      <!-- Title -->
+      <div class="scp-terminal__title absolute left-1/2 -translate-x-1/2 flex items-center gap-1 text-[12px] font-semibold text-[#8E8E93] whitespace-nowrap overflow-hidden text-ellipsis tracking-wide">
+        <span class="scp-terminal__title-icon text-[#8E8E93] font-bold">⟩</span>
         SCP Terminal
       </div>
-      <div class="scp-terminal__status">
+      <!-- Status -->
+      <div class="scp-terminal__status flex items-center gap-1 text-[11px] font-semibold text-[#8E8E93] tracking-widest">
         <span
-          class="scp-terminal__status-dot"
+          class="scp-terminal__status-dot w-[6px] h-[6px] rounded-full animate-ios-pulse"
           :class="statusDotClass"
         />
         {{ statusText }}
@@ -21,22 +25,21 @@
     </div>
 
     <!-- Terminal Body -->
-    <div class="scp-terminal__body">
-      <div id="terminal-container" ref="terminalContainer" />
+    <div class="scp-terminal__body flex-1 relative overflow-hidden bg-[#1C1C1E]">
+      <div id="terminal-container" ref="terminalContainer" class="w-full h-full bg-[#1C1C1E] touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch scroll-smooth" />
     </div>
 
-    <!-- Mobile Virtual Keyboard -->
+    <!-- Virtual Keyboard -->
     <Transition name="scp-terminal__keyboard">
-      <div v-if="isMobile" class="scp-terminal__keyboard">
+      <div v-if="isMobile" class="scp-terminal__keyboard px-1 pb-[calc(4px+env(safe-area-inset-bottom,0px))] pt-1 bg-[rgba(44,44,46,0.85)] backdrop-blur-[20px] backdrop-saturate-[180%] border-t border-white/[0.06]">
         <!-- Modifier Keys -->
-        <div class="scp-terminal__kb-row scp-terminal__kb-row--modifiers">
+        <div class="flex gap-1 mb-2">
           <button
             v-for="mod in modifierKeys"
             :key="mod.id"
             :class="[
-              'scp-terminal__key',
-              'scp-terminal__key--modifier',
-              { 'scp-terminal__key--active': modifiers[mod.id as keyof typeof modifiers] },
+              'flex-1 min-w-[40px] h-10 bg-[#2C2C2E] border border-white/[0.06] rounded-[8px] text-[#FFFFFF] text-[11px] font-medium cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out',
+              { 'bg-[rgba(142,142,147,0.15)] text-[#8E8E93] border-[#8E8E93]': modifiers[mod.id] },
             ]"
             @click="handleModifier(mod.id)"
           >
@@ -44,18 +47,18 @@
           </button>
         </div>
         <!-- Navigation Keys -->
-        <div class="scp-terminal__kb-row">
+        <div class="flex gap-[2px] mb-[2px]">
           <button
             v-for="key in navKeys"
             :key="key.id"
-            class="scp-terminal__key scp-terminal__key--nav"
+            class="flex-1 min-w-[44px] h-10 bg-[#1C1C1E] border border-white/[0.06] rounded-[8px] text-[#FFFFFF] text-[14px] font-medium cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out active:scale-[0.92] active:bg-[#3A3A3C] hover:bg-white/[0.06]"
             @click="handleKey(key.action)"
           >
             <span v-if="key.icon" v-html="key.icon" />
             <span v-else>{{ key.label }}</span>
           </button>
           <button
-            class="scp-terminal__key scp-terminal__key--enter"
+            class="flex-1 min-w-[60px] h-10 bg-[#8E8E93] border border-[#8E8E93] rounded-[8px] text-[#FFFFFF] cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out active:scale-[0.92] active:bg-[#AEAEB2] active:border-[#AEAEB2]"
             @click="handleKey('enter')"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -65,11 +68,11 @@
           </button>
         </div>
         <!-- Action Keys -->
-        <div class="scp-terminal__kb-row">
+        <div class="flex gap-[2px]">
           <button
             v-for="key in actionKeys"
             :key="key.id"
-            class="scp-terminal__key scp-terminal__key--action"
+            class="flex-1 min-w-[40px] h-10 bg-[#1C1C1E] border border-white/[0.06] rounded-[8px] text-[#FFFFFF] text-[11px] font-medium cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out active:scale-[0.92] active:bg-[#3A3A3C] hover:bg-white/[0.06]"
             @click="handleKey(key.action)"
           >
             {{ key.label }}
@@ -92,26 +95,20 @@ const tabsStore = useTabsStore()
 const systemStore = useSystemStore()
 const terminalContainer = ref<HTMLDivElement>()
 
-// Terminal state per tab
 const terminalStates = ref<Record<string, string | string[]>>({})
-
-// Modifier keys
 const modifiers = ref({ ctrl: false, alt: false })
 
-// Status computed properties
 const statusDotClass = computed(() => {
-  if (systemStore.isRunning) return 'scp-terminal__status-dot--online'
-  return 'scp-terminal__status-dot--offline'
+  if (systemStore.isRunning) return 'bg-[#34C759] shadow-[0_0_6px_#34C759]'
+  return 'bg-[#FF3B30] shadow-[0_0_6px_#FF3B30]'
 })
 
 const statusText = computed(() => systemStore.isRunning ? 'ONLINE' : 'OFFLINE')
 
-// Mobile detection
 const isMobile = computed(() => {
   return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 })
 
-// Keyboard configuration
 const modifierKeys = [
   { id: 'ctrl' as const, label: 'CTRL' },
   { id: 'alt' as const, label: 'ALT' },
@@ -136,7 +133,6 @@ const actionKeys = [
   { id: 'history', label: 'HIST', action: 'history' },
 ]
 
-// Terminal composable
 const {
   initTerminal,
   destroyTerminal,
@@ -151,7 +147,6 @@ const {
   terminalInstance,
 } = useTerminal(terminalContainer)
 
-// Key handling
 function handleModifier(id: 'ctrl' | 'alt'): void {
   modifiers.value[id] = !modifiers.value[id]
   triggerHaptic()
@@ -183,7 +178,6 @@ function handleKey(action: string): void {
     case 'enter': sendKey('\r'); break
   }
 
-  // Reset modifiers after sending
   setTimeout(() => { modifiers.value = { ctrl: false, alt: false } }, 100)
 }
 
@@ -193,7 +187,6 @@ function triggerHaptic(): void {
   }
 }
 
-// Resize handling
 let resizeTimeout: number | null = null
 const handleResize = () => {
   if (resizeTimeout) clearTimeout(resizeTimeout)
@@ -203,7 +196,6 @@ const handleResize = () => {
   }, 250)
 }
 
-// Initialize
 onMounted(async () => {
   try {
     await indexedDBService.init()
@@ -217,7 +209,6 @@ onMounted(async () => {
     initTerminal()
     window.addEventListener('resize', handleResize)
 
-    // Always show startup prompt — user must type 'start' to boot
     clear()
     displayStartupPrompt()
     setupCommandHandler()
@@ -226,13 +217,11 @@ onMounted(async () => {
   }
 })
 
-// Tab switching — save and restore terminal state
 watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
   if (!terminal) return
   if (newTabId === oldTabId) return
 
-  // Save old tab
   if (oldTabId) {
     try {
       const buffer = terminal.buffer.active
@@ -250,7 +239,6 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
     }
   }
 
-  // Restore new tab
   if (newTabId) {
     let savedLines: string[] | null = null
 
@@ -285,7 +273,6 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   }
 }, { flush: 'post' })
 
-// Cleanup
 onBeforeUnmount(() => {
   if (resizeTimeout) clearTimeout(resizeTimeout)
   window.removeEventListener('resize', handleResize)
@@ -294,136 +281,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ── Terminal Shell ────────────────────────────────────────────────── */
-.scp-terminal {
-  width: 100vw;
-  height: 100dvh;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  background: var(--gui-bg-base, #060606);
-  overflow: hidden;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────── */
-.scp-terminal__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 44px;
-  padding: 0 var(--gui-spacing-base, 16px);
-  padding-top: env(safe-area-inset-top, 0px);
-  background: var(--gui-glass-bg, rgba(16, 16, 16, 0.75));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  flex-shrink: 0;
-}
-
-/* Traffic Lights */
-.scp-terminal__traffic-lights {
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-}
-
-.scp-terminal__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--gui-radius-full, 9999px);
-  transition: all var(--gui-transition-base, 200ms ease);
-}
-
-.scp-terminal__dot--red {
-  background: #ff5f57;
-  box-shadow: 0 0 4px rgba(255, 95, 87, 0.4);
-}
-
-.scp-terminal__dot--yellow {
-  background: #ffbd2e;
-  box-shadow: 0 0 4px rgba(255, 189, 46, 0.4);
-}
-
-.scp-terminal__dot--green {
-  background: #28c840;
-  box-shadow: 0 0 4px rgba(40, 200, 64, 0.4);
-}
-
-/* Title */
-.scp-terminal__title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-  font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-secondary, #a0a0a0);
-  letter-spacing: 0.03em;
-}
-
-.scp-terminal__title-icon {
-  color: var(--gui-accent, #e94560);
-  font-weight: var(--gui-font-weight-bold, 700);
-}
-
-/* Status */
-.scp-terminal__status {
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-  font-size: var(--gui-font-xs, 11px);
-  font-weight: var(--gui-font-weight-semibold, 600);
-  letter-spacing: 0.05em;
-  color: var(--gui-text-secondary, #a0a0a0);
-}
-
-.scp-terminal__status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--gui-radius-full, 9999px);
-  animation: scp-terminal__pulse 2s ease-in-out infinite;
-}
-
-.scp-terminal__status-dot--online {
-  background: var(--gui-success, #34d399);
-  box-shadow: 0 0 6px var(--gui-success, #34d399);
-}
-
-.scp-terminal__status-dot--offline {
-  background: var(--gui-error, #f87171);
-  box-shadow: 0 0 6px var(--gui-error, #f87171);
-}
-
-@keyframes scp-terminal__pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.85); }
-}
-
-/* ── Terminal Body ─────────────────────────────────────────────────── */
-.scp-terminal__body {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background: var(--gui-editor-bg, #0a0a0a);
-}
-
-#terminal-container {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: var(--gui-editor-bg, #0a0a0a);
-  touch-action: pan-y;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-}
-
+/* Terminal scrollbar */
 #terminal-container :deep(.xterm) {
   height: 100%;
-  padding: var(--gui-spacing-sm, 8px);
+  padding: 8px;
 }
 
 #terminal-container :deep(.xterm-viewport) {
@@ -432,7 +293,7 @@ onBeforeUnmount(() => {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   scrollbar-width: thin;
-  scrollbar-color: var(--gui-accent, #e94560) transparent;
+  scrollbar-color: var(--gui-accent, #8E8E93) transparent;
 }
 
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar {
@@ -444,110 +305,22 @@ onBeforeUnmount(() => {
 }
 
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
-  background: var(--gui-accent, #e94560);
-  border-radius: var(--gui-radius-full, 9999px);
+  background: var(--gui-accent, #8E8E93);
+  border-radius: 999px;
   opacity: 0.6;
 }
 
 #terminal-container :deep(.xterm-screen) {
-  background-color: var(--gui-editor-bg, #0a0a0a) !important;
+  background-color: var(--gui-editor-bg, #1C1C1E) !important;
 }
 
-/* ── Virtual Keyboard ──────────────────────────────────────────────── */
-.scp-terminal__keyboard {
-  padding: var(--gui-spacing-xs, 4px);
-  padding-bottom: calc(var(--gui-spacing-xs, 4px) + env(safe-area-inset-bottom, 0px));
-  background: var(--gui-glass-bg, rgba(12, 12, 12, 0.85));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-}
-
-.scp-terminal__kb-row {
-  display: flex;
-  gap: var(--gui-spacing-xxs, 2px);
-  margin-bottom: var(--gui-spacing-xxs, 2px);
-}
-
-.scp-terminal__kb-row:last-child { margin-bottom: 0; }
-
-.scp-terminal__kb-row--modifiers { margin-bottom: var(--gui-spacing-xs, 4px); }
-
-/* Key Base */
-.scp-terminal__key {
-  flex: 1;
-  min-width: 40px;
-  height: var(--gui-dim-keyboard-button-height, 40px);
-  background: var(--gui-bg-surface, #0c0c0c);
-  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  border-radius: var(--gui-radius-base, 8px);
-  color: var(--gui-text-primary, #f0f0f0);
-  font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-medium, 500);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  transition: all var(--gui-transition-fast, 120ms ease);
-}
-
-.scp-terminal__key:active {
-  transform: scale(0.92);
-  background: var(--gui-bg-surface-active, #222222);
-}
-
-.scp-terminal__key:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
-}
-
-/* Modifier Keys */
-.scp-terminal__key--modifier {
-  background: var(--gui-bg-surface-raised, #111111);
-  font-size: var(--gui-font-xs, 11px);
-  letter-spacing: 0.05em;
-}
-
-.scp-terminal__key--modifier.scp-terminal__key--active {
-  background: var(--gui-accent-soft, rgba(233, 69, 96, 0.15));
-  color: var(--gui-accent, #e94560);
-  border-color: var(--gui-accent, #e94560);
-}
-
-/* Navigation Keys */
-.scp-terminal__key--nav {
-  min-width: 44px;
-  font-size: var(--gui-font-md, 14px);
-}
-
-/* Enter Key */
-.scp-terminal__key--enter {
-  background: var(--gui-accent, #e94560);
-  color: var(--gui-text-inverse, #ffffff);
-  border-color: var(--gui-accent, #e94560);
-  min-width: 60px;
-}
-
-.scp-terminal__key--enter:active {
-  background: var(--gui-accent-hover, #ff5a73);
-  border-color: var(--gui-accent-hover, #ff5a73);
-}
-
-/* Action Keys */
-.scp-terminal__key--action {
-  background: var(--gui-bg-surface, #0c0c0c);
-  font-size: var(--gui-font-xs, 11px);
-  letter-spacing: 0.03em;
-}
-
-/* ── Keyboard Transition ────────────────────────────────────────────── */
+/* Keyboard transition */
 .scp-terminal__keyboard-enter-active {
-  transition: all var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .scp-terminal__keyboard-leave-active {
-  transition: all var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .scp-terminal__keyboard-enter-from,
@@ -556,38 +329,10 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-/* ── Mobile Adjustments ─────────────────────────────────────────────── */
+/* Mobile adjustments */
 @media (max-width: 768px) {
-  .scp-terminal__header { height: 48px; }
-
-  .scp-terminal__keyboard {
-    padding: var(--gui-spacing-xxs, 2px);
-    padding-bottom: calc(var(--gui-spacing-xxs, 2px) + env(safe-area-inset-bottom, 0px));
+  .scp-terminal__header {
+    height: 48px;
   }
-
-  .scp-terminal__key {
-    height: 36px;
-    min-width: 36px;
-    font-size: 10px;
-    border-radius: var(--gui-radius-sm, 6px);
-  }
-
-  .scp-terminal__key--nav { min-width: 40px; }
-  .scp-terminal__key--enter { min-width: 52px; }
-}
-
-@media (max-width: 480px) {
-  .scp-terminal__key {
-    height: 32px;
-    min-width: 32px;
-    font-size: 9px;
-  }
-
-  .scp-terminal__key--modifier { font-size: 9px; }
-  .scp-terminal__key--action { font-size: 9px; }
-}
-
-@media (max-width: 360px) {
-  .scp-terminal__key { height: 30px; min-width: 28px; }
 }
 </style>
