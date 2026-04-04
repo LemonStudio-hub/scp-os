@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added build output cleanup: `emptyOutDir: true` in vite config
   - Deployment now successful and accessible at https://scpos.pages.dev
 
+- **Terminal Scraper API** (2026-04-04)
+  - Fixed all hardcoded API URLs from `api.woodcat.online` (unreachable) to `api.scpos.site` (working)
+  - Updated `defaults.ts` worker-url default value
+  - Updated `scp-wiki-datasource.plugin.ts` constructor default parameter
+  - Updated `default-config.ts` Cloudflare Workers deployment URL
+  - All terminal commands (info, search, scp-list, network) now working properly
+
 ## [0.1.0] - 2026-04-03
 
 ### 🎉 Initial Release
