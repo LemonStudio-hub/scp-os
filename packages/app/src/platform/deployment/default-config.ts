@@ -145,7 +145,7 @@ export const DEFAULT_PROD_CONFIG: DeploymentConfiguration = {
       id: 'cloudflare-workers',
       name: 'Cloudflare Workers',
       type: 'cloudflare',
-      url: 'https://api.woodcat.online',
+      url: 'https://api.scpos.site',
       config: {
         type: 'workers',
         entrypoint: 'worker/index.ts',

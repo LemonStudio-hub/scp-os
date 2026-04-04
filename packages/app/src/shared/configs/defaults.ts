@@ -10,7 +10,7 @@ import type { ConfigSchema } from './types'
  */
 export const defaultConfig = {
   // API Configuration
-  'api.worker-url': 'https://api.woodcat.online',
+  'api.worker-url': 'https://api.scpos.site',
   'api.timeout': 15000,
 
   // Cache Configuration

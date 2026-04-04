@@ -31,7 +31,7 @@ export class ScpWikiDataSourcePlugin implements IDataSourcePlugin {
   private cache: Map<string, any> = new Map()
   private apiUrl: string
   
-  constructor(apiUrl: string = 'https://api.woodcat.online') {
+  constructor(apiUrl: string = 'https://api.scpos.site') {
     this.apiUrl = apiUrl
     this.initializeDataSources()
   }
