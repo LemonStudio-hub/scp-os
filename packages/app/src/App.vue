@@ -7,6 +7,7 @@ import SCPToolbar, { type DockItemDef } from './gui/components/SCPToolbar.vue'
 import FileManagerWindow from './gui/tools/filemanager/FileManagerWindow.vue'
 import EditorWindow from './gui/tools/editor/EditorWindow.vue'
 import TerminalPanel from './gui/tools/terminal/TerminalPanel.vue'
+import MobileApp from './gui/mobile/MobileApp.vue'
 import { useTabsStore } from './stores/tabs'
 import { useWindowManagerStore } from './gui/stores/windowManager'
 import type { ToolType } from './gui/types'
@@ -144,38 +145,42 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="app">
-    <SCPTerminal />
-    <Sidebar />
-    <PerformanceDashboard
-      :isVisible="showPerformanceDashboard"
-      @close="showPerformanceDashboard = false"
-    />
+  <!-- MobileApp handles mobile vs desktop routing internally -->
+  <MobileApp>
+    <!-- Desktop Layout -->
+    <div id="app">
+      <SCPTerminal />
+      <Sidebar />
+      <PerformanceDashboard
+        :isVisible="showPerformanceDashboard"
+        @close="showPerformanceDashboard = false"
+      />
 
-    <!-- GUI Windows -->
-    <template v-for="win in wmStore.openWindows" :key="win.config.id">
-      <FileManagerWindow
-        v-if="win.config.tool === 'filemanager'"
-        :window-instance="win"
-      />
-      <EditorWindow
-        v-else-if="win.config.tool === 'editor'"
-        :window-instance="win"
-      />
-      <TerminalPanel
-        v-else-if="win.config.tool === 'terminal'"
-        :window-instance="win"
-      />
-    </template>
+      <!-- GUI Windows -->
+      <template v-for="win in wmStore.openWindows" :key="win.config.id">
+        <FileManagerWindow
+          v-if="win.config.tool === 'filemanager'"
+          :window-instance="win"
+        />
+        <EditorWindow
+          v-else-if="win.config.tool === 'editor'"
+          :window-instance="win"
+        />
+        <TerminalPanel
+          v-else-if="win.config.tool === 'terminal'"
+          :window-instance="win"
+        />
+      </template>
 
-    <!-- Toolbar -->
-    <SCPToolbar
-      :active-tools="activeTools"
-      status="online"
-      status-text="SCP-OS v0.1.0"
-      @launch="onToolbarLaunch"
-    />
-  </div>
+      <!-- Toolbar -->
+      <SCPToolbar
+        :active-tools="activeTools"
+        status="online"
+        status-text="SCP-OS v0.1.0"
+        @launch="onToolbarLaunch"
+      />
+    </div>
+  </MobileApp>
 </template>
 
 <style>
