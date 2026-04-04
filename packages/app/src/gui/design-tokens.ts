@@ -1,12 +1,8 @@
 /**
- * GUI Design Tokens v2 — Flat, Modern, SCP Theme
+ * GUI Design Tokens v3 — Unified, iOS-Inspired, SCP Foundation Theme
  *
- * Design Philosophy:
- * - Flat surfaces with subtle depth (no heavy borders/gradients)
- * - Smooth animations with easing curves
- * - Clean typography with system font stack
- * - SCP Foundation dark theme: deep blacks, muted grays, accent red
- * - Glass morphism for overlays and context menus
+ * All components MUST use these CSS variables. No hardcoded values.
+ * Fallbacks in components MUST match the token values below.
  */
 
 // ── Color Palette ─────────────────────────────────────────────────────
@@ -19,15 +15,10 @@ export const colors = {
   bgSurfaceHover: '#1a1a1a',
   bgSurfaceActive: '#222222',
 
-  // Borders (subtle, using color instead of heavy lines)
-  borderSubtle: 'rgba(255, 255, 255, 0.06)',
-  borderDefault: 'rgba(255, 255, 255, 0.1)',
-  borderStrong: 'rgba(255, 255, 255, 0.16)',
-
   // Text hierarchy
   textPrimary: '#f0f0f0',
-  textSecondary: '#a8a8a8',
-  textTertiary: '#6a6a6a',
+  textSecondary: '#a0a0a0',
+  textTertiary: '#666666',
   textDisabled: '#444444',
   textInverse: '#ffffff',
 
@@ -48,6 +39,11 @@ export const colors = {
   info: '#60a5fa',
   infoBg: 'rgba(96, 165, 250, 0.1)',
 
+  // Borders
+  borderSubtle: 'rgba(255, 255, 255, 0.06)',
+  borderDefault: 'rgba(255, 255, 255, 0.1)',
+  borderStrong: 'rgba(255, 255, 255, 0.16)',
+
   // Window
   windowBg: '#0e0e0e',
   windowHeaderBg: 'rgba(18, 18, 18, 0.95)',
@@ -56,14 +52,19 @@ export const colors = {
   windowShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4)',
   windowShadowActive: '0 16px 48px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(233, 69, 96, 0.1)',
 
-  // Toolbar / Dock
+  // Dock / Toolbar
   dockBg: 'rgba(12, 12, 12, 0.85)',
   dockBorder: 'rgba(255, 255, 255, 0.08)',
   dockItemBg: 'rgba(255, 255, 255, 0.04)',
   dockItemHover: 'rgba(255, 255, 255, 0.1)',
   dockItemActive: 'rgba(233, 69, 96, 0.15)',
 
-  // Code / Editor
+  // Glass / Blur (overlays, context menus, bottom sheets)
+  glassBg: 'rgba(16, 16, 16, 0.75)',
+  glassBorder: 'rgba(255, 255, 255, 0.08)',
+  glassShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+
+  // Editor
   editorBg: '#0a0a0a',
   editorGutter: '#111111',
   editorLineHighlight: 'rgba(255, 255, 255, 0.03)',
@@ -74,10 +75,32 @@ export const colors = {
   fileSelected: 'rgba(233, 69, 96, 0.08)',
   fileHover: 'rgba(255, 255, 255, 0.04)',
 
-  // Glass / Blur
-  glassBg: 'rgba(16, 16, 16, 0.75)',
-  glassBorder: 'rgba(255, 255, 255, 0.08)',
-  glassShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+  // Backdrop (modal overlays)
+  backdropBg: 'rgba(0, 0, 0, 0.4)',
+
+  // Handle bar (bottom sheets)
+  handleBar: 'rgba(255, 255, 255, 0.2)',
+
+  // Home indicator
+  homeIndicator: 'rgba(255, 255, 255, 0.3)',
+
+  // App icon gradients
+  appIconTerminalFrom: '#8b0000',
+  appIconTerminalTo: '#e94560',
+  appIconFilesFrom: '#1e3a5f',
+  appIconFilesTo: '#60a5fa',
+  appIconSettingsFrom: '#3a3a3a',
+  appIconSettingsTo: '#6a6a6a',
+
+  // Status bar
+  statusBarText: '#f0f0f0',
+  statusBarBattery: '#34d399',
+
+  // Wallpaper
+  wallpaperBase: '#060606',
+  wallpaperGradient1: 'rgba(139, 0, 0, 0.15)',
+  wallpaperGradient2: 'rgba(233, 69, 96, 0.08)',
+  wallpaperGradient3: 'rgba(96, 165, 250, 0.05)',
 } as const
 
 // ── Spacing Scale (4px base unit) ─────────────────────────────────────
@@ -91,6 +114,8 @@ export const spacing = {
   xl: '24px',
   '2xl': '32px',
   '3xl': '48px',
+  '4xl': '60px',
+  '5xl': '80px',
 } as const
 
 // ── Border Radius ─────────────────────────────────────────────────────
@@ -101,7 +126,7 @@ export const radius = {
   base: '8px',
   md: '10px',
   lg: '12px',
-  xl: '16px',
+  xl: '14px',
   '2xl': '20px',
   full: '9999px',
 } as const
@@ -122,7 +147,11 @@ export const transitions = {
   fast: '120ms cubic-bezier(0.4, 0, 0.2, 1)',
   base: '200ms cubic-bezier(0.4, 0, 0.2, 1)',
   slow: '300ms cubic-bezier(0.4, 0, 0.2, 1)',
-  spring: '400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+  // iOS spring — deceleration curve for dismiss animations
+  iosSpring: '400ms cubic-bezier(0.32, 0.72, 0, 1)',
+  // Bounce spring for icon taps
+  bounceSpring: '400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+  // Smooth ease-out for page transitions
   smooth: '500ms cubic-bezier(0.16, 1, 0.3, 1)',
 } as const
 
@@ -144,13 +173,14 @@ export const fontSizes = {
   base: '13px',
   md: '14px',
   lg: '15px',
-  xl: '18px',
+  xl: '17px',
   '2xl': '22px',
   '3xl': '28px',
 } as const
 
 export const fontFamilies = {
-  sans: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  // iOS-first: SF Pro where available, fall back to system stack
+  sans: '-apple-system, "SF Pro Display", "SF Pro Text", BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   mono: '"JetBrains Mono", "Cascadia Code", "Fira Code", "SF Mono", Consolas, monospace',
 } as const
 
@@ -167,6 +197,42 @@ export const lineHeights = {
   relaxed: 1.7,
 } as const
 
+// ── Icon Sizes ────────────────────────────────────────────────────────
+export const iconSizes = {
+  xs: '14px',
+  sm: '16px',
+  base: '20px',
+  md: '24px',
+  lg: '28px',
+  xl: '32px',
+  dock: '48px',
+  homeScreen: '60px',
+} as const
+
+// ── Component Dimensions ──────────────────────────────────────────────
+export const dimensions = {
+  statusBarHeight: '44px',
+  statusBarPaddingTop: 'max(12px, env(safe-area-inset-top, 12px))',
+  navBarHeight: '44px',
+  dockIconSize: '48px',
+  homeScreenIconSize: '60px',
+  homeScreenIconRadius: '14px',
+  homeScreenGridGap: '32px',
+  homeIndicatorWidth: '134px',
+  homeIndicatorHeight: '5px',
+  handleBarWidth: '36px',
+  handleBarHeight: '5px',
+  handleBarRadius: '100px',
+  badgeSize: '16px',
+  badgeFontSize: '10px',
+  dotActiveSize: '4px',
+  dotStatusSize: '6px',
+  keyboardButtonHeight: '40px',
+  keyboardButtonMinWidth: '40px',
+  sliderThumbSize: '20px',
+  sliderTrackHeight: '4px',
+} as const
+
 // ── Window Defaults ───────────────────────────────────────────────────
 export const windowDefaults = {
   width: 800,
@@ -178,10 +244,6 @@ export const windowDefaults = {
 } as const
 
 // ── CSS Custom Properties Injection ───────────────────────────────────
-/**
- * Inject GUI design tokens as CSS custom properties on :root.
- * Call once during app initialization.
- */
 export function injectGUITokens(): void {
   if (typeof document === 'undefined') return
 
@@ -218,7 +280,7 @@ export function injectGUITokens(): void {
     root.style.setProperty(`--gui-z-${key}`, String(value))
   })
 
-  // Font Sizes
+  // Font Sizes — also inject as --gui-font-<key> for backward compat
   Object.entries(fontSizes).forEach(([key, value]) => {
     root.style.setProperty(`--gui-font-${key}`, value)
   })
@@ -236,5 +298,16 @@ export function injectGUITokens(): void {
   // Font Families
   Object.entries(fontFamilies).forEach(([key, value]) => {
     root.style.setProperty(`--gui-font-${key}`, value)
+  })
+
+  // Icon Sizes
+  Object.entries(iconSizes).forEach(([key, value]) => {
+    root.style.setProperty(`--gui-icon-${key}`, value)
+  })
+
+  // Component Dimensions
+  Object.entries(dimensions).forEach(([key, value]) => {
+    const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase()
+    root.style.setProperty(`--gui-dim-${cssKey}`, value)
   })
 }

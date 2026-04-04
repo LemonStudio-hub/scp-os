@@ -49,7 +49,7 @@ defineEmits<{
   background: var(--gui-glass-bg, rgba(16, 16, 16, 0.75));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
+  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   position: relative;
   z-index: 10;
   flex-shrink: 0;

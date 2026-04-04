@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <Transition name="ios-sheet">
+    <Transition name="gui-ios-sheet">
       <div v-if="visible" class="mobile-bottom-sheet-backdrop" @click.self="onBackdropClick">
         <div
           ref="sheetRef"
@@ -25,7 +25,7 @@
             <h3 class="mobile-bottom-sheet__title">{{ title }}</h3>
             <button v-if="showClose" class="mobile-bottom-sheet__close" @click="$emit('close')">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="7" fill="rgba(255,255,255,0.1)"/>
+                <circle cx="8" cy="8" r="7" fill="var(--gui-handle-bar, rgba(255,255,255,0.2))"/>
                 <path d="M5 5L11 11M11 5L5 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
               </svg>
             </button>
@@ -118,7 +118,7 @@ function onBackdropClick() {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.4));
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -128,7 +128,7 @@ function onBackdropClick() {
   max-width: 600px;
   max-height: 85vh;
   background: var(--gui-bg-surface-raised, #111111);
-  border-radius: var(--gui-radius-xl, 16px) var(--gui-radius-xl, 16px) 0 0;
+  border-radius: var(--gui-radius-xl, 14px) var(--gui-radius-xl, 14px) 0 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -155,10 +155,10 @@ function onBackdropClick() {
 }
 
 .mobile-bottom-sheet__handle-bar {
-  width: 36px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--gui-radius-full, 9999px);
+  width: var(--gui-dim-handle-bar-width, 36px);
+  height: var(--gui-dim-handle-bar-height, 5px);
+  background: var(--gui-handle-bar, rgba(255, 255, 255, 0.2));
+  border-radius: var(--gui-dim-handle-bar-radius, 100px);
 }
 
 /* ── Header ────────────────────────────────────────────────────────── */

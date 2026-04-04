@@ -80,12 +80,12 @@ function onTouchStart() {
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
-  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px);
-  padding-bottom: calc(var(--gui-spacing-sm, 8px) + env(safe-area-inset-bottom, 0px));
-  background: var(--gui-glass-bg, rgba(16, 16, 16, 0.72));
+  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-base, 16px);
+  padding-bottom: calc(var(--gui-spacing-xs, 4px) + env(safe-area-inset-bottom, 0px));
+  background: var(--gui-dock-bg, rgba(12, 12, 12, 0.85));
   backdrop-filter: blur(30px) saturate(200%);
   -webkit-backdrop-filter: blur(30px) saturate(200%);
-  border: 0.5px solid var(--gui-glass-border, rgba(255, 255, 255, 0.1));
+  border: 0.5px solid var(--gui-dock-border, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-2xl, 20px);
   box-shadow: var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6));
 }
@@ -102,7 +102,7 @@ function onTouchStart() {
   cursor: pointer;
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
   border-radius: var(--gui-radius-lg, 12px);
-  transition: all var(--gui-transition-fast, 120ms var(--ios-spring, cubic-bezier(0.32, 0.72, 0, 1)));
+  transition: all var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1));
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -144,9 +144,9 @@ function onTouchStart() {
 
 /* ── Label ─────────────────────────────────────────────────────────── */
 .mobile-dock__label {
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-  font-size: var(--gui-font-xs, 10px);
-  color: var(--gui-text-secondary, #a8a8a8);
+  font-family: var(--gui-font-sans);
+  font-size: var(--gui-font-xs, 11px);
+  color: var(--gui-text-secondary, #a0a0a0);
   font-weight: var(--gui-font-weight-medium, 500);
   white-space: nowrap;
   letter-spacing: 0.02em;
