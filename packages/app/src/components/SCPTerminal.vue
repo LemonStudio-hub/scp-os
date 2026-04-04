@@ -162,24 +162,25 @@ onMounted(async () => {
   // Initialize IndexedDB
   try {
     await indexedDBService.init()
-
-    // Load all terminal states
     const allStates = await indexedDBService.loadAllTerminalStates()
     terminalStates.value = allStates
-    console.log('[Terminal] Loaded terminal states from IndexedDB:', Object.keys(allStates).length)
   } catch (error) {
     console.error('[Terminal] Failed to initialize IndexedDB:', error)
   }
 
-  initTerminal()
+  try {
+    initTerminal()
+    window.addEventListener('resize', handleResize)
 
-  // Add resize listener for responsive font size
-  window.addEventListener('resize', handleResize)
+    // Clear terminal and ALWAYS show startup prompt
+    // User must type 'start' to boot the system
+    clear()
+    displayStartupPrompt()
 
-  // Always display startup prompt — user must type 'start' to boot
-  displayStartupPrompt()
-
-  setupCommandHandler()
+    setupCommandHandler()
+  } catch (error) {
+    console.error('[Terminal] Failed to initialize:', error)
+  }
 })
 
 // 监听标签页切换，保存和恢复终端状态
