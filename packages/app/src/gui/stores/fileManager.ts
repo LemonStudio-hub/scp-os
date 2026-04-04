@@ -7,11 +7,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { filesystem } from '../../utils/filesystem'
 import type { FileSystemNode } from '../../utils/filesystem'
-import type { ViewMode, SortField, SortOrder, FileItem, ContextMenuItem, ContextMenuState } from '../types'
+import type { ViewMode, SortField, SortOrder, FileItem, ContextMenuIcon, ContextMenuState } from '../types'
 
 export const useFileManagerStore = defineStore('fileManager', () => {
   // State
-  const currentPath = ref<string>(filesystem.getCurrentDirectory())
+  const currentPath = ref<string>('/')
   const files = ref<FileItem[]>([])
   const viewMode = ref<ViewMode>('grid')
   const sortField = ref<SortField>('name')
@@ -80,8 +80,10 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     loading.value = true
     try {
       if (path) {
-        filesystem.changeDirectory(path)
-        currentPath.value = filesystem.getCurrentDirectory()
+        // Normalize path for virtual filesystem
+        const fsPath = path === '/' ? '/' : path
+        filesystem.changeDirectory(fsPath)
+        currentPath.value = fsPath
       }
 
       const nodes = filesystem.listDirectory()
@@ -96,6 +98,19 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   function navigateTo(path: string): void {
     selectedFiles.value.clear()
     loadDirectory(path)
+  }
+
+  function goHome(): void {
+    selectedFiles.value.clear()
+    loadDirectory('/home/scp')
+  }
+
+  function goUp(): void {
+    if (currentPath.value === '/') return
+    const parts = currentPath.value.split('/').filter(Boolean)
+    parts.pop()
+    const parentPath = '/' + parts.join('/') || '/'
+    loadDirectory(parentPath)
   }
 
   function toggleSelect(fileName: string): void {
@@ -129,15 +144,15 @@ export const useFileManagerStore = defineStore('fileManager', () => {
 
   // File operations
   function createFile(name: string, content?: string): boolean {
-    const path = `${currentPath.value}/${name}`
-    const result = filesystem.createFile(path, content)
+    const fsPath = currentPath.value === '/' ? `/${name}` : `${currentPath.value}/${name}`
+    const result = filesystem.createFile(fsPath, content)
     if (result) loadDirectory()
     return result
   }
 
   function createDirectory(name: string): boolean {
-    const path = `${currentPath.value}/${name}`
-    const result = filesystem.createDirectory(path)
+    const fsPath = currentPath.value === '/' ? `/${name}` : `${currentPath.value}/${name}`
+    const result = filesystem.createDirectory(fsPath)
     if (result) loadDirectory()
     return result
   }
@@ -145,8 +160,8 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   function deleteSelected(): boolean {
     let success = true
     for (const fileName of selectedFiles.value) {
-      const path = `${currentPath.value}/${fileName}`
-      if (!filesystem.deleteNode(path)) {
+      const fsPath = currentPath.value === '/' ? `/${fileName}` : `${currentPath.value}/${fileName}`
+      if (!filesystem.deleteNode(fsPath)) {
         success = false
       }
     }
@@ -157,50 +172,57 @@ export const useFileManagerStore = defineStore('fileManager', () => {
 
   function renameFile(oldName: string, newName: string): boolean {
     if (oldName === newName) return true
-    const sourcePath = `${currentPath.value}/${oldName}`
-    const destPath = `${currentPath.value}/${newName}`
-    const result = filesystem.moveNode(sourcePath, destPath)
+    const fsSource = currentPath.value === '/' ? `/${oldName}` : `${currentPath.value}/${oldName}`
+    const fsDest = currentPath.value === '/' ? `/${newName}` : `${currentPath.value}/${newName}`
+    const result = filesystem.moveNode(fsSource, fsDest)
     if (result) loadDirectory()
     return result
   }
 
   function readFileContent(name: string): string | null {
-    const path = `${currentPath.value}/${name}`
-    return filesystem.readFile(path)
+    const fsPath = currentPath.value === '/' ? `/${name}` : `${currentPath.value}/${name}`
+    return filesystem.readFile(fsPath)
   }
 
   function writeFileContent(name: string, content: string): boolean {
-    const path = `${currentPath.value}/${name}`
-    const result = filesystem.writeFile(path, content)
+    const fsPath = currentPath.value === '/' ? `/${name}` : `${currentPath.value}/${name}`
+    const result = filesystem.writeFile(fsPath, content)
     if (result) loadDirectory()
     return result
   }
 
   // Context menu
+  interface FileContextAction {
+    id: string
+    label: string
+    icon: ContextMenuIcon
+    action: () => void
+  }
+
   function showContextMenu(x: number, y: number, fileName?: string): void {
-    const items: ContextMenuItem[] = fileName
+    const items: FileContextAction[] = fileName
       ? getFileContextItems(fileName)
       : getDirectoryContextItems()
 
-    contextMenu.value = { visible: true, x, y, items }
+    contextMenu.value = { visible: true, x, y, items: items as any }
   }
 
   function hideContextMenu(): void {
     contextMenu.value.visible = false
   }
 
-  function getFileContextItems(fileName: string): ContextMenuItem[] {
+  function getFileContextItems(fileName: string): FileContextAction[] {
     const file = files.value.find(f => f.name === fileName)
     const isDir = file?.isDirectory ?? false
 
     return [
       { id: 'open', label: isDir ? 'Open' : 'Edit', icon: isDir ? 'folder-open' : 'edit', action: () => openFile(fileName) },
       { id: 'rename', label: 'Rename', icon: 'edit', action: () => promptRename(fileName) },
-      { id: 'delete', label: 'Delete', icon: 'trash', action: () => deleteSelected() },
+      { id: 'delete', label: 'Delete', icon: 'trash', action: () => deleteFile(fileName) },
     ]
   }
 
-  function getDirectoryContextItems(): ContextMenuItem[] {
+  function getDirectoryContextItems(): FileContextAction[] {
     return [
       { id: 'new-file', label: 'New File', icon: 'file', action: () => promptNewFile() },
       { id: 'new-folder', label: 'New Folder', icon: 'folder', action: () => promptNewFolder() },
@@ -208,22 +230,40 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     ]
   }
 
-  // Placeholder action handlers (to be implemented in UI)
-  function openFile(_fileName: string): void {
-    // Will be handled by the window manager to open in editor or file manager
-    console.log('[FileManager] Open file:', _fileName)
+  // Action handlers
+  function openFile(fileName: string): void {
+    const fsPath = currentPath.value === '/' ? `/${fileName}` : `${currentPath.value}/${fileName}`
+    const content = filesystem.readFile(fsPath)
+    if (content !== null) {
+      console.log('[FileManager] Open file:', fileName, content)
+    }
+  }
+
+  function deleteFile(fileName: string): void {
+    const fsPath = currentPath.value === '/' ? `/${fileName}` : `${currentPath.value}/${fileName}`
+    filesystem.deleteNode(fsPath)
+    loadDirectory()
   }
 
   function promptRename(_fileName: string): void {
-    console.log('[FileManager] Prompt rename:', _fileName)
+    const newName = prompt('Rename to:', _fileName)
+    if (newName && newName !== _fileName) {
+      renameFile(_fileName, newName)
+    }
   }
 
   function promptNewFile(): void {
-    console.log('[FileManager] Prompt new file')
+    const name = prompt('New file name:', 'untitled.txt')
+    if (name) {
+      createFile(name, '')
+    }
   }
 
   function promptNewFolder(): void {
-    console.log('[FileManager] Prompt new folder')
+    const name = prompt('New folder name:', 'New Folder')
+    if (name) {
+      createDirectory(name)
+    }
   }
 
   // Helper
@@ -245,7 +285,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   }
 
   // Initialize
-  loadDirectory()
+  loadDirectory('/')
 
   return {
     // State
@@ -266,6 +306,8 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     // Actions
     loadDirectory,
     navigateTo,
+    goHome,
+    goUp,
     toggleSelect,
     clearSelection,
     setViewMode,
@@ -282,6 +324,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     getFileContextItems,
     getDirectoryContextItems,
     openFile,
+    deleteFile,
     promptRename,
     promptNewFile,
     promptNewFolder,
