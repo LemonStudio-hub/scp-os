@@ -13,9 +13,11 @@ import { useWindowManagerStore } from './gui/stores/windowManager'
 import type { ToolType } from './gui/types'
 import { injectGUITokens } from './gui/design-tokens'
 import { registerAllTools, openTool } from './gui'
+import { useThemeStore } from './gui/stores/themeStore'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
+const themeStore = useThemeStore()
 
 // Performance Dashboard state
 const showPerformanceDashboard = ref(false)
@@ -86,6 +88,9 @@ const handleTouchEnd = () => {
 }
 
 onMounted(async () => {
+  // Initialize theme store FIRST (before any components render)
+  themeStore.init()
+
   // Inject GUI design tokens
   injectGUITokens()
 

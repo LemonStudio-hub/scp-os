@@ -1,5 +1,5 @@
 <template>
-  <div ref="homeRef" class="home-screen">
+  <div ref="homeRef" class="home-screen" :style="homeScreenThemeStyles">
     <!-- Status Bar -->
     <div class="home-screen__status-bar">
       <span class="home-screen__status-time">{{ currentTime }}</span>
@@ -30,12 +30,12 @@
     <div class="home-screen__wallpaper">
       <div class="home-screen__wallpaper-gradient" />
       <div class="home-screen__wallpaper-pattern">
-        <svg width="100%" height="100%" viewBox="0 0 400 800" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="200" cy="400" r="180" stroke="rgba(142,142,147,0.06)" stroke-width="1"/>
-          <circle cx="200" cy="400" r="120" stroke="rgba(142,142,147,0.04)" stroke-width="1"/>
-          <circle cx="200" cy="400" r="60" stroke="rgba(142,142,147,0.03)" stroke-width="1"/>
-          <line x1="0" y1="400" x2="400" y2="400" stroke="rgba(142,142,147,0.03)" stroke-width="0.5"/>
-          <line x1="200" y1="0" x2="200" y2="800" stroke="rgba(142,142,147,0.03)" stroke-width="0.5"/>
+        <svg width="100%" height="100%" viewBox="0 0 400 800" fill="none">
+          <circle cx="200" cy="400" r="180" :stroke="wallpaperPatternColor1" stroke-width="1"/>
+          <circle cx="200" cy="400" r="120" :stroke="wallpaperPatternColor2" stroke-width="1"/>
+          <circle cx="200" cy="400" r="60" :stroke="wallpaperPatternColor3" stroke-width="1"/>
+          <line x1="0" y1="400" x2="400" y2="400" :stroke="wallpaperPatternColor3" stroke-width="0.5"/>
+          <line x1="200" y1="0" x2="200" y2="800" :stroke="wallpaperPatternColor3" stroke-width="0.5"/>
         </svg>
       </div>
     </div>
@@ -48,18 +48,16 @@
         class="home-screen__app"
         @click="onAppTap(app)"
       >
-        <div class="home-screen__app-icon" :class="`home-screen__app-icon--${app.id}`">
-          <!-- Terminal icon: >_ text style -->
+        <div class="home-screen__app-icon" :class="`home-screen__app-icon--${app.id}`"
+             :style="iconGradientStyle">
           <template v-if="app.id === 'terminal'">
             <span class="home-screen__app-icon--terminal-text">&gt;_</span>
           </template>
-          <!-- Files icon: folder SVG -->
           <template v-else-if="app.id === 'files'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"/>
             </svg>
           </template>
-          <!-- Settings icon: gear SVG -->
           <template v-else-if="app.id === 'settings'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"/>
@@ -79,6 +77,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useHammer } from '../composables/useHammer'
+import { useThemeStore } from '../stores/themeStore'
 
 export interface HomeApp {
   id: string
@@ -88,9 +87,9 @@ export interface HomeApp {
 }
 
 const apps: HomeApp[] = [
-  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-accent, #8E8E93)' },
-  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-accent, #8E8E93)' },
-  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-accent, #8E8E93)' },
+  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-accent)' },
+  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-accent)' },
+  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-accent)' },
 ]
 
 const emit = defineEmits<{
@@ -99,10 +98,26 @@ const emit = defineEmits<{
 
 const homeRef = ref<HTMLDivElement | null>(null)
 const currentTime = ref('')
+const themeStore = useThemeStore()
+themeStore.init()
 
-const batteryColor = computed(() => 'var(--gui-status-bar-battery, #34C759)')
+const batteryColor = computed(() => themeStore.currentTheme.colors.statusBarBattery)
 
-// Hammer.js gesture setup
+// Computed styles for theme-reactive properties
+const homeScreenThemeStyles = computed(() => ({
+  '--home-bg': themeStore.currentTheme.colors.bgBase,
+  '--home-text': themeStore.currentTheme.colors.statusBarText,
+  '--home-accent': themeStore.currentTheme.colors.accent,
+}))
+
+const wallpaperPatternColor1 = computed(() => themeStore.currentTheme.colors.wallpaperGradient1)
+const wallpaperPatternColor2 = computed(() => themeStore.currentTheme.colors.wallpaperGradient2)
+const wallpaperPatternColor3 = computed(() => themeStore.currentTheme.colors.wallpaperGradient3)
+
+const iconGradientStyle = computed(() => ({
+  background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+}))
+
 const { setup: setupGestures } = useHammer(homeRef, {
   swipeThreshold: 60,
   swipeVelocity: 0.4,
@@ -133,7 +148,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ── Home Screen ───────────────────────────────────────────────────── */
+/* Home screen uses CSS variables exclusively for theme support */
 .home-screen {
   position: relative;
   width: 100%;
@@ -141,11 +156,9 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  font-family: var(--gui-font-sans);
-  -webkit-tap-highlight-color: transparent;
+  background: var(--home-bg, #000000);
 }
 
-/* ── Status Bar ─────────────────────────────────────────────────────── */
 .home-screen__status-bar {
   position: relative;
   z-index: 10;
@@ -155,7 +168,7 @@ onMounted(() => {
   padding: 0 var(--gui-spacing-xl, 24px);
   padding-top: var(--gui-status-bar-padding-top, max(12px, env(safe-area-inset-top, 12px)));
   height: var(--gui-dim-status-bar-height, 44px);
-  color: var(--gui-status-bar-text, #FFFFFF);
+  color: var(--home-text, #FFFFFF);
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-semibold, 600);
   letter-spacing: 0.02em;
@@ -165,7 +178,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-xs, 4px);
-  color: var(--gui-status-bar-text, #FFFFFF);
+  color: var(--home-text, #FFFFFF);
 }
 
 .home-screen__icon {
@@ -173,12 +186,12 @@ onMounted(() => {
   align-items: center;
 }
 
-/* ── Wallpaper ─────────────────────────────────────────────────────── */
+/* Wallpaper */
 .home-screen__wallpaper {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--gui-wallpaper-base, #1C1C1E);
+  background: var(--home-bg, #000000);
   overflow: hidden;
 }
 
@@ -186,9 +199,9 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 50% 30%, var(--gui-wallpaper-gradient1, rgba(142, 142, 147, 0.08)) 0%, transparent 60%),
-    radial-gradient(ellipse at 30% 70%, var(--gui-wallpaper-gradient2, rgba(142, 142, 147, 0.05)) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, var(--gui-wallpaper-gradient3, rgba(63, 63, 66, 0.03)) 0%, transparent 40%);
+    radial-gradient(ellipse at 50% 30%, var(--gui-wallpaper-gradient1) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 70%, var(--gui-wallpaper-gradient2) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, var(--gui-wallpaper-gradient3) 0%, transparent 40%);
 }
 
 .home-screen__wallpaper-pattern {
@@ -197,7 +210,7 @@ onMounted(() => {
   opacity: 0.5;
 }
 
-/* ── App Grid ───────────────────────────────────────────────────────── */
+/* App Grid */
 .home-screen__grid {
   position: relative;
   z-index: 5;
@@ -232,24 +245,16 @@ onMounted(() => {
   width: var(--gui-dim-home-screen-icon-size, 60px);
   height: var(--gui-dim-home-screen-icon-size, 60px);
   border-radius: var(--gui-dim-home-screen-icon-radius, 14px);
-  color: var(--gui-text-inverse, #ffffff);
+  color: var(--gui-text-inverse, #FFFFFF);
   box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
-/* Unified gradient — frosted glass dark gray for all apps */
-.home-screen__app-icon--terminal,
-.home-screen__app-icon--files,
-.home-screen__app-icon--settings {
-  background: linear-gradient(135deg, var(--gui-app-icon-from, #4A4A4C), var(--gui-app-icon-to, #636366));
-}
-
-/* Terminal text icon: >_ */
 .home-screen__app-icon--terminal-text {
   font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", "SF Mono", Consolas, monospace);
   font-size: 28px;
   font-weight: var(--gui-font-weight-bold, 700);
-  color: var(--gui-text-inverse, #000000);
+  color: var(--gui-text-inverse, #FFFFFF);
   letter-spacing: -1px;
   line-height: 1;
 }
@@ -262,12 +267,12 @@ onMounted(() => {
 .home-screen__app-label {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-status-bar-text, #FFFFFF);
+  color: var(--home-text, #FFFFFF);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.02em;
 }
 
-/* ── Home Indicator ────────────────────────────────────────────────── */
+/* Home Indicator */
 .home-screen__home-indicator {
   position: relative;
   z-index: 10;
@@ -275,7 +280,34 @@ onMounted(() => {
   height: var(--gui-dim-home-indicator-height, 5px);
   margin: 0 auto;
   margin-bottom: max(var(--gui-spacing-sm, 8px), env(safe-area-inset-bottom, 8px));
-  background: var(--gui-home-indicator, rgba(255, 255, 255, 0.3));
+  background: var(--gui-home-indicator);
   border-radius: var(--gui-radius-full, 9999px);
+}
+
+@media (max-width: 768px) {
+  .home-screen__status-bar {
+    height: 48px;
+  }
+
+  .home-screen__grid {
+    padding: var(--gui-spacing-3xl, 48px) var(--gui-spacing-lg, 20px) 0;
+    gap: var(--gui-spacing-2xl, 32px);
+  }
+
+  .home-screen__app-icon {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-screen__app-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .home-screen__app-label {
+    font-size: 10px;
+  }
 }
 </style>
