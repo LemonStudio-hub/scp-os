@@ -129,7 +129,7 @@ export interface EditorState {
 
 export type ContextMenuIcon =
   | 'folder' | 'edit' | 'trash' | 'file' | 'refresh'
-  | 'plus' | 'folder-open' | 'x' | 'save' | 'search'
+  | 'plus' | 'folder-open' | 'x' | 'save' | 'search' | 'list' | 'settings'
 
 export interface ContextMenuItem {
   id: string
