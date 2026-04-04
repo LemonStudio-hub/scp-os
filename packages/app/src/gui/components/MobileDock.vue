@@ -39,19 +39,21 @@ export interface MobileDockItem {
   disabled?: boolean
 }
 
-interface Props {
-  items?: MobileDockItem[]
-  activeTools?: ToolType[]
-}
-
-const defaultItems: MobileDockItem[] = [
+// Default items must be defined BEFORE withDefaults(defineProps to avoid TDZ error
+// because defineProps gets hoisted outside the setup function.
+const defaultDockItems: MobileDockItem[] = [
   { id: 'terminal', tool: 'terminal', label: 'Terminal', iconName: 'terminal' },
   { id: 'files', tool: 'filemanager', label: 'Files', iconName: 'folder' },
   { id: 'editor', tool: 'editor', label: 'Editor', iconName: 'edit' },
 ]
 
+interface Props {
+  items?: MobileDockItem[]
+  activeTools?: ToolType[]
+}
+
 withDefaults(defineProps<Props>(), {
-  items: () => defaultItems,
+  items: () => defaultDockItems,
   activeTools: () => [],
 })
 
