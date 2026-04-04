@@ -2,7 +2,6 @@ import axios from 'axios'
 import { OBJECT_CLASSES } from '../constants/scraperConfig'
 import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
 import { config } from '../config'
-import { isMobileDevice } from './terminal'
 
 // Worker 统一配置（与 Worker 保持一致）
 const WORKER_CONFIG = {
@@ -27,12 +26,24 @@ function getTerminalWidth(): number {
   // 回退：根据屏幕宽度估算
   if (typeof window !== 'undefined') {
     const screenWidth = window.innerWidth
+    const isMobile = screenWidth < 768
     const fontSize = screenWidth < 480 ? 10 : screenWidth < 768 ? 12 : screenWidth < 1200 ? 14 : 16
-    // 估算字符宽度（等宽字体宽度约为字号的 0.6 倍）
+    
+    if (isMobile) {
+      // 移动端：使用更精确的计算
+      // 移动端通常使用 10-12px 字体，字符宽度约 6px
+      // 终端容器通常有 16-20px 的左右 padding
+      const charWidth = 6.5 // 移动端等宽字体字符宽度
+      const padding = 16 // 终端容器左右内边距
+      const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
+      return Math.max(25, Math.min(50, estimatedCols)) // 移动端限制在 25-50 列
+    }
+    
+    // 桌面端：根据屏幕宽度估算
     const charWidth = fontSize * 0.6
-    const padding = 20 // 终端容器左右内边距估算
+    const padding = 20
     const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
-    return Math.max(20, Math.min(120, estimatedCols))
+    return Math.max(40, Math.min(120, estimatedCols))
   }
 
   // 默认桌面端宽度
@@ -382,42 +393,31 @@ class SCPScraper {
     const lines: string[] = []
     const classInfo = OBJECT_CLASSES[data.objectClass] || OBJECT_CLASSES.UNKNOWN
     const terminalWidth = getTerminalWidth()
+    const isMobile = terminalWidth <= 50
+
+    if (isMobile) {
+      // 移动端：简化格式，去除复杂边框
+      return this.formatForMobile(data, classInfo, terminalWidth)
+    }
+
+    // 桌面端：完整格式带边框
     const border = new BorderGenerator(terminalWidth)
 
     // ===== 顶部外边框 =====
     lines.push(border.topBorder)
 
     // ===== 标题行 =====
-    if (isMobileDevice()) {
-      // 移动端：精简标题
-      const title = `${data.id} - ${data.name}`
-      lines.push(border.verticalLine(title))
-    } else {
-      // 桌面端：完整标题 + 项目等级
-      const title = `${data.id} - ${data.name} — ${classInfo.displayName}`
-      lines.push(border.verticalLine(title))
-    }
-
+    const title = `${data.id} - ${data.name} — ${classInfo.displayName}`
+    lines.push(border.verticalLine(title))
     lines.push(border.bottomBorder)
     lines.push('')
 
     // ===== 项目等级 =====
     lines.push(border.boxTop)
-
-    if (isMobileDevice()) {
-      // 移动端：简化项目等级显示
-      lines.push(border.boxContent(' 项目等级'))
-      lines.push(border.boxSeparator)
-      lines.push(border.boxContent(` ${data.objectClass}`))
-      lines.push(border.boxContent(` ${classInfo.displayName}`))
-    } else {
-      // 桌面端：详细项目等级显示
-      lines.push(border.boxContent(' 项目等级'))
-      lines.push(border.boxSeparator)
-      lines.push(border.boxContent(` 等级: [${data.objectClass}] ${classInfo.displayName}`))
-      lines.push(border.boxContent(` 说明: ${classInfo.description}`))
-    }
-
+    lines.push(border.boxContent(' 项目等级'))
+    lines.push(border.boxSeparator)
+    lines.push(border.boxContent(` 等级: [${data.objectClass}] ${classInfo.displayName}`))
+    lines.push(border.boxContent(` 说明: ${classInfo.description}`))
     lines.push(border.boxBottom)
     lines.push('')
 
@@ -478,9 +478,68 @@ class SCPScraper {
       lines.push('')
     }
 
-    // ===== 底部边框 =====
-    lines.push(border.topBorder)
+    return lines
+  }
+
+  /**
+   * 移动端专用格式化方法
+   * 使用简化的边框和布局，避免复杂的字符计算
+   */
+  private formatForMobile(data: SCPWikiData, classInfo: any, terminalWidth: number): string[] {
+    const lines: string[] = []
+    const padding = ' '.repeat(2)
+
+    // ===== 简化的标题 =====
+    lines.push('═'.repeat(terminalWidth))
+    lines.push(`${padding}${data.id} - ${data.name}`)
+    lines.push(`${padding}项目等级: ${data.objectClass} (${classInfo.displayName})`)
+    lines.push('═'.repeat(terminalWidth))
     lines.push('')
+
+    // ===== 收容协议 =====
+    if (data.containment.length > 0) {
+      lines.push('─'.repeat(terminalWidth))
+      lines.push(`${padding}收容协议`)
+      lines.push('─'.repeat(terminalWidth))
+
+      data.containment.forEach(text => {
+        const wrapped = this.wrapText(text, terminalWidth - 2)
+        wrapped.forEach(line => {
+          lines.push(`${padding}${line}`)
+        })
+      })
+      lines.push('')
+    }
+
+    // ===== 描述 =====
+    if (data.description.length > 0) {
+      lines.push('─'.repeat(terminalWidth))
+      lines.push(`${padding}描述`)
+      lines.push('─'.repeat(terminalWidth))
+
+      data.description.forEach(text => {
+        const wrapped = this.wrapText(text, terminalWidth - 2)
+        wrapped.forEach(line => {
+          lines.push(`${padding}${line}`)
+        })
+      })
+      lines.push('')
+    }
+
+    // ===== 附录 =====
+    if (data.appendix.length > 0) {
+      lines.push('─'.repeat(terminalWidth))
+      lines.push(`${padding}附录`)
+      lines.push('─'.repeat(terminalWidth))
+
+      data.appendix.forEach(text => {
+        const wrapped = this.wrapText(text, terminalWidth - 2)
+        wrapped.forEach(line => {
+          lines.push(`${padding}${line}`)
+        })
+      })
+      lines.push('')
+    }
 
     return lines
   }
