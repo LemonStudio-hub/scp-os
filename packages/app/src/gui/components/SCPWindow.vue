@@ -187,23 +187,36 @@ onBeforeUnmount(() => {
   position: fixed;
   display: flex;
   flex-direction: column;
-  background: var(--gui-window-bg, #0e0e0e);
-  border: 1px solid var(--gui-window-border, rgba(255, 255, 255, 0.08));
-  border-radius: var(--gui-radius-xl, 16px);
+  background: var(--gui-bg-base, #1C1C1E);
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-xl, 14px);
   overflow: hidden;
-  animation: windowOpen 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: windowOpenSpring 0.4s cubic-bezier(0.32, 0.72, 0, 1) both;
   will-change: transform, opacity;
-  transition: border-color var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1)),
-              box-shadow var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
+  transition: border-color 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes windowOpenSpring {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .scp-window--focused {
-  border-color: var(--gui-window-border-active, rgba(233, 69, 96, 0.4));
-  box-shadow: var(--gui-window-shadow-active, 0 16px 48px rgba(0, 0, 0, 0.7), 0 4px 12px rgba(233, 69, 96, 0.1));
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
+  box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06));
 }
 
 .scp-window:not(.scp-window--focused) {
-  box-shadow: var(--gui-window-shadow, 0 8px 32px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4));
+  opacity: 0.92;
+  box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
 }
 
 .scp-window--minimized {
@@ -217,14 +230,14 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   height: 40px;
   padding: 0 14px;
-  background: var(--gui-window-header-bg, rgba(18, 18, 18, 0.95));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  background: var(--gui-glass-bg-subtle, rgba(44, 44, 46, 0.6));
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   cursor: grab;
   user-select: none;
   flex-shrink: 0;
-  transition: background var(--gui-transition-fast, 120ms ease);
+  transition: background 120ms ease;
 }
 
 .scp-window__header:active {
@@ -232,7 +245,7 @@ onBeforeUnmount(() => {
 }
 
 .scp-window__header--dragging {
-  background: var(--gui-bg-surface-raised, #111111);
+  background: var(--gui-bg-surface-raised, #3A3A3C);
 }
 
 .scp-window__header-title {
@@ -243,14 +256,14 @@ onBeforeUnmount(() => {
 }
 
 .scp-window__title {
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans);
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #f0f0f0);
+  color: var(--gui-text-primary, #FFFFFF);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 
 /* ── Header Actions ────────────────────────────────────────────────── */
@@ -268,37 +281,41 @@ onBeforeUnmount(() => {
   height: 28px;
   background: transparent;
   border: none;
-  border-radius: var(--gui-radius-base, 8px);
-  color: var(--gui-text-secondary, #a8a8a8);
+  border-radius: var(--gui-radius-full, 999px);
+  color: var(--gui-text-secondary, #8E8E93);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 120ms cubic-bezier(0.4, 0, 0.2, 1));
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              background 120ms ease,
+              color 120ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scp-window__btn--icon:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
-  color: var(--gui-text-primary, #f0f0f0);
+  color: var(--gui-text-primary, #FFFFFF);
 }
 
 .scp-window__btn--icon:active {
-  transform: scale(0.92);
+  transform: scale(0.88);
 }
 
 .scp-window__btn--close:hover {
-  background: var(--gui-error-bg, rgba(248, 113, 113, 0.15));
-  color: var(--gui-error, #f87171);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
+  color: var(--gui-error, #FF3B30);
 }
 
 .scp-window__btn--minimize:hover {
-  background: var(--gui-warning-bg, rgba(251, 191, 36, 0.15));
-  color: var(--gui-warning, #fbbf24);
+  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.12));
+  color: var(--gui-warning, #FFCC00);
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */
 .scp-window__content {
   flex: 1;
   overflow: auto;
-  background: var(--gui-window-bg, #0e0e0e);
+  background: var(--gui-bg-base, #1C1C1E);
   min-height: 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Resize Handles ────────────────────────────────────────────────── */

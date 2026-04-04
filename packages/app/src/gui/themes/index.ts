@@ -103,7 +103,7 @@ export interface Theme {
 export const darkTheme: Theme = {
   id: 'dark',
   name: 'Dark',
-  icon: '🌙',
+  icon: 'Moon',
   description: 'Pure black background with gray accents',
   isDark: true,
   colors: {
@@ -189,7 +189,7 @@ export const darkTheme: Theme = {
 export const lightTheme: Theme = {
   id: 'light',
   name: 'Light',
-  icon: '☀️',
+  icon: 'Sun',
   description: 'White background with dark text',
   isDark: false,
   colors: {
@@ -275,7 +275,7 @@ export const lightTheme: Theme = {
 export const scpTheme: Theme = {
   id: 'scp',
   name: 'SCP Red',
-  icon: '🔴',
+  icon: 'SCP',
   description: 'SCP Foundation theme with red accents',
   isDark: true,
   colors: {
@@ -361,7 +361,7 @@ export const scpTheme: Theme = {
 export const hackerTheme: Theme = {
   id: 'hacker',
   name: 'Hacker',
-  icon: '💻',
+  icon: 'Code',
   description: 'Matrix-style green on black',
   isDark: true,
   colors: {

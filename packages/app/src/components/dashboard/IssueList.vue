@@ -2,7 +2,11 @@
   <div class="issues-section" v-if="issues.length > 0">
     <div class="section-header">
       <h3 class="section-title">
-        <span class="title-icon">⚠️</span>
+        <svg class="title-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
         Performance Issues
       </h3>
       <span class="issue-count">{{ issues.length }}</span>
@@ -72,11 +76,11 @@ const expandedIssues = ref<Set<string>>(new Set())
 
 const getSeverityIcon = (severity: string): string => {
   switch (severity) {
-    case 'critical': return '🔴'
-    case 'high': return '🟠'
-    case 'medium': return '🟡'
-    case 'low': return '🟢'
-    default: return '⚪'
+    case 'critical': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="10"/></svg>'
+    case 'high': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="10"/></svg>'
+    case 'medium': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="10"/></svg>'
+    case 'low': return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="10"/></svg>'
+    default: return '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="12" r="10"/></svg>'
   }
 }
 

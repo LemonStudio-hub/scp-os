@@ -85,7 +85,18 @@ function onTap(_item: DockItemDef) {
   left: 50%;
   transform: translateX(-50%);
   z-index: var(--gui-z-toolbar, 200);
-  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  animation: dockFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+@keyframes dockFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
 }
 
 .scp-dock__inner {
@@ -93,12 +104,12 @@ function onTap(_item: DockItemDef) {
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-base, 16px);
-  background: var(--gui-dock-bg, rgba(12, 12, 12, 0.85));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--gui-dock-border, rgba(255, 255, 255, 0.08));
-  border-radius: var(--gui-radius-2xl, 20px);
-  box-shadow: var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6));
+  background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.85));
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-squircle-2xl, 24px);
+  box-shadow: var(--gui-shadow-ios-dropdown, 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08));
 }
 
 .scp-dock__group {
@@ -121,22 +132,23 @@ function onTap(_item: DockItemDef) {
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
   cursor: pointer;
-  transition: all var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
+  transition: all 150ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .scp-dock__item:hover:not(.scp-dock__item--disabled) {
-  background: var(--gui-dock-item-hover, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #f0f0f0);
 }
 
 .scp-dock__item:active:not(.scp-dock__item--disabled) {
-  transform: scale(0.95);
+  transform: scale(0.94);
 }
 
 .scp-dock__item--active {
-  background: var(--gui-dock-item-active, rgba(233, 69, 96, 0.12));
-  color: var(--gui-accent, #e94560);
+  background: var(--gui-accent-soft, rgba(142, 142, 147, 0.12));
+  color: var(--gui-accent, #8E8E93);
 }
 
 .scp-dock__item--disabled {
@@ -147,12 +159,17 @@ function onTap(_item: DockItemDef) {
 .scp-dock__icon {
   display: flex;
   align-items: center;
-  transition: transform var(--gui-transition-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  transition: transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
   color: currentColor;
+  will-change: transform;
 }
 
 .scp-dock__item:hover .scp-dock__icon {
-  transform: scale(1.15);
+  transform: scale(1.12);
+}
+
+.scp-dock__item:active .scp-dock__icon {
+  transform: scale(0.9);
 }
 
 .scp-dock__label {
@@ -166,9 +183,14 @@ function onTap(_item: DockItemDef) {
   transform: translateX(-50%);
   width: 4px;
   height: 4px;
-  background: var(--gui-accent, #e94560);
+  background: var(--gui-accent, #8E8E93);
   border-radius: var(--gui-radius-full, 9999px);
   animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.5; transform: translateX(-50%) scale(0.75); }
 }
 
 .scp-dock__badge {
@@ -178,18 +200,25 @@ function onTap(_item: DockItemDef) {
   min-width: 16px;
   height: 16px;
   padding: 0 5px;
-  background: var(--gui-error, #f87171);
+  background: var(--gui-error, #FF3B30);
   border-radius: var(--gui-radius-full, 9999px);
   font-size: 10px;
   font-weight: var(--gui-font-weight-bold, 700);
   color: #fff;
   line-height: 1;
+  animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
 }
 
 .scp-dock__divider {
   width: 1px;
   height: 20px;
-  background: var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  background: var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+  margin: 0 4px;
 }
 
 .scp-dock__status {
@@ -211,18 +240,18 @@ function onTap(_item: DockItemDef) {
 }
 
 .scp-dock__status-dot--online {
-  background: var(--gui-success, #34d399);
-  box-shadow: 0 0 6px var(--gui-success, #34d399);
+  background: var(--gui-success, #34C759);
+  box-shadow: 0 0 6px var(--gui-success, #34C759);
   animation: dotPulse 2.5s ease-in-out infinite;
 }
 
 .scp-dock__status-dot--offline {
-  background: var(--gui-error, #f87171);
+  background: var(--gui-error, #FF3B30);
 }
 
 .scp-dock__status-dot--warning {
-  background: var(--gui-warning, #fbbf24);
-  box-shadow: 0 0 6px var(--gui-warning, #fbbf24);
+  background: var(--gui-warning, #FFCC00);
+  box-shadow: 0 0 6px var(--gui-warning, #FFCC00);
 }
 
 @media (max-width: 768px) {

@@ -55,8 +55,9 @@
           <!-- Theme Selection -->
           <div v-for="theme in themeStore.availableThemes" :key="theme.id" class="k-ios-list__item" @click="themeStore.setTheme(theme.id)">
             <div class="k-ios-list__item-left">
+              <div class="theme-icon" v-html="getThemeIconSvg(theme.id)" />
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">{{ theme.icon }} {{ theme.name }}</div>
+                <div class="k-ios-list__item-label">{{ theme.name }}</div>
                 <div class="k-ios-list__item-description">{{ theme.description }}</div>
               </div>
             </div>
@@ -327,6 +328,16 @@ function onFontSizeChange(): void {
   settings.fontSize = sliderValues.fontSize
 }
 
+function getThemeIconSvg(themeId: string): string {
+  const icons: Record<string, string> = {
+    dark: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+    light: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+    scp: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+    hacker: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
+  }
+  return icons[themeId] || icons.dark
+}
+
 function toggleSetting(key: keyof AppSettings): void {
   if (typeof settings[key] === 'boolean') {
     (settings[key] as boolean) = !(settings[key] as boolean)
@@ -457,6 +468,24 @@ function formatBytes(bytes: number): string {
   border-color: var(--gui-accent, #8E8E93);
   background: var(--gui-accent, #8E8E93);
   box-shadow: inset 0 0 0 3px var(--gui-bg-surface-raised, #3A3A3C);
+}
+
+/* Theme icon in settings */
+.theme-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--gui-radius-md, 10px);
+  background: var(--gui-bg-surface-hover);
+  color: var(--gui-text-secondary);
+  flex-shrink: 0;
+}
+
+.theme-icon :deep(svg) {
+  width: 20px;
+  height: 20px;
 }
 
 /* Confirm Dialog */

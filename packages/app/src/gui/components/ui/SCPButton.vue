@@ -62,16 +62,20 @@ defineEmits<{
   justify-content: center;
   gap: var(--gui-spacing-xs, 4px);
   border: none;
-  border-radius: var(--gui-radius-base, 8px);
+  border-radius: var(--gui-radius-md, 10px);
   font-family: var(--gui-font-sans);
   font-weight: var(--gui-font-weight-medium, 500);
   cursor: pointer;
-  transition: all var(--gui-transition-fast, 120ms cubic-bezier(0.4, 0, 0.2, 1));
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              background 120ms ease,
+              box-shadow 120ms ease,
+              opacity 120ms ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
   position: relative;
   overflow: hidden;
+  will-change: transform;
 }
 
 .gui-btn::after {
@@ -79,20 +83,17 @@ defineEmits<{
   position: absolute;
   inset: 0;
   background: rgba(255, 255, 255, 0);
-  transition: background var(--gui-transition-fast, 120ms ease);
+  transition: background 120ms ease;
   border-radius: inherit;
+  pointer-events: none;
 }
 
 .gui-btn:hover::after {
   background: rgba(255, 255, 255, 0.04);
 }
 
-.gui-btn:active::after {
-  background: rgba(0, 0, 0, 0.08);
-}
-
 .gui-btn:active:not(.gui-btn--disabled) {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 
 .gui-btn--disabled {
@@ -123,8 +124,9 @@ defineEmits<{
 
 /* ── Variants ───────────────────────────────────────────────────────── */
 .gui-btn--primary {
-  background: var(--gui-accent, #e94560);
-  color: var(--gui-text-inverse, #ffffff);
+  background: var(--gui-accent, #8E8E93);
+  color: var(--gui-text-inverse, #000000);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .gui-btn--primary:hover::after {
@@ -132,23 +134,24 @@ defineEmits<{
 }
 
 .gui-btn--secondary {
-  background: var(--gui-bg-surface-raised, #111111);
-  color: var(--gui-text-primary, #f0f0f0);
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+  color: var(--gui-text-primary, #FFFFFF);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
 .gui-btn--danger {
-  background: var(--gui-error-bg, rgba(248, 113, 113, 0.1));
-  color: var(--gui-error, #f87171);
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
+  color: var(--gui-error, #FF3B30);
 }
 
 .gui-btn--success {
-  background: var(--gui-success-bg, rgba(52, 211, 153, 0.1));
-  color: var(--gui-success, #34d399);
+  background: var(--gui-success-bg, rgba(52, 199, 89, 0.12));
+  color: var(--gui-success, #34C759);
 }
 
 .gui-btn--ghost {
   background: transparent;
-  color: var(--gui-text-secondary, #a0a0a0);
+  color: var(--gui-text-secondary, #8E8E93);
 }
 
 .gui-btn--ghost:hover::after {
@@ -164,12 +167,12 @@ defineEmits<{
 }
 
 .gui-btn--md {
-  padding: 7px 14px;
+  padding: 8px 16px;
   font-size: var(--gui-font-base, 13px);
 }
 
 .gui-btn--lg {
-  padding: 10px 20px;
+  padding: 12px 24px;
   font-size: var(--gui-font-lg, 15px);
   border-radius: var(--gui-radius-md, 10px);
 }

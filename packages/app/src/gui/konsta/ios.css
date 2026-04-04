@@ -360,3 +360,94 @@
 .k-ios-animate-slide-up {
   animation: k-ios-slide-up 0.35s var(--gui-transition-ios-spring, cubic-bezier(0.32, 0.72, 0, 1)) both;
 }
+
+/* ── iOS Frosted Glass Utilities ───────────────────────────────────── */
+.k-ios-glass {
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.75));
+  backdrop-filter: blur(var(--blur-ios, 20px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-ios, 20px)) saturate(180%);
+}
+
+.k-ios-glass-strong {
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.85));
+  backdrop-filter: blur(var(--blur-ios-lg, 30px)) saturate(200%);
+  -webkit-backdrop-filter: blur(var(--blur-ios-lg, 30px)) saturate(200%);
+}
+
+.k-ios-glass-subtle {
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.6));
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+}
+
+/* ── iOS Haptic Feedback Utilities ─────────────────────────────────── */
+.k-ios-haptic {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.k-ios-haptic:active {
+  opacity: 0.7;
+}
+
+/* ── iOS Press Animation ───────────────────────────────────────────── */
+.k-ios-press {
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              opacity 100ms ease;
+  will-change: transform;
+}
+
+.k-ios-press:active {
+  transform: scale(0.96);
+}
+
+/* ── iOS Spring Animation ──────────────────────────────────────────── */
+.k-ios-spring {
+  transition: transform 400ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+
+/* ── iOS Bounce Spring ─────────────────────────────────────────────── */
+.k-ios-bounce {
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+/* ── iOS Fade In/Out ───────────────────────────────────────────────── */
+@keyframes k-ios-fade-in-out {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.k-ios-fade-pulse {
+  animation: k-ios-fade-in-out 2s ease-in-out infinite;
+}
+
+/* ── iOS Wiggle (Edit Mode) ────────────────────────────────────────── */
+@keyframes k-ios-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-0.5deg); }
+  75% { transform: rotate(0.5deg); }
+}
+
+.k-ios-wiggle {
+  animation: k-ios-wiggle 0.3s ease-in-out infinite;
+}
+
+/* ── iOS Progress Bar Shimmer ──────────────────────────────────────── */
+@keyframes k-ios-progress-shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.k-ios-progress-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: k-ios-progress-shimmer 1.5s ease-in-out infinite;
+}

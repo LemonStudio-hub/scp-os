@@ -31,11 +31,15 @@
 
   --ease-ios-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-ios-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-ios-gentle: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-ios-snappy: cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  --ease-ios-fluid: cubic-bezier(0.3, 0.7, 0.1, 1);
 
   --blur-ios: 20px;
   --blur-ios-lg: 30px;
 }
 
+/* ── Scrollbar ─────────────────────────────────────────────────────── */
 .gui-scrollable {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
@@ -54,6 +58,74 @@
   border-radius: 999px;
 }
 
+/* ── Fade Animations ───────────────────────────────────────────────── */
+@keyframes ios-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ios-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.ios-fade-enter {
+  animation: ios-fade-in 0.25s var(--ease-ios-spring) both;
+}
+
+.ios-fade-leave {
+  animation: ios-fade-out 0.2s ease both;
+}
+
+/* ── Slide Animations ──────────────────────────────────────────────── */
+@keyframes ios-slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ios-slide-down {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes ios-slide-left {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes ios-slide-right {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+.ios-sheet-enter {
+  animation: ios-slide-up 0.35s var(--ease-ios-spring) both;
+}
+
+.ios-slide-in-right {
+  animation: ios-slide-left 0.35s var(--ease-ios-spring) both;
+}
+
+/* ── Scale Animations ──────────────────────────────────────────────── */
+@keyframes ios-scale-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ios-scale-out {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0.92); opacity: 0; }
+}
+
+.ios-scale-enter {
+  animation: ios-scale-in 0.3s var(--ease-ios-spring) both;
+}
+
+.ios-scale-leave {
+  animation: ios-scale-out 0.2s ease both;
+}
+
+/* ── Pulse Animation ───────────────────────────────────────────────── */
 @keyframes ios-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(0.85); }
@@ -63,24 +135,77 @@
   animation: ios-pulse 2s ease-in-out infinite;
 }
 
-@keyframes ios-sheet-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+/* ── Shimmer Effect ────────────────────────────────────────────────── */
+@keyframes ios-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-.ios-sheet-enter {
-  animation: ios-sheet-up 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+.ios-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: ios-shimmer 1.5s ease-in-out infinite;
 }
 
-@keyframes ios-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* ── Soft Bounce ───────────────────────────────────────────────────── */
+@keyframes ios-soft-bounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  60% { transform: translateY(-2px); }
 }
 
-.ios-fade-enter {
-  animation: ios-fade-in 0.25s cubic-bezier(0.32, 0.72, 0, 1) both;
+.ios-soft-bounce {
+  animation: ios-soft-bounce 0.5s var(--ease-ios-bounce) both;
 }
 
+/* ── Stagger Children ──────────────────────────────────────────────── */
+.gui-stagger {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.gui-stagger > * {
+  animation: ios-fade-in 0.3s var(--ease-ios-gentle) both;
+}
+
+.gui-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.gui-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.gui-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.gui-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.gui-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.gui-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.gui-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.gui-stagger > *:nth-child(8) { animation-delay: 350ms; }
+
+/* ── Squircle Filter ───────────────────────────────────────────────── */
 .squircle-app {
   filter: url(#squircle);
+}
+
+/* ── Haptic Press Utility ──────────────────────────────────────────── */
+.ios-haptic-press {
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              opacity 100ms ease;
+  will-change: transform;
+}
+
+.ios-haptic-press:active {
+  transform: scale(0.96);
+}
+
+/* ── Subtle Hover Lift ─────────────────────────────────────────────── */
+.ios-hover-lift {
+  transition: transform var(--ease-ios-snappy),
+              box-shadow var(--ease-ios-snappy);
+  will-change: transform;
+}
+
+.ios-hover-lift:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
 }

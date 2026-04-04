@@ -144,8 +144,15 @@ export const shadows = {
   md: '0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3)',
   lg: '0 16px 40px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4)',
   xl: '0 24px 48px rgba(0, 0, 0, 0.7)',
+  // iOS-style layered shadows
+  iosCard: '0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3)',
+  iosSheet: '0 -10px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1)',
+  iosDropdown: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08)',
+  iosModal: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06)',
   glow: '0 0 20px rgba(233, 69, 96, 0.15)',
   glowStrong: '0 0 32px rgba(233, 69, 96, 0.25)',
+  // Subtle inner glow for raised surfaces
+  innerGlow: 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
 } as const
 
 // ── Transitions ───────────────────────────────────────────────────────
@@ -159,6 +166,12 @@ export const transitions = {
   bounceSpring: '400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
   // Smooth ease-out for page transitions
   smooth: '500ms cubic-bezier(0.16, 1, 0.3, 1)',
+  // Gentle spring for subtle movements
+  gentle: '350ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+  // Snappy spring for interactive gestures
+  snappy: '250ms cubic-bezier(0.2, 0.9, 0.3, 1.1)',
+  // Fluid spring for sheet presentations
+  fluid: '450ms cubic-bezier(0.3, 0.7, 0.1, 1)',
 } as const
 
 // ── Z-Index Layers ────────────────────────────────────────────────────

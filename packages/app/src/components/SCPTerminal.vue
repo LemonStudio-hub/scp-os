@@ -282,7 +282,34 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Terminal scrollbar */
+/* ── Terminal Header ─────────────────────────────────────────────── */
+.scp-terminal__header {
+  transition: background 200ms ease,
+              border-color 200ms ease;
+}
+
+/* Traffic light dots with subtle pulse */
+.scp-terminal__dot {
+  transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 150ms ease;
+}
+
+.scp-terminal__header:hover .scp-terminal__dot {
+  transform: scale(1.15);
+}
+
+/* Status dot with smooth pulse */
+.scp-terminal__status-dot {
+  transition: background 200ms ease,
+              box-shadow 200ms ease;
+}
+
+/* ── Terminal Container ──────────────────────────────────────────── */
+#terminal-container {
+  transition: opacity 200ms ease;
+}
+
+/* ── Terminal Scrollbar ──────────────────────────────────────────── */
 #terminal-container :deep(.xterm) {
   height: 100%;
   padding: 8px;
@@ -308,10 +335,15 @@ onBeforeUnmount(() => {
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
   background: var(--gui-accent, #8E8E93);
   border-radius: 999px;
+  transition: background 150ms ease;
+}
+
+#terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb:hover {
+  background: var(--gui-accent-hover, #AEAEB2);
 }
 
 #terminal-container :deep(.xterm-screen) {
-  background-color: var(--gui-terminal-bg, #000000) !important;
+  background-color: var(--gui-terminal-bg, #1C1C1E) !important;
 }
 
 /* ── Termux-style Virtual Keyboard ─────────────────────────────────── */
@@ -349,12 +381,15 @@ onBeforeUnmount(() => {
   padding: 0 8px;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  transition: background 100ms ease;
+  transition: background 100ms ease,
+              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   color: var(--gui-text-primary, #FFFFFF);
+  border-radius: var(--gui-radius-sm, 6px);
 }
 
 .scp-terminal__key:active {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.15));
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.12));
+  transform: scale(0.95);
 }
 
 /* Enter key row */
@@ -369,23 +404,25 @@ onBeforeUnmount(() => {
   height: 48px;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--gui-radius-md, 10px);
   color: var(--gui-text-primary, #FFFFFF);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  transition: background 100ms ease;
+  transition: background 100ms ease,
+              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 
 .scp-terminal__enter-key:active {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.15));
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.12));
+  transform: scale(0.95);
 }
 
-/* Keyboard transition */
+/* Keyboard transition — improved spring */
 .scp-terminal__keyboard-enter-active {
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 300ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .scp-terminal__keyboard-leave-active {
