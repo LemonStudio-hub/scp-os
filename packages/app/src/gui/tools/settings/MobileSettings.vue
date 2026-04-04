@@ -146,7 +146,17 @@
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <span class="k-ios-list__item-value">{{ config.app.version }}</span>
+              <span class="k-ios-list__item-value">v0.1.0</span>
+            </div>
+          </div>
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">User ID</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value" style="font-size: 10px; max-width: 150px; word-break: break-all;">{{ userId }}</span>
             </div>
           </div>
           <div class="k-ios-list__item">
@@ -238,7 +248,6 @@ import Sheet from '../../konsta/Sheet.vue'
 import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import { useTerminalStore } from '../../../stores/terminal'
 import { useThemeStore } from '../../stores/themeStore'
-import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 
 interface Props {
@@ -279,6 +288,14 @@ const themeStore = useThemeStore()
 
 // Initialize theme store
 themeStore.init()
+
+// User ID
+const userId = ref<string>('Loading...')
+indexedDBService.getUserId().then(id => {
+  userId.value = id
+}).catch(() => {
+  userId.value = 'Unknown'
+})
 
 function loadSettings(): AppSettings {
   try {
