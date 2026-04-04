@@ -34,9 +34,8 @@ import SCPWindow from '../../components/SCPWindow.vue'
 import SCPButton from '../../components/ui/SCPButton.vue'
 import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import { useTerminalPanelStore } from '../../stores/terminalPanel'
-import { commandHandlers } from '../../../commands/index'
+import { useTerminalEmulator } from '../../composables/useTerminalEmulator'
 import type { WindowInstance } from '../../types'
-import { ANSICode } from '../../../constants/theme'
 
 interface Props {
   windowInstance: WindowInstance
@@ -48,9 +47,13 @@ const tpStore = useTerminalPanelStore()
 const terminalContainerRef = ref<HTMLDivElement>()
 const terminal = ref<Terminal | null>(null)
 const fitAddon = ref<FitAddon | null>(null)
-const inputBuffer = ref('')
 
 const fontSize = computed(() => tpStore.fontSize)
+
+// Use shared terminal emulator composable
+const { writePrompt, handleInput, clearAndPrompt } = useTerminalEmulator({
+  getTerminal: () => terminal.value,
+})
 
 function initTerminal(): void {
   if (!terminalContainerRef.value) return
@@ -95,73 +98,15 @@ function initTerminal(): void {
 
   tpStore.registerTerminal(props.windowInstance.config.id, term)
 
-  term.writeln(`${ANSICode.green}Welcome to SCP Terminal Panel${ANSICode.reset}`)
+  term.writeln('\x1b[32mWelcome to SCP Terminal Panel\x1b[0m')
   term.writeln('')
   writePrompt()
 
   term.onData(handleInput)
 }
 
-function writePrompt(): void {
-  const term = terminal.value
-  if (!term) return
-  term.write(`\r\n${ANSICode.red}scp@foundation${ANSICode.reset}:${ANSICode.cyan}~${ANSICode.reset}$ `)
-  inputBuffer.value = ''
-}
-
-function handleInput(data: string): void {
-  const term = terminal.value
-  if (!term) return
-
-  if (data === '\r') {
-    term.writeln('')
-    executeCommand(inputBuffer.value.trim())
-  } else if (data === '\x7f' || data === '\b') {
-    if (inputBuffer.value.length > 0) {
-      inputBuffer.value = inputBuffer.value.slice(0, -1)
-      term.write('\b \b')
-    }
-  } else if (data === '\x03') {
-    term.writeln('^C')
-    writePrompt()
-  } else if (data.charCodeAt(0) >= 32 && data.charCodeAt(0) <= 126) {
-    inputBuffer.value += data
-    term.write(data)
-  }
-}
-
-async function executeCommand(cmd: string): Promise<void> {
-  const term = terminal.value
-  if (!term) return
-
-  if (!cmd) {
-    writePrompt()
-    return
-  }
-
-  const [command, ...args] = cmd.split(/\s+/)
-  const handler = commandHandlers[command as keyof typeof commandHandlers]
-
-  if (handler) {
-    try {
-      await handler(
-        args,
-        (data: string) => term.write(data),
-        (data: string) => term.writeln(data)
-      )
-    } catch (error) {
-      term.writeln(`${ANSICode.red}Error: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
-    }
-  } else {
-    term.writeln(`${ANSICode.yellow}Command not found: ${command}${ANSICode.reset}`)
-  }
-
-  writePrompt()
-}
-
 function onClear(): void {
-  terminal.value?.clear()
-  writePrompt()
+  clearAndPrompt()
 }
 
 function onRestart(): void {

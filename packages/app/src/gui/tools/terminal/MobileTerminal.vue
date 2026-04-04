@@ -22,7 +22,7 @@
         <div class="mobile-terminal__kb-row">
           <button class="mobile-terminal__key" @click="sendKey('\x1b[H')">HOME</button>
           <button class="mobile-terminal__key" @click="sendKey('\x1b[F')">END</button>
-          <button class="mobile-terminal__key" @click="clearTerminal">CLS</button>
+          <button class="mobile-terminal__key" @click="onClear">CLS</button>
           <button class="mobile-terminal__key" @click="sendKey('\r')">↵</button>
         </div>
       </div>
@@ -35,8 +35,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import MobileWindow from '../../components/MobileWindow.vue'
-import { commandHandlers } from '../../../commands/index'
-import { ANSICode } from '../../../constants/theme'
+import { useTerminalEmulator } from '../../composables/useTerminalEmulator'
 
 interface Props {
   visible: boolean
@@ -50,7 +49,11 @@ defineEmits<{
 const terminalRef = ref<HTMLDivElement | null>(null)
 const terminal = ref<Terminal | null>(null)
 const fitAddon = ref<FitAddon | null>(null)
-const inputBuffer = ref('')
+
+// Use shared terminal emulator composable
+const { writePrompt, handleInput, clearAndPrompt: onClear } = useTerminalEmulator({
+  getTerminal: () => terminal.value,
+})
 
 function initTerminal(): void {
   if (!terminalRef.value) return
@@ -80,68 +83,11 @@ function initTerminal(): void {
   terminal.value = term
   fitAddon.value = fit
 
-  term.writeln(`${ANSICode.green}Welcome to SCP Terminal${ANSICode.reset}`)
+  term.writeln('\x1b[32mWelcome to SCP Terminal\x1b[0m')
   term.writeln('')
   writePrompt()
 
   term.onData(handleInput)
-}
-
-function writePrompt(): void {
-  const term = terminal.value
-  if (!term) return
-  term.write(`\r\n${ANSICode.red}scp@foundation${ANSICode.reset}:${ANSICode.cyan}~${ANSICode.reset}$ `)
-  inputBuffer.value = ''
-}
-
-function handleInput(data: string): void {
-  const term = terminal.value
-  if (!term) return
-
-  if (data === '\r') {
-    term.writeln('')
-    executeCommand(inputBuffer.value.trim())
-  } else if (data === '\x7f' || data === '\b') {
-    if (inputBuffer.value.length > 0) {
-      inputBuffer.value = inputBuffer.value.slice(0, -1)
-      term.write('\b \b')
-    }
-  } else if (data === '\x03') {
-    term.writeln('^C')
-    writePrompt()
-  } else if (data.charCodeAt(0) >= 32 && data.charCodeAt(0) <= 126) {
-    inputBuffer.value += data
-    term.write(data)
-  }
-}
-
-async function executeCommand(cmd: string): Promise<void> {
-  const term = terminal.value
-  if (!term) return
-
-  if (!cmd) {
-    writePrompt()
-    return
-  }
-
-  const [command, ...args] = cmd.split(/\s+/)
-  const handler = commandHandlers[command as keyof typeof commandHandlers]
-
-  if (handler) {
-    try {
-      await handler(
-        args,
-        (data: string) => term.write(data),
-        (data: string) => term.writeln(data)
-      )
-    } catch (error) {
-      term.writeln(`${ANSICode.red}Error: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
-    }
-  } else {
-    term.writeln(`${ANSICode.yellow}Command not found: ${command}${ANSICode.reset}`)
-  }
-
-  writePrompt()
 }
 
 function sendKey(key: string): void {
@@ -150,11 +96,6 @@ function sendKey(key: string): void {
   }
   terminal.value?.write(key)
   handleInput(key)
-}
-
-function clearTerminal(): void {
-  terminal.value?.clear()
-  writePrompt()
 }
 
 onMounted(() => {

@@ -7,20 +7,10 @@
       @launch="onHomeLaunch"
     />
 
-    <!-- Active Tool Overlay (full-screen) -->
-    <template v-if="activeTool">
-      <MobileFileManager
-        v-if="activeTool === 'filemanager'"
-        :visible="true"
-        @close="closeActiveTool"
-      />
-      <MobileTerminal
-        v-else-if="activeTool === 'terminal'"
-        :visible="true"
-        @close="closeActiveTool"
-      />
-      <MobileSettings
-        v-else-if="activeTool === 'settings'"
+    <!-- Active Tool Overlay (full-screen) — rendered via ToolRegistry -->
+    <template v-if="activeTool && activeToolModule">
+      <component
+        :is="activeToolModule.mobileComponent"
         :visible="true"
         @close="closeActiveTool"
       />
@@ -34,11 +24,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import HomeScreen from './HomeScreen.vue'
-import MobileFileManager from '../tools/filemanager/MobileFileManager.vue'
-import MobileTerminal from '../tools/terminal/MobileTerminal.vue'
-import MobileSettings from '../tools/settings/MobileSettings.vue'
 import { useMobile } from '../composables/useMobile'
 import { useWindowManagerStore } from '../stores/windowManager'
+import { ToolRegistry, openTool } from '../registry/ToolRegistry'
 import type { HomeApp } from './HomeScreen.vue'
 import type { ToolType } from '../types'
 
@@ -52,17 +40,25 @@ const activeTool = computed<ToolType | null>(() => {
   return topWindow?.config.tool ?? null
 })
 
+const activeToolModule = computed(() => {
+  if (!activeTool.value) return null
+  return ToolRegistry.get(activeTool.value) || null
+})
+
 function onHomeLaunch(app: HomeApp): void {
   if (activeTool.value === app.tool) {
     return
   }
 
-  wmStore.openWindow({
-    id: `${app.tool}-${Date.now()}`,
-    tool: app.tool as ToolType,
-    title: app.label,
-    width: window.innerWidth,
-    height: window.innerHeight,
+  openTool(app.tool as ToolType, (config) => {
+    wmStore.openWindow({
+      id: config.id,
+      tool: config.tool,
+      title: config.title,
+      iconName: config.iconName,
+      width: config.width,
+      height: config.height,
+    })
   })
 }
 

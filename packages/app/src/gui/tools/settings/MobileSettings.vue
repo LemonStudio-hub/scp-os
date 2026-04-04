@@ -284,9 +284,8 @@ watch(settings, () => {
 
 function applySettings(): void {
   terminalStore.fontSize = settings.fontSize
-  // Apply accent color theme
-  const terminal = getActiveTerminal()
-  applyTheme(settings.accent, terminal)
+  // Apply accent color theme via useTheme
+  applyTheme(settings.accent, getActiveTerminal())
 }
 
 // Slider sheets
