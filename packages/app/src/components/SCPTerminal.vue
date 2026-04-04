@@ -1,13 +1,13 @@
 <template>
-  <div class="scp-terminal w-screen h-dvh relative flex flex-col bg-[#1C1C1E] overflow-hidden">
+  <div class="scp-terminal w-screen h-dvh relative flex flex-col bg-[#000000] overflow-hidden">
     <!-- Terminal Header -->
-    <div class="scp-terminal__header flex items-center justify-between h-11 px-4 bg-[rgba(44,44,46,0.85)] backdrop-blur-[20px] backdrop-saturate-[180%] border-b border-white/[0.06] flex-shrink-0"
+    <div class="scp-terminal__header flex items-center justify-between h-11 px-4 bg-[#000000] border-b border-white/[0.08] flex-shrink-0"
          style="padding-top: env(safe-area-inset-top, 0px);">
       <!-- Traffic Lights -->
       <div class="flex items-center gap-1">
-        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FF5F57] shadow-[0_0_4px_rgba(255,95,87,0.4)] transition-all duration-200" />
-        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FFBD2E] shadow-[0_0_4px_rgba(255,189,46,0.4)] transition-all duration-200" />
-        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#28C840] shadow-[0_0_4px_rgba(40,200,64,0.4)] transition-all duration-200" />
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FF5F57] shadow-[0_0_4px_rgba(255,95,87,0.4)]" />
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FFBD2E] shadow-[0_0_4px_rgba(255,189,46,0.4)]" />
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#28C840] shadow-[0_0_4px_rgba(40,200,64,0.4)]" />
       </div>
       <!-- Title -->
       <div class="scp-terminal__title absolute left-1/2 -translate-x-1/2 flex items-center gap-1 text-[12px] font-semibold text-[#8E8E93] whitespace-nowrap overflow-hidden text-ellipsis tracking-wide">
@@ -25,57 +25,36 @@
     </div>
 
     <!-- Terminal Body -->
-    <div class="scp-terminal__body flex-1 relative overflow-hidden bg-[#1C1C1E]">
-      <div id="terminal-container" ref="terminalContainer" class="w-full h-full bg-[#1C1C1E] touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch scroll-smooth" />
+    <div class="scp-terminal__body flex-1 relative overflow-hidden bg-[#000000]">
+      <div id="terminal-container" ref="terminalContainer" class="w-full h-full bg-[#000000] touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch scroll-smooth" />
     </div>
 
-    <!-- Virtual Keyboard -->
+    <!-- Virtual Keyboard (Termux-style) -->
     <Transition name="scp-terminal__keyboard">
-      <div v-if="isMobile" class="scp-terminal__keyboard px-1 pb-[calc(4px+env(safe-area-inset-bottom,0px))] pt-1 bg-[rgba(44,44,46,0.85)] backdrop-blur-[20px] backdrop-saturate-[180%] border-t border-white/[0.06]">
-        <!-- Modifier Keys -->
-        <div class="flex gap-1 mb-2">
-          <button
-            v-for="mod in modifierKeys"
-            :key="mod.id"
-            :class="[
-              'flex-1 min-w-[40px] h-10 bg-[#2C2C2E] border border-white/[0.06] rounded-[8px] text-[#FFFFFF] text-[11px] font-medium cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out',
-              { 'bg-[rgba(142,142,147,0.15)] text-[#8E8E93] border-[#8E8E93]': modifiers[mod.id] },
-            ]"
-            @click="handleModifier(mod.id)"
-          >
-            {{ mod.label }}
-          </button>
+      <div v-if="isMobile" class="scp-terminal__keyboard">
+        <!-- Extra Keys Row (ESC, TAB, CTRL, ALT, HOME, END, PGUP, PGDN, ←, →, ↑, ↓) -->
+        <div class="scp-terminal__extra-keys">
+          <button class="scp-terminal__key" @click="handleKey('esc')">ESC</button>
+          <button class="scp-terminal__key" @click="handleKey('tab')">TAB</button>
+          <button class="scp-terminal__key" @click="handleKey('up')">↑</button>
+          <button class="scp-terminal__key" @click="handleKey('down')">↓</button>
+          <button class="scp-terminal__key" @click="handleKey('left')">←</button>
+          <button class="scp-terminal__key" @click="handleKey('right')">→</button>
+          <button class="scp-terminal__key" @click="handleKey('home')">HOME</button>
+          <button class="scp-terminal__key" @click="handleKey('end')">END</button>
+          <button class="scp-terminal__key" @click="handleKey('pageup')">PGUP</button>
+          <button class="scp-terminal__key" @click="handleKey('pagedown')">PGDN</button>
+          <button class="scp-terminal__key" @click="handleModifier('ctrl')">CTRL</button>
+          <button class="scp-terminal__key" @click="handleModifier('alt')">ALT</button>
         </div>
-        <!-- Navigation Keys -->
-        <div class="flex gap-[2px] mb-[2px]">
-          <button
-            v-for="key in navKeys"
-            :key="key.id"
-            class="flex-1 min-w-[44px] h-10 bg-[#1C1C1E] border border-white/[0.06] rounded-[8px] text-[#FFFFFF] text-[14px] font-medium cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out active:scale-[0.92] active:bg-[#3A3A3C] hover:bg-white/[0.06]"
-            @click="handleKey(key.action)"
-          >
-            <span v-if="key.icon" v-html="key.icon" />
-            <span v-else>{{ key.label }}</span>
-          </button>
-          <button
-            class="flex-1 min-w-[60px] h-10 bg-[#8E8E93] border border-[#8E8E93] rounded-[8px] text-[#FFFFFF] cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out active:scale-[0.92] active:bg-[#AEAEB2] active:border-[#AEAEB2]"
-            @click="handleKey('enter')"
-          >
+
+        <!-- Enter Key (full width, prominent) -->
+        <div class="scp-terminal__enter-row">
+          <button class="scp-terminal__enter-key" @click="handleKey('enter')">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M4 14L9 9L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M9 9V4H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </button>
-        </div>
-        <!-- Action Keys -->
-        <div class="flex gap-[2px]">
-          <button
-            v-for="key in actionKeys"
-            :key="key.id"
-            class="flex-1 min-w-[40px] h-10 bg-[#1C1C1E] border border-white/[0.06] rounded-[8px] text-[#FFFFFF] text-[11px] font-medium cursor-pointer flex items-center justify-center select-none -webkit-tap-highlight-color-transparent transition-all duration-120 ease-in-out active:scale-[0.92] active:bg-[#3A3A3C] hover:bg-white/[0.06]"
-            @click="handleKey(key.action)"
-          >
-            {{ key.label }}
           </button>
         </div>
       </div>
@@ -109,30 +88,6 @@ const isMobile = computed(() => {
   return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 })
 
-const modifierKeys = [
-  { id: 'ctrl' as const, label: 'CTRL' },
-  { id: 'alt' as const, label: 'ALT' },
-]
-
-const navKeys = [
-  { id: 'esc', label: 'ESC', action: 'esc' },
-  { id: 'tab', label: 'TAB', action: 'tab' },
-  { id: 'up', label: '', icon: '↑', action: 'up' },
-  { id: 'down', label: '', icon: '↓', action: 'down' },
-  { id: 'left', label: '', icon: '←', action: 'left' },
-  { id: 'right', label: '', icon: '→', action: 'right' },
-  { id: 'home', label: 'HOME', action: 'home' },
-  { id: 'end', label: 'END', action: 'end' },
-]
-
-const actionKeys = [
-  { id: 'clear', label: 'CLS', action: 'clear' },
-  { id: 'pageup', label: 'PGUP', action: 'pageup' },
-  { id: 'pagedown', label: 'PGDN', action: 'pagedown' },
-  { id: 'help', label: 'HELP', action: 'help' },
-  { id: 'history', label: 'HIST', action: 'history' },
-]
-
 const {
   initTerminal,
   destroyTerminal,
@@ -165,8 +120,8 @@ function handleKey(action: string): void {
     case 'down': sendKey('\x1b[B'); break
     case 'left': sendKey('\x1b[D'); break
     case 'right': sendKey('\x1b[C'); break
-    case 'home': terminal.scrollToTop(); break
-    case 'end': terminal.scrollToBottom(); break
+    case 'home': sendKey('\x1b[H'); break
+    case 'end': sendKey('\x1b[F'); break
     case 'pageup': terminal.scrollPages(-1); break
     case 'pagedown': terminal.scrollPages(1); break
     case 'clear':
@@ -178,6 +133,7 @@ function handleKey(action: string): void {
     case 'enter': sendKey('\r'); break
   }
 
+  // Reset modifiers after sending
   setTimeout(() => { modifiers.value = { ctrl: false, alt: false } }, 100)
 }
 
@@ -209,6 +165,7 @@ onMounted(async () => {
     initTerminal()
     window.addEventListener('resize', handleResize)
 
+    // Always show startup prompt — user must type 'start' to boot
     clear()
     displayStartupPrompt()
     setupCommandHandler()
@@ -217,11 +174,13 @@ onMounted(async () => {
   }
 })
 
+// Tab switching — save and restore terminal state
 watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
   if (!terminal) return
   if (newTabId === oldTabId) return
 
+  // Save old tab
   if (oldTabId) {
     try {
       const buffer = terminal.buffer.active
@@ -239,6 +198,7 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
     }
   }
 
+  // Restore new tab
   if (newTabId) {
     let savedLines: string[] | null = null
 
@@ -273,6 +233,7 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   }
 }, { flush: 'post' })
 
+// Cleanup
 onBeforeUnmount(() => {
   if (resizeTimeout) clearTimeout(resizeTimeout)
   window.removeEventListener('resize', handleResize)
@@ -293,7 +254,7 @@ onBeforeUnmount(() => {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   scrollbar-width: thin;
-  scrollbar-color: var(--gui-accent, #8E8E93) transparent;
+  scrollbar-color: rgba(142, 142, 147, 0.5) transparent;
 }
 
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar {
@@ -305,13 +266,82 @@ onBeforeUnmount(() => {
 }
 
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
-  background: var(--gui-accent, #8E8E93);
+  background: rgba(142, 142, 147, 0.5);
   border-radius: 999px;
-  opacity: 0.6;
 }
 
 #terminal-container :deep(.xterm-screen) {
-  background-color: var(--gui-editor-bg, #1C1C1E) !important;
+  background-color: #000000 !important;
+}
+
+/* ── Termux-style Virtual Keyboard ─────────────────────────────────── */
+.scp-terminal__keyboard {
+  background: #000000;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Extra keys row (Termux-style scrollable row) */
+.scp-terminal__extra-keys {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 4px;
+  gap: 0;
+}
+
+.scp-terminal__extra-keys::-webkit-scrollbar {
+  display: none;
+}
+
+.scp-terminal__key {
+  flex: 0 0 auto;
+  min-width: 52px;
+  height: 38px;
+  background: #000000;
+  border: none;
+  color: #FFFFFF;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 100ms ease;
+}
+
+.scp-terminal__key:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Enter key row */
+.scp-terminal__enter-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 4px 4px;
+}
+
+.scp-terminal__enter-key {
+  width: 64px;
+  height: 48px;
+  background: #000000;
+  border: none;
+  border-radius: 4px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 100ms ease;
+}
+
+.scp-terminal__enter-key:active {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Keyboard transition */
