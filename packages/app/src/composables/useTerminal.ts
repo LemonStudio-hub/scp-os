@@ -63,7 +63,23 @@ const SCP_LOGO_ART_MOBILE = [
   '                                         ',
 ]
 
+// Border Styles - Desktop (Full width borders)
+const BORDER_DESKTOP = {
+  top: '═══════════════════════════════════════════════════════════════',
+  left: '█',
+  right: '█',
+  bottom: '████████████████████████████████████████████████████████████████████████████████',
+  fill: ' '
+}
 
+// Border Styles - Mobile (Compact borders)
+const BORDER_MOBILE = {
+  top: '═════════════════════════════════════',
+  left: '│',
+  right: '│',
+  bottom: '─────────────────────────────────────',
+  fill: ' '
+}
 
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
@@ -451,18 +467,13 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     if (!terminal) return
 
     const isMobile = isMobileDevice()
+    const border = isMobile ? BORDER_MOBILE : BORDER_DESKTOP
     const logoArt = isMobile ? SCP_LOGO_ART_MOBILE : SCP_LOGO_ART_DESKTOP
-
-    // Get terminal width for dynamic border sizing
-    const termWidth = terminal.cols || (isMobile ? 40 : 76)
-    const boxWidth = Math.max(termWidth - 2, 20)
-    const topLine = '═'.repeat(boxWidth)
-    const midLine = '═'.repeat(boxWidth)
 
     const lines: string[] = []
 
     // Top border
-    lines.push(`${ANSICode.green}╔${topLine}╗${ANSICode.reset}`)
+    lines.push(`${ANSICode.green}${border.top}${ANSICode.reset}`)
 
     // Add ASCII art logo
     logoArt.forEach(line => {
@@ -470,28 +481,27 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     })
 
     // Bottom border
-    lines.push(`${ANSICode.green}╚${topLine}╝${ANSICode.reset}`)
+    lines.push(`${ANSICode.green}${border.top}${ANSICode.reset}`)
     lines.push('')
 
     if (isMobile) {
       // Mobile version - Compact layout
-      lines.push(`${ANSICode.green}╔${midLine}╗${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset} System Info${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}╠${midLine}╣${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset} Ver: ${config.app.version} | Security: 4${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset} Site-19 | AES-256-GCM${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset} Status: Online${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}╚${midLine}╝${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} System Info${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Ver: ${config.app.version} | Security: 4${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Site-19 | AES-256-GCM${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Status: Online${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
       lines.push('')
     } else {
       // Desktop version - Full width layout
-      lines.push(`${ANSICode.green}╔${midLine}╗${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset}                        System Information                        ${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}╠${midLine}╣${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset} Version: ${config.app.version}                         Security Level: 4         ${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset} Location: Site-19 Main Server          Encryption: AES-256-GCM  ${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}║${ANSICode.reset} Status: Online                           Last Update: 2026-04-01 ${ANSICode.green}║${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}╚${midLine}╝${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset}                        System Information                        ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Version: ${config.app.version}                         Security Level: 4         ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Location: Site-19 Main Server          Encryption: AES-256-GCM  ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Status: Online                           Last Update: 2026-04-01 ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
       lines.push('')
     }
 
@@ -500,7 +510,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     lines.forEach(line => terminal.writeln(line))
     writePrompt()
-
+    
     // Mark system as running after welcome message
     systemStore.markSystemRunning()
   }

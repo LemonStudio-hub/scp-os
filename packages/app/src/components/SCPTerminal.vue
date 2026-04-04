@@ -1,77 +1,32 @@
 <template>
-  <div class="terminal-shell">
-    <!-- Terminal Header -->
-    <div class="terminal-header">
-      <div class="terminal-header__dots">
-        <span class="terminal-header__dot terminal-header__dot--red" />
-        <span class="terminal-header__dot terminal-header__dot--yellow" />
-        <span class="terminal-header__dot terminal-header__dot--green" />
+  <div class="terminal-wrapper">
+    <div id="terminal-container" ref="terminalContainer"></div>
+    
+    <!-- Mobile Virtual Keyboard (Termux-style) -->
+    <div v-if="isMobile" class="virtual-keyboard">
+      <div class="keyboard-row">
+        <button 
+          v-for="key in firstRowKeys" 
+          :key="key.id"
+          :class="['key-button', key.class]"
+          @click="handleKeyPress(key)"
+          @touchstart.prevent="handleKeyPress(key)"
+        >
+          <span v-html="key.label"></span>
+        </button>
       </div>
-      <div class="terminal-header__title">
-        <span class="terminal-header__icon">⟩</span>
-        SCP Terminal
-      </div>
-      <div class="terminal-header__status">
-        <span class="terminal-header__status-dot" :class="statusDotClass" />
-        {{ statusText }}
+      <div class="keyboard-row">
+        <button 
+          v-for="key in secondRowKeys" 
+          :key="key.id"
+          :class="['key-button', key.class]"
+          @click="handleKeyPress(key)"
+          @touchstart.prevent="handleKeyPress(key)"
+        >
+          <span v-html="key.label"></span>
+        </button>
       </div>
     </div>
-
-    <!-- Terminal Container -->
-    <div class="terminal-body">
-      <div id="terminal-container" ref="terminalContainer"></div>
-    </div>
-
-    <!-- Virtual Keyboard -->
-    <Transition name="terminal-keyboard">
-      <div v-if="isMobile" class="virtual-keyboard">
-        <!-- Modifier Keys -->
-        <div class="virtual-keyboard__modifiers">
-          <button
-            v-for="mod in modifierKeys"
-            :key="mod.id"
-            :class="['virtual-keyboard__key', 'virtual-keyboard__key--modifier', { 'virtual-keyboard__key--active': modifiers[mod.id as keyof typeof modifiers] }]"
-            @click="handleModifier(mod.id)"
-          >
-            {{ mod.label }}
-          </button>
-        </div>
-
-        <!-- Navigation Keys -->
-        <div class="virtual-keyboard__row">
-          <button
-            v-for="key in navKeys"
-            :key="key.id"
-            class="virtual-keyboard__key virtual-keyboard__key--nav"
-            @click="handleKey(key.action)"
-          >
-            <span v-if="key.icon" class="virtual-keyboard__key-icon" v-html="key.icon" />
-            <span v-else>{{ key.label }}</span>
-          </button>
-          <button
-            class="virtual-keyboard__key virtual-keyboard__key--enter"
-            @click="handleKey('enter')"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 14L9 9L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M9 9V4H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Action Keys -->
-        <div class="virtual-keyboard__row">
-          <button
-            v-for="key in actionKeys"
-            :key="key.id"
-            class="virtual-keyboard__key virtual-keyboard__key--action"
-            @click="handleKey(key.action)"
-          >
-            {{ key.label }}
-          </button>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
@@ -80,61 +35,46 @@ import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useTerminal } from '../composables/useTerminal'
 import { updateTerminalFontSize } from '../utils/terminal'
 import { useTabsStore } from '../stores/tabs'
-import { useSystemStore } from '../stores/system'
 import indexedDBService from '../utils/indexedDB'
 
 const tabsStore = useTabsStore()
-const systemStore = useSystemStore()
 const terminalContainer = ref<HTMLDivElement>()
 
-// Terminal state
+// 存储每个标签页的终端状态（内存缓存）- 使用行数组而不是完整字符串
 const terminalStates = ref<Record<string, string | string[]>>({})
 
-// Modifier keys
-const modifiers = ref({ ctrl: false, alt: false })
-
-// Status computed
-const statusDotClass = computed(() => {
-  if (systemStore.isRunning) return 'terminal-header__status-dot--online'
-  return 'terminal-header__status-dot--offline'
-})
-
-const statusText = computed(() => {
-  if (systemStore.isRunning) return 'ONLINE'
-  return 'OFFLINE'
-})
-
-// Mobile detection
+// Detect if device is mobile
 const isMobile = computed(() => {
   return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 })
 
-// Keyboard configuration
-const modifierKeys = [
-  { id: 'ctrl' as const, label: 'CTRL' },
-  { id: 'alt' as const, label: 'ALT' },
+// Virtual keyboard configuration
+const firstRowKeys = [
+  { id: 'esc', label: 'ESC', class: 'key-esc', action: 'esc' },
+  { id: 'tab', label: 'TAB', class: 'key-tab', action: 'tab' },
+  { id: 'ctrl', label: 'CTRL', class: 'key-ctrl', action: 'ctrl' },
+  { id: 'alt', label: 'ALT', class: 'key-alt', action: 'alt' },
+  { id: 'up', label: '↑', class: 'key-arrow', action: 'up' },
+  { id: 'down', label: '↓', class: 'key-arrow', action: 'down' },
+  { id: 'clear', label: 'CLS', class: 'key-clear', action: 'clear' },
 ]
 
-const navKeys = [
-  { id: 'esc', label: 'ESC', action: 'esc' },
-  { id: 'tab', label: 'TAB', action: 'tab' },
-  { id: 'up', label: '', icon: '↑', action: 'up' },
-  { id: 'down', label: '', icon: '↓', action: 'down' },
-  { id: 'left', label: '', icon: '←', action: 'left' },
-  { id: 'right', label: '', icon: '→', action: 'right' },
-  { id: 'home', label: 'HOME', action: 'home' },
-  { id: 'end', label: 'END', action: 'end' },
+const secondRowKeys = [
+  { id: 'home', label: 'HOME', class: 'key-home', action: 'home' },
+  { id: 'end', label: 'END', class: 'key-end', action: 'end' },
+  { id: 'pageup', label: 'PGUP', class: 'key-page', action: 'pageup' },
+  { id: 'pagedown', label: 'PGDN', class: 'key-page', action: 'pagedown' },
+  { id: 'help', label: 'HELP', class: 'key-help', action: 'help' },
+  { id: 'history', label: 'HIST', class: 'key-history', action: 'history' },
+  { id: 'enter', label: 'ENTER', class: 'key-enter', action: 'enter' },
 ]
 
-const actionKeys = [
-  { id: 'clear', label: 'CLS', action: 'clear' },
-  { id: 'pageup', label: 'PGUP', action: 'pageup' },
-  { id: 'pagedown', label: 'PGDN', action: 'pagedown' },
-  { id: 'help', label: 'HELP', action: 'help' },
-  { id: 'history', label: 'HIST', action: 'history' },
-]
+// Modifier key states
+const modifiers = ref({
+  ctrl: false,
+  alt: false
+})
 
-// Terminal instance
 const {
   initTerminal,
   destroyTerminal,
@@ -146,27 +86,28 @@ const {
   getTerminal,
   sendKey,
   sendText,
-  terminalInstance,
+  hasBootLogBeenShown,
+  terminalInstance
 } = useTerminal(terminalContainer)
 
-// Key handling
-function handleModifier(id: 'ctrl' | 'alt'): void {
-  modifiers.value[id] = !modifiers.value[id]
-  triggerHaptic()
-}
-
-function handleKey(action: string): void {
+const handleKeyPress = (key: any) => {
   const terminal = getTerminal()
   if (!terminal) return
 
-  triggerHaptic()
-
-  switch (action) {
+  switch (key.action) {
     case 'esc':
       sendKey('\x1b')
       break
     case 'tab':
       sendKey('\t')
+      break
+    case 'ctrl':
+      modifiers.value.ctrl = !modifiers.value.ctrl
+      // Toggle visual feedback
+      break
+    case 'alt':
+      modifiers.value.alt = !modifiers.value.alt
+      // Toggle visual feedback
       break
     case 'up':
       sendKey('\x1b[A')
@@ -174,11 +115,9 @@ function handleKey(action: string): void {
     case 'down':
       sendKey('\x1b[B')
       break
-    case 'left':
-      sendKey('\x1b[D')
-      break
-    case 'right':
-      sendKey('\x1b[C')
+    case 'clear':
+      clear()
+      displayWelcomeMessage()
       break
     case 'home':
       terminal.scrollToTop()
@@ -192,36 +131,20 @@ function handleKey(action: string): void {
     case 'pagedown':
       terminal.scrollPages(1)
       break
-    case 'clear':
-      clear()
-      if (!systemStore.isRunning) {
-        displayWelcomeMessage()
-      }
-      break
     case 'help':
       sendText('help\n')
       break
     case 'history':
+      // Show command history
       navigateHistory(1)
       break
     case 'enter':
       sendKey('\r')
       break
   }
-
-  // Reset modifiers after sending
-  setTimeout(() => {
-    modifiers.value = { ctrl: false, alt: false }
-  }, 100)
 }
 
-function triggerHaptic(): void {
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    navigator.vibrate(8)
-  }
-}
-
-// Resize handling
+// Handle resize events with debounced font size update
 let resizeTimeout: number | null = null
 const handleResize = () => {
   if (resizeTimeout) {
@@ -236,38 +159,45 @@ const handleResize = () => {
   }, 250)
 }
 
-// Initialize
 onMounted(async () => {
+  // Initialize IndexedDB
   try {
     await indexedDBService.init()
+
+    // Load all terminal states
     const allStates = await indexedDBService.loadAllTerminalStates()
     terminalStates.value = allStates
+    console.log('[Terminal] Loaded terminal states from IndexedDB:', Object.keys(allStates).length)
   } catch (error) {
     console.error('[Terminal] Failed to initialize IndexedDB:', error)
   }
 
-  try {
-    initTerminal()
-    window.addEventListener('resize', handleResize)
+  initTerminal()
 
-    // Clear terminal and show startup prompt
-    clear()
+  // Add resize listener for responsive font size
+  window.addEventListener('resize', handleResize)
+
+  // Check system status and display appropriate screen
+  if (hasBootLogBeenShown()) {
+    // Boot log has been shown, display welcome message without boot log
+    displayWelcomeMessage()
+  } else {
+    // Boot log has not been shown (first launch or after shutdown), display startup prompt
     displayStartupPrompt()
-
-    setupCommandHandler()
-  } catch (error) {
-    console.error('[Terminal] Failed to initialize:', error)
   }
+
+  setupCommandHandler()
 })
 
-// Tab switching
+// 监听标签页切换，保存和恢复终端状态
 watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
   const terminal = getTerminal()
   if (!terminal) return
 
+  // 防止切换到同一个标签页时重复触发
   if (newTabId === oldTabId) return
 
-  // Save old tab
+  // 保存旧标签页的终端状态
   if (oldTabId) {
     try {
       const buffer = terminal.buffer.active
@@ -275,11 +205,18 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
         const lines: string[] = []
         for (let i = 0; i < buffer.length; i++) {
           const line = buffer.getLine(i)
-          lines.push(line ? line.translateToString(true) : '')
+          if (line) {
+            // translateToString(true) 会保留 ANSI 转义序列
+            lines.push(line.translateToString(true))
+          } else {
+            lines.push('')
+          }
         }
         terminalStates.value[oldTabId] = lines
+
+        // 异步保存到 IndexedDB（不阻塞切换）
         indexedDBService.saveTerminalState(oldTabId, lines).catch(err => {
-          console.error('[Terminal] Failed to save state:', err)
+          console.error('[Terminal] Failed to save state to IndexedDB:', err)
         })
       }
     } catch (error) {
@@ -287,15 +224,17 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
     }
   }
 
-  // Restore new tab
+  // 恢复新标签页的终端状态
   if (newTabId) {
     let savedLines: string[] | null = null
 
+    // 首先尝试从内存缓存加载
     if (terminalStates.value[newTabId]) {
       const cached = terminalStates.value[newTabId]
       savedLines = Array.isArray(cached) ? cached : null
     }
 
+    // 如果内存缓存没有，从 IndexedDB 加载
     if (!savedLines) {
       try {
         const savedContent = await indexedDBService.loadTerminalState(newTabId)
@@ -304,34 +243,48 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
           terminalStates.value[newTabId] = savedLines
         }
       } catch (error) {
-        console.error('[Terminal] Failed to load state:', error)
+        console.error('[Terminal] Failed to load state from IndexedDB:', error)
       }
     }
 
+    // 清空终端
     clear()
 
     if (savedLines && savedLines.length > 0) {
-      for (const line of savedLines) {
+      // 过滤掉空行尾部（减少不必要的写入）
+      const contentLines = savedLines
+      // 逐行恢复终端内容
+      for (const line of contentLines) {
         terminal.writeln(line || '')
       }
+    } else {
+      // 没有保存的内容，显示欢迎信息
+      displayWelcomeMessage()
+      return
     }
 
+    // 重新适配终端布局并滚动到底部
+    // 使用 requestAnimationFrame 确保终端完成渲染
     requestAnimationFrame(() => {
+      // 重新适配终端尺寸（关键：修复切换后显示异常）
       if (terminalInstance.value.fitAddon && terminal) {
         try {
           terminalInstance.value.fitAddon.fit()
-        } catch { /* ignore */ }
+        } catch (e) {
+          // fit 可能在终端未完全初始化时失败
+        }
       }
+      // 滚动到底部
       terminal.scrollToBottom()
+      // 更新全局终端实例信息
       window.__terminalInstance = {
         cols: terminal.cols,
         rows: terminal.rows,
       }
     })
   }
-}, { flush: 'post' })
+}, { flush: 'post' }) // 使用 post flush 确保在 DOM 更新后执行
 
-// Cleanup
 onBeforeUnmount(() => {
   if (resizeTimeout) {
     clearTimeout(resizeTimeout)
@@ -342,133 +295,34 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ── Terminal Shell ────────────────────────────────────────────────── */
-.terminal-shell {
+.terminal-wrapper {
   width: 100vw;
-  height: 100dvh;
+  height: 100vh;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  background: var(--gui-bg-base, #060606);
-  overflow: hidden;
-}
-
-/* ── Terminal Header ────────────────────────────────────────────────── */
-.terminal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 44px;
-  padding: 0 var(--gui-spacing-base, 16px);
-  padding-top: env(safe-area-inset-top, 0px);
-  background: var(--gui-glass-bg, rgba(16, 16, 16, 0.75));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  flex-shrink: 0;
-}
-
-.terminal-header__dots {
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-}
-
-.terminal-header__dot {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--gui-radius-full, 9999px);
-  transition: all var(--gui-transition-base, 200ms ease);
-}
-
-.terminal-header__dot--red {
-  background: #ff5f57;
-  box-shadow: 0 0 4px rgba(255, 95, 87, 0.4);
-}
-
-.terminal-header__dot--yellow {
-  background: #ffbd2e;
-  box-shadow: 0 0 4px rgba(255, 189, 46, 0.4);
-}
-
-.terminal-header__dot--green {
-  background: #28c840;
-  box-shadow: 0 0 4px rgba(40, 200, 64, 0.4);
-}
-
-.terminal-header__title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-  font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-secondary, #a0a0a0);
-  letter-spacing: 0.03em;
-}
-
-.terminal-header__icon {
-  color: var(--gui-accent, #e94560);
-  font-weight: var(--gui-font-weight-bold, 700);
-}
-
-.terminal-header__status {
-  display: flex;
-  align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
-  font-size: var(--gui-font-xs, 11px);
-  font-weight: var(--gui-font-weight-semibold, 600);
-  letter-spacing: 0.05em;
-}
-
-.terminal-header__status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--gui-radius-full, 9999px);
-  animation: status-pulse 2s ease-in-out infinite;
-}
-
-.terminal-header__status-dot--online {
-  background: var(--gui-success, #34d399);
-  box-shadow: 0 0 6px var(--gui-success, #34d399);
-}
-
-.terminal-header__status-dot--offline {
-  background: var(--gui-error, #f87171);
-  box-shadow: 0 0 6px var(--gui-error, #f87171);
-}
-
-@keyframes status-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.85); }
-}
-
-/* ── Terminal Body ─────────────────────────────────────────────────── */
-.terminal-body {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background: var(--gui-editor-bg, #0a0a0a);
+  background: #0a0a0a;
 }
 
 #terminal-container {
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 140px); /* Reserve space for virtual keyboard */
   margin: 0;
   padding: 0;
-  background: var(--gui-editor-bg, #0a0a0a);
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #0a0a0a;
   overflow: visible;
   touch-action: pan-y;
+  /* 移动端滚动优化 */
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+  will-change: transform;
 }
 
 #terminal-container ::v-deep(.xterm) {
   height: 100%;
-  padding: var(--gui-spacing-sm, 8px);
+  padding: 8px;
 }
 
 #terminal-container ::v-deep(.xterm-viewport) {
@@ -476,199 +330,150 @@ onBeforeUnmount(() => {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  scrollbar-width: thin;
-  scrollbar-color: var(--gui-accent, #e94560) transparent;
-}
-
-#terminal-container ::v-deep(.xterm-viewport)::-webkit-scrollbar {
-  width: 4px;
-}
-
-#terminal-container ::v-deep(.xterm-viewport)::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#terminal-container ::v-deep(.xterm-viewport)::-webkit-scrollbar-thumb {
-  background: var(--gui-accent, #e94560);
-  border-radius: var(--gui-radius-full, 9999px);
-  opacity: 0.6;
 }
 
 #terminal-container ::v-deep(.xterm-screen) {
-  background-color: var(--gui-editor-bg, #0a0a0a) !important;
+  background-color: #0a0a0a !important;
 }
 
-/* ── Virtual Keyboard ──────────────────────────────────────────────── */
+/* Virtual Keyboard Styles */
 .virtual-keyboard {
-  padding: var(--gui-spacing-xs, 4px);
-  padding-bottom: calc(var(--gui-spacing-xs, 4px) + env(safe-area-inset-bottom, 0px));
-  background: var(--gui-glass-bg, rgba(12, 12, 12, 0.85));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0a0a0a;
+  border-top: 1px solid #1a1a1a;
+  padding: 8px;
+  z-index: 1000;
+  touch-action: manipulation;
 }
 
-/* Modifier Keys */
-.virtual-keyboard__modifiers {
+.keyboard-row {
   display: flex;
-  gap: var(--gui-spacing-xs, 4px);
-  margin-bottom: var(--gui-spacing-xs, 4px);
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 
-/* Key Base Styles */
-.virtual-keyboard__key {
+.keyboard-row:last-child {
+  margin-bottom: 0;
+}
+
+.key-button {
   flex: 1;
   min-width: 40px;
-  height: var(--gui-dim-keyboard-button-height, 40px);
-  background: var(--gui-bg-surface, #0c0c0c);
-  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  border-radius: var(--gui-radius-base, 8px);
-  color: var(--gui-text-primary, #f0f0f0);
-  font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-medium, 500);
+  height: 40px;
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  transition: all var(--gui-transition-fast, 120ms ease);
 }
 
-.virtual-keyboard__key:active {
-  transform: scale(0.92);
-  background: var(--gui-bg-surface-active, #222222);
+.key-button:active {
+  background: #000000;
+  border-color: #1a1a1a;
 }
 
-.virtual-keyboard__key:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+.key-button:hover {
+  background: #000000;
+  border-color: #1a1a1a;
 }
 
-/* Modifier Keys */
-.virtual-keyboard__key--modifier {
-  background: var(--gui-bg-surface-raised, #111111);
-  font-size: var(--gui-font-xs, 11px);
-  letter-spacing: 0.05em;
+/* Key-specific styles - all unified with terminal theme */
+.key-esc,
+.key-tab,
+.key-ctrl,
+.key-alt,
+.key-arrow,
+.key-clear,
+.key-home,
+.key-end,
+.key-page,
+.key-help,
+.key-history,
+.key-enter {
+  background: #0a0a0a;
+  border: 1px solid #1a1a1a;
+  color: #ffffff;
 }
 
-.virtual-keyboard__key--modifier.virtual-keyboard__key--active {
-  background: var(--gui-accent-soft, rgba(233, 69, 96, 0.15));
-  color: var(--gui-accent, #e94560);
-  border-color: var(--gui-accent, #e94560);
+/* Modifier key active state */
+.key-ctrl.active, .key-alt.active {
+  background: #000000;
+  border-color: #1a1a1a;
 }
 
-/* Navigation Keys */
-.virtual-keyboard__key--nav {
-  min-width: 44px;
-  font-size: var(--gui-font-md, 14px);
+/* Key-specific font sizes */
+.key-arrow {
+  font-size: 14px;
 }
 
-.virtual-keyboard__key--enter {
-  background: var(--gui-accent, #e94560);
-  color: var(--gui-text-inverse, #ffffff);
-  border-color: var(--gui-accent, #e94560);
-  min-width: 60px;
+.key-page {
+  font-size: 10px;
 }
 
-.virtual-keyboard__key--enter:active {
-  background: var(--gui-accent-hover, #ff5a73);
-  border-color: var(--gui-accent-hover, #ff5a73);
-}
-
-.virtual-keyboard__key-icon {
-  display: flex;
-  align-items: center;
-  line-height: 1;
-}
-
-/* Action Keys */
-.virtual-keyboard__key--action {
-  background: var(--gui-bg-surface, #0c0c0c);
-  font-size: var(--gui-font-xs, 11px);
-  letter-spacing: 0.03em;
-}
-
-/* Keyboard Rows */
-.virtual-keyboard__row {
-  display: flex;
-  gap: var(--gui-spacing-xxs, 2px);
-  margin-bottom: var(--gui-spacing-xxs, 2px);
-}
-
-.virtual-keyboard__row:last-child {
-  margin-bottom: 0;
-}
-
-/* ── Keyboard Transition ────────────────────────────────────────────── */
-.terminal-keyboard-enter-active {
-  transition: all var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
-}
-
-.terminal-keyboard-leave-active {
-  transition: all var(--gui-transition-base, 200ms cubic-bezier(0.4, 0, 0.2, 1));
-}
-
-.terminal-keyboard-enter-from,
-.terminal-keyboard-leave-to {
-  transform: translateY(100%);
-  opacity: 0;
-}
-
-/* ── Mobile Adjustments ─────────────────────────────────────────────── */
+/* Mobile-specific adjustments */
 @media (max-width: 768px) {
-  .terminal-header {
-    height: 48px;
+  #terminal-container {
+    height: calc(100vh - 130px);
   }
-
+  
+  #terminal-container ::v-deep(.xterm) {
+    padding: 4px;
+  }
+  
   .virtual-keyboard {
-    padding: var(--gui-spacing-xxs, 2px);
-    padding-bottom: calc(var(--gui-spacing-xxs, 2px) + env(safe-area-inset-bottom, 0px));
+    padding: 6px;
   }
-
-  .virtual-keyboard__modifiers {
-    margin-bottom: var(--gui-spacing-xxs, 2px);
+  
+  .keyboard-row {
+    gap: 3px;
   }
-
-  .virtual-keyboard__row {
-    gap: var(--gui-spacing-xxs, 2px);
-    margin-bottom: var(--gui-spacing-xxs, 2px);
-  }
-
-  .virtual-keyboard__key {
+  
+  .key-button {
     height: 36px;
-    min-width: 36px;
     font-size: 10px;
-    border-radius: var(--gui-radius-sm, 6px);
-  }
-
-  .virtual-keyboard__key--nav {
-    min-width: 40px;
-  }
-
-  .virtual-keyboard__key--enter {
-    min-width: 52px;
+    min-width: 36px;
   }
 }
 
 @media (max-width: 480px) {
-  .virtual-keyboard__key {
+  #terminal-container {
+    height: calc(100vh - 120px);
+  }
+  
+  #terminal-container ::v-deep(.xterm) {
+    padding: 2px;
+  }
+  
+  .virtual-keyboard {
+    padding: 4px;
+  }
+  
+  .keyboard-row {
+    gap: 2px;
+  }
+  
+  .key-button {
     height: 32px;
+    font-size: 9px;
     min-width: 32px;
-    font-size: 9px;
-  }
-
-  .virtual-keyboard__key--modifier {
-    font-size: 9px;
-  }
-
-  .virtual-keyboard__key--action {
-    font-size: 9px;
   }
 }
 
 @media (max-width: 360px) {
-  .virtual-keyboard__key {
-    height: 30px;
+  .key-button {
+    font-size: 8px;
     min-width: 28px;
   }
 }
