@@ -13,6 +13,7 @@ declare global {
     openPerformanceDashboard?: () => void
     __terminalController?: any
     __terminalInstance?: { cols: number; rows: number }
+    __USER_ID__?: string
   }
 
   interface Performance {

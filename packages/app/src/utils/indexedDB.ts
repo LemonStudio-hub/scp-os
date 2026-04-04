@@ -4,12 +4,13 @@
  */
 
 const DB_NAME = 'scp-terminal-db'
-const DB_VERSION = 3
+const DB_VERSION = 4
 const STORES = {
   TABS: 'tabs',
   TERMINAL_STATES: 'terminal_states',
   FILESYSTEM: 'filesystem',
-  GUI_WINDOWS: 'gui_windows'
+  GUI_WINDOWS: 'gui_windows',
+  USER_SETTINGS: 'user_settings'
 }
 
 class IndexedDBService {
@@ -66,6 +67,13 @@ class IndexedDBService {
           guiStore.createIndex('tool', 'config.tool', { unique: false })
           guiStore.createIndex('createdAt', 'createdAt', { unique: false })
           console.log('[IndexedDB] Created GUI windows store')
+        }
+
+        // Create user settings store
+        if (!db.objectStoreNames.contains(STORES.USER_SETTINGS)) {
+          const userStore = db.createObjectStore(STORES.USER_SETTINGS, { keyPath: 'key' })
+          userStore.createIndex('updatedAt', 'updatedAt', { unique: false })
+          console.log('[IndexedDB] Created user settings store')
         }
       }
     })
@@ -413,6 +421,115 @@ class IndexedDBService {
         resolve(request.result || [])
       }
 
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  // ==================== User ID Management ====================
+
+  /**
+   * 生成唯一的用户 ID (UUID v4)
+   */
+  private generateUUID(): string {
+    // 使用浏览器原生 crypto API 生成 UUID v4
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (crypto.getRandomValues(new Uint8Array(1))[0] & 15)
+      const v = c === 'x' ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+    })
+  }
+
+  /**
+   * 获取用户 ID，如果不存在则自动生成并存储
+   */
+  async getUserId(): Promise<string> {
+    try {
+      await this.init()
+      const savedId = await this.loadSetting('user_id')
+      if (savedId) {
+        console.log('[IndexedDB] Loaded existing user ID:', savedId)
+        return savedId
+      }
+
+      // 首次访问，生成新的用户 ID
+      const newUserId = this.generateUUID()
+      await this.saveSetting('user_id', newUserId)
+      console.log('[IndexedDB] Generated new user ID:', newUserId)
+      return newUserId
+    } catch (error) {
+      console.error('[IndexedDB] Failed to get user ID:', error)
+      // 降级方案：使用内存生成的 UUID
+      return this.generateUUID()
+    }
+  }
+
+  /**
+   * 保存设置项
+   */
+  async saveSetting(key: string, value: any): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.USER_SETTINGS], 'readwrite')
+      const store = transaction.objectStore(STORES.USER_SETTINGS)
+
+      const request = store.put({
+        key,
+        value,
+        updatedAt: new Date().toISOString()
+      })
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 加载设置项
+   */
+  async loadSetting(key: string): Promise<any> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.USER_SETTINGS], 'readonly')
+      const store = transaction.objectStore(STORES.USER_SETTINGS)
+
+      const request = store.get(key)
+
+      request.onsuccess = () => {
+        resolve(request.result ? request.result.value : null)
+      }
+
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 删除设置项
+   */
+  async deleteSetting(key: string): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.USER_SETTINGS], 'readwrite')
+      const store = transaction.objectStore(STORES.USER_SETTINGS)
+
+      const request = store.delete(key)
+
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 清除所有设置
+   */
+  async clearUserSettings(): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.USER_SETTINGS], 'readwrite')
+      const store = transaction.objectStore(STORES.USER_SETTINGS)
+
+      const request = store.clear()
+
+      request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
     })
   }
