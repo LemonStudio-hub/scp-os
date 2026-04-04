@@ -4,11 +4,12 @@
  */
 
 const DB_NAME = 'scp-terminal-db'
-const DB_VERSION = 2
+const DB_VERSION = 3
 const STORES = {
   TABS: 'tabs',
   TERMINAL_STATES: 'terminal_states',
-  FILESYSTEM: 'filesystem'
+  FILESYSTEM: 'filesystem',
+  GUI_WINDOWS: 'gui_windows'
 }
 
 class IndexedDBService {
@@ -57,6 +58,14 @@ class IndexedDBService {
           const fsStore = db.createObjectStore(STORES.FILESYSTEM, { keyPath: 'key' })
           fsStore.createIndex('updatedAt', 'updatedAt', { unique: false })
           console.log('[IndexedDB] Created filesystem store')
+        }
+
+        // Create GUI windows store
+        if (!db.objectStoreNames.contains(STORES.GUI_WINDOWS)) {
+          const guiStore = db.createObjectStore(STORES.GUI_WINDOWS, { keyPath: 'config.id' })
+          guiStore.createIndex('tool', 'config.tool', { unique: false })
+          guiStore.createIndex('createdAt', 'createdAt', { unique: false })
+          console.log('[IndexedDB] Created GUI windows store')
         }
       }
     })
@@ -355,6 +364,53 @@ class IndexedDBService {
         } else {
           resolve(null)
         }
+      }
+
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  // ── GUI Windows Store ──────────────────────────────────────────────
+
+  async saveGUIWindowState(windowData: any): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.GUI_WINDOWS], 'readwrite')
+      const store = transaction.objectStore(STORES.GUI_WINDOWS)
+
+      const data = {
+        ...windowData,
+        updatedAt: Date.now()
+      }
+
+      const request = store.put(data)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  async deleteGUIWindowState(windowId: string): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.GUI_WINDOWS], 'readwrite')
+      const store = transaction.objectStore(STORES.GUI_WINDOWS)
+
+      const request = store.delete(windowId)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  async loadGUIWindowStates(): Promise<any[]> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.GUI_WINDOWS], 'readonly')
+      const store = transaction.objectStore(STORES.GUI_WINDOWS)
+
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        resolve(request.result || [])
       }
 
       request.onerror = () => reject(request.error)

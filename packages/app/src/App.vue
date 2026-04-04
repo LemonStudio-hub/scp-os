@@ -1,11 +1,23 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import SCPTerminal from './components/SCPTerminal.vue'
 import Sidebar from './components/Sidebar.vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
+import SCPToolbar, { type DockItemDef } from './gui/components/SCPToolbar.vue'
+import FileManagerWindow from './gui/tools/filemanager/FileManagerWindow.vue'
+import EditorWindow from './gui/tools/editor/EditorWindow.vue'
+import TerminalPanel from './gui/tools/terminal/TerminalPanel.vue'
+import MobileApp from './gui/mobile/MobileApp.vue'
 import { useTabsStore } from './stores/tabs'
+import { useWindowManagerStore } from './gui/stores/windowManager'
+import type { ToolType } from './gui/types'
+import { injectGUITokens } from './gui/design-tokens'
+import { registerAllTools, openTool } from './gui'
+import { useThemeStore } from './gui/stores/themeStore'
 
 const tabsStore = useTabsStore()
+const wmStore = useWindowManagerStore()
+const themeStore = useThemeStore()
 
 // Performance Dashboard state
 const showPerformanceDashboard = ref(false)
@@ -13,6 +25,25 @@ const showPerformanceDashboard = ref(false)
 // Global function to open performance dashboard
 const openPerformanceDashboard = () => {
   showPerformanceDashboard.value = true
+}
+
+// Track active tool types for toolbar highlighting
+const activeTools = computed<ToolType[]>(() => {
+  return wmStore.openWindows.map(w => w.config.tool)
+})
+
+// Handle toolbar item launch
+function onToolbarLaunch(item: DockItemDef): void {
+  openTool(item.tool, (config) => {
+    wmStore.openWindow({
+      id: config.id,
+      tool: config.tool,
+      title: config.title,
+      iconName: config.iconName,
+      width: config.width,
+      height: config.height,
+    })
+  })
 }
 
 // Touch gesture control
@@ -57,8 +88,20 @@ const handleTouchEnd = () => {
 }
 
 onMounted(async () => {
+  // Initialize theme store FIRST (before any components render)
+  themeStore.init()
+
+  // Inject GUI design tokens
+  injectGUITokens()
+
+  // Register all GUI tools with the ToolRegistry
+  registerAllTools()
+
   // Initialize tabs store with IndexedDB
   await tabsStore.initialize()
+
+  // Load saved GUI windows
+  await wmStore.loadWindowStates()
 
   // Set global function for performance dashboard
   window.openPerformanceDashboard = openPerformanceDashboard
@@ -81,14 +124,42 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="app">
-    <SCPTerminal />
-    <Sidebar />
-    <PerformanceDashboard 
-      :isVisible="showPerformanceDashboard" 
-      @close="showPerformanceDashboard = false"
-    />
-  </div>
+  <!-- MobileApp handles mobile vs desktop routing internally -->
+  <MobileApp>
+    <!-- Desktop Layout -->
+    <div id="app">
+      <SCPTerminal />
+      <Sidebar />
+      <PerformanceDashboard
+        :isVisible="showPerformanceDashboard"
+        @close="showPerformanceDashboard = false"
+      />
+
+      <!-- GUI Windows -->
+      <template v-for="win in wmStore.openWindows" :key="win.config.id">
+        <FileManagerWindow
+          v-if="win.config.tool === 'filemanager'"
+          :window-instance="win"
+        />
+        <EditorWindow
+          v-else-if="win.config.tool === 'editor'"
+          :window-instance="win"
+        />
+        <TerminalPanel
+          v-else-if="win.config.tool === 'terminal'"
+          :window-instance="win"
+        />
+      </template>
+
+      <!-- Toolbar -->
+      <SCPToolbar
+        :active-tools="activeTools"
+        status="online"
+        status-text="SCP-OS v0.1.0"
+        @launch="onToolbarLaunch"
+      />
+    </div>
+  </MobileApp>
 </template>
 
 <style>
@@ -107,8 +178,8 @@ html, body {
 }
 
 body {
-  font-family: 'Courier New', Consolas, monospace;
-  background: #0a0a0a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: #060606;
   color: #ffffff;
 }
 
@@ -117,5 +188,6 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
+  padding-bottom: 48px; /* Reserve space for toolbar */
 }
 </style>

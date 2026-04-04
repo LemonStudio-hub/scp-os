@@ -1,0 +1,453 @@
+/**
+ * iOS Frosted Glass Design System
+ * Uses CSS custom properties (--gui-*) from theme store for full theme support.
+ * No hardcoded colors — everything is themed via CSS variables.
+ */
+
+/* ── iOS Page Background ───────────────────────────────────────────── */
+.k-ios-page {
+  background: var(--gui-bg-base);
+  min-height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  color: var(--gui-text-primary);
+}
+
+.k-ios-page--dark {
+  /* Already themed via --gui-* vars */
+}
+
+/* ── iOS Navbar ─────────────────────────────────────────────────────── */
+.k-ios-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 var(--gui-spacing-base, 16px);
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--gui-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid var(--gui-border-subtle);
+}
+
+.k-ios-navbar__title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--gui-font-xl, 17px);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  color: var(--gui-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.k-ios-navbar__left,
+.k-ios-navbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  z-index: 1;
+}
+
+/* ── iOS Toolbar (Bottom) ──────────────────────────────────────────── */
+.k-ios-toolbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 48px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--gui-glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid var(--gui-border-subtle);
+}
+
+.k-ios-toolbar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 12px;
+  background: none;
+  border: none;
+  color: var(--gui-text-secondary);
+  font-size: var(--gui-font-xs, 10px);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--gui-transition-fast, 120ms ease);
+}
+
+.k-ios-toolbar__item:active {
+  color: var(--gui-text-primary);
+}
+
+.k-ios-toolbar__icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* ── iOS List ──────────────────────────────────────────────────────── */
+.k-ios-list {
+  margin: var(--gui-spacing-lg, 20px) 0;
+  border-radius: var(--gui-radius-lg, 12px);
+  overflow: hidden;
+  background: var(--gui-bg-surface);
+}
+
+.k-ios-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gui-spacing-md, 12px) var(--gui-spacing-base, 16px);
+  background: var(--gui-bg-surface-raised);
+  border-bottom: 0.5px solid var(--gui-separator);
+  min-height: 44px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--gui-transition-fast, 120ms ease);
+}
+
+.k-ios-list__item:last-child {
+  border-bottom: none;
+}
+
+.k-ios-list__item:active {
+  background: var(--gui-bg-surface-hover);
+}
+
+.k-ios-list__item-left {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-md, 12px);
+  flex: 1;
+  min-width: 0;
+}
+
+.k-ios-list__item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.k-ios-list__item-label {
+  font-size: var(--gui-font-base, 16px);
+  color: var(--gui-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.k-ios-list__item-description {
+  font-size: var(--gui-font-sm, 14px);
+  color: var(--gui-text-secondary);
+  margin-top: 2px;
+}
+
+.k-ios-list__item-right {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  color: var(--gui-text-secondary);
+  flex-shrink: 0;
+}
+
+.k-ios-list__item-chevron {
+  color: var(--gui-text-tertiary);
+}
+
+/* ── iOS Toggle Switch ─────────────────────────────────────────────── */
+.k-ios-toggle {
+  position: relative;
+  width: 51px;
+  height: 31px;
+  flex-shrink: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.k-ios-toggle__track {
+  position: absolute;
+  inset: 0;
+  background: var(--gui-ios-toggle-off);
+  border-radius: var(--gui-radius-full, 999px);
+  transition: background var(--gui-transition-base, 200ms ease);
+}
+
+.k-ios-toggle--on .k-ios-toggle__track {
+  background: var(--gui-ios-toggle-on);
+}
+
+.k-ios-toggle__thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  background: var(--gui-ios-toggle-thumb);
+  border-radius: var(--gui-radius-full, 999px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: transform var(--gui-transition-bounce-spring, 300ms cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.k-ios-toggle--on .k-ios-toggle__thumb {
+  transform: translateX(20px);
+}
+
+/* ── iOS Block ─────────────────────────────────────────────────────── */
+.k-ios-block {
+  margin: var(--gui-spacing-lg, 20px) 0;
+  padding: var(--gui-spacing-md, 12px) var(--gui-spacing-base, 16px);
+  background: var(--gui-bg-surface);
+  border-radius: var(--gui-radius-lg, 12px);
+}
+
+.k-ios-block__title {
+  font-size: var(--gui-font-sm, 14px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: var(--gui-spacing-sm, 8px);
+  padding-left: var(--gui-spacing-sm, 8px);
+}
+
+.k-ios-block__content {
+  color: var(--gui-text-primary);
+  font-size: var(--gui-font-base, 16px);
+  line-height: var(--gui-line-height-base, 1.5);
+}
+
+/* ── iOS Sheet / Popup ─────────────────────────────────────────────── */
+.k-ios-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  background: var(--gui-glass-bg);
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border-top-left-radius: var(--gui-radius-lg, 12px);
+  border-top-right-radius: var(--gui-radius-lg, 12px);
+  border-top: 0.5px solid var(--gui-border-subtle);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.k-ios-sheet__handle {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+.k-ios-sheet__handle-bar {
+  width: 36px;
+  height: 5px;
+  background: var(--gui-handle-bar);
+  border-radius: var(--gui-radius-full, 999px);
+}
+
+/* ── iOS Color Picker ──────────────────────────────────────────────── */
+.k-ios-color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gui-spacing-md, 12px);
+  padding: var(--gui-spacing-md, 12px);
+}
+
+.k-ios-color-swatch {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--gui-radius-lg, 12px);
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--gui-transition-bounce-spring, 300ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  -webkit-tap-highlight-color: transparent;
+}
+
+.k-ios-color-swatch:active {
+  transform: scale(0.9);
+}
+
+.k-ios-color-swatch--active {
+  border-color: var(--gui-text-primary);
+  box-shadow: var(--gui-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
+  transform: scale(1.08);
+}
+
+/* ── iOS Slider ────────────────────────────────────────────────────── */
+.k-ios-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--gui-ios-slider-track);
+  border-radius: var(--gui-radius-sm, 4px);
+  outline: none;
+}
+
+.k-ios-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  background: var(--gui-ios-slider-thumb);
+  border-radius: var(--gui-radius-full, 999px);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ── iOS Button ────────────────────────────────────────────────────── */
+.k-ios-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--gui-bg-surface-hover);
+  border: none;
+  border-radius: var(--gui-radius-base, 8px);
+  color: var(--gui-text-primary);
+  font-size: var(--gui-font-base, 16px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all var(--gui-transition-fast, 120ms ease);
+}
+
+.k-ios-btn:active {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+.k-ios-btn--primary {
+  background: var(--gui-accent);
+}
+
+.k-ios-btn--destructive {
+  background: var(--gui-error);
+}
+
+/* ── iOS Animations ────────────────────────────────────────────────── */
+@keyframes k-ios-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes k-ios-slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes k-ios-slide-down {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+.k-ios-animate-in {
+  animation: k-ios-fade-in 0.25s var(--gui-transition-ios-spring, cubic-bezier(0.32, 0.72, 0, 1)) both;
+}
+
+.k-ios-animate-slide-up {
+  animation: k-ios-slide-up 0.35s var(--gui-transition-ios-spring, cubic-bezier(0.32, 0.72, 0, 1)) both;
+}
+
+/* ── iOS Frosted Glass Utilities ───────────────────────────────────── */
+.k-ios-glass {
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.75));
+  backdrop-filter: blur(var(--blur-ios, 20px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--blur-ios, 20px)) saturate(180%);
+}
+
+.k-ios-glass-strong {
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.85));
+  backdrop-filter: blur(var(--blur-ios-lg, 30px)) saturate(200%);
+  -webkit-backdrop-filter: blur(var(--blur-ios-lg, 30px)) saturate(200%);
+}
+
+.k-ios-glass-subtle {
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.6));
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+}
+
+/* ── iOS Haptic Feedback Utilities ─────────────────────────────────── */
+.k-ios-haptic {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.k-ios-haptic:active {
+  opacity: 0.7;
+}
+
+/* ── iOS Press Animation ───────────────────────────────────────────── */
+.k-ios-press {
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              opacity 100ms ease;
+  will-change: transform;
+}
+
+.k-ios-press:active {
+  transform: scale(0.96);
+}
+
+/* ── iOS Spring Animation ──────────────────────────────────────────── */
+.k-ios-spring {
+  transition: transform 400ms cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+
+/* ── iOS Bounce Spring ─────────────────────────────────────────────── */
+.k-ios-bounce {
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+/* ── iOS Fade In/Out ───────────────────────────────────────────────── */
+@keyframes k-ios-fade-in-out {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.k-ios-fade-pulse {
+  animation: k-ios-fade-in-out 2s ease-in-out infinite;
+}
+
+/* ── iOS Wiggle (Edit Mode) ────────────────────────────────────────── */
+@keyframes k-ios-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-0.5deg); }
+  75% { transform: rotate(0.5deg); }
+}
+
+.k-ios-wiggle {
+  animation: k-ios-wiggle 0.3s ease-in-out infinite;
+}
+
+/* ── iOS Progress Bar Shimmer ──────────────────────────────────────── */
+@keyframes k-ios-progress-shimmer {
+  0% { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.k-ios-progress-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: k-ios-progress-shimmer 1.5s ease-in-out infinite;
+}

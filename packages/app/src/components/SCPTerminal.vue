@@ -1,32 +1,69 @@
 <template>
-  <div class="terminal-wrapper">
-    <div id="terminal-container" ref="terminalContainer"></div>
-    
-    <!-- Mobile Virtual Keyboard (Termux-style) -->
-    <div v-if="isMobile" class="virtual-keyboard">
-      <div class="keyboard-row">
-        <button 
-          v-for="key in firstRowKeys" 
-          :key="key.id"
-          :class="['key-button', key.class]"
-          @click="handleKeyPress(key)"
-          @touchstart.prevent="handleKeyPress(key)"
-        >
-          <span v-html="key.label"></span>
-        </button>
+  <div class="scp-terminal w-screen h-dvh relative flex flex-col overflow-hidden"
+       :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
+    <!-- Terminal Header -->
+    <div class="scp-terminal__header flex items-center justify-between h-11 px-4 border-b flex-shrink-0"
+         :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg, borderColor: themeStore.currentTheme.colors.borderSubtle }"
+         style="padding-top: env(safe-area-inset-top, 0px);">
+      <!-- Traffic Lights -->
+      <div class="flex items-center gap-1">
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FF5F57] shadow-[0_0_4px_rgba(255,95,87,0.4)]" />
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FFBD2E] shadow-[0_0_4px_rgba(255,189,46,0.4)]" />
+        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#28C840] shadow-[0_0_4px_rgba(40,200,64,0.4)]" />
       </div>
-      <div class="keyboard-row">
-        <button 
-          v-for="key in secondRowKeys" 
-          :key="key.id"
-          :class="['key-button', key.class]"
-          @click="handleKeyPress(key)"
-          @touchstart.prevent="handleKeyPress(key)"
-        >
-          <span v-html="key.label"></span>
-        </button>
+      <!-- Title -->
+      <div class="scp-terminal__title absolute left-1/2 -translate-x-1/2 flex items-center gap-1 text-[12px] font-semibold text-[#8E8E93] whitespace-nowrap overflow-hidden text-ellipsis tracking-wide">
+        <span class="scp-terminal__title-icon text-[#8E8E93] font-bold">⟩</span>
+        SCP Terminal
+      </div>
+      <!-- Status -->
+      <div class="scp-terminal__status flex items-center gap-1 text-[11px] font-semibold text-[#8E8E93] tracking-widest">
+        <span
+          class="scp-terminal__status-dot w-[6px] h-[6px] rounded-full animate-ios-pulse"
+          :class="statusDotClass"
+        />
+        {{ statusText }}
       </div>
     </div>
+
+    <!-- Terminal Body -->
+    <div class="scp-terminal__body flex-1 relative overflow-hidden"
+         :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
+      <div id="terminal-container" ref="terminalContainer" class="w-full h-full touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch scroll-smooth"
+           :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }" />
+    </div>
+
+    <!-- Virtual Keyboard (Termux-style) -->
+    <Transition name="scp-terminal__keyboard">
+      <div v-if="isMobile" class="scp-terminal__keyboard"
+           :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
+        <!-- Extra Keys Row (ESC, TAB, CTRL, ALT, HOME, END, PGUP, PGDN, ←, →, ↑, ↓) -->
+        <div class="scp-terminal__extra-keys">
+          <button class="scp-terminal__key" @click="handleKey('esc')">ESC</button>
+          <button class="scp-terminal__key" @click="handleKey('tab')">TAB</button>
+          <button class="scp-terminal__key" @click="handleKey('up')">↑</button>
+          <button class="scp-terminal__key" @click="handleKey('down')">↓</button>
+          <button class="scp-terminal__key" @click="handleKey('left')">←</button>
+          <button class="scp-terminal__key" @click="handleKey('right')">→</button>
+          <button class="scp-terminal__key" @click="handleKey('home')">HOME</button>
+          <button class="scp-terminal__key" @click="handleKey('end')">END</button>
+          <button class="scp-terminal__key" @click="handleKey('pageup')">PGUP</button>
+          <button class="scp-terminal__key" @click="handleKey('pagedown')">PGDN</button>
+          <button class="scp-terminal__key" @click="handleModifier('ctrl')">CTRL</button>
+          <button class="scp-terminal__key" @click="handleModifier('alt')">ALT</button>
+        </div>
+
+        <!-- Enter Key (full width, prominent) -->
+        <div class="scp-terminal__enter-row">
+          <button class="scp-terminal__enter-key" @click="handleKey('enter')">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4 14L9 9L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M9 9V4H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -35,44 +72,30 @@ import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { useTerminal } from '../composables/useTerminal'
 import { updateTerminalFontSize } from '../utils/terminal'
 import { useTabsStore } from '../stores/tabs'
+import { useSystemStore } from '../stores/system'
+import { useThemeStore } from '../gui/stores/themeStore'
 import indexedDBService from '../utils/indexedDB'
 
 const tabsStore = useTabsStore()
+const systemStore = useSystemStore()
+const themeStore = useThemeStore()
 const terminalContainer = ref<HTMLDivElement>()
 
-// 存储每个标签页的终端状态（内存缓存）- 使用行数组而不是完整字符串
-const terminalStates = ref<Record<string, string | string[]>>({})
+// Initialize theme store
+themeStore.init()
 
-// Detect if device is mobile
-const isMobile = computed(() => {
-  return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+const terminalStates = ref<Record<string, string | string[]>>({})
+const modifiers = ref({ ctrl: false, alt: false })
+
+const statusDotClass = computed(() => {
+  if (systemStore.isRunning) return 'bg-[#34C759] shadow-[0_0_6px_#34C759]'
+  return 'bg-[#FF3B30] shadow-[0_0_6px_#FF3B30]'
 })
 
-// Virtual keyboard configuration
-const firstRowKeys = [
-  { id: 'esc', label: 'ESC', class: 'key-esc', action: 'esc' },
-  { id: 'tab', label: 'TAB', class: 'key-tab', action: 'tab' },
-  { id: 'ctrl', label: 'CTRL', class: 'key-ctrl', action: 'ctrl' },
-  { id: 'alt', label: 'ALT', class: 'key-alt', action: 'alt' },
-  { id: 'up', label: '↑', class: 'key-arrow', action: 'up' },
-  { id: 'down', label: '↓', class: 'key-arrow', action: 'down' },
-  { id: 'clear', label: 'CLS', class: 'key-clear', action: 'clear' },
-]
+const statusText = computed(() => systemStore.isRunning ? 'ONLINE' : 'OFFLINE')
 
-const secondRowKeys = [
-  { id: 'home', label: 'HOME', class: 'key-home', action: 'home' },
-  { id: 'end', label: 'END', class: 'key-end', action: 'end' },
-  { id: 'pageup', label: 'PGUP', class: 'key-page', action: 'pageup' },
-  { id: 'pagedown', label: 'PGDN', class: 'key-page', action: 'pagedown' },
-  { id: 'help', label: 'HELP', class: 'key-help', action: 'help' },
-  { id: 'history', label: 'HIST', class: 'key-history', action: 'history' },
-  { id: 'enter', label: 'ENTER', class: 'key-enter', action: 'enter' },
-]
-
-// Modifier key states
-const modifiers = ref({
-  ctrl: false,
-  alt: false
+const isMobile = computed(() => {
+  return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 })
 
 const {
@@ -86,118 +109,130 @@ const {
   getTerminal,
   sendKey,
   sendText,
-  hasBootLogBeenShown,
-  terminalInstance
+  terminalInstance,
 } = useTerminal(terminalContainer)
 
-const handleKeyPress = (key: any) => {
+function handleModifier(id: 'ctrl' | 'alt'): void {
+  modifiers.value[id] = !modifiers.value[id]
+  triggerHaptic()
+}
+
+function handleKey(action: string): void {
   const terminal = getTerminal()
   if (!terminal) return
 
-  switch (key.action) {
-    case 'esc':
-      sendKey('\x1b')
-      break
-    case 'tab':
-      sendKey('\t')
-      break
-    case 'ctrl':
-      modifiers.value.ctrl = !modifiers.value.ctrl
-      // Toggle visual feedback
-      break
-    case 'alt':
-      modifiers.value.alt = !modifiers.value.alt
-      // Toggle visual feedback
-      break
-    case 'up':
-      sendKey('\x1b[A')
-      break
-    case 'down':
-      sendKey('\x1b[B')
-      break
+  triggerHaptic()
+
+  switch (action) {
+    case 'esc': sendKey('\x1b'); break
+    case 'tab': sendKey('\t'); break
+    case 'up': sendKey('\x1b[A'); break
+    case 'down': sendKey('\x1b[B'); break
+    case 'left': sendKey('\x1b[D'); break
+    case 'right': sendKey('\x1b[C'); break
+    case 'home': sendKey('\x1b[H'); break
+    case 'end': sendKey('\x1b[F'); break
+    case 'pageup': terminal.scrollPages(-1); break
+    case 'pagedown': terminal.scrollPages(1); break
     case 'clear':
       clear()
-      displayWelcomeMessage()
+      if (!systemStore.isRunning) displayWelcomeMessage()
       break
-    case 'home':
-      terminal.scrollToTop()
-      break
-    case 'end':
-      terminal.scrollToBottom()
-      break
-    case 'pageup':
-      terminal.scrollPages(-1)
-      break
-    case 'pagedown':
-      terminal.scrollPages(1)
-      break
-    case 'help':
-      sendText('help\n')
-      break
-    case 'history':
-      // Show command history
-      navigateHistory(1)
-      break
-    case 'enter':
-      sendKey('\r')
-      break
+    case 'help': sendText('help\n'); break
+    case 'history': navigateHistory(1); break
+    case 'enter': sendKey('\r'); break
+  }
+
+  // Reset modifiers after sending
+  setTimeout(() => { modifiers.value = { ctrl: false, alt: false } }, 100)
+}
+
+function triggerHaptic(): void {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(8)
   }
 }
 
-// Handle resize events with debounced font size update
 let resizeTimeout: number | null = null
 const handleResize = () => {
-  if (resizeTimeout) {
-    clearTimeout(resizeTimeout)
-  }
-
+  if (resizeTimeout) clearTimeout(resizeTimeout)
   resizeTimeout = window.setTimeout(() => {
     const terminal = getTerminal()
-    if (terminal) {
-      updateTerminalFontSize(terminal)
-    }
+    if (terminal) updateTerminalFontSize(terminal)
   }, 250)
 }
 
 onMounted(async () => {
-  // Initialize IndexedDB
   try {
     await indexedDBService.init()
-
-    // Load all terminal states
     const allStates = await indexedDBService.loadAllTerminalStates()
     terminalStates.value = allStates
-    console.log('[Terminal] Loaded terminal states from IndexedDB:', Object.keys(allStates).length)
   } catch (error) {
     console.error('[Terminal] Failed to initialize IndexedDB:', error)
   }
 
-  initTerminal()
+  try {
+    initTerminal()
+    window.addEventListener('resize', handleResize)
 
-  // Add resize listener for responsive font size
-  window.addEventListener('resize', handleResize)
-
-  // Check system status and display appropriate screen
-  if (hasBootLogBeenShown()) {
-    // Boot log has been shown, display welcome message without boot log
-    displayWelcomeMessage()
-  } else {
-    // Boot log has not been shown (first launch or after shutdown), display startup prompt
+    // Always show startup prompt — user must type 'start' to boot
+    clear()
     displayStartupPrompt()
-  }
+    setupCommandHandler()
 
-  setupCommandHandler()
+    // Apply initial terminal theme
+    applyTerminalTheme()
+  } catch (error) {
+    console.error('[Terminal] Failed to initialize:', error)
+  }
 })
 
-// 监听标签页切换，保存和恢复终端状态
-watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
+// Apply terminal theme colors
+function applyTerminalTheme(): void {
   const terminal = getTerminal()
   if (!terminal) return
 
-  // 防止切换到同一个标签页时重复触发
+  const c = themeStore.currentTheme.colors
+
+  terminal.options.theme = {
+    background: c.terminalBg,
+    foreground: c.terminalFg,
+    cursor: c.terminalCursor,
+    cursorAccent: c.terminalCursorAccent,
+    selectionBackground: c.terminalSelection,
+    black: c.terminalBlack,
+    red: c.terminalRed,
+    green: c.terminalGreen,
+    yellow: c.terminalYellow,
+    blue: c.terminalBlue,
+    magenta: c.terminalMagenta,
+    cyan: c.terminalCyan,
+    white: c.terminalWhite,
+    brightBlack: c.terminalBrightBlack,
+    brightRed: c.terminalBrightRed,
+    brightGreen: c.terminalBrightGreen,
+    brightYellow: c.terminalBrightYellow,
+    brightBlue: c.terminalBrightBlue,
+    brightMagenta: c.terminalBrightMagenta,
+    brightCyan: c.terminalBrightCyan,
+    brightWhite: c.terminalBrightWhite,
+  }
+
+  terminal.refresh(0, terminal.rows - 1)
+}
+
+// Watch for theme changes and update terminal colors
+watch(() => themeStore.currentThemeId, () => {
+  applyTerminalTheme()
+})
+
+// Tab switching — save and restore terminal state
+watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
+  const terminal = getTerminal()
+  if (!terminal) return
   if (newTabId === oldTabId) return
 
-  // 保存旧标签页的终端状态
+  // Save old tab
   if (oldTabId) {
     try {
       const buffer = terminal.buffer.active
@@ -205,36 +240,25 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
         const lines: string[] = []
         for (let i = 0; i < buffer.length; i++) {
           const line = buffer.getLine(i)
-          if (line) {
-            // translateToString(true) 会保留 ANSI 转义序列
-            lines.push(line.translateToString(true))
-          } else {
-            lines.push('')
-          }
+          lines.push(line ? line.translateToString(true) : '')
         }
         terminalStates.value[oldTabId] = lines
-
-        // 异步保存到 IndexedDB（不阻塞切换）
-        indexedDBService.saveTerminalState(oldTabId, lines).catch(err => {
-          console.error('[Terminal] Failed to save state to IndexedDB:', err)
-        })
+        indexedDBService.saveTerminalState(oldTabId, lines).catch(() => {})
       }
     } catch (error) {
       console.error('[Terminal] Failed to save state:', error)
     }
   }
 
-  // 恢复新标签页的终端状态
+  // Restore new tab
   if (newTabId) {
     let savedLines: string[] | null = null
 
-    // 首先尝试从内存缓存加载
     if (terminalStates.value[newTabId]) {
       const cached = terminalStates.value[newTabId]
       savedLines = Array.isArray(cached) ? cached : null
     }
 
-    // 如果内存缓存没有，从 IndexedDB 加载
     if (!savedLines) {
       try {
         const savedContent = await indexedDBService.loadTerminalState(newTabId)
@@ -242,239 +266,191 @@ watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
           savedLines = savedContent
           terminalStates.value[newTabId] = savedLines
         }
-      } catch (error) {
-        console.error('[Terminal] Failed to load state from IndexedDB:', error)
-      }
+      } catch { /* ignore */ }
     }
 
-    // 清空终端
     clear()
 
     if (savedLines && savedLines.length > 0) {
-      // 过滤掉空行尾部（减少不必要的写入）
-      const contentLines = savedLines
-      // 逐行恢复终端内容
-      for (const line of contentLines) {
-        terminal.writeln(line || '')
-      }
-    } else {
-      // 没有保存的内容，显示欢迎信息
-      displayWelcomeMessage()
-      return
+      for (const line of savedLines) terminal.writeln(line || '')
     }
 
-    // 重新适配终端布局并滚动到底部
-    // 使用 requestAnimationFrame 确保终端完成渲染
     requestAnimationFrame(() => {
-      // 重新适配终端尺寸（关键：修复切换后显示异常）
       if (terminalInstance.value.fitAddon && terminal) {
-        try {
-          terminalInstance.value.fitAddon.fit()
-        } catch (e) {
-          // fit 可能在终端未完全初始化时失败
-        }
+        try { terminalInstance.value.fitAddon.fit() } catch { /* ignore */ }
       }
-      // 滚动到底部
       terminal.scrollToBottom()
-      // 更新全局终端实例信息
-      window.__terminalInstance = {
-        cols: terminal.cols,
-        rows: terminal.rows,
-      }
+      window.__terminalInstance = { cols: terminal.cols, rows: terminal.rows }
     })
   }
-}, { flush: 'post' }) // 使用 post flush 确保在 DOM 更新后执行
+}, { flush: 'post' })
 
+// Cleanup
 onBeforeUnmount(() => {
-  if (resizeTimeout) {
-    clearTimeout(resizeTimeout)
-  }
+  if (resizeTimeout) clearTimeout(resizeTimeout)
   window.removeEventListener('resize', handleResize)
   destroyTerminal()
 })
 </script>
 
 <style scoped>
-.terminal-wrapper {
-  width: 100vw;
-  height: 100vh;
-  position: relative;
-  background: #0a0a0a;
+/* ── Terminal Header ─────────────────────────────────────────────── */
+.scp-terminal__header {
+  transition: background 200ms ease,
+              border-color 200ms ease;
 }
 
+/* Traffic light dots with subtle pulse */
+.scp-terminal__dot {
+  transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 150ms ease;
+}
+
+.scp-terminal__header:hover .scp-terminal__dot {
+  transform: scale(1.15);
+}
+
+/* Status dot with smooth pulse */
+.scp-terminal__status-dot {
+  transition: background 200ms ease,
+              box-shadow 200ms ease;
+}
+
+/* ── Terminal Container ──────────────────────────────────────────── */
 #terminal-container {
-  width: 100%;
-  height: calc(100vh - 140px); /* Reserve space for virtual keyboard */
-  margin: 0;
-  padding: 0;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background: #0a0a0a;
-  overflow: visible;
-  touch-action: pan-y;
-  /* 移动端滚动优化 */
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
-  will-change: transform;
+  transition: opacity 200ms ease;
 }
 
-#terminal-container ::v-deep(.xterm) {
+/* ── Terminal Scrollbar ──────────────────────────────────────────── */
+#terminal-container :deep(.xterm) {
   height: 100%;
   padding: 8px;
 }
 
-#terminal-container ::v-deep(.xterm-viewport) {
+#terminal-container :deep(.xterm-viewport) {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(142, 142, 147, 0.5) transparent;
 }
 
-#terminal-container ::v-deep(.xterm-screen) {
-  background-color: #0a0a0a !important;
+#terminal-container :deep(.xterm-viewport)::-webkit-scrollbar {
+  width: 4px;
 }
 
-/* Virtual Keyboard Styles */
-.virtual-keyboard {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #0a0a0a;
-  border-top: 1px solid #1a1a1a;
-  padding: 8px;
-  z-index: 1000;
-  touch-action: manipulation;
+#terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.keyboard-row {
+#terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
+  background: var(--gui-accent, #8E8E93);
+  border-radius: 999px;
+  transition: background 150ms ease;
+}
+
+#terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb:hover {
+  background: var(--gui-accent-hover, #AEAEB2);
+}
+
+#terminal-container :deep(.xterm-screen) {
+  background-color: var(--gui-terminal-bg, #1C1C1E) !important;
+}
+
+/* ── Termux-style Virtual Keyboard ─────────────────────────────────── */
+.scp-terminal__keyboard {
+  padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Extra keys row (Termux-style scrollable row) */
+.scp-terminal__extra-keys {
   display: flex;
-  justify-content: space-between;
-  gap: 4px;
-  margin-bottom: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 0 4px;
+  gap: 0;
 }
 
-.keyboard-row:last-child {
-  margin-bottom: 0;
+.scp-terminal__extra-keys::-webkit-scrollbar {
+  display: none;
 }
 
-.key-button {
-  flex: 1;
-  min-width: 40px;
-  height: 40px;
-  background: #0a0a0a;
-  border: 1px solid #1a1a1a;
-  border-radius: 4px;
-  color: #ffffff;
-  font-size: 11px;
+.scp-terminal__key {
+  flex: 0 0 auto;
+  min-width: 52px;
+  height: 38px;
+  background: transparent;
+  border: none;
+  font-family: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  user-select: none;
+  padding: 0 8px;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: background 100ms ease,
+              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  color: var(--gui-text-primary, #FFFFFF);
+  border-radius: var(--gui-radius-sm, 6px);
 }
 
-.key-button:active {
-  background: #000000;
-  border-color: #1a1a1a;
+.scp-terminal__key:active {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.12));
+  transform: scale(0.95);
 }
 
-.key-button:hover {
-  background: #000000;
-  border-color: #1a1a1a;
+/* Enter key row */
+.scp-terminal__enter-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 4px 4px;
 }
 
-/* Key-specific styles - all unified with terminal theme */
-.key-esc,
-.key-tab,
-.key-ctrl,
-.key-alt,
-.key-arrow,
-.key-clear,
-.key-home,
-.key-end,
-.key-page,
-.key-help,
-.key-history,
-.key-enter {
-  background: #0a0a0a;
-  border: 1px solid #1a1a1a;
-  color: #ffffff;
+.scp-terminal__enter-key {
+  width: 64px;
+  height: 48px;
+  background: transparent;
+  border: none;
+  border-radius: var(--gui-radius-md, 10px);
+  color: var(--gui-text-primary, #FFFFFF);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 100ms ease,
+              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 
-/* Modifier key active state */
-.key-ctrl.active, .key-alt.active {
-  background: #000000;
-  border-color: #1a1a1a;
+.scp-terminal__enter-key:active {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.12));
+  transform: scale(0.95);
 }
 
-/* Key-specific font sizes */
-.key-arrow {
-  font-size: 14px;
+/* Keyboard transition — improved spring */
+.scp-terminal__keyboard-enter-active {
+  transition: all 300ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-.key-page {
-  font-size: 10px;
+.scp-terminal__keyboard-leave-active {
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Mobile-specific adjustments */
+.scp-terminal__keyboard-enter-from,
+.scp-terminal__keyboard-leave-to {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+/* Mobile adjustments */
 @media (max-width: 768px) {
-  #terminal-container {
-    height: calc(100vh - 130px);
-  }
-  
-  #terminal-container ::v-deep(.xterm) {
-    padding: 4px;
-  }
-  
-  .virtual-keyboard {
-    padding: 6px;
-  }
-  
-  .keyboard-row {
-    gap: 3px;
-  }
-  
-  .key-button {
-    height: 36px;
-    font-size: 10px;
-    min-width: 36px;
-  }
-}
-
-@media (max-width: 480px) {
-  #terminal-container {
-    height: calc(100vh - 120px);
-  }
-  
-  #terminal-container ::v-deep(.xterm) {
-    padding: 2px;
-  }
-  
-  .virtual-keyboard {
-    padding: 4px;
-  }
-  
-  .keyboard-row {
-    gap: 2px;
-  }
-  
-  .key-button {
-    height: 32px;
-    font-size: 9px;
-    min-width: 32px;
-  }
-}
-
-@media (max-width: 360px) {
-  .key-button {
-    font-size: 8px;
-    min-width: 28px;
+  .scp-terminal__header {
+    height: 48px;
   }
 }
 </style>

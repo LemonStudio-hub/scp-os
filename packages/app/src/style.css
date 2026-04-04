@@ -1,216 +1,211 @@
-/* Import xterm styles */
+@import 'tailwindcss';
 @import 'xterm/css/xterm.css';
+@import './gui/konsta/ios.css';
 
-/* SCP Terminal Styles - Full Screen */
-:root {
-  --scp-red: #8b0000;
-  --scp-dark-red: #5c0000;
-  --scp-green: #00ff00;
-  --scp-orange: #ffa500;
-  --scp-red-error: #ff4444;
-  --scp-white: #ffffff;
-  --scp-gray: #888888;
-  --scp-bg: #0a0a0a;
-  --scp-dark-bg: #000000;
-  
-  /* Tab system colors */
-  --tab-bar-height: 44px;
-  --sidebar-width: 320px;
-  --tab-active: #e94560;
-  --tab-bg: #16213e;
-  --tab-item-bg: #0f3460;
+@theme {
+  --radius-squircle-xs: 3px;
+  --radius-squircle-sm: 6px;
+  --radius-squircle-md: 10px;
+  --radius-squircle-lg: 14px;
+  --radius-squircle-xl: 18px;
+  --radius-squircle-2xl: 24px;
+  --radius-squircle-3xl: 32px;
+
+  --color-ios-bg: #1C1C1E;
+  --color-ios-surface: #2C2C2E;
+  --color-ios-surface-2: #3A3A3C;
+  --color-ios-surface-3: #48484A;
+  --color-ios-text: #FFFFFF;
+  --color-ios-text-secondary: #8E8E93;
+  --color-ios-text-tertiary: #636366;
+  --color-ios-separator: rgba(84, 84, 88, 0.65);
+  --color-ios-accent: #8E8E93;
+  --color-ios-accent-hover: #AEAEB2;
+  --color-ios-green: #34C759;
+  --color-ios-red: #FF3B30;
+  --color-ios-blue: #0A84FF;
+  --color-ios-yellow: #FFCC00;
+  --color-icon-fg: #FFFFFF;
+  --color-icon-app-from: #4A4A4C;
+  --color-icon-app-to: #636366;
+
+  --ease-ios-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-ios-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-ios-gentle: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-ios-snappy: cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  --ease-ios-fluid: cubic-bezier(0.3, 0.7, 0.1, 1);
+
+  --blur-ios: 20px;
+  --blur-ios-lg: 30px;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html {
-  width: 100%;
-  height: 100%;
-  font-size: 16px;
-}
-
-body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: 'Courier New', 'Consolas', monospace;
-  background: var(--scp-bg);
-  color: var(--scp-white);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  touch-action: manipulation;
-  position: fixed;
-  overscroll-behavior: none;
-}
-
-#app {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Terminal container with tab bar adjustment */
-#terminal-container {
-  width: 100%;
-  height: 100%;
-  padding: 0;
-}
-
-/* Custom scrollbar for xterm */
-.xterm-viewport {
+/* ── Scrollbar ─────────────────────────────────────────────────────── */
+.gui-scrollable {
   scrollbar-width: thin;
-  scrollbar-color: var(--scp-red) var(--scp-bg);
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
-.xterm-viewport::-webkit-scrollbar {
-  width: 8px;
+.gui-scrollable::-webkit-scrollbar {
+  width: 4px;
 }
 
-.xterm-viewport::-webkit-scrollbar-track {
-  background: var(--scp-bg);
+.gui-scrollable::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.xterm-viewport::-webkit-scrollbar-thumb {
-  background: var(--scp-red);
-  border-radius: 4px;
+.gui-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
 }
 
-.xterm-viewport::-webkit-scrollbar-thumb:hover {
-  background: var(--scp-dark-red);
+/* ── Fade Animations ───────────────────────────────────────────────── */
+@keyframes ios-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* Main content container (for terminal + tab bar) */
-.main-content {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
+@keyframes ios-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.ios-fade-enter {
+  animation: ios-fade-in 0.25s var(--ease-ios-spring) both;
+}
+
+.ios-fade-leave {
+  animation: ios-fade-out 0.2s ease both;
+}
+
+/* ── Slide Animations ──────────────────────────────────────────────── */
+@keyframes ios-slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes ios-slide-down {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(100%); opacity: 0; }
+}
+
+@keyframes ios-slide-left {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes ios-slide-right {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+.ios-sheet-enter {
+  animation: ios-slide-up 0.35s var(--ease-ios-spring) both;
+}
+
+.ios-slide-in-right {
+  animation: ios-slide-left 0.35s var(--ease-ios-spring) both;
+}
+
+/* ── Scale Animations ──────────────────────────────────────────────── */
+@keyframes ios-scale-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes ios-scale-out {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(0.92); opacity: 0; }
+}
+
+.ios-scale-enter {
+  animation: ios-scale-in 0.3s var(--ease-ios-spring) both;
+}
+
+.ios-scale-leave {
+  animation: ios-scale-out 0.2s ease both;
+}
+
+/* ── Pulse Animation ───────────────────────────────────────────────── */
+@keyframes ios-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+.animate-ios-pulse {
+  animation: ios-pulse 2s ease-in-out infinite;
+}
+
+/* ── Shimmer Effect ────────────────────────────────────────────────── */
+@keyframes ios-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.ios-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: ios-shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Soft Bounce ───────────────────────────────────────────────────── */
+@keyframes ios-soft-bounce {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-4px); }
+  60% { transform: translateY(-2px); }
+}
+
+.ios-soft-bounce {
+  animation: ios-soft-bounce 0.5s var(--ease-ios-bounce) both;
+}
+
+/* ── Stagger Children ──────────────────────────────────────────────── */
+.gui-stagger {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
 }
 
-/* Sidebar z-index to ensure it appears above everything */
-.sidebar {
-  z-index: 9999;
+.gui-stagger > * {
+  animation: ios-fade-in 0.3s var(--ease-ios-gentle) both;
 }
 
-/* Tab bar z-index to ensure it appears above content but below sidebar */
-.tab-bar {
-  z-index: 1000;
+.gui-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.gui-stagger > *:nth-child(2) { animation-delay: 50ms; }
+.gui-stagger > *:nth-child(3) { animation-delay: 100ms; }
+.gui-stagger > *:nth-child(4) { animation-delay: 150ms; }
+.gui-stagger > *:nth-child(5) { animation-delay: 200ms; }
+.gui-stagger > *:nth-child(6) { animation-delay: 250ms; }
+.gui-stagger > *:nth-child(7) { animation-delay: 300ms; }
+.gui-stagger > *:nth-child(8) { animation-delay: 350ms; }
+
+/* ── Squircle Filter ───────────────────────────────────────────────── */
+.squircle-app {
+  filter: url(#squircle);
 }
 
-/* Virtual keyboard z-index */
-.virtual-keyboard {
-  z-index: 1001;
-}
-
-/* Sidebar transition support */
-.sidebar-content {
+/* ── Haptic Press Utility ──────────────────────────────────────────── */
+.ios-haptic-press {
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              opacity 100ms ease;
   will-change: transform;
 }
 
-/* Tab transitions */
-.tab {
-  will-change: transform, background;
+.ios-haptic-press:active {
+  transform: scale(0.96);
 }
 
-.tab:hover {
-  transform: translateY(-1px);
+/* ── Subtle Hover Lift ─────────────────────────────────────────────── */
+.ios-hover-lift {
+  transition: transform var(--ease-ios-snappy),
+              box-shadow var(--ease-ios-snappy);
+  will-change: transform;
 }
 
-/* Prevent layout shift when sidebar opens */
-.sidebar-open ~ .main-content {
-  pointer-events: none;
-}
-
-/* Touch gesture optimization */
-#app {
-  touch-action: pan-y;
-}
-
-.sidebar-open #app {
-  touch-action: none;
-}
-
-/* Mobile optimizations */
-@media (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-  
-  #terminal-container {
-    padding: 0;
-  }
-  
-  /* Hide scrollbar on mobile for cleaner look */
-  .xterm-viewport {
-    scrollbar-width: none;
-  }
-  
-  .xterm-viewport::-webkit-scrollbar {
-    display: none;
-  }
-  
-  :root {
-    --sidebar-width: 280px;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    font-size: 12px;
-  }
-  
-  /* Prevent zoom on input focus */
-  input, 
-  textarea,
-  .xterm-textarea {
-    font-size: 16px !important;
-  }
-  
-  :root {
-    --tab-bar-height: 40px;
-  }
-}
-
-/* Prevent pull-to-refresh on mobile */
-#terminal-container {
-  overscroll-behavior-y: contain;
-  touch-action: none;
-}
-
-/* Cursor blink animation for better mobile visibility */
-@keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.xterm-cursor-layer .xterm-cursor {
-  animation: cursor-blink 1s infinite;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .xterm {
-    font-weight: 600;
-  }
-}
-
-/* Smooth transitions for tab system */
-* {
-  transition-property: color, background, border-color, opacity;
-  transition-duration: 0.2s;
-  transition-timing-function: ease;
-}
-
-/* Prevent transitions during initial load */
-body.loading * {
-  transition: none !important;
+.ios-hover-lift:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
 }

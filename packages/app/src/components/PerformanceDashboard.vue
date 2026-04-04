@@ -1,104 +1,15 @@
-<template>
-  <div class="performance-dashboard" v-if="isVisible">
-    <div class="dashboard-overlay" @click="handleClose"></div>
-    
-    <div class="dashboard-container">
-      <!-- Header -->
-      <DashboardHeader
-        :isMonitoring="isMonitoring"
-        :version="version"
-        @toggleMonitoring="toggleMonitoring"
-        @refresh="refreshData"
-        @close="handleClose"
-      />
-
-      <!-- Performance Score -->
-      <PerformanceScore
-        :score="latestReport?.score || 0"
-        :issueCount="issues.length"
-      />
-
-      <!-- Metrics Grid -->
-      <div class="metrics-section">
-        <h3 class="section-title">
-          <span class="title-icon">📊</span>
-          Real-time Metrics
-        </h3>
-        <div class="metrics-grid">
-          <!-- Memory Metric -->
-          <MetricCard
-            icon="💾"
-            name="Memory Usage"
-            :value="memoryMetric?.value || 0"
-            type="memory"
-            :progress="memoryUsagePercentage"
-            metaLabel="Used"
-            :metaValue="formatBytes(memoryMetric?.value || 0)"
-            footer="Total heap memory usage"
-            :status="getMemoryStatus(memoryUsagePercentage)"
-          />
-
-          <!-- Page Load Time -->
-          <MetricCard
-            icon="⏱️"
-            name="Page Load"
-            :value="pageLoadMetric?.value || 0"
-            unit="ms"
-            type="time"
-            footer="Time to fully load the page"
-            :status="getLoadTimeStatus(pageLoadMetric?.value || 0)"
-          />
-
-          <!-- Resource Count -->
-          <MetricCard
-            icon="📦"
-            name="Resources"
-            :value="resourceCountMetric?.value || 0"
-            type="count"
-            footer="Total loaded resources"
-          />
-
-          <!-- Avg Resource Time -->
-          <MetricCard
-            icon="📊"
-            name="Avg Resource"
-            :value="avgResourceMetric?.value || 0"
-            unit="ms"
-            type="time"
-            footer="Average resource load time"
-          />
-        </div>
-      </div>
-
-      <!-- Issues Section -->
-      <IssueList :issues="issues" />
-
-      <!-- Recommendations Section -->
-      <RecommendationList
-        :recommendations="recommendations"
-        :showSteps="true"
-      />
-
-      <!-- Footer -->
-      <DashboardFooter
-        :metricCount="metricCount"
-        :lastUpdated="lastUpdated"
-        :apiStatus="apiStatus"
-        :statusMessage="statusMessage"
-        @export="handleExport"
-        @refresh="refreshData"
-        @clear="handleClear"
-      />
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { PerformanceMonitorService } from '../platform/performance/performance-monitor.service'
 import { PerformanceOptimizerService } from '../platform/performance/performance-optimizer.service'
 import { PerformanceApiService } from '../platform/performance/performance-api.service'
 import type { PerformanceIssue } from '../platform/performance/performance-monitor.service'
+
+// SVG icon constants (flat, no emoji)
+const ICON_MEMORY = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4"/><path d="M14 12h4"/></svg>'
+const ICON_TIME = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+const ICON_BOX = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>'
+const ICON_CHART = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>'
 
 // Import dashboard components
 import {
@@ -138,7 +49,7 @@ const version = ref('v1.0.0')
 // Computed
 const metricCount = computed(() => monitorService.value?.getMetricNames().length || 0)
 
-const memoryMetric = computed(() => 
+const memoryMetric = computed(() =>
   monitorService.value?.getLatestMetric('memory-used')
 )
 
@@ -147,15 +58,15 @@ const memoryUsagePercentage = computed(() => {
   return ((memoryMetric.value.value / performance.memory.jsHeapSizeLimit) * 100)
 })
 
-const pageLoadMetric = computed(() => 
+const pageLoadMetric = computed(() =>
   monitorService.value?.getLatestMetric('page-load-time')
 )
 
-const resourceCountMetric = computed(() => 
+const resourceCountMetric = computed(() =>
   monitorService.value?.getLatestMetric('resource-count')
 )
 
-const avgResourceMetric = computed(() => 
+const avgResourceMetric = computed(() =>
   monitorService.value?.getLatestMetric('avg-resource-time')
 )
 
@@ -182,7 +93,7 @@ const getLoadTimeStatus = (loadTime: number): 'good' | 'medium' | 'poor' => {
 
 const toggleMonitoring = () => {
   if (!monitorService.value) return
-  
+
   if (isMonitoring.value) {
     monitorService.value.stopMonitoring()
     isMonitoring.value = false
@@ -192,8 +103,7 @@ const toggleMonitoring = () => {
     isMonitoring.value = true
     statusMessage.value = 'Monitoring started'
   }
-  
-  // Clear status message after 3 seconds
+
   setTimeout(() => {
     statusMessage.value = ''
   }, 3000)
@@ -201,14 +111,14 @@ const toggleMonitoring = () => {
 
 const refreshData = () => {
   if (!monitorService.value || !optimizerService.value) return
-  
+
   statusMessage.value = 'Refreshing data...'
-  
+
   latestReport.value = monitorService.value.generateReport()
   issues.value = latestReport.value.issues || []
   recommendations.value = optimizerService.value.recommendOptimizations(issues.value)
   lastUpdated.value = new Date().toLocaleTimeString()
-  
+
   setTimeout(() => {
     statusMessage.value = 'Data refreshed successfully'
     setTimeout(() => {
@@ -219,13 +129,13 @@ const refreshData = () => {
 
 const handleClear = () => {
   if (!monitorService.value) return
-  
+
   monitorService.value.clear()
   latestReport.value = null
   issues.value = []
   recommendations.value = []
   statusMessage.value = 'All data cleared'
-  
+
   setTimeout(() => {
     statusMessage.value = ''
   }, 2000)
@@ -239,7 +149,7 @@ const handleExport = () => {
     }, 2000)
     return
   }
-  
+
   const exportData = {
     timestamp: new Date().toISOString(),
     score: latestReport.value.score,
@@ -247,7 +157,7 @@ const handleExport = () => {
     recommendations: recommendations.value,
     metrics: latestReport.value.metrics
   }
-  
+
   const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -257,7 +167,7 @@ const handleExport = () => {
   a.click()
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
-  
+
   statusMessage.value = 'Report exported successfully'
   setTimeout(() => {
     statusMessage.value = ''
@@ -270,17 +180,13 @@ const handleClose = () => {
 
 const checkApiStatus = async () => {
   if (!apiService.value) return
-  
+
   const isOnline = await apiService.value.getApiStatus()
   apiStatus.value = isOnline ? 'Online' : 'Offline'
 }
 
-// Watch isVisible prop
 watch(() => props.isVisible, (newValue) => {
-  console.log('[PerformanceDashboard] isVisible changed:', newValue)
   if (newValue) {
-    console.log('[PerformanceDashboard] Dashboard is now visible')
-    // Refresh data when dashboard opens
     setTimeout(() => {
       refreshData()
       checkApiStatus()
@@ -288,48 +194,34 @@ watch(() => props.isVisible, (newValue) => {
   }
 })
 
-// Lifecycle
 onMounted(() => {
-  console.log('[PerformanceDashboard] Component mounting...')
-  
   try {
     monitorService.value = new PerformanceMonitorService()
     optimizerService.value = new PerformanceOptimizerService()
     apiService.value = new PerformanceApiService()
-    
-    console.log('[PerformanceDashboard] Services initialized')
-    
-    // Start monitoring automatically
+
     monitorService.value.startMonitoring(5000)
     isMonitoring.value = true
-    
-    console.log('[PerformanceDashboard] Monitoring started')
-    
-    // Check API status
+
     checkApiStatus()
-    
-    // Start automatic metrics transmission to backend
+
     if (apiService.value && monitorService.value) {
       apiService.value.startAutoSend(60000, () => {
         const allMetrics: any[] = []
         const metricNames = monitorService.value!.getMetricNames()
-        
+
         for (const name of metricNames) {
           const latest = monitorService.value!.getLatestMetric(name)
           if (latest) {
             allMetrics.push(latest)
           }
         }
-        
+
         return allMetrics
       })
-      
-      console.log('[PerformanceDashboard] Auto-send started')
     }
-    
-    // Initial data load
+
     setTimeout(() => {
-      console.log('[PerformanceDashboard] Refreshing data...')
       refreshData()
     }, 1000)
   } catch (error) {
@@ -342,14 +234,210 @@ onUnmounted(() => {
   if (monitorService.value) {
     monitorService.value.stopMonitoring()
   }
-  
+
   if (apiService.value) {
     apiService.value.stopAutoSend()
   }
 })
 </script>
 
+<template>
+  <Transition name="perf-dashboard">
+    <div v-if="isVisible" class="performance-dashboard">
+      <Transition name="perf-overlay" appear>
+        <div class="dashboard-overlay" @click="handleClose" />
+      </Transition>
+
+      <Transition name="perf-container" appear>
+        <div class="dashboard-container">
+          <!-- Header -->
+          <DashboardHeader
+            :isMonitoring="isMonitoring"
+            :version="version"
+            @toggleMonitoring="toggleMonitoring"
+            @refresh="refreshData"
+            @close="handleClose"
+          />
+
+          <!-- Performance Score -->
+          <PerformanceScore
+            :score="latestReport?.score || 0"
+            :issueCount="issues.length"
+          />
+
+          <!-- Metrics Grid -->
+          <div class="metrics-section">
+            <h3 class="section-title">
+              <span class="title-icon" v-html="ICON_CHART" />
+              Real-time Metrics
+            </h3>
+            <TransitionGroup name="metric-stagger" appear tag="div" class="metrics-grid">
+              <MetricCard
+                key="memory"
+                :icon="ICON_MEMORY"
+                name="Memory Usage"
+                :value="memoryMetric?.value || 0"
+                type="memory"
+                :progress="memoryUsagePercentage"
+                metaLabel="Used"
+                :metaValue="formatBytes(memoryMetric?.value || 0)"
+                footer="Total heap memory usage"
+                :status="getMemoryStatus(memoryUsagePercentage)"
+              />
+
+              <MetricCard
+                key="pageLoad"
+                :icon="ICON_TIME"
+                name="Page Load"
+                :value="pageLoadMetric?.value || 0"
+                unit="ms"
+                type="time"
+                footer="Time to fully load the page"
+                :status="getLoadTimeStatus(pageLoadMetric?.value || 0)"
+              />
+
+              <MetricCard
+                key="resources"
+                :icon="ICON_BOX"
+                name="Resources"
+                :value="resourceCountMetric?.value || 0"
+                type="count"
+                footer="Total loaded resources"
+              />
+
+              <MetricCard
+                key="avgResource"
+                :icon="ICON_CHART"
+                name="Avg Resource"
+                :value="avgResourceMetric?.value || 0"
+                unit="ms"
+                type="time"
+                footer="Average resource load time"
+              />
+            </TransitionGroup>
+          </div>
+
+          <!-- Issues Section -->
+          <IssueList :issues="issues" />
+
+          <!-- Recommendations Section -->
+          <RecommendationList
+            :recommendations="recommendations"
+            :showSteps="true"
+          />
+
+          <!-- Footer -->
+          <DashboardFooter
+            :metricCount="metricCount"
+            :lastUpdated="lastUpdated"
+            :apiStatus="apiStatus"
+            :statusMessage="statusMessage"
+            @export="handleExport"
+            @refresh="refreshData"
+            @clear="handleClear"
+          />
+        </div>
+      </Transition>
+    </div>
+  </Transition>
+</template>
+
 <style scoped>
+/* ── Dashboard Transition ──────────────────────────────────────────── */
+.perf-dashboard-enter-active {
+  animation: dashboardFadeIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.perf-dashboard-leave-active {
+  animation: dashboardFadeOut 0.25s ease both;
+}
+
+@keyframes dashboardFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dashboardFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ── Overlay Transition ───────────────────────────────────────────── */
+.perf-overlay-enter-active {
+  animation: overlayFadeIn 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.perf-overlay-leave-active {
+  animation: overlayFadeOut 0.25s ease both;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+@keyframes overlayFadeOut {
+  from { opacity: 1; backdrop-filter: blur(8px); }
+  to { opacity: 0; backdrop-filter: blur(0px); }
+}
+
+/* ── Container Transition ─────────────────────────────────────────── */
+.perf-container-enter-active {
+  animation: containerSpringIn 0.45s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.perf-container-leave-active {
+  animation: containerSpringOut 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes containerSpringIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes containerSpringOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+}
+
+/* ── Metric Stagger ───────────────────────────────────────────────── */
+.metric-stagger-enter-active {
+  animation: metricSlideUp 0.4s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+.metric-stagger-move-transition {
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.metric-stagger:nth-child(1) { animation-delay: 0ms; }
+.metric-stagger:nth-child(2) { animation-delay: 60ms; }
+.metric-stagger:nth-child(3) { animation-delay: 120ms; }
+.metric-stagger:nth-child(4) { animation-delay: 180ms; }
+
+@keyframes metricSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Dashboard Layout ─────────────────────────────────────────────── */
 .performance-dashboard {
   position: fixed;
   top: 0;
@@ -360,16 +448,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .dashboard-overlay {
@@ -378,48 +456,23 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  animation: fadeInOverlay 0.3s ease;
-}
-
-@keyframes fadeInOverlay {
-  from {
-    opacity: 0;
-    backdrop-filter: blur(0px);
-  }
-  to {
-    opacity: 1;
-    backdrop-filter: blur(8px);
-  }
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .dashboard-container {
   position: relative;
-  width: 90%;
+  width: 92%;
   max-width: 1100px;
   max-height: 90vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  border-radius: 20px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.8),
-    0 0 0 1px rgba(255, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: var(--gui-bg-base, #1C1C1E);
+  border-radius: var(--gui-radius-squircle-xl, 18px);
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+  box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
 }
 
 .metrics-section {
@@ -429,19 +482,20 @@ onUnmounted(() => {
 }
 
 .section-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gui-text-primary, #FFFFFF);
   margin: 0 0 16px 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  letter-spacing: 0.5px;
+  gap: 8px;
+  letter-spacing: -0.01em;
 }
 
 .title-icon {
-  font-size: 18px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  display: flex;
+  align-items: center;
+  color: var(--gui-accent, #8E8E93);
 }
 
 .metrics-grid {
@@ -450,32 +504,31 @@ onUnmounted(() => {
   gap: 16px;
 }
 
-/* Scrollbar styles */
+/* Scrollbar */
 .metrics-section::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .metrics-section::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 4px;
+  background: transparent;
 }
 
 .metrics-section::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  transition: background 0.3s ease;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--gui-radius-full, 999px);
+  transition: background 150ms ease;
 }
 
 .metrics-section::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive design */
+/* Responsive */
 @media (max-width: 768px) {
   .dashboard-container {
-    width: 95%;
+    width: 96%;
     max-height: 95vh;
-    border-radius: 16px;
+    border-radius: var(--gui-radius-lg, 12px);
   }
 
   .metrics-grid {

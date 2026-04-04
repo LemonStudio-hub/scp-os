@@ -188,94 +188,155 @@ const handleCleanup = () => {
 </script>
 
 <style scoped>
+/* ── Sidebar Backdrop ────────────────────────────────────────────── */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  display: flex;
+  pointer-events: none;
 }
 
 .sidebar-open {
-  opacity: 1;
-  visibility: visible;
+  pointer-events: auto;
 }
 
-.sidebar-content {
+/* Backdrop fade */
+.sidebar::before {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sidebar-open::before {
+  opacity: 1;
+}
+
+/* ── Sidebar Panel ───────────────────────────────────────────────── */
+.sidebar-content {
+  position: relative;
   width: 320px;
+  max-width: 85vw;
   height: 100%;
-  background: #0a0a0a;
+  background: var(--gui-bg-surface, #2C2C2E);
   transform: translateX(-100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--gui-shadow-ios-sheet, 0 -10px 40px rgba(0, 0, 0, 0.5));
+  will-change: transform;
+  overflow: hidden;
 }
 
 .sidebar-open .sidebar-content {
   transform: translateX(0);
 }
 
+/* Frosted glass header */
 .sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #2a2a2a;
-  background: #1a1a1a;
+  padding: 16px 20px;
+  padding-top: max(16px, env(safe-area-inset-top, 16px));
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.75));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  flex-shrink: 0;
 }
 
 .sidebar-header h2 {
   margin: 0;
-  font-size: 18px;
-  color: #ffffff;
+  font-size: 17px;
   font-weight: 600;
+  color: var(--gui-text-primary, #FFFFFF);
+  letter-spacing: -0.01em;
 }
 
+/* Close button — iOS style */
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  color: var(--gui-accent, #8E8E93);
+  border: none;
+  border-radius: var(--gui-radius-full, 999px);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 400;
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              background 120ms ease,
+              opacity 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-icon:hover {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
+}
+
+.btn-icon:active {
+  transform: scale(0.9);
+}
+
+/* ── Actions Area ────────────────────────────────────────────────── */
 .sidebar-actions {
-  padding: 15px 20px;
-  border-bottom: 1px solid #2a2a2a;
+  padding: 16px 20px;
+  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  flex-shrink: 0;
 }
 
+/* ── Tabs List ───────────────────────────────────────────────────── */
 .tabs-list {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 12px 16px;
+  overscroll-behavior: contain;
 }
 
+/* Tab item — iOS list style */
 .tab-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 15px;
-  margin-bottom: 8px;
-  background: #1a1a1a;
-  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 2px;
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+  border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2px solid transparent;
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              background 120ms ease;
+  border: 1px solid transparent;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
 }
 
 .tab-item:hover {
-  background: #2a2a2a;
-  transform: translateX(2px);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+.tab-item:active {
+  transform: scale(0.98);
 }
 
 .tab-active {
-  border-color: #ffffff;
-  background: #2a2a2a;
+  background: var(--gui-accent-soft, rgba(142, 142, 147, 0.12));
+  border-color: var(--gui-accent, rgba(142, 142, 147, 0.3));
 }
 
 .tab-locked {
-  opacity: 0.9;
+  opacity: 0.7;
 }
 
 .tab-main {
@@ -287,151 +348,161 @@ const handleCleanup = () => {
 }
 
 .tab-icon {
-  font-size: 16px;
+  font-size: 14px;
   flex-shrink: 0;
-  color: #ffffff;
+  color: var(--gui-text-secondary, #8E8E93);
 }
 
 .tab-title {
-  font-size: 14px;
-  color: #ffffff;
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--gui-text-primary, #FFFFFF);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tab-title-input {
-  font-size: 14px;
-  padding: 4px 8px;
-  background: #0a0a0a;
-  border: 1px solid #2a2a2a;
-  border-radius: 4px;
-  color: #ffffff;
+  font-size: 15px;
+  padding: 6px 10px;
+  background: var(--gui-bg-base, #1C1C1E);
+  border: 1px solid var(--gui-border-strong, rgba(255, 255, 255, 0.12));
+  border-radius: var(--gui-radius-sm, 6px);
+  color: var(--gui-text-primary, #FFFFFF);
   width: 100%;
   outline: none;
+  font-family: var(--gui-font-sans);
+  transition: border-color 120ms ease;
+}
+
+.tab-title-input:focus {
+  border-color: var(--gui-accent, #8E8E93);
 }
 
 .tab-actions {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
+/* ── Sidebar Footer ──────────────────────────────────────────────── */
 .sidebar-footer {
-  padding: 15px 20px;
-  border-top: 1px solid #2a2a2a;
-  background: #1a1a1a;
+  padding: 16px 20px;
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.75));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .tabs-count {
-  font-size: 12px;
-  color: #ffffff;
+  font-size: 13px;
+  color: var(--gui-text-secondary, #8E8E93);
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .empty-state {
   text-align: center;
-  padding: 40px 20px;
-  color: #ffffff;
+  padding: 48px 20px;
+  color: var(--gui-text-secondary, #8E8E93);
 }
 
 .empty-state p {
-  margin: 0 0 15px 0;
+  margin: 0 0 16px 0;
+  font-size: 15px;
 }
 
-/* Button styles */
+/* ── Button Styles ───────────────────────────────────────────────── */
 .btn-primary {
   width: 100%;
-  padding: 10px;
-  background: #2a2a2a;
-  color: #ffffff;
-  border: 1px solid #3a3a3a;
-  border-radius: 6px;
+  padding: 10px 16px;
+  background: var(--gui-accent, #8E8E93);
+  color: var(--gui-text-inverse, #000000);
+  border: none;
+  border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s ease;
+  font-size: 15px;
+  font-weight: 500;
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              opacity 120ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #3a3a3a;
+  background: var(--gui-accent-hover, #AEAEB2);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .btn-secondary {
-  padding: 8px 12px;
-  background: #1a1a1a;
-  color: #ffffff;
-  border: 1px solid #2a2a2a;
-  border-radius: 6px;
+  padding: 8px 14px;
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+  color: var(--gui-accent, #8E8E93);
+  border: none;
+  border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
-  font-size: 12px;
-  transition: background 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+              background 120ms ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   flex-shrink: 1;
   min-width: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-secondary:hover {
-  background: #2a2a2a;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 18px;
-  transition: background 0.2s ease;
+.btn-secondary:active {
+  transform: scale(0.97);
 }
 
-.btn-icon:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.btn-small {
+.btn-icon.btn-small {
   width: 28px;
   height: 28px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
-/* Scrollbar styles */
+/* ── Scrollbar ───────────────────────────────────────────────────── */
 .tabs-list::-webkit-scrollbar {
   width: 6px;
 }
 
 .tabs-list::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: transparent;
 }
 
 .tabs-list::-webkit-scrollbar-thumb {
-  background: #2a2a2a;
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: var(--gui-radius-full, 999px);
 }
 
 .tabs-list::-webkit-scrollbar-thumb:hover {
-  background: #3a3a3a;
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive design */
+/* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .sidebar-content {
-    width: 280px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .sidebar-footer {
