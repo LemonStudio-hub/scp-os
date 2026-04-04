@@ -86,7 +86,6 @@ const {
   getTerminal,
   sendKey,
   sendText,
-  hasBootLogBeenShown,
   terminalInstance
 } = useTerminal(terminalContainer)
 
@@ -177,14 +176,8 @@ onMounted(async () => {
   // Add resize listener for responsive font size
   window.addEventListener('resize', handleResize)
 
-  // Check system status and display appropriate screen
-  if (hasBootLogBeenShown()) {
-    // Boot log has been shown, display welcome message without boot log
-    displayWelcomeMessage()
-  } else {
-    // Boot log has not been shown (first launch or after shutdown), display startup prompt
-    displayStartupPrompt()
-  }
+  // Always display startup prompt — user must type 'start' to boot
+  displayStartupPrompt()
 
   setupCommandHandler()
 })
