@@ -31,11 +31,11 @@
       <div class="home-screen__wallpaper-gradient" />
       <div class="home-screen__wallpaper-pattern">
         <svg width="100%" height="100%" viewBox="0 0 400 800" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="200" cy="400" r="180" stroke="rgba(233,69,96,0.06)" stroke-width="1"/>
-          <circle cx="200" cy="400" r="120" stroke="rgba(233,69,96,0.04)" stroke-width="1"/>
-          <circle cx="200" cy="400" r="60" stroke="rgba(233,69,96,0.03)" stroke-width="1"/>
-          <line x1="0" y1="400" x2="400" y2="400" stroke="rgba(233,69,96,0.03)" stroke-width="0.5"/>
-          <line x1="200" y1="0" x2="200" y2="800" stroke="rgba(233,69,96,0.03)" stroke-width="0.5"/>
+          <circle cx="200" cy="400" r="180" stroke="rgba(142,142,147,0.06)" stroke-width="1"/>
+          <circle cx="200" cy="400" r="120" stroke="rgba(142,142,147,0.04)" stroke-width="1"/>
+          <circle cx="200" cy="400" r="60" stroke="rgba(142,142,147,0.03)" stroke-width="1"/>
+          <line x1="0" y1="400" x2="400" y2="400" stroke="rgba(142,142,147,0.03)" stroke-width="0.5"/>
+          <line x1="200" y1="0" x2="200" y2="800" stroke="rgba(142,142,147,0.03)" stroke-width="0.5"/>
         </svg>
       </div>
     </div>
@@ -88,9 +88,9 @@ export interface HomeApp {
 }
 
 const apps: HomeApp[] = [
-  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-app-icon-to, #e94560)' },
-  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-app-icon-to, #e94560)' },
-  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-app-icon-to, #e94560)' },
+  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-accent, #8E8E93)' },
+  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-accent, #8E8E93)' },
+  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-accent, #8E8E93)' },
 ]
 
 const emit = defineEmits<{
@@ -100,7 +100,7 @@ const emit = defineEmits<{
 const homeRef = ref<HTMLDivElement | null>(null)
 const currentTime = ref('')
 
-const batteryColor = computed(() => 'var(--gui-status-bar-battery, #34d399)')
+const batteryColor = computed(() => 'var(--gui-status-bar-battery, #34C759)')
 
 // Hammer.js gesture setup
 const { setup: setupGestures } = useHammer(homeRef, {
@@ -155,7 +155,7 @@ onMounted(() => {
   padding: 0 var(--gui-spacing-xl, 24px);
   padding-top: var(--gui-status-bar-padding-top, max(12px, env(safe-area-inset-top, 12px)));
   height: var(--gui-dim-status-bar-height, 44px);
-  color: var(--gui-status-bar-text, #f0f0f0);
+  color: var(--gui-status-bar-text, #FFFFFF);
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-semibold, 600);
   letter-spacing: 0.02em;
@@ -165,7 +165,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-xs, 4px);
-  color: var(--gui-status-bar-text, #f0f0f0);
+  color: var(--gui-status-bar-text, #FFFFFF);
 }
 
 .home-screen__icon {
@@ -178,7 +178,7 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--gui-wallpaper-base, #060606);
+  background: var(--gui-wallpaper-base, #1C1C1E);
   overflow: hidden;
 }
 
@@ -186,9 +186,9 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 50% 30%, var(--gui-wallpaper-gradient1, rgba(139, 0, 0, 0.15)) 0%, transparent 60%),
-    radial-gradient(ellipse at 30% 70%, var(--gui-wallpaper-gradient2, rgba(233, 69, 96, 0.08)) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, var(--gui-wallpaper-gradient3, rgba(96, 165, 250, 0.05)) 0%, transparent 40%);
+    radial-gradient(ellipse at 50% 30%, var(--gui-wallpaper-gradient1, rgba(142, 142, 147, 0.08)) 0%, transparent 60%),
+    radial-gradient(ellipse at 30% 70%, var(--gui-wallpaper-gradient2, rgba(142, 142, 147, 0.05)) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 80%, var(--gui-wallpaper-gradient3, rgba(63, 63, 66, 0.03)) 0%, transparent 40%);
 }
 
 .home-screen__wallpaper-pattern {
@@ -262,7 +262,7 @@ onMounted(() => {
 .home-screen__app-label {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-status-bar-text, #f0f0f0);
+  color: var(--gui-status-bar-text, #FFFFFF);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.02em;
 }

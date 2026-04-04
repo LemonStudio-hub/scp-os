@@ -1,5 +1,44 @@
 @import 'tailwindcss';
 
+/* Tailwind v4 Theme Configuration */
+@theme {
+  /* Continuous curvature border radius (squircle) */
+  --radius-squircle-xs: 3px;
+  --radius-squircle-sm: 6px;
+  --radius-squircle-md: 10px;
+  --radius-squircle-lg: 14px;
+  --radius-squircle-xl: 18px;
+  --radius-squircle-2xl: 24px;
+  --radius-squircle-3xl: 32px;
+
+  /* iOS dark color palette */
+  --color-ios-bg: #1C1C1E;
+  --color-ios-surface: #2C2C2E;
+  --color-ios-surface-2: #3A3A3C;
+  --color-ios-surface-3: #48484A;
+  --color-ios-text: #FFFFFF;
+  --color-ios-text-secondary: #8E8E93;
+  --color-ios-text-tertiary: #636366;
+  --color-ios-separator: rgba(84, 84, 88, 0.65);
+  --color-ios-accent: #8E8E93;
+  --color-ios-accent-hover: #AEAEB2;
+  --color-ios-green: #34C759;
+  --color-ios-red: #FF3B30;
+  --color-ios-blue: #0A84FF;
+  --color-ios-yellow: #FFCC00;
+  --color-icon-fg: #FFFFFF;
+  --color-icon-app-from: #4A4A4C;
+  --color-icon-app-to: #636366;
+
+  /* iOS spring animation */
+  --ease-ios-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-ios-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Backdrop blur */
+  --blur-ios: 20px;
+  --blur-ios-lg: 30px;
+}
+
 /* Import xterm styles */
 @import 'xterm/css/xterm.css';
 
