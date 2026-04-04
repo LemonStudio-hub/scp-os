@@ -31,11 +31,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useTerminalEmulator } from '../../composables/useTerminalEmulator'
+import { useThemeStore } from '../../stores/themeStore'
 
 interface Props {
   visible: boolean
@@ -49,6 +50,34 @@ defineEmits<{
 const terminalRef = ref<HTMLDivElement | null>(null)
 const terminal = ref<Terminal | null>(null)
 const fitAddon = ref<FitAddon | null>(null)
+const themeStore = useThemeStore()
+
+function getMobileTerminalTheme() {
+  const c = themeStore.currentTheme.colors
+  return {
+    background: c.terminalBg,
+    foreground: c.terminalFg,
+    cursor: c.terminalCursor,
+    cursorAccent: c.terminalCursorAccent,
+    selectionBackground: c.terminalSelection,
+    black: c.terminalBlack,
+    red: c.terminalRed,
+    green: c.terminalGreen,
+    yellow: c.terminalYellow,
+    blue: c.terminalBlue,
+    magenta: c.terminalMagenta,
+    cyan: c.terminalCyan,
+    white: c.terminalWhite,
+    brightBlack: c.terminalBrightBlack,
+    brightRed: c.terminalBrightRed,
+    brightGreen: c.terminalBrightGreen,
+    brightYellow: c.terminalBrightYellow,
+    brightBlue: c.terminalBrightBlue,
+    brightMagenta: c.terminalBrightMagenta,
+    brightCyan: c.terminalBrightCyan,
+    brightWhite: c.terminalBrightWhite,
+  }
+}
 
 // Use shared terminal emulator composable
 const { writePrompt, handleInput, clearAndPrompt: onClear } = useTerminalEmulator({
@@ -62,12 +91,7 @@ function initTerminal(): void {
     cursorBlink: true,
     fontSize: 14,
     fontFamily: "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
-    theme: {
-      background: '#0a0a0a',
-      foreground: '#f0f0f0',
-      cursor: '#e94560',
-      selectionBackground: 'rgba(96, 165, 250, 0.25)',
-    },
+    theme: getMobileTerminalTheme(),
     scrollback: 1000,
   })
 
@@ -97,6 +121,14 @@ function sendKey(key: string): void {
   terminal.value?.write(key)
   handleInput(key)
 }
+
+// Watch for theme changes
+watch(() => themeStore.currentThemeId, () => {
+  if (terminal.value) {
+    terminal.value.options.theme = getMobileTerminalTheme()
+    terminal.value.refresh(0, terminal.value.rows - 1)
+  }
+})
 
 onMounted(() => {
   setTimeout(() => initTerminal(), 50)

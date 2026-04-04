@@ -179,40 +179,52 @@ onMounted(async () => {
     clear()
     displayStartupPrompt()
     setupCommandHandler()
+
+    // Apply initial terminal theme
+    applyTerminalTheme()
   } catch (error) {
     console.error('[Terminal] Failed to initialize:', error)
   }
 })
 
-// Watch for theme changes and update terminal colors
-watch(() => themeStore.currentTheme.colors, (newColors) => {
+// Apply terminal theme colors
+function applyTerminalTheme(): void {
   const terminal = getTerminal()
-  if (terminal) {
-    terminal.options.theme = {
-      background: newColors.terminalBg,
-      foreground: newColors.terminalFg,
-      cursor: newColors.terminalCursor,
-      cursorAccent: newColors.terminalCursorAccent,
-      selectionBackground: newColors.terminalSelection,
-      black: newColors.terminalBlack,
-      red: newColors.terminalRed,
-      green: newColors.terminalGreen,
-      yellow: newColors.terminalYellow,
-      blue: newColors.terminalBlue,
-      magenta: newColors.terminalMagenta,
-      cyan: newColors.terminalCyan,
-      white: newColors.terminalWhite,
-      brightBlack: newColors.terminalBrightBlack,
-      brightRed: newColors.terminalBrightRed,
-      brightGreen: newColors.terminalBrightGreen,
-      brightYellow: newColors.terminalBrightYellow,
-      brightBlue: newColors.terminalBrightBlue,
-      brightMagenta: newColors.terminalBrightMagenta,
-      brightCyan: newColors.terminalBrightCyan,
-      brightWhite: newColors.terminalBrightWhite,
-    }
+  if (!terminal) return
+
+  const c = themeStore.currentTheme.colors
+
+  terminal.options.theme = {
+    background: c.terminalBg,
+    foreground: c.terminalFg,
+    cursor: c.terminalCursor,
+    cursorAccent: c.terminalCursorAccent,
+    selectionBackground: c.terminalSelection,
+    black: c.terminalBlack,
+    red: c.terminalRed,
+    green: c.terminalGreen,
+    yellow: c.terminalYellow,
+    blue: c.terminalBlue,
+    magenta: c.terminalMagenta,
+    cyan: c.terminalCyan,
+    white: c.terminalWhite,
+    brightBlack: c.terminalBrightBlack,
+    brightRed: c.terminalBrightRed,
+    brightGreen: c.terminalBrightGreen,
+    brightYellow: c.terminalBrightYellow,
+    brightBlue: c.terminalBrightBlue,
+    brightMagenta: c.terminalBrightMagenta,
+    brightCyan: c.terminalBrightCyan,
+    brightWhite: c.terminalBrightWhite,
   }
-}, { deep: true })
+
+  terminal.refresh(0, terminal.rows - 1)
+}
+
+// Watch for theme changes and update terminal colors
+watch(() => themeStore.currentThemeId, () => {
+  applyTerminalTheme()
+})
 
 // Tab switching — save and restore terminal state
 watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {

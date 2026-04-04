@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import SCPWindow from '../../components/SCPWindow.vue'
@@ -35,6 +35,7 @@ import SCPButton from '../../components/ui/SCPButton.vue'
 import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import { useTerminalPanelStore } from '../../stores/terminalPanel'
 import { useTerminalEmulator } from '../../composables/useTerminalEmulator'
+import { useThemeStore } from '../../stores/themeStore'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -44,6 +45,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const tpStore = useTerminalPanelStore()
+const themeStore = useThemeStore()
 const terminalContainerRef = ref<HTMLDivElement>()
 const terminal = ref<Terminal | null>(null)
 const fitAddon = ref<FitAddon | null>(null)
@@ -55,6 +57,33 @@ const { writePrompt, handleInput, clearAndPrompt } = useTerminalEmulator({
   getTerminal: () => terminal.value,
 })
 
+function getTerminalTheme() {
+  const c = themeStore.currentTheme.colors
+  return {
+    background: c.terminalBg,
+    foreground: c.terminalFg,
+    cursor: c.terminalCursor,
+    cursorAccent: c.terminalCursorAccent,
+    selectionBackground: c.terminalSelection,
+    black: c.terminalBlack,
+    red: c.terminalRed,
+    green: c.terminalGreen,
+    yellow: c.terminalYellow,
+    blue: c.terminalBlue,
+    magenta: c.terminalMagenta,
+    cyan: c.terminalCyan,
+    white: c.terminalWhite,
+    brightBlack: c.terminalBrightBlack,
+    brightRed: c.terminalBrightRed,
+    brightGreen: c.terminalBrightGreen,
+    brightYellow: c.terminalBrightYellow,
+    brightBlue: c.terminalBrightBlue,
+    brightMagenta: c.terminalBrightMagenta,
+    brightCyan: c.terminalBrightCyan,
+    brightWhite: c.terminalBrightWhite,
+  }
+}
+
 function initTerminal(): void {
   if (!terminalContainerRef.value) return
 
@@ -62,29 +91,7 @@ function initTerminal(): void {
     cursorBlink: true,
     fontSize: tpStore.fontSize,
     fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'SF Mono', Consolas, monospace",
-    theme: {
-      background: '#0a0a0a',
-      foreground: '#f0f0f0',
-      cursor: '#e94560',
-      cursorAccent: '#0a0a0a',
-      selectionBackground: 'rgba(96, 165, 250, 0.25)',
-      black: '#1a1a1a',
-      red: '#e94560',
-      green: '#34d399',
-      yellow: '#fbbf24',
-      blue: '#60a5fa',
-      magenta: '#c084fc',
-      cyan: '#22d3ee',
-      white: '#f0f0f0',
-      brightBlack: '#555555',
-      brightRed: '#ff5a73',
-      brightGreen: '#6ee7b7',
-      brightYellow: '#fcd34d',
-      brightBlue: '#93c5fd',
-      brightMagenta: '#d8b4fe',
-      brightCyan: '#67e8f9',
-      brightWhite: '#ffffff',
-    },
+    theme: getTerminalTheme(),
     scrollback: 1000,
   })
 
@@ -124,6 +131,14 @@ function onToggleFontSize(): void {
   }
   setTimeout(() => fitAddon.value?.fit(), 50)
 }
+
+// Watch for theme changes
+watch(() => themeStore.currentThemeId, () => {
+  if (terminal.value) {
+    terminal.value.options.theme = getTerminalTheme()
+    terminal.value.refresh(0, terminal.value.rows - 1)
+  }
+})
 
 function onClose(): void {
   if (terminal.value) {
