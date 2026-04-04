@@ -29,7 +29,8 @@
     <!-- Terminal Body -->
     <div class="scp-terminal__body flex-1 relative overflow-hidden"
          :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
-      <div id="terminal-container" ref="terminalContainer" class="w-full h-full touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch scroll-smooth"
+      <div id="terminal-container" ref="terminalContainer" class="w-full h-full"
+           style="touch-action: pan-y; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;"
            :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }" />
     </div>
 
@@ -328,10 +329,11 @@ onBeforeUnmount(() => {
 }
 
 #terminal-container :deep(.xterm-viewport) {
-  overflow-y: auto;
+  overflow-y: auto !important;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(142, 142, 147, 0.5) transparent;
 }

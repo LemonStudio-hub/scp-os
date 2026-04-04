@@ -51,7 +51,28 @@ const touchStartX = ref(0)
 const touchStartY = ref(0)
 const isSwiping = ref(false)
 
+// 检查触摸目标是否在终端区域内
+const isInsideTerminal = (target: EventTarget | null): boolean => {
+  if (!target || !(target instanceof Node)) return false
+  const terminalContainer = document.getElementById('terminal-container')
+  if (terminalContainer && terminalContainer.contains(target)) return true
+  
+  // 也检查 xterm 的 viewport 和 screen 元素
+  const xtermElements = document.querySelectorAll('.xterm, .xterm-viewport, .xterm-screen')
+  for (const el of Array.from(xtermElements)) {
+    if (el.contains(target)) return true
+  }
+  
+  return false
+}
+
 const handleTouchStart = (e: TouchEvent) => {
+  // 如果触摸开始在终端区域内，不处理手势
+  if (isInsideTerminal(e.target)) {
+    isSwiping.value = false
+    return
+  }
+  
   touchStartX.value = e.touches[0].clientX
   touchStartY.value = e.touches[0].clientY
   isSwiping.value = true
@@ -59,6 +80,11 @@ const handleTouchStart = (e: TouchEvent) => {
 
 const handleTouchMove = (e: TouchEvent) => {
   if (!isSwiping.value) return
+  
+  // 如果手势在终端区域内，不处理
+  if (isInsideTerminal(e.target)) {
+    return
+  }
 
   const touchX = e.touches[0].clientX
   const touchY = e.touches[0].clientY
