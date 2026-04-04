@@ -1,0 +1,9 @@
+[build]
+command = "pnpm run build:production"
+output_directory = "dist"
+root = "packages/app"
+
+[build.environment]
+NODE_VERSION = "20"
+PNPM_VERSION = "8.15.0"
+NODE_OPTIONS = "--max-old-space-size=4096"
