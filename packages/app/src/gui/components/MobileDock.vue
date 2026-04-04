@@ -39,21 +39,21 @@ export interface MobileDockItem {
   disabled?: boolean
 }
 
-// Default items must be defined BEFORE withDefaults(defineProps to avoid TDZ error
-// because defineProps gets hoisted outside the setup function.
-const defaultDockItems: MobileDockItem[] = [
-  { id: 'terminal', tool: 'terminal', label: 'Terminal', iconName: 'terminal' },
-  { id: 'files', tool: 'filemanager', label: 'Files', iconName: 'folder' },
-  { id: 'editor', tool: 'editor', label: 'Editor', iconName: 'edit' },
-]
-
 interface Props {
   items?: MobileDockItem[]
   activeTools?: ToolType[]
 }
 
+// Default values are defined INLINE inside the factory function to avoid
+// TDZ errors. defineProps() is a compile-time macro that gets hoisted,
+// so referencing any <script setup> variable in default factories causes
+// a Temporal Dead Zone error at runtime.
 withDefaults(defineProps<Props>(), {
-  items: () => defaultDockItems,
+  items: () => [
+    { id: 'terminal', tool: 'terminal' as ToolType, label: 'Terminal', iconName: 'terminal' as IconName },
+    { id: 'files', tool: 'filemanager' as ToolType, label: 'Files', iconName: 'folder' as IconName },
+    { id: 'editor', tool: 'editor' as ToolType, label: 'Editor', iconName: 'edit' as IconName },
+  ],
   activeTools: () => [],
 })
 
