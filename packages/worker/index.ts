@@ -4,7 +4,7 @@
  */
 
 import { getConfig } from './shared/config'
-import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse } from './shared/types'
+import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput } from './shared/types'
 
 // 解析器
 import { HTMLParser } from './parsers/htmlParser'
@@ -689,6 +689,274 @@ class SCPScraper {
     }
   }
 
+  // ==================== Chat Room Methods ====================
+
+  /**
+   * 获取所有聊天室
+   */
+  async getChatRooms(): Promise<ChatApiResponse> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      const rooms = await this.db.prepare(
+        'SELECT * FROM chat_rooms ORDER BY id ASC'
+      ).all<ChatRoom>()
+
+      return {
+        success: true,
+        data: rooms.results || [],
+      }
+    } catch (error) {
+      logger.error('Failed to get chat rooms', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 创建聊天室
+   */
+  async createChatRoom(input: ChatRoomInput): Promise<ChatApiResponse> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      // 验证名称
+      if (!input.name || input.name.length > 50) {
+        return { success: false, error: 'Invalid room name (max 50 characters)' }
+      }
+
+      const result = await this.db.prepare(
+        'INSERT INTO chat_rooms (name, description, created_by, is_public) VALUES (?, ?, ?, ?)'
+      ).bind(
+        input.name,
+        input.description || '',
+        input.created_by,
+        input.is_public !== undefined ? input.is_public : 1
+      ).run()
+
+      if (result.success) {
+        const room = await this.db.prepare(
+          'SELECT * FROM chat_rooms WHERE id = ?'
+        ).bind(result.meta?.last_row_id).first<ChatRoom>()
+
+        return { success: true, data: room }
+      } else {
+        return { success: false, error: 'Failed to create room' }
+      }
+    } catch (error) {
+      logger.error('Failed to create chat room', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 检查用户发送频率 (1分钟10次)
+   */
+  async checkRateLimit(userId: string): Promise<{ allowed: boolean; remaining?: number; resetAt?: string }> {
+    if (!this.db) {
+      return { allowed: true }
+    }
+
+    try {
+      // 计算1分钟前的时间
+      const oneMinuteAgo = new Date(Date.now() - 60000).toISOString()
+
+      // 查询用户最近1分钟内的消息数
+      const result = await this.db.prepare(
+        'SELECT COUNT(*) as count FROM chat_messages WHERE user_id = ? AND created_at > ?'
+      ).bind(userId, oneMinuteAgo).first<{ count: number }>()
+
+      const count = result?.count || 0
+      const maxMessages = 10
+
+      if (count >= maxMessages) {
+        // 获取最早消息的时间来计算重置时间
+        const earliest = await this.db.prepare(
+          'SELECT created_at FROM chat_messages WHERE user_id = ? AND created_at > ? ORDER BY created_at ASC LIMIT 1'
+        ).bind(userId, oneMinuteAgo).first<{ created_at: string }>()
+
+        const resetAt = earliest
+          ? new Date(new Date(earliest.created_at).getTime() + 60000).toISOString()
+          : new Date(Date.now() + 60000).toISOString()
+
+        return {
+          allowed: false,
+          remaining: 0,
+          resetAt,
+        }
+      }
+
+      return {
+        allowed: true,
+        remaining: maxMessages - count,
+      }
+    } catch (error) {
+      logger.error('Failed to check rate limit', error as Error)
+      return { allowed: true } // 出错时允许发送
+    }
+  }
+
+  /**
+   * 发送聊天消息（带频率限制和昵称支持）
+   */
+  async sendChatMessageWithRateLimit(
+    userId: string,
+    nickname: string | undefined,
+    content: string,
+    roomId: number = 1
+  ): Promise<ChatApiResponse> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      // 检查频率限制
+      const rateLimit = await this.checkRateLimit(userId)
+      if (!rateLimit.allowed) {
+        return {
+          success: false,
+          error: `Rate limit exceeded. Try again after ${new Date(rateLimit.resetAt!).toLocaleTimeString()}`,
+        }
+      }
+
+      // 内容长度限制
+      if (content.length > 1000) {
+        return { success: false, error: 'Message too long (max 1000 characters)' }
+      }
+
+      // 获取或设置昵称
+      let username = nickname
+      if (!username) {
+        const storedNickname = await this.getUserNickname(userId)
+        username = storedNickname || `User_${userId.slice(0, 8)}`
+      }
+
+      // 插入消息到数据库
+      const result = await this.db.prepare(
+        'INSERT INTO chat_messages (user_id, username, content, room_id) VALUES (?, ?, ?, ?)'
+      ).bind(userId, username, content, roomId).run()
+
+      if (result.success) {
+        // 更新房间消息计数
+        await this.db.prepare(
+          'UPDATE chat_rooms SET message_count = message_count + 1 WHERE id = ?'
+        ).bind(roomId).run()
+
+        // 获取刚插入的消息
+        const message = await this.db.prepare(
+          'SELECT * FROM chat_messages WHERE id = ?'
+        ).bind(result.meta?.last_row_id).first<ChatMessage>()
+
+        return {
+          success: true,
+          data: message,
+        }
+      } else {
+        return { success: false, error: 'Failed to send message' }
+      }
+    } catch (error) {
+      logger.error('Failed to send chat message', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 获取用户昵称
+   */
+  private async getUserNickname(userId: string): Promise<string | null> {
+    try {
+      const result = await this.db!.prepare(
+        'SELECT value FROM user_settings WHERE key = ?'
+      ).bind(`nickname_${userId}`).first<{ value: string }>()
+
+      return result?.value || null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * 设置用户昵称
+   */
+  async setUserNickname(userId: string, nickname: string): Promise<{ success: boolean; error?: string }> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      if (nickname.length > 30) {
+        return { success: false, error: 'Nickname too long (max 30 characters)' }
+      }
+
+      await this.db.prepare(
+        'INSERT OR REPLACE INTO user_settings (key, value, updatedAt) VALUES (?, ?, ?)'
+      ).bind(`nickname_${userId}`, nickname, new Date().toISOString()).run()
+
+      return { success: true }
+    } catch (error) {
+      logger.error('Failed to set nickname', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 获取聊天消息（支持按房间过滤）
+   */
+  async getChatMessages(limit: number = 50, after?: string, roomId?: number): Promise<ChatApiResponse> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      let query = 'SELECT * FROM chat_messages WHERE 1=1'
+      const params: any[] = []
+
+      if (roomId) {
+        query += ' AND room_id = ?'
+        params.push(roomId)
+      }
+
+      if (after) {
+        query += ' AND created_at > ?'
+        params.push(after)
+      }
+
+      query += ' ORDER BY created_at DESC LIMIT ?'
+      params.push(limit)
+
+      const messages = await this.db.prepare(query)
+        .bind(...params)
+        .all<ChatMessage>()
+
+      return {
+        success: true,
+        data: (messages.results || []).reverse(),
+        count: messages.results?.length || 0,
+      }
+    } catch (error) {
+      logger.error('Failed to get chat messages', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
   /**
    * 获取数据库统计信息
    */
@@ -826,32 +1094,82 @@ export default {
         const result = await scraper.searchSCP(keyword, branch)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/chat/send') {
-        // 发送聊天消息
+        // 发送聊天消息（带频率限制）
         if (request.method !== 'POST') {
           return corsManager.createErrorResponse('Method not allowed', 405, context)
         }
 
         try {
           const body = await request.json() as any
-          const { user_id, username, content } = body
+          const { user_id, nickname, content, room_id } = body
 
           if (!user_id || !content) {
             return corsManager.createErrorResponse('Missing user_id or content', 400, context)
           }
 
-          const result = await scraper.sendChatMessage(user_id, username || 'Anonymous', content)
-          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+          const result = await scraper.sendChatMessageWithRateLimit(
+            user_id,
+            nickname,
+            content,
+            room_id || 1
+          )
+          return corsManager.createResponse(result, result.success ? 200 : 429, context)
         } catch (error) {
           logger.error('Failed to parse chat message', error as Error)
           return corsManager.createErrorResponse('Invalid request body', 400, context)
         }
       } else if (path === '/chat/messages') {
-        // 获取聊天消息
+        // 获取聊天消息（支持房间过滤）
         const limit = parseInt(url.searchParams.get('limit') || '50')
         const after = url.searchParams.get('after') || undefined
+        const roomId = url.searchParams.get('room_id') ? parseInt(url.searchParams.get('room_id')!) : undefined
 
-        const result = await scraper.getChatMessages(limit, after)
+        const result = await scraper.getChatMessages(limit, after, roomId)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/chat/rooms') {
+        // 获取所有聊天室
+        if (request.method === 'GET') {
+          const result = await scraper.getChatRooms()
+          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+        } else if (request.method === 'POST') {
+          // 创建聊天室
+          try {
+            const body = await request.json() as any
+            const { name, description, created_by, is_public } = body
+
+            if (!name || !created_by) {
+              return corsManager.createErrorResponse('Missing name or created_by', 400, context)
+            }
+
+            const result = await scraper.createChatRoom({ name, description, created_by, is_public })
+            return corsManager.createResponse(result, result.success ? 201 : 500, context)
+          } catch (error) {
+            logger.error('Failed to parse room creation', error as Error)
+            return corsManager.createErrorResponse('Invalid request body', 400, context)
+          }
+        } else {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+      } else if (path === '/chat/nickname') {
+        // 设置用户昵称
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        try {
+          const body = await request.json() as any
+          const { user_id, nickname } = body
+
+          if (!user_id || !nickname) {
+            return corsManager.createErrorResponse('Missing user_id or nickname', 400, context)
+          }
+
+          const result = await scraper.setUserNickname(user_id, nickname)
+          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+        } catch (error) {
+          logger.error('Failed to parse nickname', error as Error)
+          return corsManager.createErrorResponse('Invalid request body', 400, context)
+        }
       } else if (path === '/chat/broadcast') {
         // 定时任务：广播新消息
         const result = await scraper.broadcastNewMessages()
@@ -942,8 +1260,10 @@ export default {
               '/stats': '获取数据库统计信息',
               '/debug?number={number}': '调试：返回原始HTML',
               '/performance': '性能监控API (POST: 提交指标, GET: 获取指标)',
-              '/chat/send': '发送聊天消息 (POST)',
-              '/chat/messages': '获取聊天消息 (GET)',
+              '/chat/send': '发送聊天消息 (POST, 带频率限制)',
+              '/chat/messages': '获取聊天消息 (GET, 支持房间过滤)',
+              '/chat/rooms': '获取/创建聊天室 (GET/POST)',
+              '/chat/nickname': '设置用户昵称 (POST)',
               '/chat/broadcast': '广播新消息 (定时任务)',
             },
             features: {

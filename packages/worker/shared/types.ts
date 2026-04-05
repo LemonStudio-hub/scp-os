@@ -150,7 +150,30 @@ export interface ChatMessageInput {
  */
 export interface ChatApiResponse {
   success: boolean
-  data?: ChatMessage | ChatMessage[]
+  data?: ChatMessage | ChatMessage[] | ChatRoom | ChatRoom[] | any
   error?: string
   count?: number
+}
+
+/**
+ * 聊天室
+ */
+export interface ChatRoom {
+  id: number
+  name: string
+  description: string
+  created_by: string
+  created_at: string
+  is_public: number
+  message_count: number
+}
+
+/**
+ * 聊天室输入
+ */
+export interface ChatRoomInput {
+  name: string
+  description?: string
+  created_by: string
+  is_public?: number
 }
