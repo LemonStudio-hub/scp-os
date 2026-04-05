@@ -31,7 +31,7 @@
             class="mobile-file-manager__file-input"
             @change="onFileUpload"
           />
-          <button class="mobile-file-manager__action-btn" @click="triggerUpload" title="Upload files">
+          <button class="mobile-file-manager__action-btn" @click="triggerUpload" :title="t('fm.dropFiles')">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M9 12V3M9 3L6 6M9 3l3 3"/>
               <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3"/>
@@ -70,7 +70,7 @@
             <path d="M24 32V16M24 16l-8 8M24 16l8 8"/>
             <path d="M8 36v4a4 4 0 004 4h24a4 4 0 004-4v-4"/>
           </svg>
-          <span>Drop files to upload</span>
+          <span>{{ t('fm.dropFiles') }}</span>
         </div>
 
         <!-- File Items -->
@@ -115,7 +115,7 @@
             </div>
             <span class="mobile-file-manager__item-name" :title="file.name">{{ file.name }}</span>
             <span class="mobile-file-manager__item-meta">
-              {{ file.isDirectory ? 'Folder' : formatSize(file.size) }}
+              {{ file.isDirectory ? t('fm.folder') : formatSize(file.size) }}
             </span>
           </button>
         </div>
@@ -126,9 +126,9 @@
             <path d="M8 16h14l6-8h20v36H8z"/>
             <path d="M20 28h16M20 36h10"/>
           </svg>
-          <p class="mobile-file-manager__empty-title">This folder is empty</p>
+          <p class="mobile-file-manager__empty-title">{{ t('fm.emptyFolder') }}</p>
           <p class="mobile-file-manager__empty-hint">
-            Tap the + button to create new files or folders
+            {{ t('fm.emptyHint') }}
           </p>
         </div>
       </div>
@@ -183,6 +183,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from '../../composables/useI18n'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
 import DialogModal from './DialogModal.vue'
@@ -206,17 +207,18 @@ interface ContextAction {
 defineProps<Props>()
 defineEmits<{ close: [] }>()
 
+const { t } = useI18n()
 const fmStore = useFileManagerStore()
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
-  return parts.length > 0 ? parts[parts.length - 1] : 'Files'
+  return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
 })
 
 // Breadcrumbs
 const breadcrumbSegments = computed(() => {
   const segments = fmStore.currentPath.split('/').filter(Boolean)
   return [
-    { label: 'Root', path: '/' },
+    { label: t('fm.root'), path: '/' },
     ...segments.map((seg, i) => ({
       label: seg,
       path: '/' + segments.slice(0, i + 1).join('/'),
@@ -262,7 +264,7 @@ function showDialog(options: {
     dialogMessage.value = options.message || ''
     dialogPlaceholder.value = options.placeholder || ''
     dialogDefault.value = options.defaultValue || ''
-    dialogConfirmText.value = options.confirmText || 'Confirm'
+    dialogConfirmText.value = options.confirmText || t('common.confirm')
     dialogDanger.value = options.danger || false
     dialogCallback = resolve
     dialogVisible.value = true
@@ -399,10 +401,10 @@ async function onFileUpload(event: Event) {
 async function createNewFile() {
   const name = await showDialog({
     type: 'input',
-    title: 'New File',
-    placeholder: 'Enter file name',
-    defaultValue: 'untitled.txt',
-    confirmText: 'Create',
+    title: t('fm.newFile'),
+    placeholder: t('fm.enterFileName'),
+    defaultValue: t('fm.untitled'),
+    confirmText: t('fm.create'),
   })
   
   if (name && typeof name === 'string' && name.trim()) {
@@ -419,10 +421,10 @@ async function createNewFile() {
 async function createNewFolder() {
   const name = await showDialog({
     type: 'input',
-    title: 'New Folder',
-    placeholder: 'Enter folder name',
-    defaultValue: 'New Folder',
-    confirmText: 'Create',
+    title: t('fm.newFolder'),
+    placeholder: t('fm.enterFolderName'),
+    defaultValue: t('fm.newFolderDefault'),
+    confirmText: t('fm.create'),
   })
   
   if (name && typeof name === 'string' && name.trim()) {
@@ -449,7 +451,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
   if (isText) {
     contextActions.value.push({
       id: 'edit',
-      label: 'Edit',
+      label: t('common.edit'),
 
       fn: () => {
         editingFile.value = file
@@ -462,7 +464,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
   if (isImage) {
     contextActions.value.push({
       id: 'view',
-      label: 'View Image',
+      label: t('fm.viewImage'),
 
       fn: () => {
         viewingImageFile.value = file
@@ -475,15 +477,15 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
   contextActions.value.push(
     {
       id: 'rename',
-      label: 'Rename',
+      label: t('common.rename'),
 
       fn: async () => {
         const newName = await showDialog({
           type: 'input',
-          title: 'Rename',
-          placeholder: 'Enter new name',
+          title: t('common.rename'),
+          placeholder: t('fm.enterNewName'),
           defaultValue: file.name,
-          confirmText: 'Rename',
+          confirmText: t('common.rename'),
         })
         
         if (newName && typeof newName === 'string' && newName !== file.name) {
@@ -501,15 +503,15 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     },
     {
       id: 'delete',
-      label: 'Delete',
+      label: t('common.delete'),
 
       danger: true,
       fn: async () => {
         const confirmed = await showDialog({
           type: 'confirm',
-          title: 'Delete',
-          message: `Are you sure you want to delete "${file.name}"?`,
-          confirmText: 'Delete',
+          title: t('common.delete'),
+          message: t('fm.deleteConfirm', { name: file.name }),
+          confirmText: t('common.delete'),
           danger: true,
         })
         
@@ -531,11 +533,11 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
 }
 
 function onListContextMenu(_event: MouseEvent) {
-  contextSheetTitle.value = 'Folder Actions'
+  contextSheetTitle.value = t('fm.folderActions')
   contextActions.value = [
     {
       id: 'new-file',
-      label: 'New File',
+      label: t('fm.newFile'),
 
       fn: () => {
         createNewFile()
@@ -544,7 +546,7 @@ function onListContextMenu(_event: MouseEvent) {
     },
     {
       id: 'new-folder',
-      label: 'New Folder',
+      label: t('fm.newFolder'),
 
       fn: () => {
         createNewFolder()

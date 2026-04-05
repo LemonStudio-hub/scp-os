@@ -1,7 +1,7 @@
 <template>
   <MobileWindow
     :visible="visible"
-    title="Terminal"
+    :title="t('app.terminal')"
     :show-back="true"
     @close="$emit('close')"
   >
@@ -35,11 +35,14 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import MobileWindow from '../../components/MobileWindow.vue'
+import { useI18n } from '../../composables/useI18n'
 import { useTerminalEmulator } from '../../composables/useTerminalEmulator'
 import { useThemeStore } from '../../stores/themeStore'
 import { useSystemStore } from '../../../stores/system'
 import { getBootLogs, getShutdownLogs } from '../../../constants/bootLogs'
 import { config } from '../../../config'
+
+const { t } = useI18n()
 
 interface Props {
   visible: boolean

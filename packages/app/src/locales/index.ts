@@ -16,6 +16,7 @@ export const en = {
   'common.none': 'None',
   'common.unknown': 'Unknown',
   'common.n/a': 'N/A',
+  'common.file': 'File',
 
   // ── App Names ───────────────────────────────────────────────────────
   'app.terminal': 'Terminal',
@@ -53,6 +54,7 @@ export const en = {
   'settings.terminalStates': 'Terminal States',
   'settings.clearAllData': 'Clear All Data',
   'settings.about': 'About',
+  'settings.themes': 'Themes',
   'settings.application': 'Application',
   'settings.version': 'Version',
   'settings.userId': 'User ID',
@@ -85,6 +87,12 @@ export const en = {
   'fm.enterNewName': 'Enter new name',
   'fm.deleteConfirm': 'Are you sure you want to delete "{name}"?',
   'fm.folderActions': 'Folder Actions',
+  'fm.open': 'Open',
+  'fm.edit': 'Edit',
+  'fm.refresh': 'Refresh',
+  'fm.promptRename': 'Rename to:',
+  'fm.promptNewFile': 'New file name:',
+  'fm.promptNewFolder': 'New folder name:',
 
   // ── Text Editor ─────────────────────────────────────────────────────
   'editor.characters': 'characters',
@@ -227,6 +235,7 @@ export const zhCN: Record<string, string> = {
   'common.none': '无',
   'common.unknown': '未知',
   'common.n/a': '暂无',
+  'common.file': '文件',
 
   // ── App Names ───────────────────────────────────────────────────────
   'app.terminal': '终端',
@@ -264,6 +273,7 @@ export const zhCN: Record<string, string> = {
   'settings.terminalStates': '终端状态',
   'settings.clearAllData': '清除所有数据',
   'settings.about': '关于',
+  'settings.themes': '主题',
   'settings.application': '应用',
   'settings.version': '版本',
   'settings.userId': '用户 ID',
@@ -296,6 +306,12 @@ export const zhCN: Record<string, string> = {
   'fm.enterNewName': '输入新名称',
   'fm.deleteConfirm': '确定要删除 "{name}" 吗？',
   'fm.folderActions': '文件夹操作',
+  'fm.open': '打开',
+  'fm.edit': '编辑',
+  'fm.refresh': '刷新',
+  'fm.promptRename': '重命名为：',
+  'fm.promptNewFile': '新文件名：',
+  'fm.promptNewFolder': '新文件夹名称：',
 
   // ── Text Editor ─────────────────────────────────────────────────────
   'editor.characters': '字符',

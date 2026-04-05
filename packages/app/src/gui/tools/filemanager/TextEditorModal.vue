@@ -4,9 +4,9 @@
       <div class="fm-text-editor">
         <!-- Header -->
         <div class="fm-text-editor__header">
-          <button class="fm-text-editor__cancel-btn" @click="close">Cancel</button>
+          <button class="fm-text-editor__cancel-btn" @click="close">{{ t('common.cancel') }}</button>
           <span class="fm-text-editor__title">{{ fileName }}</span>
-          <button class="fm-text-editor__save-btn" :disabled="!canSave" @click="save">Save</button>
+          <button class="fm-text-editor__save-btn" :disabled="!canSave" @click="save">{{ t('common.save') }}</button>
         </div>
 
         <!-- Editor -->
@@ -14,15 +14,15 @@
           ref="textareaRef"
           v-model="content"
           class="fm-text-editor__textarea"
-          :placeholder="'Start typing...'"
+          :placeholder="t('editor.startTyping')"
           spellcheck="false"
           @keydown="onKeyDown"
         />
 
         <!-- Footer -->
         <div class="fm-text-editor__footer">
-          <span class="fm-text-editor__chars">{{ charCount }} characters</span>
-          <span class="fm-text-editor__lines">{{ lineCount }} lines</span>
+          <span class="fm-text-editor__chars">{{ charCount }} {{ t('editor.characters') }}</span>
+          <span class="fm-text-editor__lines">{{ lineCount }} {{ t('editor.lines') }}</span>
         </div>
       </div>
     </div>
@@ -31,6 +31,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
+import { useI18n } from '../../composables/useI18n'
 import { filesystem } from '../../../utils/filesystem'
 
 interface Props {
@@ -45,6 +46,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const { t } = useI18n()
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const content = ref('')

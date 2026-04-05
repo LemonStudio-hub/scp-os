@@ -4,9 +4,9 @@
       <div class="wallpaper-picker">
         <!-- Header -->
         <div class="wallpaper-picker__header">
-          <span class="wallpaper-picker__title">Wallpaper</span>
+          <span class="wallpaper-picker__title">{{ t('wp.title') }}</span>
           <div class="wallpaper-picker__actions">
-            <button class="wallpaper-picker__action-btn" @click="triggerUpload" title="Upload wallpaper">
+            <button class="wallpaper-picker__action-btn" @click="triggerUpload" :title="t('wp.upload')">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M9 12V3M9 3L6 6M9 3l3 3"/>
                 <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3"/>
@@ -36,14 +36,14 @@
             <circle cx="18" cy="18" r="4"/>
             <path d="M8 32l10-10 6 6 16-16"/>
           </svg>
-          <p class="wallpaper-picker__empty-title">No wallpapers yet</p>
-          <p class="wallpaper-picker__empty-hint">Tap the + button to upload an image</p>
+          <p class="wallpaper-picker__empty-title">{{ t('wp.emptyTitle') }}</p>
+          <p class="wallpaper-picker__empty-hint">{{ t('wp.emptyHint') }}</p>
         </div>
 
         <!-- Loading state -->
         <div v-if="isUploading" class="wallpaper-picker__loading">
           <div class="wallpaper-picker__spinner" />
-          <span>Saving wallpaper...</span>
+          <span>{{ t('wp.saving') }}</span>
         </div>
 
         <!-- Wallpaper Gallery -->
@@ -55,7 +55,7 @@
             @click="selectWallpaper(null)"
           >
             <div class="wallpaper-picker__item-preview wallpaper-picker__item-preview--default" />
-            <span class="wallpaper-picker__item-name">None</span>
+            <span class="wallpaper-picker__item-name">{{ t('common.none') }}</span>
           </button>
 
           <!-- Wallpaper items -->
@@ -83,10 +83,10 @@
 
         <!-- Delete confirmation -->
         <div v-if="showDeleteConfirm" class="wallpaper-picker__delete-confirm">
-          <p>Delete "{{ deleteTarget?.name }}"?</p>
+          <p>{{ t('wp.deleteConfirm', { name: deleteTarget?.name ?? '' }) }}</p>
           <div class="wallpaper-picker__delete-actions">
-            <button @click="showDeleteConfirm = false">Cancel</button>
-            <button class="wallpaper-picker__delete-btn" @click="doDelete">Delete</button>
+            <button @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
+            <button class="wallpaper-picker__delete-btn" @click="doDelete">{{ t('common.delete') }}</button>
           </div>
         </div>
       </div>
@@ -96,8 +96,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { useI18n } from '../composables/useI18n'
 import { wallpaperService } from '../../utils/wallpaperService'
 import type { WallpaperInfo } from '../../utils/wallpaperService'
+
+const { t } = useI18n()
 
 interface Props {
   visible: boolean
@@ -153,13 +156,13 @@ async function onFileUpload(event: Event) {
 
   // Validate file type
   if (!file.type.startsWith('image/')) {
-    alert('Please select an image file')
+    alert(t('wp.selectImage'))
     return
   }
 
   // Validate file size (max 10MB)
   if (file.size > 10 * 1024 * 1024) {
-    alert('Image must be less than 10MB')
+    alert(t('wp.sizeLimit'))
     return
   }
 
@@ -172,7 +175,7 @@ async function onFileUpload(event: Event) {
     emit('change', wallpaper.id)
   } catch (error) {
     console.error('[WallpaperPicker] Failed to save wallpaper:', error)
-    alert('Failed to save wallpaper')
+    alert(t('wp.failedSave'))
   } finally {
     isUploading.value = false
     input.value = ''

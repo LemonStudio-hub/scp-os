@@ -5,20 +5,20 @@
       <div class="file-manager__toolbar">
         <SCPBreadcrumbs :segments="fmStore.breadcrumbs" @navigate="fmStore.navigateTo" />
         <div class="file-manager__toolbar-actions">
-          <SCPButton variant="ghost" size="sm" icon="file" title="New File" @click="fmStore.promptNewFile" />
-          <SCPButton variant="ghost" size="sm" icon="folder" title="New Folder" @click="fmStore.promptNewFolder" />
+          <SCPButton variant="ghost" size="sm" icon="file" :title="t('fm.newFile')" @click="fmStore.promptNewFile" />
+          <SCPButton variant="ghost" size="sm" icon="folder" :title="t('fm.newFolder')" @click="fmStore.promptNewFolder" />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
             size="sm"
             icon="grid"
-            title="Grid View"
+            :title="t('pc.gridView')"
             @click="fmStore.setViewMode('grid')"
           />
           <SCPButton
             :variant="fmStore.viewMode === 'list' ? 'primary' : 'ghost'"
             size="sm"
             icon="list"
-            title="List View"
+            :title="t('pc.listView')"
             @click="fmStore.setViewMode('list')"
           />
         </div>
@@ -28,7 +28,7 @@
       <div class="file-manager__search">
         <SCPInput
           v-model="searchText"
-          placeholder="Search files..."
+          :placeholder="t('pc.searchFiles')"
           size="sm"
           clearable
         />
@@ -59,17 +59,17 @@
         <!-- Empty state for grid -->
         <div v-if="fmStore.viewMode === 'grid' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
           <GUIIcon name="empty-folder" :size="48" class="file-manager__empty-icon" />
-          <p>This folder is empty</p>
+          <p>{{ t('fm.emptyFolder') }}</p>
         </div>
 
         <!-- List View -->
         <table v-else class="file-manager__list">
           <thead>
             <tr>
-              <th @click="fmStore.setSort('name')">Name</th>
-              <th @click="fmStore.setSort('size')">Size</th>
-              <th @click="fmStore.setSort('type')">Type</th>
-              <th @click="fmStore.setSort('modifiedAt')">Modified</th>
+              <th @click="fmStore.setSort('name')">{{ t('pc.name') }}</th>
+              <th @click="fmStore.setSort('size')">{{ t('pc.size') }}</th>
+              <th @click="fmStore.setSort('type')">{{ t('pc.type') }}</th>
+              <th @click="fmStore.setSort('modifiedAt')">{{ t('pc.modified') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -88,7 +88,7 @@
                 </div>
               </td>
               <td>{{ file.isDirectory ? '—' : formatSize(file.size) }}</td>
-              <td>{{ file.isDirectory ? 'Folder' : (file.type || 'File').toUpperCase() }}</td>
+              <td>{{ file.isDirectory ? t('fm.folder') : (file.type || t('common.file')).toUpperCase() }}</td>
               <td>{{ formatDate(file.modifiedAt) }}</td>
             </tr>
           </tbody>
@@ -97,13 +97,13 @@
         <!-- Empty state for list -->
         <div v-if="fmStore.viewMode === 'list' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
           <GUIIcon name="empty-folder" :size="48" class="file-manager__empty-icon" />
-          <p>This folder is empty</p>
+          <p>{{ t('fm.emptyFolder') }}</p>
         </div>
       </div>
 
       <!-- Status Bar -->
       <SCPStatusBar
-        :left-items="[`${fmStore.sortedFiles.length} items`]"
+        :left-items="[t('pc.items', { n: fmStore.sortedFiles.length })]"
         :right-items="[fmStore.currentPath]"
       />
     </div>
@@ -121,6 +121,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useI18n } from '../../composables/useI18n'
 import SCPWindow from '../../components/SCPWindow.vue'
 import SCPButton from '../../components/ui/SCPButton.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
@@ -129,7 +130,7 @@ import SCPBreadcrumbs from '../../components/ui/SCPBreadcrumbs.vue'
 import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
 import SCPContextMenu from '../../components/ui/SCPContextMenu.vue'
 import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
-import { useFileManagerStore } from '../../stores/fileManager'
+import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { useWindowManagerStore } from '../../stores/windowManager'
 import type { WindowInstance, FileItem, ContextMenuItem } from '../../types'
 
@@ -139,6 +140,8 @@ interface Props {
 
 defineProps<Props>()
 
+const { t } = useI18n()
+setFileManagerI18n({ t })
 const fmStore = useFileManagerStore()
 const wmStore = useWindowManagerStore()
 const searchText = ref('')

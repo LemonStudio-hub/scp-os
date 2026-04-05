@@ -34,8 +34,8 @@ export interface ToolWindowConfig {
 export interface ToolModule {
   /** Unique tool identifier (matches ToolType) */
   id: ToolType
-  /** Display label */
-  label: string
+  /** Display label — can be a static string or a function that returns the translated label */
+  label: string | (() => string)
   /** Icon name (matches IconName) */
   icon: string
   /** Default window configuration */
@@ -121,12 +121,24 @@ export function openTool(toolId: ToolType, openWindow: (config: {
 
   tool.onOpen?.()
 
+  // Resolve label — supports both static strings and translation functions
+  const resolvedLabel = typeof tool.label === 'function' ? tool.label() : tool.label
+
   openWindow({
     id: `${toolId}-${Date.now()}`,
     tool: toolId,
-    title: tool.label,
+    title: resolvedLabel,
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
   })
+}
+
+/**
+ * Resolve a tool's label to a string (handles both static and function labels).
+ */
+export function getToolLabel(toolId: ToolType): string {
+  const tool = ToolRegistry.get(toolId)
+  if (!tool) return toolId
+  return typeof tool.label === 'function' ? tool.label() : tool.label
 }

@@ -9,6 +9,14 @@ import { filesystem } from '../../utils/filesystem'
 import type { FileSystemNode } from '../../utils/filesystem'
 import type { ViewMode, SortField, SortOrder, FileItem, ContextMenuIcon, ContextMenuState } from '../types'
 
+// i18n — set by consuming component via setI18n()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _t: ((key: string, params?: Record<string, string | number>) => string) = (key: string) => key
+
+export function setI18n(i18n: { t: (key: string, params?: Record<string, string | number>) => string }): void {
+  _t = i18n.t
+}
+
 export const useFileManagerStore = defineStore('fileManager', () => {
   // State
   const currentPath = ref<string>('/')
@@ -216,17 +224,17 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     const isDir = file?.isDirectory ?? false
 
     return [
-      { id: 'open', label: isDir ? 'Open' : 'Edit', icon: isDir ? 'folder-open' : 'edit', action: () => openFile(fileName) },
-      { id: 'rename', label: 'Rename', icon: 'edit', action: () => promptRename(fileName) },
-      { id: 'delete', label: 'Delete', icon: 'trash', action: () => deleteFile(fileName) },
+      { id: 'open', label: isDir ? _t('fm.open') : _t('fm.edit'), icon: isDir ? 'folder-open' : 'edit', action: () => openFile(fileName) },
+      { id: 'rename', label: _t('common.rename'), icon: 'edit', action: () => promptRename(fileName) },
+      { id: 'delete', label: _t('common.delete'), icon: 'trash', action: () => deleteFile(fileName) },
     ]
   }
 
   function getDirectoryContextItems(): FileContextAction[] {
     return [
-      { id: 'new-file', label: 'New File', icon: 'file', action: () => promptNewFile() },
-      { id: 'new-folder', label: 'New Folder', icon: 'folder', action: () => promptNewFolder() },
-      { id: 'refresh', label: 'Refresh', icon: 'refresh', action: () => loadDirectory() },
+      { id: 'new-file', label: _t('fm.newFile'), icon: 'file', action: () => promptNewFile() },
+      { id: 'new-folder', label: _t('fm.newFolder'), icon: 'folder', action: () => promptNewFolder() },
+      { id: 'refresh', label: _t('fm.refresh'), icon: 'refresh', action: () => loadDirectory() },
     ]
   }
 
@@ -246,21 +254,21 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   }
 
   function promptRename(_fileName: string): void {
-    const newName = prompt('Rename to:', _fileName)
+    const newName = prompt(_t('fm.promptRename'), _fileName)
     if (newName && newName !== _fileName) {
       renameFile(_fileName, newName)
     }
   }
 
   function promptNewFile(): void {
-    const name = prompt('New file name:', 'untitled.txt')
+    const name = prompt(_t('fm.promptNewFile'), _t('fm.untitled'))
     if (name) {
       createFile(name, '')
     }
   }
 
   function promptNewFolder(): void {
-    const name = prompt('New folder name:', 'New Folder')
+    const name = prompt(_t('fm.promptNewFolder'), _t('fm.newFolderDefault'))
     if (name) {
       createDirectory(name)
     }

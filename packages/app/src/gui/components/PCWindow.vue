@@ -22,7 +22,7 @@
         <button
           v-if="windowInstance.config.minimizable"
           class="pc-window__btn pc-window__btn--icon pc-window__btn--minimize"
-          title="Minimize"
+          :title="t('pc.minimize')"
           @click.stop="onMinimize"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="6" width="8" height="1.5" rx="0.75"/></svg>
@@ -30,7 +30,7 @@
         <button
           v-if="windowInstance.config.maximizable"
           class="pc-window__btn pc-window__btn--icon pc-window__btn--maximize"
-          :title="windowInstance.maximized ? 'Restore' : 'Maximize'"
+          :title="windowInstance.maximized ? t('pc.restore') : t('pc.maximize')"
           @click.stop="onMaximize"
         >
           <svg v-if="!windowInstance.maximized" width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -44,7 +44,7 @@
         <button
           v-if="windowInstance.config.closable !== false"
           class="pc-window__btn pc-window__btn--icon pc-window__btn--close"
-          title="Close"
+          :title="t('pc.close')"
           @click.stop="onClose"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -77,8 +77,11 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useDraggable } from '../composables/useDraggable'
 import { useResizable } from '../composables/useResizable'
+import { useI18n } from '../composables/useI18n'
 import type { WindowInstance } from '../types'
 import { useWindowManagerStore } from '../stores/windowManager'
+
+const { t } = useI18n()
 
 interface Props {
   windowInstance: WindowInstance

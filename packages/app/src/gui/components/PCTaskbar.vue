@@ -7,7 +7,7 @@
         @click="$emit('start-click')"
       >
         <GUIIcon :name="'menu'" :size="20" />
-        <span class="text-sm font-medium text-white whitespace-nowrap">Start</span>
+        <span class="text-sm font-medium text-white whitespace-nowrap">{{ t('pc.start') }}</span>
       </button>
 
       <!-- Pinned Apps -->
@@ -47,9 +47,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from '../composables/useI18n'
 import type { ToolType } from '../types'
 import type { IconName } from '../icons'
 import GUIIcon from './ui/GUIIcon.vue'
+
+const { t } = useI18n()
 
 const taskbarRef = ref<HTMLElement | null>(null)
 

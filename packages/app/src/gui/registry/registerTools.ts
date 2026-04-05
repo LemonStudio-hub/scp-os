@@ -4,6 +4,7 @@
  */
 
 import { ToolRegistry } from '../registry/ToolRegistry'
+import { useI18n } from '../composables/useI18n'
 
 // Terminal tools
 import TerminalPanel from '../tools/terminal/TerminalPanel.vue'
@@ -29,6 +30,15 @@ import MobileDash from '../tools/dash/MobileDash.vue'
 // Feedback tools
 import MobileFeedback from '../tools/feedback/MobileFeedback.vue'
 
+// i18n — resolved at runtime via the composable
+// Labels are functions that call t() when evaluated (in openTool / getToolLabel)
+function lbl(key: string): () => string {
+  return () => {
+    const { t } = useI18n()
+    return t(key)
+  }
+}
+
 /**
  * Register all tools with the ToolRegistry.
  * Call this once during app initialization.
@@ -37,7 +47,7 @@ export function registerAllTools(): void {
   // Terminal
   ToolRegistry.register({
     id: 'terminal',
-    label: 'Terminal',
+    label: lbl('app.terminal'),
     icon: 'terminal',
     windowConfig: {
       width: 650,
@@ -53,7 +63,7 @@ export function registerAllTools(): void {
   // File Manager
   ToolRegistry.register({
     id: 'filemanager',
-    label: 'File Manager',
+    label: lbl('app.fileManager'),
     icon: 'folder',
     windowConfig: {
       width: 750,
@@ -69,7 +79,7 @@ export function registerAllTools(): void {
   // Text Editor
   ToolRegistry.register({
     id: 'editor',
-    label: 'Text Editor',
+    label: lbl('app.editor'),
     icon: 'edit',
     windowConfig: {
       width: 700,
@@ -85,7 +95,7 @@ export function registerAllTools(): void {
   // Settings (mobile only — no desktop component)
   ToolRegistry.register({
     id: 'settings',
-    label: 'Settings',
+    label: lbl('app.settings'),
     icon: 'settings',
     windowConfig: {
       width: 400,
@@ -100,7 +110,7 @@ export function registerAllTools(): void {
   // Chat (mobile only)
   ToolRegistry.register({
     id: 'chat',
-    label: 'Chat',
+    label: lbl('app.chat'),
     icon: 'chat',
     windowConfig: {
       width: 400,
@@ -115,7 +125,7 @@ export function registerAllTools(): void {
   // Dash (mobile only - Performance Dashboard)
   ToolRegistry.register({
     id: 'dash',
-    label: 'Dash',
+    label: lbl('app.dash'),
     icon: 'dash',
     windowConfig: {
       width: 400,
@@ -130,7 +140,7 @@ export function registerAllTools(): void {
   // Feedback (mobile only - Public Feedback Board)
   ToolRegistry.register({
     id: 'feedback',
-    label: 'Feedback',
+    label: lbl('app.feedback'),
     icon: 'feedback',
     windowConfig: {
       width: 400,

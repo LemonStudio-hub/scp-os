@@ -1,7 +1,7 @@
 <template>
   <MobileWindow
     :visible="visible"
-    title="Chat"
+    :title="t('chat.title')"
     :show-back="true"
     @close="$emit('close')"
   >
@@ -30,7 +30,7 @@
             <circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
             <path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
           </svg>
-          <span class="chat-app__nickname-text">{{ nickname || 'Set nickname' }}</span>
+          <span class="chat-app__nickname-text">{{ nickname || t('chat.setNickname') }}</span>
         </button>
       </div>
 
@@ -44,7 +44,7 @@
             <circle cx="24" cy="24" r="2" fill="currentColor"/>
             <circle cx="32" cy="24" r="2" fill="currentColor"/>
           </svg>
-          <p>No messages yet. Start the conversation!</p>
+          <p>{{ t('chat.emptyState') }}</p>
         </div>
 
         <div
@@ -61,7 +61,7 @@
             <span class="chat-bubble__time">{{ formatTime(msg.created_at) }}</span>
           </div>
           <div class="chat-bubble__content">{{ msg.content }}</div>
-          <div v-if="msg.sending" class="chat-bubble__status">Sending...</div>
+          <div v-if="msg.sending" class="chat-bubble__status">{{ t('chat.sending') }}</div>
           <div v-else-if="msg.error" class="chat-bubble__status chat-bubble__status--error">{{ msg.error }}</div>
         </div>
 
@@ -84,7 +84,7 @@
           v-model="inputContent"
           type="text"
           class="chat-app__input"
-          placeholder="Type a message..."
+          :placeholder="t('chat.placeholder')"
           :disabled="sending || rateLimited"
           @keyup.enter="sendMessage"
         />
@@ -104,18 +104,18 @@
       <Transition name="gui-ios-fade">
         <div v-if="showCreateRoom" class="chat-app__dialog-overlay" @click.self="showCreateRoom = false">
           <div class="chat-app__dialog">
-            <h3 class="chat-app__dialog-title">Create Room</h3>
+            <h3 class="chat-app__dialog-title">{{ t('chat.createRoom') }}</h3>
             <input
               v-model="newRoomName"
               type="text"
               class="chat-app__dialog-input"
-              placeholder="Room name..."
+              :placeholder="t('chat.roomPlaceholder')"
               maxlength="50"
               @keyup.enter="createRoom"
             />
             <div class="chat-app__dialog-actions">
-              <button class="chat-app__dialog-btn" @click="showCreateRoom = false">Cancel</button>
-              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="createRoom">Create</button>
+              <button class="chat-app__dialog-btn" @click="showCreateRoom = false">{{ t('common.cancel') }}</button>
+              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="createRoom">{{ t('common.create') }}</button>
             </div>
           </div>
         </div>
@@ -125,18 +125,18 @@
       <Transition name="gui-ios-fade">
         <div v-if="showNicknameDialog" class="chat-app__dialog-overlay" @click.self="showNicknameDialog = false">
           <div class="chat-app__dialog">
-            <h3 class="chat-app__dialog-title">Set Nickname</h3>
+            <h3 class="chat-app__dialog-title">{{ t('chat.setNickname') }}</h3>
             <input
               v-model="newNickname"
               type="text"
               class="chat-app__dialog-input"
-              placeholder="Your nickname..."
+              :placeholder="t('chat.nicknamePlaceholder')"
               maxlength="30"
               @keyup.enter="saveNickname"
             />
             <div class="chat-app__dialog-actions">
-              <button class="chat-app__dialog-btn" @click="showNicknameDialog = false">Cancel</button>
-              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="saveNickname">Save</button>
+              <button class="chat-app__dialog-btn" @click="showNicknameDialog = false">{{ t('common.cancel') }}</button>
+              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="saveNickname">{{ t('common.save') }}</button>
             </div>
           </div>
         </div>
@@ -149,6 +149,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
+import { useI18n } from '../../composables/useI18n'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 
@@ -180,6 +181,8 @@ defineProps<Props>()
 
 const themeStore = useThemeStore()
 themeStore.init()
+
+const { t } = useI18n()
 
 const API_BASE = config.api.workerUrl
 const POLL_INTERVAL = 30000 // 30 seconds
@@ -397,7 +400,7 @@ async function sendMessage() {
   const optimisticMessage: ChatMessage = {
     tempId,
     user_id: userId,
-    username: nickname.value || 'You',
+    username: nickname.value || t('chat.you'),
     content,
     created_at: now,
     isSelf: true,
@@ -438,7 +441,7 @@ async function sendMessage() {
       const idx = messages.findIndex(m => m.tempId === tempId)
       if (idx !== -1) {
         messages[idx].sending = false
-        messages[idx].error = data.error || 'Failed to send'
+        messages[idx].error = data.error || t('chat.failedSend')
         
         // Check for rate limit
         if (data.error && data.error.includes('Rate limit')) {
@@ -456,7 +459,7 @@ async function sendMessage() {
     const idx = messages.findIndex(m => m.tempId === tempId)
     if (idx !== -1) {
       messages[idx].sending = false
-      messages[idx].error = 'Network error'
+      messages[idx].error = t('chat.networkError')
     }
   } finally {
     sending.value = false

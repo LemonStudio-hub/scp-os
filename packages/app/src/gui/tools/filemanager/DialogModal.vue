@@ -28,14 +28,14 @@
             class="fm-dialog__btn fm-dialog__btn--cancel"
             @click="onCancel"
           >
-            {{ cancelText }}
+            {{ effectiveCancelText }}
           </button>
           <button
             class="fm-dialog__btn fm-dialog__btn--confirm"
             :class="{ 'fm-dialog__btn--danger': danger }"
             @click="onConfirm"
           >
-            {{ confirmText }}
+            {{ effectiveConfirmText }}
           </button>
         </div>
       </div>
@@ -44,7 +44,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
+import { useI18n } from '../../composables/useI18n'
 
 export type DialogType = 'input' | 'confirm'
 
@@ -66,18 +67,23 @@ interface Emits {
   (e: 'cancel'): void
 }
 
+const { t } = useI18n()
+
 const props = withDefaults(defineProps<Props>(), {
   type: 'input',
   title: '',
   message: '',
   placeholder: '',
   defaultValue: '',
-  confirmText: 'Confirm',
-  cancelText: 'Cancel',
+  confirmText: '',
+  cancelText: '',
   danger: false,
 })
 
 const emit = defineEmits<Emits>()
+
+const effectiveConfirmText = computed(() => props.confirmText || t('common.confirm'))
+const effectiveCancelText = computed(() => props.cancelText || t('common.cancel'))
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const inputValue = ref(props.defaultValue)

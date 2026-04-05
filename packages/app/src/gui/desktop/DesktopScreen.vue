@@ -112,6 +112,7 @@ import PCTaskbar, { type PCTaskbarItem } from '../components/PCTaskbar.vue'
 import PCStartMenu, { type StartMenuApp } from '../components/PCStartMenu.vue'
 import PCCContextMenu from '../components/ui/PCCContextMenu.vue'
 import { useDraggable } from '../composables/useDraggable'
+import { useI18n } from '../composables/useI18n'
 import type { ToolType, ContextMenuItem } from '../types'
 
 export interface DesktopApp {
@@ -123,19 +124,21 @@ export interface DesktopApp {
   y?: number
 }
 
+const { t } = useI18n()
+
 const apps: DesktopApp[] = [
-  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-accent)', x: 50, y: 50 },
-  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-accent)', x: 180, y: 50 },
-  { id: 'chat', label: 'Chat', tool: 'chat', color: 'var(--gui-accent)', x: 310, y: 50 },
-  { id: 'dash', label: 'Dash', tool: 'dash', color: 'var(--gui-accent)', x: 50, y: 180 },
-  { id: 'feedback', label: 'Feedback', tool: 'feedback', color: 'var(--gui-accent)', x: 180, y: 180 },
-  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-accent)', x: 310, y: 180 },
+  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', color: 'var(--gui-accent)', x: 50, y: 50 },
+  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', color: 'var(--gui-accent)', x: 180, y: 50 },
+  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)', x: 310, y: 50 },
+  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)', x: 50, y: 180 },
+  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)', x: 180, y: 180 },
+  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)', x: 310, y: 180 },
 ]
 
 const taskbarItems: PCTaskbarItem[] = [
-  { id: 'terminal', tool: 'terminal' as ToolType, label: 'Terminal', iconName: 'terminal' },
-  { id: 'files', tool: 'filemanager' as ToolType, label: 'Files', iconName: 'folder' },
-  { id: 'editor', tool: 'editor' as ToolType, label: 'Editor', iconName: 'edit' },
+  { id: 'terminal', tool: 'terminal' as ToolType, label: t('app.terminal'), iconName: 'terminal' },
+  { id: 'files', tool: 'filemanager' as ToolType, label: t('app.files'), iconName: 'folder' },
+  { id: 'editor', tool: 'editor' as ToolType, label: t('app.editor'), iconName: 'edit' },
 ]
 
 const activeTools = ref<ToolType[]>([])
@@ -267,7 +270,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
     items: [
       {
         id: 'new-folder',
-        label: 'New Folder',
+        label: t('fm.newFolder'),
         icon: 'folder',
         action: () => {
           console.log('Create new folder')
@@ -276,7 +279,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
       },
       {
         id: 'new-text-file',
-        label: 'New Text File',
+        label: t('pc.newTextFile'),
         icon: 'file-text',
         action: () => {
           console.log('Create new text file')
@@ -286,12 +289,12 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
       { id: 'divider-2', label: '', divider: true },
       {
         id: 'view',
-        label: 'View',
+        label: t('pc.view'),
         icon: 'eye',
         children: [
           {
             id: 'view-large-icons',
-            label: 'Large Icons',
+            label: t('pc.largeIcons'),
             action: () => {
               console.log('View large icons')
               // Implement view mode change
@@ -299,7 +302,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           },
           {
             id: 'view-medium-icons',
-            label: 'Medium Icons',
+            label: t('pc.mediumIcons'),
             action: () => {
               console.log('View medium icons')
               // Implement view mode change
@@ -307,7 +310,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           },
           {
             id: 'view-small-icons',
-            label: 'Small Icons',
+            label: t('pc.smallIcons'),
             action: () => {
               console.log('View small icons')
               // Implement view mode change
@@ -317,12 +320,12 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
       },
       {
         id: 'sort-by',
-        label: 'Sort By',
+        label: t('pc.sortBy'),
         icon: 'sort',
         children: [
           {
             id: 'sort-by-name',
-            label: 'Name',
+            label: t('pc.name'),
             action: () => {
               console.log('Sort by name')
               // Implement sort by name
@@ -330,7 +333,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           },
           {
             id: 'sort-by-date',
-            label: 'Date Modified',
+            label: t('pc.dateModified'),
             action: () => {
               console.log('Sort by date')
               // Implement sort by date
@@ -341,7 +344,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
       { id: 'divider-2', label: '', divider: true },
       {
         id: 'personalize',
-        label: 'Personalize',
+        label: t('pc.personalize'),
         icon: 'settings',
         action: () => {
           console.log('Open personalization settings')
@@ -364,7 +367,7 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
     items: [
       {
         id: 'open',
-        label: 'Open',
+        label: t('pc.open'),
         icon: 'play',
         action: () => {
           emit('launch', app)
@@ -372,7 +375,7 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
       },
       {
         id: 'pin-to-taskbar',
-        label: 'Pin to Taskbar',
+        label: t('pc.pinTaskbar'),
         icon: 'pin',
         action: () => {
           console.log('Pin to taskbar:', app.id)
@@ -382,7 +385,7 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
       { id: 'divider-3', label: '', divider: true },
       {
         id: 'properties',
-        label: 'Properties',
+        label: t('pc.properties'),
         icon: 'info',
         action: () => {
           console.log('Properties:', app.id)

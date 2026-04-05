@@ -1,7 +1,7 @@
 <template>
   <MobileWindow
     :visible="visible"
-    title="Settings"
+    :title="t('settings.title')"
     :show-back="true"
     @close="$emit('close')"
   >
@@ -9,13 +9,13 @@
       <div class="settings-app__content gui-scrollable">
 
         <!-- Terminal Section -->
-        <div class="k-ios-block__title">Terminal</div>
+        <div class="k-ios-block__title">{{ t('settings.terminal') }}</div>
         <div class="k-ios-list">
           <!-- Font Size -->
           <div class="k-ios-list__item" @click="openSlider('fontSize')">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Font Size</div>
+                <div class="k-ios-list__item-label">{{ t('settings.fontSize') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -29,7 +29,7 @@
           <div class="k-ios-list__item" @click="toggleSetting('cursorBlink')">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Cursor Blink</div>
+                <div class="k-ios-list__item-label">{{ t('settings.cursorBlink') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -40,7 +40,7 @@
           <div class="k-ios-list__item" @click="toggleSetting('bootAnimation')">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Boot Animation</div>
+                <div class="k-ios-list__item-label">{{ t('settings.bootAnimation') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Appearance Section -->
-        <div class="k-ios-block__title">Appearance</div>
+        <div class="k-ios-block__title">{{ t('settings.appearance') }}</div>
         <div class="k-ios-list">
           <!-- Theme Selection -->
           <div v-for="theme in themeStore.availableThemes" :key="theme.id" class="k-ios-list__item" @click="themeStore.setTheme(theme.id)">
@@ -69,7 +69,7 @@
           <div class="k-ios-list__item" @click="toggleSetting('haptic')">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Haptic Feedback</div>
+                <div class="k-ios-list__item-label">{{ t('settings.hapticFeedback') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -80,7 +80,7 @@
           <div class="k-ios-list__item" @click="toggleSetting('animations')">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Animations</div>
+                <div class="k-ios-list__item-label">{{ t('settings.animations') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -91,7 +91,7 @@
           <div class="k-ios-list__item" @click="wallpaperPickerVisible = true">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Wallpaper</div>
+                <div class="k-ios-list__item-label">{{ t('settings.wallpaper') }}</div>
                 <div class="k-ios-list__item-description">{{ currentWallpaperName }}</div>
               </div>
             </div>
@@ -104,12 +104,12 @@
         </div>
 
         <!-- Storage Section -->
-        <div class="k-ios-block__title">Storage</div>
+        <div class="k-ios-block__title">{{ t('settings.storage') }}</div>
         <div class="k-ios-list">
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Used Space</div>
+                <div class="k-ios-list__item-label">{{ t('settings.usedSpace') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -119,7 +119,7 @@
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Terminal States</div>
+                <div class="k-ios-list__item-label">{{ t('settings.terminalStates') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -129,7 +129,7 @@
           <div class="k-ios-list__item" @click="confirmClearData">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">Clear All Data</div>
+                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">{{ t('settings.clearAllData') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -141,12 +141,12 @@
         </div>
 
         <!-- About Section -->
-        <div class="k-ios-block__title">About</div>
+        <div class="k-ios-block__title">{{ t('settings.about') }}</div>
         <div class="k-ios-list">
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Application</div>
+                <div class="k-ios-list__item-label">{{ t('settings.application') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -156,7 +156,7 @@
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Version</div>
+                <div class="k-ios-list__item-label">{{ t('settings.version') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -166,7 +166,7 @@
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">User ID</div>
+                <div class="k-ios-list__item-label">{{ t('settings.userId') }}</div>
                 <div class="k-ios-list__item-description">{{ userId }}</div>
               </div>
             </div>
@@ -174,7 +174,7 @@
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">Build</div>
+                <div class="k-ios-list__item-label">{{ t('settings.build') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -184,7 +184,7 @@
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">License</div>
+                <div class="k-ios-list__item-label">{{ t('settings.license') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -198,7 +198,7 @@
           <div class="k-ios-list__item" @click="confirmResetSettings">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label k-ios-list__item-label--centered">Reset All Settings</div>
+                <div class="k-ios-list__item-label k-ios-list__item-label--centered">{{ t('settings.resetAll') }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -219,7 +219,7 @@
             <h3 class="settings-confirm-title">{{ confirmDialog.title }}</h3>
             <p class="settings-confirm-text">{{ confirmDialog.text }}</p>
             <div class="settings-confirm-actions">
-              <button class="settings-confirm-btn" @click="confirmDialog = null">Cancel</button>
+              <button class="settings-confirm-btn" @click="confirmDialog = null">{{ t('common.cancel') }}</button>
               <button class="settings-confirm-btn settings-confirm-btn--destructive" @click="confirmDialog.action">
                 {{ confirmDialog.confirmText }}
               </button>
@@ -232,7 +232,7 @@
       <Sheet v-model:visible="sliderSheets.fontSize">
         <div class="settings-slider-sheet">
           <div class="settings-slider-sheet__preview" :style="{ fontSize: `${sliderValues.fontSize}px` }">
-            Aa 123
+            {{ t('settings.fontPreview') }}
           </div>
           <input
             type="range"
@@ -261,6 +261,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
+import { useI18n } from '../../composables/useI18n'
 import MobileWindow from '../../components/MobileWindow.vue'
 import Sheet from '../../konsta/Sheet.vue'
 import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
@@ -268,6 +269,8 @@ import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import { useTerminalStore } from '../../../stores/terminal'
 import { useThemeStore } from '../../stores/themeStore'
 import indexedDBService from '../../../utils/indexedDB'
+
+const { t } = useI18n()
 
 interface Props {
   visible: boolean
@@ -328,9 +331,9 @@ async function loadWallpaperName() {
     const id = wallpaperService.getCurrentWallpaperId()
     if (id) {
       const wp = await wallpaperService.getWallpaper(id)
-      currentWallpaperName.value = wp?.name || 'None'
+      currentWallpaperName.value = wp?.name || t('common.none')
     } else {
-      currentWallpaperName.value = 'None'
+      currentWallpaperName.value = t('common.none')
     }
   } catch {
     // Silently fail
@@ -423,9 +426,9 @@ const confirmDialog = ref<ConfirmDialog | null>(null)
 function confirmClearData(): void {
   triggerHaptic()
   confirmDialog.value = {
-    title: 'Clear All Data',
-    text: 'This will delete all terminal states, tabs, and saved data. This action cannot be undone.',
-    confirmText: 'Clear',
+    title: t('settings.clearConfirmTitle'),
+    text: t('settings.clearConfirmMsg'),
+    confirmText: t('settings.clear'),
     action: clearAllData,
   }
 }
@@ -437,16 +440,16 @@ async function clearAllData(): Promise<void> {
     confirmDialog.value = null
     location.reload()
   } catch {
-    alert('Failed to clear data')
+    alert(t('settings.failedClear'))
   }
 }
 
 function confirmResetSettings(): void {
   triggerHaptic()
   confirmDialog.value = {
-    title: 'Reset Settings',
-    text: 'Reset all settings to their default values?',
-    confirmText: 'Reset',
+    title: t('settings.resetTitle'),
+    text: t('settings.resetMsg'),
+    confirmText: t('settings.reset'),
     action: resetSettings,
   }
 }

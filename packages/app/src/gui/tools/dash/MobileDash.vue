@@ -1,7 +1,7 @@
 <template>
   <MobileWindow
     :visible="visible"
-    title="Dash"
+    :title="t('app.dash')"
     :show-back="true"
     @close="$emit('close')"
   >
@@ -47,7 +47,7 @@
             </svg>
             <div class="mobile-dash__score-center">
               <div class="mobile-dash__score-value" :style="{ color: scoreColor }">{{ performanceScore }}</div>
-              <div class="mobile-dash__score-label">Score</div>
+              <div class="mobile-dash__score-label">{{ t('dash.score') }}</div>
             </div>
           </div>
           <div class="mobile-dash__score-text">{{ scoreText }}</div>
@@ -67,7 +67,7 @@
               </svg>
             </div>
             <div class="mobile-dash__card-content">
-              <div class="mobile-dash__card-label">Memory</div>
+              <div class="mobile-dash__card-label">{{ t('dash.memory') }}</div>
               <div class="mobile-dash__card-value">{{ memoryUsage.used }} MB</div>
               <div class="mobile-dash__card-bar">
                 <div
@@ -98,7 +98,7 @@
               </svg>
             </div>
             <div class="mobile-dash__card-content">
-              <div class="mobile-dash__card-label">CPU</div>
+              <div class="mobile-dash__card-label">{{ t('dash.cpu') }}</div>
               <div class="mobile-dash__card-value">{{ cpuUsage }}%</div>
               <div class="mobile-dash__card-bar">
                 <div
@@ -107,8 +107,8 @@
                 />
               </div>
               <div class="mobile-dash__card-footer">
-                <span>{{ cpuCores }} cores</span>
-                <span>{{ cpuThreads }} threads</span>
+                <span>{{ cpuCores }} {{ t('dash.cores') }}</span>
+                <span>{{ cpuThreads }} {{ t('dash.threads') }}</span>
               </div>
             </div>
           </div>
@@ -121,7 +121,7 @@
               <path d="M14 10v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4M6 4V2a1 1 0 011-1h2a1 1 0 011 1v2"/>
               <circle cx="8" cy="9" r="2"/>
             </svg>
-            <span>System Metrics</span>
+            <span>{{ t('dash.systemMetrics') }}</span>
           </div>
           <div class="mobile-dash__metrics-grid">
             <div class="mobile-dash__metric-item">
@@ -132,7 +132,7 @@
                 </svg>
               </div>
               <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">JS Heap</div>
+                <div class="mobile-dash__metric-label">{{ t('dash.jsHeap') }}</div>
                 <div class="mobile-dash__metric-value">{{ jsHeap }}</div>
               </div>
             </div>
@@ -146,7 +146,7 @@
                 </svg>
               </div>
               <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">DOM Nodes</div>
+                <div class="mobile-dash__metric-label">{{ t('dash.domNodes') }}</div>
                 <div class="mobile-dash__metric-value">{{ domNodes }}</div>
               </div>
             </div>
@@ -159,7 +159,7 @@
                 </svg>
               </div>
               <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">Resources</div>
+                <div class="mobile-dash__metric-label">{{ t('dash.resources') }}</div>
                 <div class="mobile-dash__metric-value">{{ resources }}</div>
               </div>
             </div>
@@ -171,7 +171,7 @@
                 </svg>
               </div>
               <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">Event Listeners</div>
+                <div class="mobile-dash__metric-label">{{ t('dash.eventListeners') }}</div>
                 <div class="mobile-dash__metric-value">{{ jsListeners }}</div>
               </div>
             </div>
@@ -187,19 +187,19 @@
               <path d="M5.5 12c1-1 3.5-1 5 0"/>
               <circle cx="8" cy="15" r="1" fill="currentColor"/>
             </svg>
-            <span>Network</span>
+            <span>{{ t('dash.network') }}</span>
           </div>
           <div class="mobile-dash__network-card">
             <div class="mobile-dash__network-row">
-              <span class="mobile-dash__network-label">Connection</span>
+              <span class="mobile-dash__network-label">{{ t('dash.connection') }}</span>
               <span class="mobile-dash__network-value" :class="networkStatusClass">{{ networkStatus }}</span>
             </div>
             <div class="mobile-dash__network-row">
-              <span class="mobile-dash__network-label">Latency</span>
+              <span class="mobile-dash__network-label">{{ t('dash.latency') }}</span>
               <span class="mobile-dash__network-value">{{ latency }}ms</span>
             </div>
             <div class="mobile-dash__network-row">
-              <span class="mobile-dash__network-label">Type</span>
+              <span class="mobile-dash__network-label">{{ t('dash.type') }}</span>
               <span class="mobile-dash__network-value">{{ connectionType }}</span>
             </div>
           </div>
@@ -207,9 +207,9 @@
 
         <!-- Last Updated -->
         <div class="mobile-dash__footer">
-          <span class="mobile-dash__footer-text">Last updated: {{ lastUpdated }}</span>
+          <span class="mobile-dash__footer-text">{{ t('dash.lastUpdated') }}: {{ lastUpdated }}</span>
           <span class="mobile-dash__footer-dot" :class="{ 'mobile-dash__footer-dot--live': isAutoRefresh }" />
-          <span class="mobile-dash__footer-text">{{ isAutoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF' }}</span>
+          <span class="mobile-dash__footer-text">{{ isAutoRefresh ? t('dash.autoRefreshOn') : t('dash.autoRefreshOff') }}</span>
         </div>
       </div>
     </div>
@@ -219,6 +219,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
+import { useI18n } from '../../composables/useI18n'
 
 interface Props {
   visible: boolean
@@ -228,6 +229,8 @@ defineProps<Props>()
 defineEmits<{
   close: []
 }>()
+
+const { t } = useI18n()
 
 // State
 const memoryUsage = ref({ used: 0, limit: 0, percent: 0 })
@@ -255,9 +258,9 @@ const statusDotClass = computed(() => {
 })
 
 const statusText = computed(() => {
-  if (performanceScore.value >= 80) return 'All Systems Healthy'
-  if (performanceScore.value >= 50) return 'Attention Needed'
-  return 'Performance Degraded'
+  if (performanceScore.value >= 80) return t('dash.allHealthy')
+  if (performanceScore.value >= 50) return t('dash.attentionNeeded')
+  return t('dash.degraded')
 })
 
 const scoreColor = computed(() => {
@@ -269,9 +272,9 @@ const scoreColor = computed(() => {
 
 const scoreText = computed(() => {
   const s = performanceScore.value
-  if (s >= 80) return 'System operating optimally'
-  if (s >= 50) return 'Some metrics need attention'
-  return 'Critical performance issues detected'
+  if (s >= 80) return t('dash.optimal')
+  if (s >= 50) return t('dash.needsAttention')
+  return t('dash.critical')
 })
 
 const memoryBarGradient = computed(() => {
@@ -289,14 +292,14 @@ const cpuBarGradient = computed(() => {
 })
 
 const networkStatusClass = computed(() => {
-  if (networkStatus.value === 'Online') return 'mobile-dash__network-status--online'
-  if (networkStatus.value === 'Slow') return 'mobile-dash__network-status--slow'
+  if (networkStatus.value === t('dash.online')) return 'mobile-dash__network-status--online'
+  if (networkStatus.value === t('dash.slow')) return 'mobile-dash__network-status--slow'
   return 'mobile-dash__network-status--offline'
 })
 
 function updateTime() {
   const now = new Date()
-  currentTime.value = now.toLocaleTimeString('en-US', {
+  currentTime.value = now.toLocaleTimeString(undefined, {
     hour: 'numeric',
     minute: '2-digit',
     second: '2-digit',
@@ -321,7 +324,7 @@ async function refreshMetrics() {
     jsHeap.value = `${usedMB} / ${limitMB} MB`
   } else {
     memoryUsage.value = { used: 0, limit: 0, percent: 0 }
-    jsHeap.value = 'N/A'
+    jsHeap.value = t('common.n/a')
   }
 
   // DOM metrics
@@ -344,9 +347,9 @@ async function refreshMetrics() {
   latency.value = Math.floor(Math.random() * 30 + 5)
 
   // Network status
-  networkStatus.value = navigator.onLine ? (latency.value > 100 ? 'Slow' : 'Online') : 'Offline'
+  networkStatus.value = navigator.onLine ? (latency.value > 100 ? t('dash.slow') : t('dash.online')) : t('dash.offline')
   const conn = (navigator as any).connection
-  connectionType.value = conn?.effectiveType?.toUpperCase() || 'Unknown'
+  connectionType.value = conn?.effectiveType?.toUpperCase() || t('dash.unknown')
 
   // Calculate performance score
   let score = 100
@@ -365,7 +368,7 @@ async function refreshMetrics() {
 
   // Update timestamps
   const now = new Date()
-  lastUpdated.value = now.toLocaleTimeString('en-US', {
+  lastUpdated.value = now.toLocaleTimeString(undefined, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,

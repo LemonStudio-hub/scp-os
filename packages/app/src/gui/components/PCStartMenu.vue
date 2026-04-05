@@ -8,7 +8,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search apps, files, settings..."
+            :placeholder="t('pc.searchPlaceholder')"
             class="w-full pl-10 pr-4 py-2 bg-[rgba(255,255,255,0.08)] border border-white/[0.08] rounded-[8px] text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[rgba(139,92,246,0.5)] transition-all"
             @focus="showSearchResults = true"
             @blur="showSearchResults = false"
@@ -34,7 +34,7 @@
       <div class="flex flex-1 overflow-hidden">
         <!-- App List -->
         <div class="pc-start-menu__apps w-1/2 border-r border-white/[0.08] overflow-y-auto">
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">Pinned</h3>
+          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.pinned') }}</h3>
           <div class="grid grid-cols-3 gap-2 p-4">
             <button
               v-for="app in apps"
@@ -48,7 +48,7 @@
               <span class="text-sm text-white text-center">{{ app.label }}</span>
             </button>
           </div>
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">All Apps</h3>
+          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.allApps') }}</h3>
           <div class="grid grid-cols-3 gap-2 p-4">
             <button
               v-for="app in allApps"
@@ -66,7 +66,7 @@
 
         <!-- System Options -->
         <div class="pc-start-menu__system w-1/2 overflow-y-auto">
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">System</h3>
+          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.system') }}</h3>
           <div class="p-4 space-y-2">
             <button
               v-for="option in systemOptions"
@@ -80,7 +80,7 @@
               <span class="text-white">{{ option.label }}</span>
             </button>
           </div>
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">Power</h3>
+          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.power') }}</h3>
           <div class="p-4 grid grid-cols-3 gap-3">
             <button
               v-for="powerOption in powerOptions"
@@ -102,8 +102,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from '../composables/useI18n'
 import GUIIcon from './ui/GUIIcon.vue'
 import type { IconName } from '../icons'
+
+const { t } = useI18n()
 
 export interface StartMenuApp {
   id: string
@@ -143,33 +146,33 @@ const showSearchResults = ref(false)
 
 // Pinned apps
 const apps: StartMenuApp[] = [
-  { id: 'terminal', label: 'Terminal', tool: 'terminal', iconName: 'terminal' },
-  { id: 'files', label: 'Files', tool: 'filemanager', iconName: 'folder' },
-  { id: 'editor', label: 'Editor', tool: 'editor', iconName: 'edit' },
-  { id: 'chat', label: 'Chat', tool: 'chat', iconName: 'message-square' },
-  { id: 'dash', label: 'Dash', tool: 'dash', iconName: 'bar-chart-2' },
-  { id: 'feedback', label: 'Feedback', tool: 'feedback', iconName: 'message-circle' },
+  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', iconName: 'terminal' },
+  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', iconName: 'folder' },
+  { id: 'editor', label: t('app.editor'), tool: 'editor', iconName: 'edit' },
+  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', iconName: 'message-square' },
+  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', iconName: 'bar-chart-2' },
+  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', iconName: 'message-circle' },
 ]
 
 // All apps (including pinned)
 const allApps: StartMenuApp[] = [
   ...apps,
-  { id: 'settings', label: 'Settings', tool: 'settings', iconName: 'settings' },
+  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', iconName: 'settings' },
 ]
 
 // System options
 const systemOptions: SystemOption[] = [
-  { id: 'settings', label: 'Settings', action: 'settings', iconName: 'settings' },
-  { id: 'wallpaper', label: 'Wallpaper', action: 'wallpaper', iconName: 'image' },
-  { id: 'themes', label: 'Themes', action: 'themes', iconName: 'palette' },
-  { id: 'about', label: 'About', action: 'about', iconName: 'info' },
+  { id: 'settings', label: t('app.settings'), action: 'settings', iconName: 'settings' },
+  { id: 'wallpaper', label: t('settings.wallpaper'), action: 'wallpaper', iconName: 'image' },
+  { id: 'themes', label: t('settings.themes'), action: 'themes', iconName: 'palette' },
+  { id: 'about', label: t('settings.about'), action: 'about', iconName: 'info' },
 ]
 
 // Power options
 const powerOptions: PowerOption[] = [
-  { id: 'sleep', label: 'Sleep', action: 'sleep', iconName: 'moon' },
-  { id: 'restart', label: 'Restart', action: 'restart', iconName: 'refresh-cw' },
-  { id: 'shutdown', label: 'Shutdown', action: 'shutdown', iconName: 'power' },
+  { id: 'sleep', label: t('pc.sleep'), action: 'sleep', iconName: 'moon' },
+  { id: 'restart', label: t('pc.restart'), action: 'restart', iconName: 'refresh-cw' },
+  { id: 'shutdown', label: t('pc.shutdown'), action: 'shutdown', iconName: 'power' },
 ]
 
 // Combined items for search

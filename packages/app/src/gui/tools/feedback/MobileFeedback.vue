@@ -1,7 +1,7 @@
 <template>
   <MobileWindow
     :visible="visible"
-    title="Feedback"
+    :title="t('fb.title')"
     :show-back="true"
     @close="$emit('close')"
   >
@@ -24,18 +24,18 @@
         <!-- Submit Form -->
         <div v-if="activeTab === 'submit'" class="mobile-feedback__form">
           <div class="mobile-feedback__form-group">
-            <label class="mobile-feedback__label">Title</label>
+            <label class="mobile-feedback__label">{{ t('fb.formTitle') }}</label>
             <input
               v-model="form.title"
               type="text"
               class="mobile-feedback__input"
-              placeholder="Brief description of your feedback"
+              :placeholder="t('fb.formTitlePlaceholder')"
               maxlength="100"
             />
           </div>
 
           <div class="mobile-feedback__form-group">
-            <label class="mobile-feedback__label">Category</label>
+            <label class="mobile-feedback__label">{{ t('fb.formCategory') }}</label>
             <div class="mobile-feedback__categories">
               <button
                 v-for="cat in categories"
@@ -50,11 +50,11 @@
           </div>
 
           <div class="mobile-feedback__form-group">
-            <label class="mobile-feedback__label">Content</label>
+            <label class="mobile-feedback__label">{{ t('fb.formContent') }}</label>
             <textarea
               v-model="form.content"
               class="mobile-feedback__textarea"
-              placeholder="Describe your feedback in detail..."
+              :placeholder="t('fb.formContentPlaceholder')"
               rows="6"
               maxlength="2000"
             />
@@ -66,7 +66,7 @@
             :disabled="!canSubmit || isSubmitting"
             @click="submitFeedback"
           >
-            {{ isSubmitting ? 'Submitting...' : 'Submit Feedback' }}
+            {{ isSubmitting ? t('fb.submitting') : t('fb.submitBtn') }}
           </button>
         </div>
 
@@ -85,7 +85,7 @@
               <path d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z"/>
               <path d="M16 20h16M16 26h10"/>
             </svg>
-            <p>No feedback yet. Be the first!</p>
+            <p>{{ t('fb.emptyTitle') }}</p>
           </div>
 
           <!-- Feedback Items -->
@@ -125,7 +125,7 @@
             :disabled="isLoadingMore"
             @click="loadMore"
           >
-            {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+            {{ isLoadingMore ? t('common.loading') : t('fb.loadMore') }}
           </button>
         </div>
       </div>
@@ -138,6 +138,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
+import { useI18n } from '../../composables/useI18n'
 
 interface Props {
   visible: boolean
@@ -148,13 +149,15 @@ defineEmits<{
   close: []
 }>()
 
+const { t } = useI18n()
+
 const API_BASE = config.api.workerUrl
 
 // Tabs
-const tabs = [
-  { id: 'list', label: 'All Feedback' },
-  { id: 'submit', label: 'Submit' },
-]
+const tabs = computed(() => [
+  { id: 'list', label: t('fb.tabAll') },
+  { id: 'submit', label: t('fb.tabSubmit') },
+])
 const activeTab = ref('list')
 
 // Form
@@ -164,13 +167,13 @@ const form = reactive({
   category: 'general',
 })
 
-const categories = [
-  { id: 'general', label: 'General', icon: 'Msg' },
-  { id: 'bug', label: 'Bug', icon: 'Bug' },
-  { id: 'feature', label: 'Feature', icon: 'Feat' },
-  { id: 'improvement', label: 'Improvement', icon: 'Tool' },
-  { id: 'other', label: 'Other', icon: 'Note' },
-]
+const categories = computed(() => [
+  { id: 'general', label: t('fb.catGeneral'), icon: 'Msg' },
+  { id: 'bug', label: t('fb.catBug'), icon: 'Bug' },
+  { id: 'feature', label: t('fb.catFeature'), icon: 'Feat' },
+  { id: 'improvement', label: t('fb.catImprovement'), icon: 'Tool' },
+  { id: 'other', label: t('fb.catOther'), icon: 'Note' },
+])
 
 const canSubmit = computed(() => form.title.trim() && form.content.trim())
 const isSubmitting = ref(false)
@@ -272,15 +275,15 @@ function formatTime(dateStr: string): string {
   const date = new Date(dateStr)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
-  
-  if (diff < 60000) return 'Just now'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
-  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+  if (diff < 60000) return t('fb.timeJustNow')
+  if (diff < 3600000) return t('fb.timeMinAgo', { n: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('fb.timeHourAgo', { n: Math.floor(diff / 3600000) })
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
 function getCategoryIcon(category: string): string {
-  return categories.find(c => c.id === category)?.icon || 'Msg'
+  return categories.value.find(c => c.id === category)?.icon || 'Msg'
 }
 </script>
 
