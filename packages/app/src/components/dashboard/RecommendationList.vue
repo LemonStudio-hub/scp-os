@@ -2,7 +2,7 @@
   <div class="recommendations-section" v-if="recommendations.length > 0">
     <div class="section-header">
       <h3 class="section-title">
-        <span class="title-icon">💡</span>
+        <span class="title-icon">→</span>
         Optimization Recommendations
       </h3>
       <span class="rec-count">{{ recommendations.length }}</span>
@@ -26,7 +26,7 @@
             </span>
           </div>
           <span class="rec-improvement">
-            <span class="improvement-icon">📈</span>
+            <span class="improvement-icon">→</span>
             {{ rec.estimatedImprovement }}
           </span>
         </div>

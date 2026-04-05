@@ -165,11 +165,11 @@ const form = reactive({
 })
 
 const categories = [
-  { id: 'general', label: 'General', icon: '💬' },
-  { id: 'bug', label: 'Bug', icon: '🐛' },
-  { id: 'feature', label: 'Feature', icon: '✨' },
-  { id: 'improvement', label: 'Improvement', icon: '🔧' },
-  { id: 'other', label: 'Other', icon: '📝' },
+  { id: 'general', label: 'General', icon: 'Msg' },
+  { id: 'bug', label: 'Bug', icon: 'Bug' },
+  { id: 'feature', label: 'Feature', icon: 'Feat' },
+  { id: 'improvement', label: 'Improvement', icon: 'Tool' },
+  { id: 'other', label: 'Other', icon: 'Note' },
 ]
 
 const canSubmit = computed(() => form.title.trim() && form.content.trim())
@@ -280,7 +280,7 @@ function formatTime(dateStr: string): string {
 }
 
 function getCategoryIcon(category: string): string {
-  return categories.find(c => c.id === category)?.icon || '💬'
+  return categories.find(c => c.id === category)?.icon || 'Msg'
 }
 </script>
 

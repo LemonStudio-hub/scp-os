@@ -46,7 +46,7 @@
           
           <div class="issue-recommendation" v-if="issue.recommendation">
             <div class="rec-header">
-              <span class="rec-icon">💡</span>
+              <span class="rec-icon">→</span>
               <span class="rec-label">Recommendation</span>
             </div>
             <p class="rec-text">{{ issue.recommendation }}</p>

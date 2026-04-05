@@ -125,7 +125,7 @@ export const commandHandlers: CommandMap = {
       t,
       b,
       '',
-      `  System Status:        ${ANSICode.green}⚡ Online${ANSICode.reset}`,
+      `  System Status:        ${ANSICode.green}Online${ANSICode.reset}`,
       '  Active Containment:   4,891 objects',
       '  Containment Breaches: 23 incidents',
       '  Pending:              156 anomalies',
@@ -134,8 +134,8 @@ export const commandHandlers: CommandMap = {
       '  Site Status:',
       '    Site-19        ✓ Operational',
       '    Site-17        ✓ Operational',
-      '    Area-12        ⚠ Containment upgrade in progress',
-      '    Site-13        🚫 Locked down',
+      '    Area-12        [!] Containment upgrade in progress',
+      '    Site-13        [X] Locked down',
       '',
       '  Network Connection:   Encrypted [AES-256]',
       '  Database Status:      Synchronized',
@@ -407,23 +407,23 @@ export const commandHandlers: CommandMap = {
       borderedTitle("Emergency Contact"),
       border(),
       '',
-      `${ANSICode.red}  🚨 Containment Breach Hotline:${ANSICode.reset}`,
+      `${ANSICode.red}  [ALERT] Containment Breach Hotline:${ANSICode.reset}`,
       '    - Internal: 911',
       '    - External: +1-SCP-EMERGENCY',
       '',
-      '  📞 Department Contacts:',
+      '  Department Contacts:',
       '    - Research Dept:    ext. 1001',
       '    - Containment Dept: ext. 1002',
       '    - Security Dept:    ext. 1003',
       '    - Medical Dept:     ext. 1004',
       '    - Task Forces:      ext. 1005',
       '',
-      '  🏥 Site Medical Center:',
+      '  Site Medical Center:',
       '    - Emergency:        ext. 2001',
       '    - Counseling:       ext. 2002',
       '    - Amnestic:         ext. 2003',
       '',
-      `${ANSICode.yellow}  ⚠ Note: All emergency contacts require authentication${ANSICode.reset}`,
+      `${ANSICode.yellow}  Note: All emergency contacts require authentication${ANSICode.reset}`,
       '',
       border()
     ]
@@ -574,7 +574,7 @@ export const commandHandlers: CommandMap = {
       writeln(`${ANSICode.gray}and receive optimization recommendations.${ANSICode.reset}`)
     } else {
       // Fallback: show text-based performance info
-      writeln(`${ANSICode.yellow}⚠ GUI Dashboard not available, showing text summary...${ANSICode.reset}`)
+      writeln(`${ANSICode.yellow}[!] GUI Dashboard not available, showing text summary...${ANSICode.reset}`)
       writeln('')
 
       const mem = window.performance?.memory

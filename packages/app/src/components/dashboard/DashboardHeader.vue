@@ -37,7 +37,7 @@
         @click="$emit('close')"
         aria-label="Close dashboard"
       >
-        ✕
+        X
       </button>
     </div>
   </div>

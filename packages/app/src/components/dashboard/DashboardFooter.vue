@@ -8,7 +8,7 @@
           <span class="info-value">{{ metricCount }}</span>
         </div>
         <div class="info-item">
-          <span class="info-icon">🕐</span>
+          <span class="info-icon">◷</span>
           <span class="info-label">Updated:</span>
           <span class="info-value">{{ lastUpdated }}</span>
         </div>
@@ -25,7 +25,7 @@
           @click="$emit('export')"
           title="Export data"
         >
-          <span class="btn-icon">📥</span>
+          <span class="btn-icon">↓</span>
           <span class="btn-text">Export</span>
         </button>
         

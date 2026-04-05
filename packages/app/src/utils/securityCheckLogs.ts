@@ -81,7 +81,7 @@ function randomStatus(): { icon: string; color: string; text: string } {
   if (rand > 0.05) {
     return { icon: '✓', color: ANSICode.green, text: 'OK' }
   } else if (rand > 0.02) {
-    return { icon: '⚠', color: ANSICode.yellow, text: 'WARN' }
+    return { icon: '!', color: ANSICode.yellow, text: 'WARN' }
   }
   return { icon: '✗', color: ANSICode.red, text: 'FAIL' }
 }

@@ -3,7 +3,7 @@
     <div class="score-card">
       <div class="score-header">
         <div class="score-label-group">
-          <span class="score-icon">🎯</span>
+          <span class="score-icon">◎</span>
           <span class="score-label">Overall Score</span>
         </div>
         <div class="score-value-container">

@@ -118,8 +118,8 @@ const trendClass = computed(() => {
 
 const trendIcon = computed(() => {
   const tc = trendClass.value
-  if (tc === 'trend-up') return '📈'
-  if (tc === 'trend-down') return '📉'
+  if (tc === 'trend-up') return '↑'
+  if (tc === 'trend-down') return '↓'
   return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>'
 })
 
