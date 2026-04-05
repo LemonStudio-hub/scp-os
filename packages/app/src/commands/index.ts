@@ -7,6 +7,7 @@ import { useTabsStore } from '../stores/tabs'
 import { useSystemStore } from '../stores/system'
 import { createBorderLine, createBorderedTitle, isNarrowTerminal } from '../utils/terminalResponsive'
 import { generateInfoQueryLogs } from '../utils/infoQueryLogs'
+import { generateSecurityCheckLogs } from '../utils/securityCheckLogs'
 
 // 响应式边框辅助函数
 function border(color: string = ANSICode.red, char: string = '═'): string {
@@ -508,6 +509,30 @@ export const commandHandlers: CommandMap = {
       }
     } catch (error) {
       writeln(`${ANSICode.red}Search failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+    }
+  },
+
+  check: async (_args, _write, writeln) => {
+    const logs = generateSecurityCheckLogs()
+    
+    for (const line of logs) {
+      writeln(line)
+      
+      // 动态延迟，模拟真实扫描过程
+      let delay = 15
+      
+      if (line.includes('[INIT]')) delay = 30
+      if (line.includes('[SCAN]') || line.includes('[FINT]')) delay = 20
+      if (line.includes('[SECU]')) delay = 25
+      if (line.includes('[NETW]')) delay = 30
+      if (line.includes('[CRYP]')) delay = 20
+      if (line.includes('Progress:')) delay = 50  // 进度条停顿一下
+      if (line.includes('[SUMMARY]')) delay = 30
+      if (line.includes('SYSTEM SECURE')) delay = 100
+      
+      if (line.trim() === '') delay = 8
+      
+      await new Promise(r => setTimeout(r, delay + Math.random() * 15))
     }
   },
 

@@ -17,6 +17,7 @@ export type CommandType =
   | 'search'
   | 'network'
   | 'performance'
+  | 'check'
   | 'ls'
   | 'cd'
   | 'pwd'
