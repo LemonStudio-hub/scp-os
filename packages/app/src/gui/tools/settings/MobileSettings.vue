@@ -87,6 +87,20 @@
               <ToggleSwitch v-model:active="settings.animations" />
             </div>
           </div>
+          <!-- Wallpaper -->
+          <div class="k-ios-list__item" @click="wallpaperPickerVisible = true">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">Wallpaper</div>
+                <div class="k-ios-list__item-description">Upload or change home screen wallpaper</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
         </div>
 
         <!-- Storage Section -->
@@ -236,6 +250,12 @@
         </div>
       </Sheet>
     </div>
+
+    <!-- Wallpaper Picker -->
+    <WallpaperPicker
+      v-model:visible="wallpaperPickerVisible"
+      @change="onWallpaperChange"
+    />
   </MobileWindow>
 </template>
 
@@ -244,6 +264,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import Sheet from '../../konsta/Sheet.vue'
 import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
+import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import { useTerminalStore } from '../../../stores/terminal'
 import { useThemeStore } from '../../stores/themeStore'
 import indexedDBService from '../../../utils/indexedDB'
@@ -294,6 +315,14 @@ indexedDBService.getUserId().then(id => {
 }).catch(() => {
   userId.value = 'Unknown'
 })
+
+// Wallpaper picker
+const wallpaperPickerVisible = ref(false)
+
+function onWallpaperChange(wallpaperId: string | null) {
+  // Reload home screen wallpaper by dispatching event
+  window.dispatchEvent(new CustomEvent('wallpaper-changed', { detail: { wallpaperId } }))
+}
 
 function loadSettings(): AppSettings {
   try {

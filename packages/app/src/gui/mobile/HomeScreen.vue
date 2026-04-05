@@ -27,8 +27,12 @@
     </div>
 
     <!-- Wallpaper -->
-    <div class="home-screen__wallpaper">
+    <div class="home-screen__wallpaper" :class="{ 'has-custom-wallpaper': !!customWallpaperUrl }">
+      <!-- Custom wallpaper image -->
+      <img v-if="customWallpaperUrl" :src="customWallpaperUrl" class="home-screen__wallpaper-image" alt="Custom wallpaper" />
+      <!-- Default gradient overlay -->
       <div class="home-screen__wallpaper-gradient" />
+      <!-- SVG pattern overlay -->
       <div class="home-screen__wallpaper-pattern">
         <svg width="100%" height="100%" viewBox="0 0 400 800" fill="none">
           <circle cx="200" cy="400" r="180" :stroke="wallpaperPatternColor1" stroke-width="1"/>
@@ -98,6 +102,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useHammer } from '../composables/useHammer'
 import { useThemeStore } from '../stores/themeStore'
+import { wallpaperService } from '../../utils/wallpaperService'
 
 export interface HomeApp {
   id: string
@@ -121,6 +126,7 @@ const emit = defineEmits<{
 
 const homeRef = ref<HTMLDivElement | null>(null)
 const currentTime = ref('')
+const customWallpaperUrl = ref<string | null>(null)
 const themeStore = useThemeStore()
 themeStore.init()
 
@@ -163,10 +169,29 @@ function onAppTap(app: HomeApp): void {
   emit('launch', app)
 }
 
-onMounted(() => {
+onMounted(async () => {
   updateTime()
   setInterval(updateTime, 10000)
   setupGestures()
+
+  // Load custom wallpaper
+  try {
+    await wallpaperService.init()
+    customWallpaperUrl.value = await wallpaperService.getCurrentWallpaper()
+  } catch (error) {
+    console.error('[HomeScreen] Failed to load wallpaper:', error)
+  }
+
+  // Listen for wallpaper changes
+  window.addEventListener('wallpaper-changed', async (event: any) => {
+    const wallpaperId = event.detail?.wallpaperId
+    if (wallpaperId) {
+      const wallpaper = await wallpaperService.getWallpaper(wallpaperId)
+      customWallpaperUrl.value = wallpaper?.dataUrl || null
+    } else {
+      customWallpaperUrl.value = null
+    }
+  })
 })
 </script>
 
@@ -216,6 +241,16 @@ onMounted(() => {
   z-index: 0;
   background: var(--home-bg, #000000);
   overflow: hidden;
+}
+
+.home-screen__wallpaper-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.3;
 }
 
 .home-screen__wallpaper-gradient {
