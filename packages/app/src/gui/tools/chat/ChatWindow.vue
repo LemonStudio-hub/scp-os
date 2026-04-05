@@ -16,8 +16,8 @@
             :class="{ 'chat-app__room-tab--active': currentRoomId === room.id }"
             @click="switchRoom(room.id)"
           >
-            {{ room.name }}
-            <span v-if="room.message_count > 0" class="chat-app__room-badge">{{ room.message_count }}</span>
+            <span class="chat-app__room-label">{{ room.name }}</span>
+            <span v-if="getUnreadCount(room.id) > 0" class="chat-app__room-badge">{{ getUnreadCount(room.id) }}</span>
           </button>
           <button class="chat-app__room-tab chat-app__room-tab--add" @click="showCreateRoom = true">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -30,7 +30,7 @@
             <circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
             <path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
           </svg>
-          <span>{{ nickname || 'Set nickname' }}</span>
+          <span class="chat-app__nickname-text">{{ nickname || 'Set nickname' }}</span>
         </button>
       </div>
 
@@ -204,7 +204,27 @@ const showNicknameDialog = ref(false)
 const newRoomName = ref('')
 const newNickname = ref('')
 
+// 未读消息追踪
+const unreadCounts = ref<Record<number, number>>({})
+
 const displayMessages = computed(() => messages)
+
+// 获取房间未读消息数
+function getUnreadCount(roomId: number): number {
+  return unreadCounts.value[roomId] || 0
+}
+
+// 设置房间未读消息数
+function setUnreadCount(roomId: number, count: number) {
+  unreadCounts.value[roomId] = count
+}
+
+// 标记房间为已读（清除未读计数）
+function markRoomAsRead(roomId: number) {
+  setUnreadCount(roomId, 0)
+  // 保存到 IndexedDB
+  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch(() => {})
+}
 
 // Theme-reactive computed styles
 const chatThemeStyles = computed(() => ({
@@ -223,6 +243,7 @@ onMounted(async () => {
   userId = await indexedDBService.getUserId()
   await loadRooms()
   await loadNickname()
+  await loadUnreadCounts()
   await loadMessages()
   startPolling()
 })
@@ -231,13 +252,34 @@ onUnmounted(() => {
   stopPolling()
 })
 
+async function loadUnreadCounts() {
+  try {
+    const stored = await indexedDBService.loadSetting('chat_unread_counts')
+    if (stored) {
+      unreadCounts.value = stored
+    }
+  } catch (error) {
+    console.error('[Chat] Failed to load unread counts:', error)
+  }
+}
+
 async function loadRooms() {
   try {
     const response = await fetch(`${API_BASE}/chat/rooms`)
     const data = await response.json()
     if (data.success && data.data) {
+      const oldRooms = new Map(rooms.map(r => [r.id, r]))
+      
       rooms.length = 0
-      rooms.push(...data.data)
+      for (const room of data.data) {
+        const oldRoom = oldRooms.get(room.id)
+        // 如果房间消息数增加且不是当前房间，增加未读计数
+        if (oldRoom && room.message_count > oldRoom.message_count && room.id !== currentRoomId.value) {
+          const delta = room.message_count - oldRoom.message_count
+          setUnreadCount(room.id, getUnreadCount(room.id) + delta)
+        }
+        rooms.push(room)
+      }
     }
   } catch (error) {
     console.error('[Chat] Failed to load rooms:', error)
@@ -304,6 +346,7 @@ function switchRoom(roomId: number) {
   if (currentRoomId.value === roomId) return
   currentRoomId.value = roomId
   messages.length = 0
+  markRoomAsRead(roomId)
   loadMessages()
 }
 
@@ -460,17 +503,20 @@ function formatTime(dateStr: string): string {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 10px 12px;
+  padding-top: max(10px, env(safe-area-inset-top, 10px));
   background: var(--chat-surface, var(--gui-bg-surface, #2C2C2E));
   border-bottom: 0.5px solid var(--chat-border, var(--gui-border-subtle, #38383A));
+  gap: 8px;
 }
 
 .chat-app__rooms {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
   flex: 1;
+  -webkit-overflow-scrolling: touch;
 }
 
 .chat-app__rooms::-webkit-scrollbar {
@@ -478,6 +524,9 @@ function formatTime(dateStr: string): string {
 }
 
 .chat-app__room-tab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   padding: 6px 12px;
   border-radius: 16px;
   border: none;
@@ -487,7 +536,12 @@ function formatTime(dateStr: string): string {
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 150ms ease, color 150ms ease;
+  transition: background 150ms ease, color 150ms ease, transform 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chat-app__room-tab:active {
+  transform: scale(0.96);
 }
 
 .chat-app__room-tab--active {
@@ -502,10 +556,19 @@ function formatTime(dateStr: string): string {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.chat-app__room-label {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chat-app__room-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 16px;
   height: 16px;
   padding: 0 4px;
@@ -514,16 +577,14 @@ function formatTime(dateStr: string): string {
   color: #FFFFFF;
   font-size: 10px;
   font-weight: 600;
-  line-height: 16px;
-  text-align: center;
-  margin-left: 4px;
+  line-height: 1;
 }
 
 .chat-app__nickname-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 16px;
   border: none;
   background: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
@@ -531,10 +592,22 @@ function formatTime(dateStr: string): string {
   font-size: 12px;
   cursor: pointer;
   transition: background 150ms ease;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chat-app__nickname-btn:active {
+  background: var(--chat-border, var(--gui-border-subtle, #38383A));
 }
 
 .chat-app__nickname-btn svg {
   flex-shrink: 0;
+}
+
+.chat-app__nickname-text {
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Messages */
