@@ -37,6 +37,9 @@ import { FitAddon } from 'xterm-addon-fit'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useTerminalEmulator } from '../../composables/useTerminalEmulator'
 import { useThemeStore } from '../../stores/themeStore'
+import { useSystemStore } from '../../../stores/system'
+import { getBootLogs, getShutdownLogs } from '../../../constants/bootLogs'
+import { config } from '../../../config'
 
 interface Props {
   visible: boolean
@@ -51,6 +54,7 @@ const terminalRef = ref<HTMLDivElement | null>(null)
 const terminal = ref<Terminal | null>(null)
 const fitAddon = ref<FitAddon | null>(null)
 const themeStore = useThemeStore()
+const systemStore = useSystemStore()
 
 function getMobileTerminalTheme() {
   const c = themeStore.currentTheme.colors
@@ -84,6 +88,68 @@ const { writePrompt, handleInput, clearAndPrompt: onClear } = useTerminalEmulato
   getTerminal: () => terminal.value,
 })
 
+// Boot/Shutdown log display functions
+async function displayBootLog(): Promise<void> {
+  const term = terminal.value
+  if (!term) return
+  
+  const bootLogs = getBootLogs(config.app.fastBoot)
+  const fastMode = config.app.fastBoot
+  
+  for (const line of bootLogs) {
+    term.writeln(line)
+    if (!fastMode) await new Promise(r => setTimeout(r, 5))
+  }
+}
+
+async function displayShutdownLog(): Promise<void> {
+  const term = terminal.value
+  if (!term) return
+  
+  const shutdownLogs = getShutdownLogs(config.app.fastBoot)
+  const fastMode = config.app.fastBoot
+  
+  for (const line of shutdownLogs) {
+    term.writeln(line)
+    if (!fastMode) await new Promise(r => setTimeout(r, 5))
+  }
+}
+
+function displayStartupPrompt(): void {
+  const term = terminal.value
+  if (!term) return
+  
+  term.writeln('')
+  term.writeln('\x1b[33mSystem is offline. Type "start" to boot.\x1b[0m')
+  writePrompt()
+}
+
+function displayWelcomeMessage(): void {
+  const term = terminal.value
+  if (!term) return
+  
+  term.writeln('')
+  term.writeln('\x1b[32m╔══════════════════════════════════════════════════════════╗\x1b[0m')
+  term.writeln('\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Terminal System\x1b[0m            \x1b[32m║\x1b[0m')
+  term.writeln('\x1b[32m║\x1b[0m              \x1b[33mSecure. Contain. Protect.\x1b[0m              \x1b[32m║\x1b[0m')
+  term.writeln('\x1b[32m╚══════════════════════════════════════════════════════════╝\x1b[0m')
+  term.writeln('')
+  term.writeln('Type \x1b[1;33m"help"\x1b[0m to see available commands.')
+  writePrompt()
+}
+
+// Setup global terminal controller for command handlers
+function setupTerminalController(): void {
+  window.__terminalController = {
+    displayBootLog,
+    displayShutdownLog,
+    displayWelcomeMessage,
+    displayStartupPrompt,
+    clear: () => terminal.value?.clear(),
+    markBootLogShown: () => systemStore.markBootLogShown(),
+  }
+}
+
 function initTerminal(): void {
   if (!terminalRef.value) return
 
@@ -107,9 +173,12 @@ function initTerminal(): void {
   terminal.value = term
   fitAddon.value = fit
 
-  term.writeln('\x1b[32mWelcome to SCP Terminal\x1b[0m')
+  // Setup global terminal controller
+  setupTerminalController()
+
+  // Always show startup prompt
   term.writeln('')
-  writePrompt()
+  displayStartupPrompt()
 
   term.onData(handleInput)
 }

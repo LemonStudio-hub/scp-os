@@ -44,7 +44,7 @@ export function useTerminalEmulator(options: UseTerminalEmulatorOptions) {
       return
     }
 
-    const [command, ...args] = cmd.trim().split(/\s+/)
+    const [command, ...args] = cmd.trim().toLowerCase().split(/\s+/)
     const handler = commandHandlers[command as keyof typeof commandHandlers]
 
     if (handler) {
