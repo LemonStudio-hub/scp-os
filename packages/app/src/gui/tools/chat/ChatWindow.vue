@@ -103,7 +103,7 @@ const displayMessages = computed(() => messages)
 
 // Theme-reactive computed styles
 const chatThemeStyles = computed(() => ({
-  '--chat-bg': themeStore.currentTheme.colors.terminalBg || '#1C1C1E',
+  '--chat-bg': themeStore.currentTheme.colors.bgBase || '#1C1C1E',
   '--chat-surface': themeStore.currentTheme.colors.bgSurface || '#2C2C2E',
   '--chat-surface-hover': themeStore.currentTheme.colors.bgSurfaceHover || '#3A3A3C',
   '--chat-border': themeStore.currentTheme.colors.borderSubtle || '#38383A',
@@ -260,7 +260,8 @@ function formatTime(dateStr: string): string {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--chat-bg, var(--gui-terminal-bg, #1C1C1E));
+  /* Use the k-ios-page background via CSS cascade */
+  background: var(--chat-bg, var(--gui-bg-base, #1C1C1E));
 }
 
 .chat-app__messages {
