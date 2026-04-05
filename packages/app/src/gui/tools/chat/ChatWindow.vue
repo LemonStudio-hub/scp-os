@@ -5,7 +5,7 @@
     :show-back="true"
     @close="$emit('close')"
   >
-    <div class="chat-app k-ios-page k-ios-page--dark">
+    <div class="chat-app k-ios-page" :class="{ 'k-ios-page--dark': themeStore.currentTheme.isDark }" :style="chatThemeStyles">
       <!-- Messages List -->
       <div class="chat-app__messages gui-scrollable" ref="messagesRef">
         <div
@@ -62,6 +62,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
+import { useThemeStore } from '../../stores/themeStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 
@@ -83,6 +84,9 @@ interface ChatMessage {
 
 defineProps<Props>()
 
+const themeStore = useThemeStore()
+themeStore.init()
+
 const API_BASE = config.api.workerUrl
 const POLL_INTERVAL = 30000 // 30 seconds
 const MAX_MESSAGES = 100
@@ -96,6 +100,20 @@ let pollTimer: number | null = null
 let userId = ''
 
 const displayMessages = computed(() => messages)
+
+// Theme-reactive computed styles
+const chatThemeStyles = computed(() => ({
+  '--chat-bg': themeStore.currentTheme.colors.terminalBg || '#1C1C1E',
+  '--chat-surface': themeStore.currentTheme.colors.bgSurface || '#2C2C2E',
+  '--chat-surface-hover': themeStore.currentTheme.colors.bgSurfaceHover || '#3A3A3C',
+  '--chat-border': themeStore.currentTheme.colors.borderSubtle || '#38383A',
+  '--chat-text-primary': themeStore.currentTheme.colors.textPrimary || '#FFFFFF',
+  '--chat-text-secondary': themeStore.currentTheme.colors.textSecondary || '#8E8E93',
+  '--chat-text-tertiary': themeStore.currentTheme.colors.textTertiary || '#636366',
+  '--chat-accent': themeStore.currentTheme.colors.accent || '#007AFF',
+  '--chat-accent-rgb': '0, 122, 255', // Default blue RGB
+  '--chat-error': '#FF3B30',
+}))
 
 onMounted(async () => {
   userId = await indexedDBService.getUserId()
@@ -242,7 +260,7 @@ function formatTime(dateStr: string): string {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-terminal-bg, #1C1C1E);
+  background: var(--chat-bg, var(--gui-terminal-bg, #1C1C1E));
 }
 
 .chat-app__messages {
@@ -279,12 +297,12 @@ function formatTime(dateStr: string): string {
 .chat-bubble__username {
   font-size: 11px;
   font-weight: 600;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--chat-text-secondary, var(--gui-text-secondary, #8E8E93));
 }
 
 .chat-bubble__time {
   font-size: 10px;
-  color: var(--gui-text-tertiary, #636366);
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
 }
 
 .chat-bubble__content {
@@ -294,12 +312,12 @@ function formatTime(dateStr: string): string {
   font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
-  background: var(--gui-bg-surface, #2C2C2E);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--chat-surface, var(--gui-bg-surface, #2C2C2E));
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
 }
 
 .chat-bubble--self .chat-bubble__content {
-  background: #007AFF;
+  background: var(--chat-accent, #007AFF);
   color: #FFFFFF;
   border-bottom-right-radius: 4px;
 }
@@ -314,13 +332,13 @@ function formatTime(dateStr: string): string {
 
 .chat-bubble__status {
   font-size: 10px;
-  color: var(--gui-text-tertiary, #636366);
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
   margin-top: 2px;
   padding: 0 4px;
 }
 
 .chat-bubble__status--error {
-  color: #FF3B30;
+  color: var(--chat-error, #FF3B30);
 }
 
 .chat-app__loading {
@@ -334,7 +352,7 @@ function formatTime(dateStr: string): string {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--gui-accent, #007AFF);
+  background: var(--chat-accent, var(--gui-accent, #007AFF));
   animation: ios-bounce 1.2s ease-in-out infinite;
 }
 
@@ -352,8 +370,8 @@ function formatTime(dateStr: string): string {
   gap: 8px;
   padding: 8px 12px;
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
-  background: var(--gui-bg-surface, #2C2C2E);
-  border-top: 0.5px solid var(--gui-border, #38383A);
+  background: var(--chat-surface, var(--gui-bg-surface, #2C2C2E));
+  border-top: 0.5px solid var(--chat-border, var(--gui-border, #38383A));
 }
 
 .chat-app__input {
@@ -362,14 +380,14 @@ function formatTime(dateStr: string): string {
   padding: 0 12px;
   border-radius: 18px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
   font-size: 14px;
   outline: none;
 }
 
 .chat-app__input::placeholder {
-  color: var(--gui-text-tertiary, #636366);
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
 }
 
 .chat-app__send-btn {
@@ -377,7 +395,7 @@ function formatTime(dateStr: string): string {
   height: 36px;
   border-radius: 50%;
   border: none;
-  background: #007AFF;
+  background: var(--chat-accent, #007AFF);
   color: #FFFFFF;
   display: flex;
   align-items: center;
