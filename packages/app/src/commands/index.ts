@@ -8,6 +8,7 @@ import { useSystemStore } from '../stores/system'
 import { createBorderLine, createBorderedTitle, isNarrowTerminal } from '../utils/terminalResponsive'
 import { generateInfoQueryLogs } from '../utils/infoQueryLogs'
 import { generateSecurityCheckLogs } from '../utils/securityCheckLogs'
+import { generateNetworkTestLogs } from '../utils/networkTestLogs'
 
 // 响应式边框辅助函数
 function border(color: string = ANSICode.red, char: string = '═'): string {
@@ -537,40 +538,28 @@ export const commandHandlers: CommandMap = {
   },
 
   network: async (_args, _write, writeln) => {
-    writeln(`${ANSICode.cyan}Testing network connection to Foundation Wiki...${ANSICode.reset}`)
-    writeln('')
-
-    const result = await scraper.testConnection()
-
-    if (result.success) {
-      writeln(`${ANSICode.green}✓ Network connection is working${ANSICode.reset}`)
-      writeln('')
-      writeln(`${ANSICode.cyan}API Details:${ANSICode.reset}`)
-      writeln(`  Status: ${result.details?.status || 'Online'}`)
-      writeln(`  Version: ${result.details?.version || 'Unknown'}`)
-      writeln('')
-      writeln(`${ANSICode.green}All systems operational. Ready for queries.${ANSICode.reset}`)
-    } else {
-      writeln(`${ANSICode.red}✗ Network connection failed${ANSICode.reset}`)
-      writeln('')
-      writeln(`${ANSICode.cyan}Error Details:${ANSICode.reset}`)
-      writeln(`  Message: ${result.message}`)
-      if (result.details?.code) {
-        writeln(`  Code: ${result.details.code}`)
-      }
-      if (result.details?.url) {
-        writeln(`  URL: ${result.details.url}`)
-      }
-      writeln('')
-      writeln(`${ANSICode.yellow}Possible Solutions:${ANSICode.reset}`)
-      writeln(`  - Check your internet connection`)
-      writeln(`  - Verify firewall or proxy settings`)
-      writeln(`  - Try using a different network`)
-      writeln(`  - Contact system administrator if problem persists`)
-      writeln('')
-      writeln(`${ANSICode.red}Connection failed. Unable to query SCP database.${ANSICode.reset}`)
+    const logs = await generateNetworkTestLogs()
+    
+    for (const line of logs) {
+      writeln(line)
+      
+      // Dynamic delay to simulate realistic network testing
+      let delay = 15
+      
+      if (line.includes('[PHASE 1]')) delay = 30
+      if (line.includes('[PHASE 2]')) delay = 25
+      if (line.includes('[PHASE 3]')) delay = 30
+      if (line.includes('[PHASE 4]')) delay = 20
+      if (line.includes('[PHASE 5]')) delay = 30
+      if (line.includes('[OK]')) delay = 40
+      if (line.includes('progress') || line.includes('[')) delay = 50
+      if (line.includes('NETWORK HEALTHY')) delay = 100
+      if (line.includes('╔') || line.includes('╚')) delay = 60
+      
+      if (line.trim() === '') delay = 8
+      
+      await new Promise(r => setTimeout(r, delay + Math.random() * 15))
     }
-    writeln('')
   },
 
   performance: async (_args, _write, writeln) => {
