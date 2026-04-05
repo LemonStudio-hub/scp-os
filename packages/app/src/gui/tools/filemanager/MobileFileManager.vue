@@ -77,7 +77,34 @@
             @contextmenu.prevent="onFileContextMenu($event, file)"
           >
             <div class="mobile-file-manager__item-icon" :class="getIconClass(file)">
-              <component :is="getFileIcon(file)" />
+              <!-- Folder Icon -->
+              <svg v-if="file.isDirectory" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M4 8h10l4-4h10v20H4z"/>
+                <path d="M4 8l4-4h10"/>
+              </svg>
+              <!-- Image Icon -->
+              <svg v-else-if="isImageFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="4" y="6" width="24" height="20" rx="2"/>
+                <circle cx="12" cy="14" r="3"/>
+                <path d="M4 22l8-6 4 3 12-9"/>
+              </svg>
+              <!-- Text Icon -->
+              <svg v-else-if="isTextFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/>
+                <path d="M20 4v4h4"/>
+                <path d="M10 16h12M10 22h8"/>
+              </svg>
+              <!-- Code Icon -->
+              <svg v-else-if="isCodeFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/>
+                <path d="M20 4v4h4"/>
+                <path d="M12 16l-3 3 3 3M20 16l3 3-3 3"/>
+              </svg>
+              <!-- Default File Icon -->
+              <svg v-else width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/>
+                <path d="M20 4v4h4"/>
+              </svg>
             </div>
             <span class="mobile-file-manager__item-name" :title="file.name">{{ file.name }}</span>
             <span class="mobile-file-manager__item-meta">
@@ -114,7 +141,6 @@
           :class="{ 'mobile-file-manager__context-item--danger': action.danger }"
           @click="action.fn"
         >
-          <component :is="action.icon" />
           <span>{{ action.label }}</span>
         </button>
       </div>
@@ -152,7 +178,6 @@ interface Props {
 interface ContextAction {
   id: string
   label: string
-  icon: any
   danger?: boolean
   fn: () => void
 }
@@ -184,42 +209,32 @@ const editingFile = ref<any>(null)
 const imageViewerVisible = ref(false)
 const viewingImageFile = ref<any>(null)
 
-// SVG Icons
-const FolderIcon = {
-  template: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h10l4-4h10v20H4z"/><path d="M4 8l4-4h10"/></svg>`,
+// File type detection helpers
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
+const TEXT_EXTS = ['txt', 'md', 'log']
+const CODE_EXTS = ['js', 'ts', 'css', 'html', 'json', 'xml', 'yml', 'yaml']
+
+function getFileExt(file: any): string {
+  return file.name.split('.').pop()?.toLowerCase() || ''
 }
 
-const FileIcon = {
-  template: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/><path d="M20 4v4h4"/></svg>`,
+function isImageFile(file: any): boolean {
+  return IMAGE_EXTS.includes(getFileExt(file))
 }
 
-const ImageIcon = {
-  template: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="6" width="24" height="20" rx="2"/><circle cx="12" cy="14" r="3"/><path d="M4 22l8-6 4 3 12-9"/></svg>`,
+function isTextFile(file: any): boolean {
+  return TEXT_EXTS.includes(getFileExt(file))
 }
 
-const TextIcon = {
-  template: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/><path d="M20 4v4h4"/><path d="M10 16h12M10 22h8"/></svg>`,
+function isCodeFile(file: any): boolean {
+  return CODE_EXTS.includes(getFileExt(file))
 }
 
-const CodeIcon = {
-  template: `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/><path d="M20 4v4h4"/><path d="M12 16l-3 3 3 3M20 16l3 3-3 3"/></svg>`,
-}
-
-// File type detection
-function getFileIcon(file: any) {
-  if (file.isDirectory) return FolderIcon
-  const ext = file.name.split('.').pop()?.toLowerCase() || ''
-  if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext)) return ImageIcon
-  if (['txt', 'md', 'log'].includes(ext)) return TextIcon
-  if (['js', 'ts', 'css', 'html', 'json', 'xml', 'yml', 'yaml'].includes(ext)) return CodeIcon
-  return FileIcon
-}
-
-function getIconClass(file: any) {
+function getIconClass(file: any): string {
   if (file.isDirectory) return 'mobile-file-manager__item-icon--folder'
-  const ext = file.name.split('.').pop()?.toLowerCase() || ''
-  if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext)) return 'mobile-file-manager__item-icon--image'
-  if (['js', 'ts', 'css', 'html', 'json', 'xml', 'yml', 'yaml'].includes(ext)) return 'mobile-file-manager__item-icon--code'
+  const ext = getFileExt(file)
+  if (IMAGE_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--image'
+  if (CODE_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--code'
   return 'mobile-file-manager__item-icon--file'
 }
 
@@ -318,7 +333,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     contextActions.value.push({
       id: 'edit',
       label: 'Edit',
-      icon: CodeIcon,
+
       fn: () => {
         editingFile.value = file
         textEditorVisible.value = true
@@ -331,7 +346,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     contextActions.value.push({
       id: 'view',
       label: 'View Image',
-      icon: ImageIcon,
+
       fn: () => {
         viewingImageFile.value = file
         imageViewerVisible.value = true
@@ -344,7 +359,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     {
       id: 'rename',
       label: 'Rename',
-      icon: FileIcon,
+
       fn: () => {
         const newName = prompt('New name:', file.name)
         if (newName && newName !== file.name) {
@@ -363,7 +378,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     {
       id: 'delete',
       label: 'Delete',
-      icon: FileIcon,
+
       danger: true,
       fn: () => {
         if (confirm(`Delete "${file.name}"?`)) {
@@ -389,7 +404,7 @@ function onListContextMenu(_event: MouseEvent) {
     {
       id: 'new-file',
       label: 'New File',
-      icon: FileIcon,
+
       fn: () => {
         createNewFile()
         contextSheetVisible.value = false
@@ -398,7 +413,7 @@ function onListContextMenu(_event: MouseEvent) {
     {
       id: 'new-folder',
       label: 'New Folder',
-      icon: FolderIcon,
+
       fn: () => {
         createNewFolder()
         contextSheetVisible.value = false
