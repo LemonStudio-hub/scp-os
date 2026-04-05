@@ -124,7 +124,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
   function minimizeWindow(windowId: string): boolean {
     const win = windows.value.get(windowId)
-    if (!win || !win.config.minimizable) return false
+    if (!win || win.config.minimizable === false) return false
 
     windows.value.set(windowId, {
       ...win,
@@ -162,7 +162,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
   function maximizeWindow(windowId: string): boolean {
     const win = windows.value.get(windowId)
-    if (!win || !win.config.maximizable) return false
+    if (!win || win.config.maximizable === false) return false
 
     const isCurrentlyMaximized = win.maximized
 
