@@ -56,6 +56,9 @@ export { useZIndex } from './composables/useZIndex'
 
 export { useMobile } from './composables/useMobile'
 
+export { useI18n } from './composables/useI18n'
+export type { Locale } from '../locales'
+
 export { useTheme } from './composables/useTheme'
 
 export { useHammer } from './composables/useHammer'

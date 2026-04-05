@@ -102,6 +102,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useHammer } from '../composables/useHammer'
 import { useThemeStore } from '../stores/themeStore'
+import { useI18n } from '../composables/useI18n'
 import { wallpaperService } from '../../utils/wallpaperService'
 
 export interface HomeApp {
@@ -111,14 +112,16 @@ export interface HomeApp {
   color: string
 }
 
-const apps: HomeApp[] = [
-  { id: 'terminal', label: 'Terminal', tool: 'terminal', color: 'var(--gui-accent)' },
-  { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-accent)' },
-  { id: 'chat', label: 'Chat', tool: 'chat', color: 'var(--gui-accent)' },
-  { id: 'dash', label: 'Dash', tool: 'dash', color: 'var(--gui-accent)' },
-  { id: 'feedback', label: 'Feedback', tool: 'feedback', color: 'var(--gui-accent)' },
-  { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-accent)' },
-]
+const { t } = useI18n()
+
+const apps = computed<HomeApp[]>(() => [
+  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', color: 'var(--gui-accent)' },
+  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', color: 'var(--gui-accent)' },
+  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)' },
+  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)' },
+  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)' },
+  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)' },
+])
 
 const emit = defineEmits<{
   launch: [app: HomeApp]
