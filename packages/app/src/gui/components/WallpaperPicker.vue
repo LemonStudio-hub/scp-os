@@ -99,14 +99,17 @@ import { ref, onMounted } from 'vue'
 import { wallpaperService } from '../../utils/wallpaperService'
 import type { WallpaperInfo } from '../../utils/wallpaperService'
 
+interface Props {
+  visible: boolean
+}
+
 interface Emits {
   (e: 'update:visible', value: boolean): void
   (e: 'change', wallpaperId: string | null): void
 }
 
+defineProps<Props>()
 const emit = defineEmits<Emits>()
-
-const visible = defineModel<boolean>('visible', { required: true })
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const wallpapers = ref<WallpaperInfo[]>([])
@@ -116,8 +119,12 @@ const showDeleteConfirm = ref(false)
 const deleteTarget = ref<WallpaperInfo | null>(null)
 
 onMounted(async () => {
-  await wallpaperService.init()
-  await loadWallpapers()
+  try {
+    await wallpaperService.init()
+    await loadWallpapers()
+  } catch {
+    // Silently fail
+  }
 })
 
 async function loadWallpapers() {

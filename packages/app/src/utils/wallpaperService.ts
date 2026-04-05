@@ -3,8 +3,8 @@
  * Manages custom user-uploaded wallpapers stored in IndexedDB
  */
 
-const DB_NAME = 'scp-terminal-db'
-const DB_VERSION = 5
+const DB_NAME = 'scp-wallpaper-db'
+const DB_VERSION = 1
 const WALLPAPER_STORE = 'wallpapers'
 
 export interface WallpaperInfo {
@@ -33,26 +33,36 @@ class WallpaperService {
   async init(): Promise<void> {
     if (this.initialized && this.db) return
 
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION)
+    try {
+      return new Promise((resolve) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION)
 
-      request.onerror = () => reject(request.error)
-      request.onsuccess = () => {
-        this.db = request.result
-        this.initialized = true
-        resolve()
-      }
-
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result
-
-        // Create wallpapers store if it doesn't exist
-        if (!db.objectStoreNames.contains(WALLPAPER_STORE)) {
-          const store = db.createObjectStore(WALLPAPER_STORE, { keyPath: 'id' })
-          store.createIndex('createdAt', 'createdAt', { unique: false })
+        request.onerror = () => {
+          console.warn('[WallpaperService] DB open error, continuing without wallpapers')
+          this.initialized = true
+          resolve()
         }
-      }
-    })
+        request.onsuccess = () => {
+          this.db = request.result
+          this.initialized = true
+          resolve()
+        }
+
+        request.onupgradeneeded = (event) => {
+          try {
+            const db = (event.target as IDBOpenDBRequest).result
+            if (!db.objectStoreNames.contains(WALLPAPER_STORE)) {
+              db.createObjectStore(WALLPAPER_STORE, { keyPath: 'id' })
+            }
+          } catch (e) {
+            console.warn('[WallpaperService] Upgrade error:', e)
+          }
+        }
+      })
+    } catch (e) {
+      console.warn('[WallpaperService] Init error, continuing without wallpapers:', e)
+      this.initialized = true
+    }
   }
 
   /**

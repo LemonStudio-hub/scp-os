@@ -174,22 +174,27 @@ onMounted(async () => {
   setInterval(updateTime, 10000)
   setupGestures()
 
-  // Load custom wallpaper
+  // Load custom wallpaper (non-blocking)
   try {
     await wallpaperService.init()
-    customWallpaperUrl.value = await wallpaperService.getCurrentWallpaper()
+    const url = await wallpaperService.getCurrentWallpaper()
+    if (url) customWallpaperUrl.value = url
   } catch (error) {
-    console.error('[HomeScreen] Failed to load wallpaper:', error)
+    // Silently fail - wallpaper is optional
   }
 
   // Listen for wallpaper changes
   window.addEventListener('wallpaper-changed', async (event: any) => {
-    const wallpaperId = event.detail?.wallpaperId
-    if (wallpaperId) {
-      const wallpaper = await wallpaperService.getWallpaper(wallpaperId)
-      customWallpaperUrl.value = wallpaper?.dataUrl || null
-    } else {
-      customWallpaperUrl.value = null
+    try {
+      const wallpaperId = event.detail?.wallpaperId
+      if (wallpaperId) {
+        const wallpaper = await wallpaperService.getWallpaper(wallpaperId)
+        customWallpaperUrl.value = wallpaper?.dataUrl || null
+      } else {
+        customWallpaperUrl.value = null
+      }
+    } catch {
+      // Silently fail
     }
   })
 })
