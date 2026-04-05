@@ -210,11 +210,11 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     const bootLogs = getBootLogs(fastMode || config.app.fastBoot)
     
-    // 动态速度配置
-    const baseDelay = fastMode || config.app.fastBoot ? 1 : 15
-    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.97  // 速度衰减因子
-    const minDelay = fastMode || config.app.fastBoot ? 1 : 5    // 最小延迟
-    const maxDelay = fastMode || config.app.fastBoot ? 5 : 30   // 最大延迟
+    // 动态速度配置（已放慢，提供更好的视觉效果）
+    const baseDelay = fastMode || config.app.fastBoot ? 5 : 30
+    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.98  // 速度衰减因子
+    const minDelay = fastMode || config.app.fastBoot ? 3 : 15    // 最小延迟
+    const maxDelay = fastMode || config.app.fastBoot ? 10 : 60   // 最大延迟
     
     let currentSpeedMultiplier = 1.0
 

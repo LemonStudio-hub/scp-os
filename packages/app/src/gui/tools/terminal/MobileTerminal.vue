@@ -92,26 +92,78 @@ const { writePrompt, handleInput, clearAndPrompt: onClear } = useTerminalEmulato
 async function displayBootLog(): Promise<void> {
   const term = terminal.value
   if (!term) return
-  
+
   const bootLogs = getBootLogs(config.app.fastBoot)
   const fastMode = config.app.fastBoot
   
+  // 动态速度配置（与主终端保持一致）
+  const baseDelay = fastMode ? 5 : 30
+  const minDelay = fastMode ? 3 : 15
+  const maxDelay = fastMode ? 10 : 60
+
   for (const line of bootLogs) {
     term.writeln(line)
-    if (!fastMode) await new Promise(r => setTimeout(r, 5))
+    if (!fastMode) {
+      // 根据行内容计算延迟
+      let delay = baseDelay
+      
+      // 空行快速滚动
+      if (line.trim().length === 0) {
+        delay = minDelay
+      }
+      
+      // 包含重要信息的行显示更长时间
+      if (line.includes('ONLINE') || line.includes('Security') || 
+          line.includes('Established') || line.includes('ACTIVE') ||
+          line.includes('COMPLETE') || line.includes('══════════')) {
+        delay *= 1.3
+      }
+      
+      // ASCII 框线框显示更长时间
+      if (line.includes('═') || line.includes('█')) {
+        delay *= 1.2
+      }
+      
+      await new Promise(r => setTimeout(r, Math.min(delay, maxDelay)))
+    }
   }
 }
 
 async function displayShutdownLog(): Promise<void> {
   const term = terminal.value
   if (!term) return
-  
+
   const shutdownLogs = getShutdownLogs(config.app.fastBoot)
   const fastMode = config.app.fastBoot
   
+  // 动态速度配置（与开机日志保持一致）
+  const baseDelay = fastMode ? 5 : 30
+  const minDelay = fastMode ? 3 : 15
+  const maxDelay = fastMode ? 10 : 60
+
   for (const line of shutdownLogs) {
     term.writeln(line)
-    if (!fastMode) await new Promise(r => setTimeout(r, 5))
+    if (!fastMode) {
+      // 根据行内容计算延迟
+      let delay = baseDelay
+      
+      // 空行快速滚动
+      if (line.trim().length === 0) {
+        delay = minDelay
+      }
+      
+      // OK 状态显示更长时间
+      if (line.includes('[  OK  ]')) {
+        delay *= 1.2
+      }
+      
+      // 系统停止信息显示更长时间
+      if (line.includes('halted') || line.includes('SHUTDOWN') || line.includes('HALTED')) {
+        delay *= 1.5
+      }
+      
+      await new Promise(r => setTimeout(r, Math.min(delay, maxDelay)))
+    }
   }
 }
 
@@ -128,6 +180,14 @@ function displayWelcomeMessage(): void {
   const term = terminal.value
   if (!term) return
   
+  term.writeln('')
+  term.writeln('\x1b[32m   _____ __________ \x1b[0m')
+  term.writeln('\x1b[32m  / ___// ____/ __ \\\x1b[0m')
+  term.writeln('\x1b[32m  \\__ \\/ /   / /_/ /\x1b[0m')
+  term.writeln('\x1b[32m ___/ / /___/ ____/ \x1b[0m')
+  term.writeln('\x1b[32m/____/\\____/_/      \x1b[0m')
+  term.writeln('\x1b[32m                    \x1b[0m')
+  term.writeln('\x1b[32m   Foundation Terminal System\x1b[0m')
   term.writeln('')
   term.writeln('\x1b[32m╔══════════════════════════════════════════════════════════╗\x1b[0m')
   term.writeln('\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Terminal System\x1b[0m            \x1b[32m║\x1b[0m')
