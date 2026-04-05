@@ -6,16 +6,23 @@
     @close="$emit('close')"
   >
     <div class="mobile-file-manager">
-      <!-- Header with Upload -->
+      <!-- Header with Breadcrumbs and Actions -->
       <div class="mobile-file-manager__header">
-        <div class="mobile-file-manager__path">
-          <span class="mobile-file-manager__path-icon">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M1 4h4l2-2h6v9H1z"/>
+        <!-- Breadcrumbs -->
+        <div class="mobile-file-manager__breadcrumbs" @click="onBreadcrumbClick">
+          <button
+            v-for="(seg, i) in breadcrumbSegments"
+            :key="i"
+            class="mobile-file-manager__breadcrumb-btn"
+            :data-index="i"
+          >
+            <span>{{ seg.label }}</span>
+            <svg v-if="i < breadcrumbSegments.length - 1" width="10" height="10" viewBox="0 0 12 12" fill="none">
+              <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-          </span>
-          <span class="mobile-file-manager__path-text">{{ currentPath }}</span>
+          </button>
         </div>
+        <!-- Actions -->
         <div class="mobile-file-manager__actions">
           <input
             ref="fileInputRef"
@@ -186,11 +193,34 @@ defineProps<Props>()
 defineEmits<{ close: [] }>()
 
 const fmStore = useFileManagerStore()
-const currentPath = computed(() => fmStore.currentPath)
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : 'Files'
 })
+
+// Breadcrumbs
+const breadcrumbSegments = computed(() => {
+  const segments = fmStore.currentPath.split('/').filter(Boolean)
+  return [
+    { label: 'Root', path: '/' },
+    ...segments.map((seg, i) => ({
+      label: seg,
+      path: '/' + segments.slice(0, i + 1).join('/'),
+    })),
+  ]
+})
+
+function onBreadcrumbClick(event: MouseEvent) {
+  const target = event.target as HTMLElement
+  const btn = target.closest('.mobile-file-manager__breadcrumb-btn')
+  if (btn) {
+    const index = parseInt(btn.getAttribute('data-index') || '0')
+    const segment = breadcrumbSegments.value[index]
+    if (segment) {
+      fmStore.loadDirectory(segment.path)
+    }
+  }
+}
 
 // State
 const contextSheetVisible = ref(false)
@@ -483,32 +513,59 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  gap: 8px;
+  padding: 10px 14px;
   background: var(--gui-bg-surface, #2C2C2E);
   border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
-.mobile-file-manager__path {
+/* ── Breadcrumbs ────────────────────────────────────────────────────── */
+.mobile-file-manager__breadcrumbs {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-file-manager__breadcrumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-file-manager__breadcrumb-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: none;
+  border: none;
   color: var(--gui-text-secondary, #8E8E93);
-}
-
-.mobile-file-manager__path-icon {
-  display: flex;
-  align-items: center;
-  color: var(--gui-accent, #007AFF);
-}
-
-.mobile-file-manager__path-text {
-  font-family: 'SF Mono', 'JetBrains Mono', monospace;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.mobile-file-manager__breadcrumb-btn:last-child {
+  color: var(--gui-text-primary, #FFFFFF);
+  font-weight: 600;
+}
+
+.mobile-file-manager__breadcrumb-btn:active {
+  background: var(--gui-bg-surface-hover, #3A3A3C);
+}
+
+.mobile-file-manager__breadcrumb-btn svg {
+  opacity: 0.4;
 }
 
 .mobile-file-manager__actions {
