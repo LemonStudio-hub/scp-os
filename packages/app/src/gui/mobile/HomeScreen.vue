@@ -225,23 +225,27 @@ onMounted(() => {
   opacity: 0.5;
 }
 
-/* App Grid */
+/* App Grid - 响应式网格布局 */
 .home-screen__grid {
   position: relative;
   z-index: 5;
   flex: 1;
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-content: flex-start;
   justify-content: center;
   padding: var(--gui-spacing-4xl, 60px) var(--gui-spacing-xl, 24px) 0;
-  gap: var(--gui-dim-home-screen-grid-gap, 32px);
+  gap: var(--gui-spacing-2xl, 28px) var(--gui-dim-home-screen-grid-gap, 32px);
+  overflow-y: auto;
 }
 
 .home-screen__app {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
+  width: 72px;
   background: none;
   border: none;
   cursor: pointer;
@@ -265,6 +269,12 @@ onMounted(() => {
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
+.home-screen__app-icon svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
 .home-screen__app-icon--terminal-text {
   font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", "SF Mono", Consolas, monospace);
   font-size: 28px;
@@ -280,11 +290,16 @@ onMounted(() => {
 }
 
 .home-screen__app-label {
+  width: 100%;
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
   color: var(--home-text, #FFFFFF);
+  text-align: center;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Home Indicator */
@@ -306,7 +321,11 @@ onMounted(() => {
 
   .home-screen__grid {
     padding: var(--gui-spacing-3xl, 48px) var(--gui-spacing-lg, 20px) 0;
-    gap: var(--gui-spacing-2xl, 32px);
+    gap: 24px 28px;
+  }
+
+  .home-screen__app {
+    width: 68px;
   }
 
   .home-screen__app-icon {
@@ -316,6 +335,15 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
+  .home-screen__grid {
+    padding: var(--gui-spacing-2xl, 40px) var(--gui-spacing-md, 16px) 0;
+    gap: 20px 24px;
+  }
+
+  .home-screen__app {
+    width: 64px;
+  }
+
   .home-screen__app-icon {
     width: 52px;
     height: 52px;
