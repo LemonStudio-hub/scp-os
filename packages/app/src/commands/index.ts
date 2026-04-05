@@ -5,6 +5,16 @@ import { scraper } from '../utils/scraper'
 import { filesystem } from '../utils/filesystem'
 import { useTabsStore } from '../stores/tabs'
 import { useSystemStore } from '../stores/system'
+import { createBorderLine, createBorderedTitle, isNarrowTerminal } from '../utils/terminalResponsive'
+
+// 响应式边框辅助函数
+function border(color: string = ANSICode.red, char: string = '═'): string {
+  return `${color}${createBorderLine(char)}${ANSICode.reset}`
+}
+
+function borderedTitle(text: string, color: string = ANSICode.green): string {
+  return `${color}${createBorderedTitle(` ${text} `, '═')}${ANSICode.reset}`
+}
 
 export const commandHandlers: CommandMap = {
   start: async (_args, _write, writeln) => {
@@ -80,25 +90,37 @@ export const commandHandlers: CommandMap = {
   },
 
   help: (_args, _write, writeln) => {
+    const b = border()
+    const t = borderedTitle('Available Commands')
+    const isNarrow = isNarrowTerminal()
+    
     const helpText = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                        Available Commands${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      b,
+      t,
+      b,
       '',
-      ...Object.entries(COMMAND_DESCRIPTIONS).map(([cmd, desc]) => 
-        `  ${COMMAND_USAGE[cmd as CommandType]} - ${desc}`
-      ),
+      ...Object.entries(COMMAND_DESCRIPTIONS).map(([cmd, desc]) => {
+        const usage = COMMAND_USAGE[cmd as CommandType]
+        if (isNarrow) {
+          // 移动端：简化格式
+          return `  ${usage}\n    ${desc}`
+        }
+        return `  ${usage} - ${desc}`
+      }),
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      b
     ]
     helpText.forEach(line => writeln(line))
   },
 
   status: (_args, _write, writeln) => {
+    const b = border()
+    const t = borderedTitle('System Status Report')
+    
     const statusInfo = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                      System Status Report${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      b,
+      t,
+      b,
       '',
       `  System Status:        ${ANSICode.green}⚡ Online${ANSICode.reset}`,
       '  Active Containment:   4,891 objects',
@@ -116,7 +138,7 @@ export const commandHandlers: CommandMap = {
       '  Database Status:      Synchronized',
       '  Last Update:          2026-03-31 14:32:15 UTC',
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      b
     ]
     statusInfo.forEach(line => writeln(line))
   },
@@ -130,10 +152,13 @@ export const commandHandlers: CommandMap = {
   },
 
   containment: (_args, _write, writeln) => {
+    const b = border()
+    const t = borderedTitle('Containment Protocols')
+    
     const containmentInfo = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                    Containment Protocols${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      b,
+      t,
+      b,
       '',
       '  Containment Classifications:',
       '',
@@ -158,16 +183,19 @@ export const commandHandlers: CommandMap = {
       '    - Foundation secret weapons',
       '    - Extremely high classification',
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      b
     ]
     containmentInfo.forEach(line => writeln(line))
   },
 
   'scp-list': (_args, _write, writeln) => {
+    const b = border()
+    const t = borderedTitle('Known SCP Objects')
+    
     const scpList = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                      Known SCP Objects${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      b,
+      t,
+      b,
       '',
       '  English Branch:',
       '',
@@ -189,7 +217,7 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.cyan}  Use "info CN-<number>" for Chinese branch${ANSICode.reset}`,
       `${ANSICode.cyan}  Use "search <keyword>" to search for specific objects${ANSICode.reset}`,
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      b
     ]
     scpList.forEach(line => writeln(line))
   },
@@ -302,9 +330,9 @@ export const commandHandlers: CommandMap = {
 
   protocol: (_args, _write, writeln) => {
     const protocols = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                    Security Protocols${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      border(),
+      borderedTitle("Security Protocols"),
+      border(),
       '',
       '  Major Security Protocols:',
       '',
@@ -328,16 +356,16 @@ export const commandHandlers: CommandMap = {
       '    - Explores anomalous spaces',
       '    - Equipped with specialized equipment',
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      border()
     ]
     protocols.forEach(line => writeln(line))
   },
 
   emergency: (_args, _write, writeln) => {
     const emergencyInfo = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                  Emergency Contact Information${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      border(),
+      borderedTitle("Emergency Contact"),
+      border(),
       '',
       `${ANSICode.red}  🚨 Containment Breach Hotline:${ANSICode.reset}`,
       '    - Internal: 911',
@@ -357,16 +385,16 @@ export const commandHandlers: CommandMap = {
       '',
       `${ANSICode.yellow}  ⚠ Note: All emergency contacts require authentication${ANSICode.reset}`,
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      border()
     ]
     emergencyInfo.forEach(line => writeln(line))
   },
 
   version: (_args, _write, writeln) => {
     const versionInfo = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                      System Version${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      border(),
+      borderedTitle("System Version"),
+      border(),
       '',
       '  SCP Foundation Terminal System',
       '  Version: 3.0.2',
@@ -376,16 +404,16 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.red}  Authorized Personnel Only${ANSICode.reset}`,
       `${ANSICode.red}  Unauthorized access will result in severe penalties${ANSICode.reset}`,
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      border()
     ]
     versionInfo.forEach(line => writeln(line))
   },
 
   about: (_args, _write, writeln) => {
     const aboutInfo = [
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
-      `${ANSICode.green}                          About System${ANSICode.reset}`,
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`,
+      border(),
+      borderedTitle("About SCP-OS"),
+      border(),
       '',
       '  SCP Foundation Terminal System',
       '  Security Level: 4',
@@ -409,7 +437,7 @@ export const commandHandlers: CommandMap = {
       '',
       `${ANSICode.green}  Secure. Contain. Protect.${ANSICode.reset}`,
       '',
-      `${ANSICode.red}═══════════════════════════════════════════════════════════════${ANSICode.reset}`
+      border()
     ]
     aboutInfo.forEach(line => writeln(line))
   },
