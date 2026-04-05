@@ -38,9 +38,12 @@ function onResize(): void {
 }
 
 export function useMobile() {
-  const isMobile = computed(() => screenWidth.value <= 768 || isMobileUA)
+  // Mobile: phone-sized screens OR mobile user agent on small screens
+  const isMobile = computed(() => (screenWidth.value <= 768 && isMobileUA))
+  // Tablet: medium screens (769-1024px)
   const isTablet = computed(() => screenWidth.value > 768 && screenWidth.value <= 1024)
-  const isDesktop = computed(() => screenWidth.value > 1024 && !isMobileUA)
+  // Desktop: large screens OR non-mobile devices on medium+ screens
+  const isDesktop = computed(() => !isMobile.value)
   const isPortrait = computed(() => screenHeight.value > screenWidth.value)
   const isLandscape = computed(() => screenWidth.value > screenHeight.value)
 
