@@ -4,6 +4,7 @@ import SCPTerminal from './components/SCPTerminal.vue'
 import Sidebar from './components/Sidebar.vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import SCPToolbar, { type DockItemDef } from './gui/components/SCPToolbar.vue'
+import PCNotification from './gui/components/PCNotification.vue'
 import FileManagerWindow from './gui/tools/filemanager/FileManagerWindow.vue'
 import EditorWindow from './gui/tools/editor/EditorWindow.vue'
 import TerminalPanel from './gui/tools/terminal/TerminalPanel.vue'
@@ -14,10 +15,12 @@ import type { ToolType } from './gui/types'
 import { injectGUITokens } from './gui/design-tokens'
 import { registerAllTools, openTool } from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
+import { useNotification } from './gui/composables/useNotification'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
 const themeStore = useThemeStore()
+const { addNotification } = useNotification()
 
 // Performance Dashboard state
 const showPerformanceDashboard = ref(false)
@@ -136,6 +139,15 @@ onMounted(async () => {
   document.addEventListener('touchstart', handleTouchStart, { passive: true })
   document.addEventListener('touchmove', handleTouchMove, { passive: true })
   document.addEventListener('touchend', handleTouchEnd)
+
+  // Test notification
+  setTimeout(() => {
+    addNotification({
+      title: '系统通知',
+      message: '欢迎使用SCP-OS系统，这是一个测试通知。',
+      icon: 'info'
+    })
+  }, 1000)
 })
 
 onUnmounted(() => {
@@ -184,6 +196,9 @@ onUnmounted(() => {
         status-text="SCP-OS v0.1.0"
         @launch="onToolbarLaunch"
       />
+
+      <!-- System Notifications -->
+      <PCNotification />
     </div>
   </MobileApp>
 </template>

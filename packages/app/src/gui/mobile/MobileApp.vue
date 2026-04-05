@@ -17,17 +17,28 @@
     </template>
   </div>
 
-  <!-- Desktop Layout (unchanged) -->
-  <slot v-else />
+  <!-- Desktop Layout -->
+  <div v-else class="desktop-app">
+    <!-- Desktop Screen (default view) -->
+    <DesktopScreen
+      v-if="!hasOpenWindows"
+      @launch="onHomeLaunch"
+    />
+
+    <!-- Desktop Windows -->
+    <slot v-else />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import HomeScreen from './HomeScreen.vue'
+import DesktopScreen from '../desktop/DesktopScreen.vue'
 import { useMobile } from '../composables/useMobile'
 import { useWindowManagerStore } from '../stores/windowManager'
 import { ToolRegistry, openTool } from '../registry/ToolRegistry'
 import type { HomeApp } from './HomeScreen.vue'
+import type { DesktopApp } from '../desktop/DesktopScreen.vue'
 import type { ToolType } from '../types'
 
 const mobile = useMobile()
@@ -40,13 +51,18 @@ const activeTool = computed<ToolType | null>(() => {
   return topWindow?.config.tool ?? null
 })
 
+// Check if there are any open windows on desktop
+const hasOpenWindows = computed(() => {
+  return wmStore.openWindows.length > 0
+})
+
 const activeToolModule = computed(() => {
   if (!activeTool.value) return null
   return ToolRegistry.get(activeTool.value) || null
 })
 
-function onHomeLaunch(app: HomeApp): void {
-  if (activeTool.value === app.tool) {
+function onHomeLaunch(app: HomeApp | DesktopApp): void {
+  if (mobile.isMobile.value && activeTool.value === app.tool) {
     return
   }
 
@@ -72,6 +88,13 @@ function closeActiveTool(): void {
 
 <style scoped>
 .mobile-app {
+  position: relative;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.desktop-app {
   position: relative;
   width: 100%;
   height: 100dvh;
