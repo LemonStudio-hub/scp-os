@@ -7,27 +7,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- **Cloudflare Pages Deployment** (2026-04-04)
-  - Added missing `uuid@13.0.0` dependency (critical fix for build failures)
-  - Fixed Service Worker compilation: `sw.ts` now properly compiled to `sw.js` using esbuild
-  - Added memory limits: `NODE_OPTIONS='--max-old-space-size=4096'` to prevent OOM errors
-  - Added build output cleanup: `emptyOutDir: true` in vite config
-  - Deployment now successful and accessible at https://scpos.pages.dev
+### 🚀 New Features
 
-- **Terminal Scraper API** (2026-04-04)
-  - Fixed all hardcoded API URLs from `api.woodcat.online` (unreachable) to `api.scpos.site` (working)
-  - Updated `defaults.ts` worker-url default value
-  - Updated `scp-wiki-datasource.plugin.ts` constructor default parameter
-  - Updated `default-config.ts` Cloudflare Workers deployment URL
-  - All terminal commands (info, search, scp-list, network) now working properly
+#### Multi-Room Chat System
+- **Chat Rooms**: Multiple chat rooms with free switching
+  - 3 default rooms: General, Random, Tech
+  - Users can create custom rooms
+  - Room message count badges
+  - Unread message tracking with red badges
+  - Auto-mark-as-read when entering a room
 
-- **CORS Configuration** (2026-04-04) - **CRITICAL FIX**
-  - Fixed CORS blocking all frontend requests to API
-  - Added `https://scpos.site` to CORS allowedOrigins
-  - Added `https://scpos.pages.dev` and wildcard `https://*.scpos.pages.dev`
-  - Removed obsolete `https://yourdomain.com`
-  - Root cause: Production domain was missing from CORS whitelist
+#### User Identity
+- **User ID**: Auto-generated unique UUID on first visit
+  - Stored in IndexedDB for persistence
+  - Used for rate limiting and identity
+- **Nickname Support**: Users can set custom nicknames
+  - Nickname persisted in IndexedDB and server
+  - Default fallback: `User_{id.slice(0,8)}`
+
+#### Terminal Enhancements
+- **Responsive Output**: All terminal commands now adapt to terminal width
+  - Desktop (80+ cols): Full-width borders and formatting
+  - Tablet (60 cols): Adaptive borders
+  - Mobile (25-50 cols): Compact, no overflow
+  - New `terminalResponsive.ts` utility module
+- **ASCII Art Headers**: Boot/welcome messages now include SCP ASCII art
+- **Slower Log Scrolling**: Boot/shutdown logs scroll at readable speed
+  - Base delay: 15ms → 30ms (2x slower)
+  - Important info stays longer on screen
+
+#### GUI Chat Window
+- **iOS-Style Chat UI**: Fully themed chat window with:
+  - Room selector tabs (scrollable)
+  - Create room dialog
+  - Nickname settings dialog
+  - Bubble messages (self right-aligned, others left)
+  - Rate limit warning bar
+  - Empty state illustration
+  - Theme-reactive colors
+
+### 🔧 Fixes
+
+#### Cloudflare Pages Deployment
+- Added missing `uuid@13.0.0` dependency
+- Fixed Service Worker compilation (sw.ts → sw.js via esbuild)
+- Added memory limits: `NODE_OPTIONS='--max-old-space-size=4096'`
+- Added build output cleanup: `emptyOutDir: true`
+- Deployment accessible at https://scpos.pages.dev
+
+#### CORS Configuration
+- Added `https://scpos.site` to CORS allowedOrigins
+- Added `https://scpos.pages.dev` and wildcard domains
+- Fixed all frontend API requests being blocked
+
+#### Terminal Commands
+- Fixed start/restart/shutdown not working in mobile terminal
+  - MobileTerminal.vue now sets `window.__terminalController`
+  - Commands no longer case-sensitive
+- Fixed API URL mismatch: unified to `api.scpos.site`
+
+#### Chat Unread Badges
+- Fixed red badges not disappearing after reading
+- Implemented proper unread count tracking
+- Persisted to IndexedDB
+
+#### Service Worker Cache
+- Upgraded from `scp-os-v1` to `scp-os-v2`
+- Removed non-existent asset URLs from pre-cache
+- HTML now uses network-first strategy (always fresh)
+- JS/CSS uses cache-first (safe with hashed filenames)
+
+### ⚙️ Infrastructure
+
+#### Worker API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/chat/send` | POST | Send message (with rate limit) |
+| `/chat/messages` | GET | Get messages (room filter) |
+| `/chat/rooms` | GET/POST | List/create rooms |
+| `/chat/nickname` | POST | Set user nickname |
+| `/chat/broadcast` | CRON | Broadcast new messages (10min) |
+
+#### Rate Limiting
+- 10 messages per minute per user ID
+- Returns 429 with retry-after time
+- Frontend shows countdown warning
+
+### 📝 Documentation
+- Added `CLOUDFLARE_PAGES_FIX.md` with deployment guide
+- Updated all docs to match current project state
 
 ## [0.1.0] - 2026-04-03
 

@@ -11,19 +11,31 @@ A professional web-based terminal application themed around the SCP Foundation, 
 ## 🌐 Live Demo
 
 - **Production**: https://scpos.pages.dev (Cloudflare Pages)
-- **API**: https://api.woodcat.online (Cloudflare Worker)
+- **API**: https://api.scpos.site (Cloudflare Worker)
 
 ## 🌟 Features
 
 ### Core Functionality
 - **Professional Terminal Interface**: Built with xterm.js for authentic terminal experience
 - **Gesture Controls**: Multi-touch gestures for mobile and desktop (powered by Hammer.js)
-- **Command System**: 14 SCP-themed commands with intelligent autocomplete
+- **Command System**: 30+ SCP-themed commands with intelligent autocomplete
 - **Command History**: Navigate through previous commands (limited to 500 entries)
 - **Tab Autocomplete**: Intelligent command completion
-- **Boot Animation**: Simulated Linux boot log with SCP-themed content (supports fast mode)
+- **Boot Animation**: Simulated Linux boot log with SCP ASCII art and themed content (supports fast mode)
 - **Multi-Tab Support**: Open multiple terminal tabs with independent sessions
 - **Data Persistence**: IndexedDB storage for terminal state and tab management
+- **Responsive Output**: All terminal commands adapt to terminal width (mobile-optimized)
+
+### Chat System
+- **Multi-Room Chat**: Multiple chat rooms with free switching
+  - 3 default rooms: General, Random, Tech
+  - Create custom rooms
+  - Unread message badges (auto-clear on enter)
+- **User Identity**: Auto-generated UUID on first visit (persistent)
+- **Nicknames**: Set custom display names
+- **Rate Limiting**: 10 messages/minute per user to prevent spam
+- **iOS-Style UI**: Bubble messages, dialogs, smooth animations
+- **Theme Support**: All chat UI elements respond to theme changes
 
 ### Performance Optimizations
 - **Code Splitting**: Optimized bundle splitting for faster initial load
@@ -31,16 +43,19 @@ A professional web-based terminal application themed around the SCP Foundation, 
 - **Image Optimization**: Compressed assets for faster loading
 - **Efficient Caching**: 30-minute KV namespace caching for API responses
 - **Memory Management**: Command history limited to 500 entries
+- **Service Worker**: Network-first for HTML, cache-first for assets (v2)
 
 ### Mobile Support
 - **Responsive Design**: Automatically adapts to any screen size (4 breakpoints)
 - **Dynamic Font Scaling**: Optimized readability at all sizes
 - **Touch-Optimized**: Enhanced touch targets and gestures
 - **Virtual Keyboard Support**: Optimized for mobile keyboard interaction
+- **Smooth Scrolling**: Fixed terminal touch handling for fluid scroll
 - **PWA Ready**: Progressive Web App support with meta tags
 
 ### Theme & Design
 - **SCP Foundation Theme**: Authentic SCP color scheme (green/red/yellow)
+- **4 Themes**: Dark, Light, Retro, Modern with full terminal/chat support
 - **Full-Screen Mode**: Immersive terminal experience
 - **ANSI Color Support**: Rich colored output
 - **Custom Scrollbar**: Themed scrollbar for consistency
@@ -75,7 +90,7 @@ cp .env.example .env.development
 
 ```bash
 # API Configuration
-VITE_WORKER_API_URL=https://api.woodcat.online
+VITE_WORKER_API_URL=https://api.scpos.site
 VITE_API_TIMEOUT=15000
 
 # Cache Configuration
@@ -165,10 +180,11 @@ pnpm run lint
 The project includes a Cloudflare Worker that provides real-time SCP information scraping from the SCP Wiki.
 
 ### Deployment
-- **API Endpoint**: https://api.woodcat.online
+- **API Endpoint**: https://api.scpos.site
 - **Platform**: Cloudflare Workers
 - **Caching**: 30-minute KV namespace caching
 - **Retry Mechanism**: Automatic 3-retry logic for failed requests
+- **Database**: D1 database with 500+ SCP entries and full-text search
 
 ### API Endpoints
 
@@ -180,7 +196,7 @@ Retrieves detailed information about a specific SCP object.
 
 **Example**:
 ```bash
-curl "https://api.woodcat.online/scrape?number=682"
+curl "https://api.scpos.site/scrape?number=682"
 ```
 
 **Response**:
@@ -209,7 +225,7 @@ Searches for SCP objects matching the keyword.
 
 **Example**:
 ```bash
-curl "https://api.woodcat.online/search?keyword=173"
+curl "https://api.scpos.site/search?keyword=173"
 ```
 
 #### 3. List SCP Objects
@@ -220,7 +236,7 @@ Lists SCP objects with pagination.
 
 **Example**:
 ```bash
-curl "https://api.woodcat.online/list?limit=10&offset=0"
+curl "https://api.scpos.site/list?limit=10&offset=0"
 ```
 
 #### 4. Get Statistics
@@ -231,7 +247,7 @@ Returns API statistics.
 
 **Example**:
 ```bash
-curl "https://api.woodcat.online/stats"
+curl "https://api.scpos.site/stats"
 ```
 
 #### 5. Debug Mode
@@ -242,10 +258,31 @@ Returns raw HTML content for debugging purposes.
 
 **Example**:
 ```bash
-curl "https://api.woodcat.online/debug?number=173"
+curl "https://api.scpos.site/debug?number=173"
 ```
 
-#### 6. API Information
+#### 6. Chat API
+```
+POST /chat/send
+GET /chat/messages?room_id={id}
+GET /chat/rooms
+POST /chat/rooms
+POST /chat/nickname
+```
+Multi-room chat system with rate limiting.
+
+**Example**:
+```bash
+# Send message
+curl -X POST "https://api.scpos.site/chat/send" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":"my-id","content":"Hello!","room_id":1}'
+
+# Get messages from room 1
+curl "https://api.scpos.site/chat/messages?room_id=1"
+```
+
+#### 7. API Information
 ```
 GET /
 ```
@@ -253,7 +290,7 @@ Returns API information.
 
 **Example**:
 ```bash
-curl "https://api.woodcat.online/"
+curl "https://api.scpos.site/"
 ```
 
 ### Scraper Features
@@ -445,7 +482,7 @@ The EventBus provides:
 ### Infrastructure
 - **API**: Cloudflare Workers
 - **Cache**: KV Namespace (30-minute TTL)
-- **Domain**: api.woodcat.online
+- **Domain**: api.scpos.site
 
 ## 📦 Build Output
 
@@ -569,10 +606,11 @@ The project uses GitHub Actions for continuous integration and deployment.
   - Build command: `pnpm install --frozen-lockfile && pnpm run build:production`
   - Output directory: `dist`
   
-- **Cloudflare Worker**: Automatically deployed on push to master
-  - API URL: https://api.woodcat.online
+- **Cloudflare Worker**: Automatically deployed on push to `main`
+  - API URL: https://api.scpos.site
+  - Includes D1 database and KV cache
   
-- **GitHub Pages**: Automatically deployed on push to master
+- **GitHub Pages**: Also available on push to master
 
 ### Documentation
 

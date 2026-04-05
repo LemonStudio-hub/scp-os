@@ -5,7 +5,7 @@ Thank you for your interest in contributing to SCP-OS! This document provides gu
 ## 🌐 Project Links
 
 - **Production**: https://scpos.pages.dev
-- **API**: https://api.woodcat.online
+- **API**: https://api.scpos.site
 - **Repository**: https://github.com/LemonStudio-hub/scp-os
 
 ## Development Setup

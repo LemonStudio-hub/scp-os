@@ -57,7 +57,7 @@ wrangler deploy
 部署成功后，访问：
 
 ```
-https://api.woodcat.online/
+https://api.scpos.site/
 ```
 
 ## 环境变量

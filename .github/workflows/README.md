@@ -5,7 +5,7 @@ This repository uses GitHub Actions for continuous integration and deployment.
 ## 🌐 Production Deployments
 
 - **Web Application**: https://scpos.pages.dev (Cloudflare Pages)
-- **API**: https://api.woodcat.online (Cloudflare Worker)
+- **API**: https://api.scpos.site (Cloudflare Worker)
 
 ## Available Workflows
 
