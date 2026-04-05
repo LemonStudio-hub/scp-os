@@ -28,7 +28,6 @@
         class="desktop-screen__icon"
         :style="getAppStyle(app)"
         @mousedown="handleMouseDown($event, app)"
-        @touchstart="handleTouchStart($event, app)"
         @dblclick="onAppDoubleClick(app)"
         @contextmenu="handleAppContextMenu($event, app)"
       >
@@ -209,21 +208,6 @@ const handleMouseDown = (event: MouseEvent, app: DesktopApp) => {
   }
   
   draggable.handleMouseDown(event)
-}
-
-// Handle touch start on app
-const handleTouchStart = (event: TouchEvent, app: DesktopApp) => {
-  // Find the element for this app
-  const element = appIcons.value.find(el => el.dataset.appId === app.id)
-  if (!element) return
-  
-  // Get or initialize draggable
-  let draggable = dragStates.get(app.id)
-  if (!draggable) {
-    draggable = initDraggable(app, element)
-  }
-  
-  draggable.handleTouchStart(event)
 }
 
 // Handle app double click

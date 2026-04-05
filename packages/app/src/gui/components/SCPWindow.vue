@@ -14,7 +14,6 @@
       ref="titleBarRef"
       :class="['scp-window__header', { 'scp-window__header--dragging': dragState.isDragging }]"
       @mousedown="onTitleBarMouseDown"
-      @touchstart.passive="onTitleBarTouchStart"
     >
       <div class="scp-window__header-title">
         <span class="scp-window__title">{{ windowInstance.config.title }}</span>
@@ -98,7 +97,7 @@ const windowManager = useWindowManagerStore()
 const windowRef = ref<HTMLElement>()
 const titleBarRef = ref<HTMLElement>()
 
-const { dragState, handleMouseDown: onTitleBarMouseDown, handleTouchStart: onTitleBarTouchStart } = useDraggable(
+const { dragState, handleMouseDown: onTitleBarMouseDown } = useDraggable(
   windowRef,
   {
     boundary: { minX: 0, minY: 0 },

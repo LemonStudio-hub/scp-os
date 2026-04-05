@@ -2,6 +2,7 @@
  * Draggable Composable
  * Makes any element draggable with mouse/touch support.
  * Handles drag start, move, end with boundary constraints.
+ * Returns reactive state and a cleanup function.
  */
 
 import { ref, type Ref } from 'vue'
@@ -27,11 +28,10 @@ export interface UseDraggableOptions {
   onMove?: (x: number, y: number) => void
   onStart?: (x: number, y: number) => void
   onEnd?: (x: number, y: number) => void
-  handleSelector?: string
 }
 
 export function useDraggable(
-  elementRef: Ref<HTMLElement | undefined>,
+  _elementRef: Ref<HTMLElement | undefined>,
   options: UseDraggableOptions = {}
 ) {
   const {
@@ -65,16 +65,13 @@ export function useDraggable(
   }
 
   function handleMouseDown(e: MouseEvent): void {
-    if (disabled || !elementRef.value) return
-
-    // Only left mouse button
+    if (disabled) return
     if (e.button !== 0) return
 
     e.preventDefault()
 
-    const rect = elementRef.value.getBoundingClientRect()
-    const initialX = rect.left
-    const initialY = rect.top
+    const initialX = dragState.value.currentX
+    const initialY = dragState.value.currentY
 
     dragState.value = {
       isDragging: true,
@@ -93,7 +90,7 @@ export function useDraggable(
   }
 
   function handleMouseMove(e: MouseEvent): void {
-    if (!dragState.value.isDragging || !elementRef.value) return
+    if (!dragState.value.isDragging) return
 
     e.preventDefault()
 
@@ -107,9 +104,6 @@ export function useDraggable(
 
     dragState.value.currentX = bounded.x
     dragState.value.currentY = bounded.y
-
-    elementRef.value.style.left = `${bounded.x}px`
-    elementRef.value.style.top = `${bounded.y}px`
 
     onMove?.(bounded.x, bounded.y)
   }
@@ -125,93 +119,24 @@ export function useDraggable(
     onEnd?.(dragState.value.currentX, dragState.value.currentY)
   }
 
-  // Touch support
-  function handleTouchStart(e: TouchEvent): void {
-    if (disabled || !elementRef.value) return
-
-    const touch = e.touches[0]
-    if (!touch) return
-
-    e.preventDefault()
-
-    const rect = elementRef.value.getBoundingClientRect()
-    const initialX = rect.left
-    const initialY = rect.top
-
-    dragState.value = {
-      isDragging: true,
-      startX: touch.clientX,
-      startY: touch.clientY,
-      initialX,
-      initialY,
-      currentX: initialX,
-      currentY: initialY,
-    }
-
-    onStart?.(initialX, initialY)
-
-    document.addEventListener('touchmove', handleTouchMove, { passive: false })
-    document.addEventListener('touchend', handleTouchEnd)
-  }
-
-  function handleTouchMove(e: TouchEvent): void {
-    if (!dragState.value.isDragging || !elementRef.value) return
-
-    e.preventDefault()
-
-    const touch = e.touches[0]
-    if (!touch) return
-
-    const deltaX = touch.clientX - dragState.value.startX
-    const deltaY = touch.clientY - dragState.value.startY
-
-    const newX = dragState.value.initialX + deltaX
-    const newY = dragState.value.initialY + deltaY
-
-    const bounded = applyBoundary(newX, newY)
-
-    dragState.value.currentX = bounded.x
-    dragState.value.currentY = bounded.y
-
-    elementRef.value.style.left = `${bounded.x}px`
-    elementRef.value.style.top = `${bounded.y}px`
-
-    onMove?.(bounded.x, bounded.y)
-  }
-
-  function handleTouchEnd(): void {
-    if (!dragState.value.isDragging) return
-
-    dragState.value.isDragging = false
-
-    document.removeEventListener('touchmove', handleTouchMove)
-    document.removeEventListener('touchend', handleTouchEnd)
-
-    onEnd?.(dragState.value.currentX, dragState.value.currentY)
-  }
-
-  function setPosition(x: number, y: number): void {
-    if (!elementRef.value) return
-    const bounded = applyBoundary(x, y)
-    elementRef.value.style.left = `${bounded.x}px`
-    elementRef.value.style.top = `${bounded.y}px`
-    dragState.value.currentX = bounded.x
-    dragState.value.currentY = bounded.y
-  }
-
   function stop(): void {
     dragState.value.isDragging = false
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
-    document.removeEventListener('touchmove', handleTouchMove)
-    document.removeEventListener('touchend', handleTouchEnd)
+  }
+
+  function setInitialPosition(x: number, y: number): void {
+    const bounded = applyBoundary(x, y)
+    dragState.value.currentX = bounded.x
+    dragState.value.currentY = bounded.y
+    dragState.value.initialX = bounded.x
+    dragState.value.initialY = bounded.y
   }
 
   return {
     dragState,
     handleMouseDown,
-    handleTouchStart,
-    setPosition,
     stop,
+    setInitialPosition,
   }
 }

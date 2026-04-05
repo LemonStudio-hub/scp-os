@@ -1,7 +1,8 @@
 /**
  * Resizable Composable
  * Makes any element resizable from 8 directions (n, s, e, w, ne, nw, se, sw).
- * Handles resize start, move, end with minimum size constraints.
+ * Handles resize start, move, end with minimum/maximum size constraints.
+ * Does NOT directly manipulate DOM - instead calls callbacks for the parent to update state.
  */
 
 import { ref, type Ref } from 'vue'
@@ -34,7 +35,7 @@ export interface UseResizableOptions {
 }
 
 export function useResizable(
-  elementRef: Ref<HTMLElement | undefined>,
+  _elementRef: Ref<HTMLElement | undefined>,
   options: UseResizableOptions = {}
 ) {
   const {
@@ -64,26 +65,26 @@ export function useResizable(
   })
 
   function handleMouseDown(direction: ResizeDirection, e: MouseEvent): void {
-    if (disabled || !elementRef.value) return
+    if (disabled) return
 
     e.preventDefault()
     e.stopPropagation()
 
-    const rect = elementRef.value.getBoundingClientRect()
+    const { currentWidth, currentHeight, currentX, currentY } = resizeState.value
 
     resizeState.value = {
       isResizing: true,
       direction,
       startX: e.clientX,
       startY: e.clientY,
-      initialWidth: rect.width,
-      initialHeight: rect.height,
-      initialX: rect.left,
-      initialY: rect.top,
-      currentWidth: rect.width,
-      currentHeight: rect.height,
-      currentX: rect.left,
-      currentY: rect.top,
+      initialWidth: currentWidth || minWidth,
+      initialHeight: currentHeight || minHeight,
+      initialX: currentX || 0,
+      initialY: currentY || 0,
+      currentWidth: currentWidth || minWidth,
+      currentHeight: currentHeight || minHeight,
+      currentX: currentX || 0,
+      currentY: currentY || 0,
     }
 
     onStart?.()
@@ -93,7 +94,7 @@ export function useResizable(
   }
 
   function handleMouseMove(e: MouseEvent): void {
-    if (!resizeState.value.isResizing || !resizeState.value.direction || !elementRef.value) return
+    if (!resizeState.value.isResizing || !resizeState.value.direction) return
 
     e.preventDefault()
 
@@ -133,11 +134,6 @@ export function useResizable(
     resizeState.value.currentX = newX
     resizeState.value.currentY = newY
 
-    elementRef.value.style.width = `${newWidth}px`
-    elementRef.value.style.height = `${newHeight}px`
-    elementRef.value.style.left = `${newX}px`
-    elementRef.value.style.top = `${newY}px`
-
     onResize?.(newWidth, newHeight, newX, newY)
   }
 
@@ -154,19 +150,6 @@ export function useResizable(
     onEnd?.(currentWidth, currentHeight)
   }
 
-  function setSize(width: number, height: number): void {
-    if (!elementRef.value) return
-
-    const constrainedWidth = Math.max(minWidth, Math.min(maxWidth, width))
-    const constrainedHeight = Math.max(minHeight, Math.min(maxHeight, height))
-
-    elementRef.value.style.width = `${constrainedWidth}px`
-    elementRef.value.style.height = `${constrainedHeight}px`
-
-    resizeState.value.currentWidth = constrainedWidth
-    resizeState.value.currentHeight = constrainedHeight
-  }
-
   function stop(): void {
     resizeState.value.isResizing = false
     resizeState.value.direction = null
@@ -174,10 +157,17 @@ export function useResizable(
     document.removeEventListener('mouseup', handleMouseUp)
   }
 
+  function setInitialSize(width: number, height: number, x: number, y: number): void {
+    resizeState.value.currentWidth = width
+    resizeState.value.currentHeight = height
+    resizeState.value.currentX = x
+    resizeState.value.currentY = y
+  }
+
   return {
     resizeState,
     handleMouseDown,
-    setSize,
     stop,
+    setInitialSize,
   }
 }
