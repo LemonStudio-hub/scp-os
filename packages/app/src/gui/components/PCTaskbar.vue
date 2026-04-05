@@ -1,5 +1,5 @@
 <template>
-  <div class="pc-taskbar fixed bottom-0 left-0 right-0 z-[200] bg-[rgba(44,44,46,0.95)] backdrop-blur-[20px] border-t border-white/[0.08] shadow-[0_-2px_10px_rgba(0,0,0,0.3)]">
+  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-[200] bg-[rgba(44,44,46,0.95)] backdrop-blur-[20px] border-t border-white/[0.08] shadow-[0_-2px_10px_rgba(0,0,0,0.3)]">
     <div class="pc-taskbar__container flex items-center justify-between px-2 h-[48px]">
       <!-- Start Button -->
       <button 
@@ -50,6 +50,10 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import type { ToolType } from '../types'
 import type { IconName } from '../icons'
 import GUIIcon from './ui/GUIIcon.vue'
+
+const taskbarRef = ref<HTMLElement | null>(null)
+
+defineExpose({ taskbarRef })
 
 export interface PCTaskbarItem {
   id: string

@@ -46,7 +46,7 @@ const openWindows = computed(() => windowManager.openWindows)
 
 // Get window component based on tool type
 function getWindowComponent(toolType: ToolType) {
-  const toolModule = ToolRegistry.getTool(toolType)
+  const toolModule = ToolRegistry.get(toolType)
   return toolModule?.desktopComponent || toolModule?.mobileComponent
 }
 

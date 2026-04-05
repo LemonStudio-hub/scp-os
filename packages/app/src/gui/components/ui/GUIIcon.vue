@@ -9,10 +9,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { icon, type IconName } from '../../icons'
+import { icon } from '../../icons'
 
 interface Props {
-  name: IconName
+  name: string
   size?: number
 }
 
@@ -20,7 +20,7 @@ const props = withDefaults(defineProps<Props>(), {
   size: 20,
 })
 
-const svg = computed(() => icon(props.name, props.size))
+const svg = computed(() => icon(props.name as any, props.size))
 const className = computed(() => `gui-icon--${props.name}`)
 </script>
 

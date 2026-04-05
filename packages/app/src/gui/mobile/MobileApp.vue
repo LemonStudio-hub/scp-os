@@ -19,14 +19,13 @@
 
   <!-- Desktop Layout -->
   <div v-else class="desktop-app">
-    <!-- Desktop Screen (default view) -->
+    <!-- Desktop Screen (always rendered as background) -->
     <DesktopScreen
-      v-if="!hasOpenWindows"
       @launch="onHomeLaunch"
     />
 
-    <!-- Desktop Windows -->
-    <slot v-else />
+    <!-- Desktop Windows (rendered on top of DesktopScreen) -->
+    <slot />
   </div>
 </template>
 
@@ -49,11 +48,6 @@ const activeTool = computed<ToolType | null>(() => {
   if (!mobile.isMobile.value) return null
   const topWindow = wmStore.openWindows[wmStore.openWindows.length - 1]
   return topWindow?.config.tool ?? null
-})
-
-// Check if there are any open windows on desktop
-const hasOpenWindows = computed(() => {
-  return wmStore.openWindows.length > 0
 })
 
 const activeToolModule = computed(() => {

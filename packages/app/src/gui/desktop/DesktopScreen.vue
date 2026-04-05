@@ -77,22 +77,25 @@
 
     <!-- PC Taskbar -->
     <PCTaskbar 
-      :items="taskbarItems" 
-      :activeTools="activeTools" 
-      @launch="onTaskbarLaunch" 
+      ref="startButtonRef"
+      :items="taskbarItems"
+      :activeTools="activeTools"
+      @launch="onTaskbarLaunch"
       @start-click="onStartClick"
     />
 
     <!-- PC Start Menu -->
-    <PCStartMenu 
-      :isOpen="isStartMenuOpen" 
-      @launch="onStartMenuLaunch" 
-      @system-action="onSystemAction" 
+    <PCStartMenu
+      ref="startMenuRef"
+      :isOpen="isStartMenuOpen"
+      @launch="onStartMenuLaunch"
+      @system-action="onSystemAction"
       @power-action="onPowerAction"
     />
 
     <!-- Context Menu -->
     <PCCContextMenu
+      ref="contextMenuRef"
       v-model:visible="contextMenu.visible"
       :x="contextMenu.x"
       :y="contextMenu.y"
@@ -296,7 +299,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           // Implement new text file creation
         },
       },
-      { divider: true },
+      { id: 'divider-2', label: '', divider: true },
       {
         id: 'view',
         label: 'View',
@@ -351,7 +354,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           },
         ],
       },
-      { divider: true },
+      { id: 'divider-2', label: '', divider: true },
       {
         id: 'personalize',
         label: 'Personalize',
@@ -392,7 +395,7 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
           // Implement pin to taskbar
         },
       },
-      { divider: true },
+      { id: 'divider-3', label: '', divider: true },
       {
         id: 'properties',
         label: 'Properties',
@@ -414,17 +417,17 @@ const onContextMenuSelect = (item: ContextMenuItem) => {
 }
 
 // Close start menu when clicking outside
+const startMenuRef = ref<HTMLElement | null>(null)
+const startButtonRef = ref<HTMLElement | null>(null)
+const contextMenuRef = ref<HTMLElement | null>(null)
+
 function handleClickOutside(event: MouseEvent) {
-  const startMenu = document.querySelector('.pc-start-menu')
-  const startButton = document.querySelector('.pc-taskbar__start-btn')
-  const contextMenuElement = document.querySelector('.pcc-context-menu')
-  
-  if (startMenu && !startMenu.contains(event.target as Node) && 
-      startButton && !startButton.contains(event.target as Node)) {
+  if (startMenuRef.value && !startMenuRef.value.contains(event.target as Node) &&
+      startButtonRef.value && !startButtonRef.value.contains(event.target as Node)) {
     isStartMenuOpen.value = false
   }
-  
-  if (contextMenuElement && !contextMenuElement.contains(event.target as Node)) {
+
+  if (contextMenuRef.value && !contextMenuRef.value.contains(event.target as Node)) {
     contextMenu.value.visible = false
   }
 }
@@ -474,21 +477,13 @@ onMounted(async () => {
 
     // Add click outside listener
     document.addEventListener('click', handleClickOutside)
-    
-    // Update boundaries when window resizes
-    window.addEventListener('resize', () => {
-      dragStates.forEach(draggable => {
-        // Reinitialize with new boundaries
-        // This is a simplified approach - in a real app, you might want to update boundaries more efficiently
-      })
-    })
   }
 })
 
 onUnmounted(() => {
   // Remove click outside listener
   document.removeEventListener('click', handleClickOutside)
-  
+
   // Clean up drag states
   dragStates.forEach(draggable => {
     draggable.stop()

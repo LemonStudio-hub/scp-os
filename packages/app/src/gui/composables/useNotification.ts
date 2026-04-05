@@ -1,4 +1,4 @@
-import { ref, Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import type { IconName } from '../icons'
 
 interface Notification {
@@ -6,7 +6,7 @@ interface Notification {
   title: string
   message: string
   icon?: IconName
-  duration?: number
+  duration: number
   removing?: boolean
 }
 
@@ -19,7 +19,7 @@ export function useNotification() {
     const newNotification: Notification = {
       id,
       ...notification,
-      duration: notification.duration || 5000, // Default duration: 5 seconds
+      duration: notification.duration ?? 5000,
       removing: false
     }
 

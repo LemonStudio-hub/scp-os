@@ -4,7 +4,7 @@
       <!-- Search Bar -->
       <div class="pc-start-menu__search p-4 border-b border-white/[0.08]">
         <div class="relative">
-          <GUIIcon name="search" size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" />
+          <GUIIcon name="search" ::size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" />
           <input
             v-model="searchQuery"
             type="text"
@@ -23,7 +23,7 @@
             @click="onItemClick(item)"
           >
             <div class="w-8 h-8 flex items-center justify-center rounded">
-              <GUIIcon :name="item.iconName" size="16" />
+              <GUIIcon :name="item.iconName" :size="16" />
             </div>
             <span class="text-white">{{ item.label }}</span>
           </div>
@@ -43,7 +43,7 @@
               @click="onAppClick(app)"
             >
               <div class="w-12 h-12 flex items-center justify-center rounded-[12px] bg-gradient-to-br from-[#8B5CF6] to-[#6366F1]">
-                <GUIIcon :name="app.iconName" size="20" />
+                <GUIIcon :name="app.iconName" :size="20" />
               </div>
               <span class="text-sm text-white text-center">{{ app.label }}</span>
             </button>
@@ -57,7 +57,7 @@
               @click="onAppClick(app)"
             >
               <div class="w-12 h-12 flex items-center justify-center rounded-[12px] bg-gradient-to-br from-[#8B5CF6] to-[#6366F1]">
-                <GUIIcon :name="app.iconName" size="20" />
+                <GUIIcon :name="app.iconName" :size="20" />
               </div>
               <span class="text-sm text-white text-center">{{ app.label }}</span>
             </button>
@@ -75,7 +75,7 @@
               @click="onSystemOptionClick(option)"
             >
               <div class="w-10 h-10 flex items-center justify-center rounded-[8px] bg-white/[0.08]">
-                <GUIIcon :name="option.iconName" size="20" />
+                <GUIIcon :name="option.iconName" :size="20" />
               </div>
               <span class="text-white">{{ option.label }}</span>
             </button>
@@ -89,7 +89,7 @@
               @click="onPowerOptionClick(powerOption)"
             >
               <div class="w-12 h-12 flex items-center justify-center rounded-[12px] bg-white/[0.08]">
-                <GUIIcon :name="powerOption.iconName" size="20" />
+                <GUIIcon :name="powerOption.iconName" :size="20" />
               </div>
               <span class="text-sm text-white text-center">{{ powerOption.label }}</span>
             </button>
@@ -116,21 +116,21 @@ export interface SystemOption {
   id: string
   label: string
   action: string
-  iconName: IconName
+  iconName: string
 }
 
 export interface PowerOption {
   id: string
   label: string
   action: string
-  iconName: IconName
+  iconName: string
 }
 
 interface Props {
   isOpen: boolean
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   launch: [app: StartMenuApp]

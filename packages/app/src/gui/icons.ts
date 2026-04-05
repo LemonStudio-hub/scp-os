@@ -139,6 +139,75 @@ export function iconFeedback(p: IconProps = {}) {
   return `<svg ${attrSize(p)} ${attrBase()}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>`
 }
 
+// Additional PC GUI icons
+export function iconEye(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
+}
+
+export function iconSort(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M11 5h10M11 9h7M11 13h4M3 17l3 3 3-3M6 18V6"/></svg>`
+}
+
+export function iconPlay(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><polygon points="5 3 19 12 5 21 5 3"/></svg>`
+}
+
+export function iconPin(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M12 17v5M9 3h6l-1 7h3l-4 5-4-5h3z"/></svg>`
+}
+
+export function iconInfo(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+}
+
+export function iconBattery(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><rect x="2" y="7" width="16" height="10" rx="2"/><line x1="20" y1="10" x2="20" y2="12"/></svg>`
+}
+
+export function iconWifi(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M1 8.5a14 14 0 0122 0M5 12.5a9 9 0 0114 0M8.5 16a4 4 0 017 0"/></svg>`
+}
+
+export function iconMenu(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`
+}
+
+export function iconFileText(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`
+}
+
+export function iconMessageSquare(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`
+}
+
+export function iconBarChart2(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`
+}
+
+export function iconMessageCircle(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>`
+}
+
+export function iconImage(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`
+}
+
+export function iconPalette(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.5-.3-.5-.5-1-.5-1.5 0-1.1.9-2 2-2h2.5c2.49 0 4.5-2.01 4.5-4.5C22 6.49 17.51 2 12 2z"/></svg>`
+}
+
+export function iconMoon(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`
+}
+
+export function iconRefreshCw(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>`
+}
+
+export function iconPower(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M18.36 6.64A9 9 0 115.64 6.64M12 2v10"/></svg>`
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────
 
 function attrSize(p: IconProps): string {
@@ -177,6 +246,8 @@ export const iconNames = [
   'x', 'minus', 'maximize', 'minimize', 'folder-open', 'arrow-up',
   'arrow-down', 'arrow-left', 'arrow-right', 'home', 'settings',
   'empty-folder', 'empty-doc', 'chat', 'dash', 'feedback',
+  'eye', 'sort', 'play', 'pin', 'info', 'battery', 'wifi', 'menu', 'file-text',
+  'message-square', 'bar-chart-2', 'message-circle', 'image', 'palette', 'moon', 'refresh-cw', 'power',
 ] as const
 
 export type IconName = typeof iconNames[number]
@@ -191,6 +262,10 @@ const iconFnMap: Record<string, (p?: IconProps) => string> = {
   'arrow-left': iconArrowLeft, 'arrow-right': iconArrowRight,
   'home': iconHome, 'settings': iconSettings,
   'empty-folder': iconEmptyFolder, 'empty-doc': iconEmptyDoc, 'chat': iconChat, 'dash': iconDash, 'feedback': iconFeedback,
+  'eye': iconEye, 'sort': iconSort, 'play': iconPlay, 'pin': iconPin, 'info': iconInfo,
+  'battery': iconBattery, 'wifi': iconWifi, 'menu': iconMenu, 'file-text': iconFileText,
+  'message-square': iconMessageSquare, 'bar-chart-2': iconBarChart2, 'message-circle': iconMessageCircle,
+  'image': iconImage, 'palette': iconPalette, 'moon': iconMoon, 'refresh-cw': iconRefreshCw, 'power': iconPower,
 }
 
 export function icon(name: IconName, size: number = 20): string {

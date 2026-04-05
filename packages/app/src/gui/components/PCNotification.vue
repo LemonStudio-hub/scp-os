@@ -33,21 +33,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import type { IconName } from '../icons'
 import GUIIcon from './ui/GUIIcon.vue'
 import { useNotification } from '../composables/useNotification'
 
-interface Notification {
-  id: string
-  title: string
-  message: string
-  icon?: IconName
-  duration?: number
-  removing?: boolean
-}
-
-const { notifications, addNotification, removeNotification } = useNotification()
+const { notifications, removeNotification } = useNotification()
 </script>
 
 <style scoped>

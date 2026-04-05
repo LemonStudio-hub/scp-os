@@ -80,7 +80,7 @@ function onItemClick(item: ContextMenuItem) {
   submenuOpen.value = null
 }
 
-function openSubmenu(item: ContextMenuItem, event: MouseEvent) {
+function openSubmenu(item: ContextMenuItem, _event: MouseEvent) {
   // Clear any existing timer
   if (submenuTimer.value) {
     clearTimeout(submenuTimer.value)
