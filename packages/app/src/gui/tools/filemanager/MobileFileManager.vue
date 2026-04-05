@@ -107,6 +107,16 @@
                 <path d="M20 4v4h4"/>
                 <path d="M12 16l-3 3 3 3M20 16l3 3-3 3"/>
               </svg>
+              <!-- Audio Icon -->
+              <svg v-else-if="isAudioFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 2v12M6 5l20-3v16L6 21V5z"/>
+                <circle cx="9" cy="22" r="4"/>
+              </svg>
+              <!-- Video Icon -->
+              <svg v-else-if="isVideoFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="4" y="8" width="24" height="16" rx="2"/>
+                <path d="M14 13l6 3-6 3V13z"/>
+              </svg>
               <!-- Default File Icon -->
               <svg v-else width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/>
@@ -166,6 +176,18 @@
       @confirm="onDialogConfirm"
     />
 
+    <!-- Audio Player Modal -->
+    <AudioPlayerModal
+      v-model:visible="audioPlayerVisible"
+      :file="playingAudioFile"
+    />
+
+    <!-- Video Player Modal -->
+    <VideoPlayerModal
+      v-model:visible="videoPlayerVisible"
+      :file="playingVideoFile"
+    />
+
     <!-- Text Editor Modal -->
     <TextEditorModal
       v-model:visible="textEditorVisible"
@@ -187,6 +209,8 @@ import { useI18n } from '../../composables/useI18n'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
 import DialogModal from './DialogModal.vue'
+import AudioPlayerModal from './AudioPlayerModal.vue'
+import VideoPlayerModal from './VideoPlayerModal.vue'
 import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
 import { useFileManagerStore } from '../../stores/fileManager'
@@ -286,6 +310,14 @@ const editingFile = ref<any>(null)
 const imageViewerVisible = ref(false)
 const viewingImageFile = ref<any>(null)
 
+// Audio Player
+const audioPlayerVisible = ref(false)
+const playingAudioFile = ref<any>(null)
+
+// Video Player
+const videoPlayerVisible = ref(false)
+const playingVideoFile = ref<any>(null)
+
 // Context Menu State
 const contextSheetVisible = ref(false)
 const contextSheetTitle = ref('')
@@ -299,6 +331,8 @@ const isDragOver = ref(false)
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
 const TEXT_EXTS = ['txt', 'md', 'log']
 const CODE_EXTS = ['js', 'ts', 'css', 'html', 'json', 'xml', 'yml', 'yaml']
+const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
+const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
 
 function getFileExt(file: any): string {
   return file.name.split('.').pop()?.toLowerCase() || ''
@@ -316,10 +350,20 @@ function isCodeFile(file: any): boolean {
   return CODE_EXTS.includes(getFileExt(file))
 }
 
+function isAudioFile(file: any): boolean {
+  return AUDIO_EXTS.includes(getFileExt(file))
+}
+
+function isVideoFile(file: any): boolean {
+  return VIDEO_EXTS.includes(getFileExt(file))
+}
+
 function getIconClass(file: any): string {
   if (file.isDirectory) return 'mobile-file-manager__item-icon--folder'
   const ext = getFileExt(file)
   if (IMAGE_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--image'
+  if (AUDIO_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--audio'
+  if (VIDEO_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--video'
   if (CODE_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--code'
   return 'mobile-file-manager__item-icon--file'
 }
@@ -340,10 +384,18 @@ function onFileTap(file: any) {
     const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml']
     const codeExts = ['js', 'ts', 'css', 'html', 'vue']
     const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
-    
+    const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
+    const videoExts = ['mp4', 'webm', 'avi', 'mov', 'mkv']
+
     if (imageExts.includes(ext)) {
       viewingImageFile.value = file
       imageViewerVisible.value = true
+    } else if (audioExts.includes(ext)) {
+      playingAudioFile.value = file
+      audioPlayerVisible.value = true
+    } else if (videoExts.includes(ext)) {
+      playingVideoFile.value = file
+      videoPlayerVisible.value = true
     } else if (textExts.includes(ext) || codeExts.includes(ext)) {
       editingFile.value = file
       textEditorVisible.value = true
@@ -470,13 +522,15 @@ async function createNewFolder() {
 function onFileContextMenu(_event: MouseEvent, file: any) {
   contextTargetFile.value = file
   contextSheetTitle.value = file.name
-  
+
   const ext = file.name.split('.').pop()?.toLowerCase() || ''
   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext)
+  const isAudio = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].includes(ext)
+  const isVideo = ['mp4', 'webm', 'avi', 'mov', 'mkv'].includes(ext)
   const isText = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue'].includes(ext)
-  
+
   contextActions.value = []
-  
+
   if (isText) {
     contextActions.value.push({
       id: 'edit',
@@ -489,7 +543,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
       },
     })
   }
-  
+
   if (isImage) {
     contextActions.value.push({
       id: 'view',
@@ -498,6 +552,32 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
       fn: () => {
         viewingImageFile.value = file
         imageViewerVisible.value = true
+        contextSheetVisible.value = false
+      },
+    })
+  }
+
+  if (isAudio) {
+    contextActions.value.push({
+      id: 'play-audio',
+      label: 'Play Audio',
+
+      fn: () => {
+        playingAudioFile.value = file
+        audioPlayerVisible.value = true
+        contextSheetVisible.value = false
+      },
+    })
+  }
+
+  if (isVideo) {
+    contextActions.value.push({
+      id: 'play-video',
+      label: 'Play Video',
+
+      fn: () => {
+        playingVideoFile.value = file
+        videoPlayerVisible.value = true
         contextSheetVisible.value = false
       },
     })
@@ -856,6 +936,14 @@ onMounted(() => {
 
 .mobile-file-manager__item-icon--image {
   color: #FF3B30;
+}
+
+.mobile-file-manager__item-icon--audio {
+  color: #AF52DE;
+}
+
+.mobile-file-manager__item-icon--video {
+  color: #FF9500;
 }
 
 .mobile-file-manager__item-icon--code {
