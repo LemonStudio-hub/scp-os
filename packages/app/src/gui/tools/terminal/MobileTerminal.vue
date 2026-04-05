@@ -236,9 +236,16 @@ function initTerminal(): void {
   // Setup global terminal controller
   setupTerminalController()
 
-  // Always show startup prompt
-  term.writeln('')
-  displayStartupPrompt()
+  // Check if system is already running (from previous session)
+  if (systemStore.isRunning) {
+    // System was left running - skip startup prompt, show welcome directly
+    term.writeln('')
+    displayWelcomeMessage()
+  } else {
+    // First launch or system was shutdown - show startup prompt
+    term.writeln('')
+    displayStartupPrompt()
+  }
 
   term.onData(handleInput)
 }

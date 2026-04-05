@@ -689,7 +689,17 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     try {
       const [cmd, ...args] = command.toLowerCase().split(' ')
-      
+
+      // If system is not running, only allow 'start' command
+      if (!systemStore.isRunning && cmd !== 'start') {
+        terminal.writeln(`${ANSICode.yellow}⚠ System is offline. Please boot the system first.${ANSICode.reset}`)
+        terminal.writeln('')
+        terminal.writeln(`${ANSICode.gray}Usage: Type "start" to boot the system.${ANSICode.reset}`)
+        terminal.writeln(`${ANSICode.gray}       Type "help" after booting to see available commands.${ANSICode.reset}`)
+        terminal.writeln('')
+        return
+      }
+
       const handler = getCommandHandler(cmd as any)
 
       if (handler) {

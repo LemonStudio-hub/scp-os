@@ -176,10 +176,18 @@ onMounted(async () => {
     initTerminal()
     window.addEventListener('resize', handleResize)
 
-    // Always show startup prompt — user must type 'start' to boot
-    clear()
-    displayStartupPrompt()
-    setupCommandHandler()
+    // Check if system is already running (from previous session)
+    if (systemStore.isRunning) {
+      // System was left running - skip startup prompt, show welcome directly
+      clear()
+      displayWelcomeMessage()
+      setupCommandHandler()
+    } else {
+      // First launch or system was shutdown - show startup prompt
+      clear()
+      displayStartupPrompt()
+      setupCommandHandler()
+    }
 
     // Apply initial terminal theme
     applyTerminalTheme()
