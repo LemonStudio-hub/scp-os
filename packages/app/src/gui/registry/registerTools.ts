@@ -20,6 +20,9 @@ import MobileEditor from '../tools/editor/MobileEditor.vue'
 // Settings tools
 import MobileSettings from '../tools/settings/MobileSettings.vue'
 
+// Chat tools
+import ChatWindow from '../tools/chat/ChatWindow.vue'
+
 /**
  * Register all tools with the ToolRegistry.
  * Call this once during app initialization.
@@ -86,5 +89,20 @@ export function registerAllTools(): void {
       resizable: false,
     },
     mobileComponent: MobileSettings,
+  })
+
+  // Chat (mobile only)
+  ToolRegistry.register({
+    id: 'chat',
+    label: 'Chat',
+    icon: 'chat',
+    windowConfig: {
+      width: 400,
+      height: 600,
+      minWidth: 300,
+      minHeight: 400,
+      resizable: true,
+    },
+    mobileComponent: ChatWindow,
   })
 }

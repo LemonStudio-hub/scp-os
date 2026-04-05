@@ -4,7 +4,7 @@
  */
 
 import { getConfig } from './shared/config'
-import type { Env, ScraperResult, SCPWikiData, RequestContext } from './shared/types'
+import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse } from './shared/types'
 
 // 解析器
 import { HTMLParser } from './parsers/htmlParser'
@@ -573,6 +573,123 @@ class SCPScraper {
   }
 
   /**
+   * 发送聊天消息到 D1 数据库
+   */
+  async sendChatMessage(userId: string, username: string, content: string): Promise<ChatApiResponse> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      // 内容长度限制
+      if (content.length > 1000) {
+        return { success: false, error: 'Message too long (max 1000 characters)' }
+      }
+
+      // 插入消息到数据库
+      const result = await this.db.prepare(
+        'INSERT INTO chat_messages (user_id, username, content) VALUES (?, ?, ?)'
+      ).bind(userId, username, content).run()
+
+      if (result.success) {
+        // 获取刚插入的消息
+        const message = await this.db.prepare(
+          'SELECT * FROM chat_messages WHERE id = ?'
+        ).bind(result.meta?.last_row_id).first<ChatMessage>()
+
+        return {
+          success: true,
+          data: message,
+        }
+      } else {
+        return { success: false, error: 'Failed to send message' }
+      }
+    } catch (error) {
+      logger.error('Failed to send chat message', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 获取聊天消息
+   */
+  async getChatMessages(limit: number = 50, after?: string): Promise<ChatApiResponse> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      let query = 'SELECT * FROM chat_messages'
+      const params: any[] = []
+
+      if (after) {
+        query += ' WHERE created_at > ?'
+        params.push(after)
+      }
+
+      query += ' ORDER BY created_at DESC LIMIT ?'
+      params.push(limit)
+
+      const messages = await this.db.prepare(query)
+        .bind(...params)
+        .all<ChatMessage>()
+
+      return {
+        success: true,
+        data: (messages.results || []).reverse(), // 反转为用户时间顺序
+        count: messages.results?.length || 0,
+      }
+    } catch (error) {
+      logger.error('Failed to get chat messages', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
+   * 定时任务：广播新消息
+   * 每 10 分钟运行一次，查询未广播的消息并标记
+   */
+  async broadcastNewMessages(): Promise<{ success: boolean; count?: number; error?: string }> {
+    if (!this.db) {
+      return { success: false, error: 'Database not available' }
+    }
+
+    try {
+      // 查询未广播的消息
+      const messages = await this.db.prepare(
+        'SELECT * FROM chat_messages WHERE is_broadcast = 0 ORDER BY created_at ASC'
+      ).all<ChatMessage>()
+
+      if (!messages.results || messages.results.length === 0) {
+        return { success: true, count: 0 }
+      }
+
+      // 标记为已广播
+      await this.db.prepare(
+        'UPDATE chat_messages SET is_broadcast = 1, broadcast_count = broadcast_count + 1 WHERE is_broadcast = 0'
+      ).run()
+
+      logger.info(`Broadcasted ${messages.results.length} new chat messages`)
+      return {
+        success: true,
+        count: messages.results.length,
+      }
+    } catch (error) {
+      logger.error('Failed to broadcast chat messages', error as Error)
+      return {
+        success: false,
+        error: `Database error: ${(error as Error).message}`
+      }
+    }
+  }
+
+  /**
    * 获取数据库统计信息
    */
   async getStats(): Promise<{
@@ -708,6 +825,37 @@ export default {
         // 否则使用网页搜索
         const result = await scraper.searchSCP(keyword, branch)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/chat/send') {
+        // 发送聊天消息
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        try {
+          const body = await request.json() as any
+          const { user_id, username, content } = body
+
+          if (!user_id || !content) {
+            return corsManager.createErrorResponse('Missing user_id or content', 400, context)
+          }
+
+          const result = await scraper.sendChatMessage(user_id, username || 'Anonymous', content)
+          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+        } catch (error) {
+          logger.error('Failed to parse chat message', error as Error)
+          return corsManager.createErrorResponse('Invalid request body', 400, context)
+        }
+      } else if (path === '/chat/messages') {
+        // 获取聊天消息
+        const limit = parseInt(url.searchParams.get('limit') || '50')
+        const after = url.searchParams.get('after') || undefined
+
+        const result = await scraper.getChatMessages(limit, after)
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/chat/broadcast') {
+        // 定时任务：广播新消息
+        const result = await scraper.broadcastNewMessages()
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/debug') {
         const scpNumber = url.searchParams.get('number') || '173'
         logger.info('Debug mode', { scpNumber, ip })
@@ -794,6 +942,9 @@ export default {
               '/stats': '获取数据库统计信息',
               '/debug?number={number}': '调试：返回原始HTML',
               '/performance': '性能监控API (POST: 提交指标, GET: 获取指标)',
+              '/chat/send': '发送聊天消息 (POST)',
+              '/chat/messages': '获取聊天消息 (GET)',
+              '/chat/broadcast': '广播新消息 (定时任务)',
             },
             features: {
               modular: true,
@@ -814,5 +965,15 @@ export default {
       logger.error('Worker error', error as Error, { context })
       return corsManager.createErrorResponse('Internal server error', 500, context)
     }
+  },
+
+  /**
+   * 定时任务入口点
+   * 每 10 分钟运行一次，用于广播新消息
+   */
+  async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
+    const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
+    const result = await scraper.broadcastNewMessages()
+    console.log(`[Scheduled] Broadcast result:`, result)
   },
 }

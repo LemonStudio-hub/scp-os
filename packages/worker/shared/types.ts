@@ -122,3 +122,35 @@ export interface RequestContext {
   userAgent: string
   timestamp: number
 }
+
+/**
+ * 聊天消息
+ */
+export interface ChatMessage {
+  id: number
+  user_id: string
+  username: string
+  content: string
+  created_at: string
+  is_broadcast: number
+  broadcast_count: number
+}
+
+/**
+ * 聊天消息（发送时不需要 id 和时间戳）
+ */
+export interface ChatMessageInput {
+  user_id: string
+  username: string
+  content: string
+}
+
+/**
+ * 聊天 API 响应
+ */
+export interface ChatApiResponse {
+  success: boolean
+  data?: ChatMessage | ChatMessage[]
+  error?: string
+  count?: number
+}

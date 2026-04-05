@@ -24,9 +24,9 @@ id = "40f0d23a05e14f7484232bc1960e217f"
 pattern = "api.scpos.site/*"
 zone_name = "scpos.site"
 
-# 定时任务（可选，用于定时更新缓存）
-# [triggers]
-# crons = ["0 */6 * * *"]  # 每6小时运行一次
+# 定时任务：每 10 分钟广播聊天消息
+[triggers]
+crons = ["*/10 * * * *"]  # 每 10 分钟运行一次
 
 # 环境变量（开发环境）
 # [env.development]
