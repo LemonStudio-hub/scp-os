@@ -60,7 +60,7 @@ const props = defineProps<{
   name: string
   value: number | string
   unit?: string
-  type: 'memory' | 'time' | 'count' | 'custom'
+  type: 'memory' | 'time' | 'count' | 'custom' | 'fps'
   progress?: number
   metaLabel?: string
   metaValue?: string | number
@@ -70,7 +70,7 @@ const props = defineProps<{
 
 const displayValue = computed(() => {
   if (typeof props.value === 'string') return props.value
-  
+
   switch (props.type) {
     case 'memory':
       return formatBytes(props.value)
@@ -78,6 +78,8 @@ const displayValue = computed(() => {
       return formatTime(props.value)
     case 'count':
       return props.value.toLocaleString()
+    case 'fps':
+      return `${props.value} FPS`
     default:
       return props.value.toString()
   }
