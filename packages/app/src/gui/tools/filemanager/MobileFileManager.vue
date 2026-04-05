@@ -364,38 +364,67 @@ async function onFileUpload(event: Event) {
   const files = input.files
   if (!files || files.length === 0) return
 
+  let successCount = 0
+  let failCount = 0
+
   for (const file of files) {
     const buffer = await file.arrayBuffer()
     const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
     const ext = file.name.split('.').pop()?.toLowerCase() || ''
-    
-    // Check if it's a text-like file or binary file
-    const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue', 'csv', 'sh']
-    
+
     try {
-      if (textExts.includes(ext)) {
-        // Text file: decode as UTF-8
-        const content = new TextDecoder().decode(buffer)
-        filesystem.writeFile(path, content)
-      } else {
-        // Binary file (images, etc): convert to base64 data URL
-        const bytes = new Uint8Array(buffer)
-        let binary = ''
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i])
+      // Check if file already exists
+      const existingNode = filesystem.getNodeByPath(path)
+
+      if (existingNode && existingNode.type === 'file') {
+        // Overwrite existing file
+        if (TEXT_EXTS.includes(ext)) {
+          const content = new TextDecoder().decode(buffer)
+          filesystem.writeFile(path, content)
+        } else {
+          const bytes = new Uint8Array(buffer)
+          let binary = ''
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i])
+          }
+          const base64 = btoa(binary)
+          const mimeType = file.type || 'application/octet-stream'
+          const dataUrl = `data:${mimeType};base64,${base64}`
+          filesystem.writeFile(path, dataUrl)
         }
-        const base64 = btoa(binary)
-        const mimeType = file.type || 'application/octet-stream'
-        const dataUrl = `data:${mimeType};base64,${base64}`
-        filesystem.writeFile(path, dataUrl)
+      } else {
+        // Create new file
+        if (TEXT_EXTS.includes(ext)) {
+          const content = new TextDecoder().decode(buffer)
+          filesystem.createFile(path, content)
+        } else {
+          const bytes = new Uint8Array(buffer)
+          let binary = ''
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i])
+          }
+          const base64 = btoa(binary)
+          const mimeType = file.type || 'application/octet-stream'
+          const dataUrl = `data:${mimeType};base64,${base64}`
+          filesystem.createFile(path, dataUrl)
+        }
       }
+      successCount++
     } catch (error) {
       console.error('[FileManager] Failed to upload file:', error)
+      failCount++
     }
   }
 
   fmStore.loadDirectory(fmStore.currentPath)
   input.value = ''
+
+  // Show feedback
+  if (successCount > 0 && failCount === 0) {
+    // All files uploaded successfully - no need for alert
+  } else if (failCount > 0) {
+    alert(`Uploaded ${successCount} file(s), ${failCount} failed.`)
+  }
 }
 
 async function createNewFile() {
@@ -583,32 +612,60 @@ async function onDrop(event: DragEvent) {
 
   const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue', 'csv', 'sh']
 
+  let successCount = 0
+  let failCount = 0
+
   for (const file of files) {
     const buffer = await file.arrayBuffer()
     const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
     const ext = file.name.split('.').pop()?.toLowerCase() || ''
-    
+
     try {
-      if (textExts.includes(ext)) {
-        const content = new TextDecoder().decode(buffer)
-        filesystem.writeFile(path, content)
-      } else {
-        const bytes = new Uint8Array(buffer)
-        let binary = ''
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i])
+      const existingNode = filesystem.getNodeByPath(path)
+
+      if (existingNode && existingNode.type === 'file') {
+        if (textExts.includes(ext)) {
+          const content = new TextDecoder().decode(buffer)
+          filesystem.writeFile(path, content)
+        } else {
+          const bytes = new Uint8Array(buffer)
+          let binary = ''
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i])
+          }
+          const base64 = btoa(binary)
+          const mimeType = file.type || 'application/octet-stream'
+          const dataUrl = `data:${mimeType};base64,${base64}`
+          filesystem.writeFile(path, dataUrl)
         }
-        const base64 = btoa(binary)
-        const mimeType = file.type || 'application/octet-stream'
-        const dataUrl = `data:${mimeType};base64,${base64}`
-        filesystem.writeFile(path, dataUrl)
+      } else {
+        if (textExts.includes(ext)) {
+          const content = new TextDecoder().decode(buffer)
+          filesystem.createFile(path, content)
+        } else {
+          const bytes = new Uint8Array(buffer)
+          let binary = ''
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i])
+          }
+          const base64 = btoa(binary)
+          const mimeType = file.type || 'application/octet-stream'
+          const dataUrl = `data:${mimeType};base64,${base64}`
+          filesystem.createFile(path, dataUrl)
+        }
       }
+      successCount++
     } catch (error) {
       console.error('[FileManager] Failed to upload dropped file:', error)
+      failCount++
     }
   }
 
   fmStore.loadDirectory(fmStore.currentPath)
+
+  if (failCount > 0) {
+    alert(`Uploaded ${successCount} file(s), ${failCount} failed.`)
+  }
 }
 
 onMounted(() => {
