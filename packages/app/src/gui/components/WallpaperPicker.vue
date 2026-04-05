@@ -95,7 +95,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { wallpaperService } from '../../utils/wallpaperService'
 import type { WallpaperInfo } from '../../utils/wallpaperService'
 
@@ -108,7 +108,7 @@ interface Emits {
   (e: 'change', wallpaperId: string | null): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -118,21 +118,27 @@ const isUploading = ref(false)
 const showDeleteConfirm = ref(false)
 const deleteTarget = ref<WallpaperInfo | null>(null)
 
+// Refresh data whenever picker opens
+watch(() => props.visible, (val) => {
+  if (val) refreshData()
+})
+
 onMounted(async () => {
   try {
     await wallpaperService.init()
-    await loadWallpapers()
+    await refreshData()
   } catch {
     // Silently fail
   }
 })
 
-async function loadWallpapers() {
+async function refreshData() {
   try {
+    await wallpaperService.init()
     wallpapers.value = await wallpaperService.getAllWallpapers()
     currentWallpaperId.value = wallpaperService.getCurrentWallpaperId()
-  } catch (error) {
-    console.error('[WallpaperPicker] Failed to load wallpapers:', error)
+  } catch {
+    // Silently fail
   }
 }
 
@@ -162,7 +168,7 @@ async function onFileUpload(event: Event) {
     const wallpaper = await wallpaperService.saveWallpaper(file)
     currentWallpaperId.value = wallpaper.id
     wallpaperService.setCurrentWallpaperId(wallpaper.id)
-    await loadWallpapers()
+    await refreshData()
     emit('change', wallpaper.id)
   } catch (error) {
     console.error('[WallpaperPicker] Failed to save wallpaper:', error)
@@ -194,7 +200,7 @@ async function doDelete() {
       wallpaperService.setCurrentWallpaperId(null)
       emit('change', null)
     }
-    await loadWallpapers()
+    await refreshData()
   } catch (error) {
     console.error('[WallpaperPicker] Failed to delete wallpaper:', error)
   } finally {

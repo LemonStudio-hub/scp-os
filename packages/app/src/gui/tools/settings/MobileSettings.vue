@@ -92,7 +92,7 @@
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
                 <div class="k-ios-list__item-label">Wallpaper</div>
-                <div class="k-ios-list__item-description">Upload or change home screen wallpaper</div>
+                <div class="k-ios-list__item-description">{{ currentWallpaperName }}</div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
@@ -318,10 +318,33 @@ indexedDBService.getUserId().then(id => {
 
 // Wallpaper picker
 const wallpaperPickerVisible = ref(false)
+const currentWallpaperName = ref<string>('None')
+
+// Load current wallpaper name
+async function loadWallpaperName() {
+  try {
+    const { wallpaperService } = await import('../../../utils/wallpaperService')
+    await wallpaperService.init()
+    const id = wallpaperService.getCurrentWallpaperId()
+    if (id) {
+      const wp = await wallpaperService.getWallpaper(id)
+      currentWallpaperName.value = wp?.name || 'None'
+    } else {
+      currentWallpaperName.value = 'None'
+    }
+  } catch {
+    // Silently fail
+  }
+}
+
+// Load on mount
+loadWallpaperName()
 
 function onWallpaperChange(wallpaperId: string | null) {
   // Reload home screen wallpaper by dispatching event
   window.dispatchEvent(new CustomEvent('wallpaper-changed', { detail: { wallpaperId } }))
+  // Update the displayed name
+  loadWallpaperName()
 }
 
 function loadSettings(): AppSettings {
