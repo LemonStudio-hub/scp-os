@@ -44,13 +44,22 @@ export const SCRAPER_CONFIG = {
   htmlCleanup: {
     removeSelectors: [
       'script', 'style', 'noscript', 'iframe',
-      '.ad-banner', '.advertisement', '#nitro-ad',
+      // Ad containers
+      '.ad-banner', '.advertisement', '#nitro-ad', '#adsquare',
+      '.ad-container', '.adsense', '.side-box',
+      '[id*="nitro"]', '[class*="nitro"]', '[id*="adsense"]', '[class*="adsense"]',
+      // Page elements
       '.page-rate', '.rate-widget', '*[class*="page-rate"]',
       '.page-info', '.page-tags', '.page-options',
       '.page-footer', '.page-meta', '.page-versions',
       '.license-box', '.page-source', '.page-history',
       '.page-discuss', '.page-edited', '*[class*="wikiwalk-nav"]',
       '*[class*="footer-nav"]',
+      // Navigation and sidebar
+      '#side-bar', '#top-bar', '#header', '#footer',
+      '#navi-bar', '#login-status', '#account-topbar',
+      '#action-area-top', '#action-area-bottom', '.page-watch-options',
+      '#extra-div-1', '#extra-div-2', '#container-wrap',
     ],
     minContentLength: 100, // 最小内容长度
   },
@@ -73,10 +82,17 @@ export const SCRAPER_CONFIG = {
       /^锁定页面/,
       /^重新命名/,
       /^删除/,
+      // English page toolbar
+      /^Edit\s*Rate/,
+      /^Tags\s*Discussion/,
+      /^Page Tools/,
+      /^Edit Section/,
       // 版本信息
       /页面版本[:：]\s*\d+[^。]*。/,
       /页面版本[:：].*编辑于/,
       /最后编辑于[:：][^。]+。/,
+      /^Page version:\s*\d+/,
+      /^Last edited on/i,
       // 广告相关
       /Report Ad/,
       /refreshTime/,
@@ -100,6 +116,9 @@ export const SCRAPER_CONFIG = {
       /知识共享/,
       /CC BY-SA/,
       /Licensed under CC/,
+      /creativecommons/i,
+      /unless otherwise stated.*content.*licensed/i,
+      /community.*content.*licensed/i,
       // 作者和创作者信息
       /作者[:：].*所创作的艺术作品/,
       /艺术作品.*无题/,

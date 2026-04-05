@@ -22,6 +22,15 @@ export class HTMLCleaner {
     // 批量移除不需要的元素（单次操作）
     $(this.config.htmlCleanup.removeSelectors.join(', ')).remove()
 
+    // 额外移除 Wikidot 常见广告容器
+    $('#adsquare, #container-wrap .adsense, .ad-container, .side-box, #extra-div-1, #extra-div-2').remove()
+    $('[id*="nitro"], [class*="nitro"], [id*="adsense"], [class*="adsense"]').remove()
+    $('[style*="display:none"], [hidden]').remove()
+
+    // 移除侧边栏和导航区域
+    $('#side-bar, #top-bar, #header, #footer, #navi-bar, #login-status, #account-topbar').remove()
+    $('#action-area-top, #action-area-bottom, .page-watch-options').remove()
+
     // 移除导航链接段落
     $content.find('p').filter(function() {
       const text = $(this).text()

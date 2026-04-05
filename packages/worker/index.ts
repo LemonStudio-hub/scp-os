@@ -233,8 +233,9 @@ class SCPScraper {
       // 根据分支使用不同的解析策略
       let data: SCPWikiData
       if (branch === 'en') {
-        // 英文站点使用直接 HTML 解析（在清理之前）
-        data = await this.parseEnglishPage(sanitizedHTML, scpNumber, branch)
+        // 英文站点也需要清理广告和无关内容
+        const cleanedHTML = this.htmlCleaner.clean(sanitizedHTML)
+        data = await this.parseEnglishPage(cleanedHTML, scpNumber, branch)
       } else {
         // 中文站点使用清理后的文本
         const cleanedHTML = this.htmlCleaner.clean(sanitizedHTML)
@@ -275,7 +276,11 @@ class SCPScraper {
       if ($el.children('p, div, blockquote, h1, h2, h3, h4, h5, h6').length === 0) {
         const text = $el.text().trim()
         if (text) {
-          elements.push(text)
+          // 过滤广告和无关内容
+          const cleaned = this.cleanEnglishText(text)
+          if (cleaned) {
+            elements.push(cleaned)
+          }
         }
       }
     })
@@ -360,6 +365,61 @@ class SCPScraper {
       author: undefined, // 暂时不提取作者
       url: `${branchUrl}/scp-${scpNumber}`,
     }
+  }
+
+  /**
+   * 清理英文页面文本，过滤广告和无关内容
+   */
+  private cleanEnglishText(text: string): string | null {
+    // 移除 NitroAds 相关文本
+    if (/nitroAds|Report Ad|window\['nitroAds'\]/i.test(text)) {
+      return null
+    }
+
+    // 移除页面导航/工具栏文本
+    if (/^(Edit|Rate|Tags|History|Print|Page source|Lock|Rename|Delete)\b/i.test(text)) {
+      return null
+    }
+
+    // 移除版本信息
+    if (/^Page version:\s*\d+/i.test(text)) {
+      return null
+    }
+    if (/^Last edited on/i.test(text)) {
+      return null
+    }
+
+    // 移除导航符号
+    if (/^[«»|]+$/.test(text)) {
+      return null
+    }
+
+    // 移除 SCP 导航链接文本
+    if (/scp-\d+.*«/i.test(text)) {
+      return null
+    }
+
+    // 移除版权/许可信息
+    if (/CC BY-SA|knowledge.*commons|creativecommons/i.test(text)) {
+      return null
+    }
+
+    // 移除作者归属样板文字
+    if (/unless.*stated.*otherwise|community.*content.*licensed/i.test(text)) {
+      return null
+    }
+
+    // 移除纯符号行
+    if (/^[=*\-#_]{3,}$/.test(text)) {
+      return null
+    }
+
+    // 移除太短的文本（但保留可能的章节标题）
+    if (text.length < 15 && !/[.。:：]$/.test(text)) {
+      return null
+    }
+
+    return text
   }
 
   /**
