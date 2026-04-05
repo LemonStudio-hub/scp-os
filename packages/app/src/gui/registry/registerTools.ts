@@ -23,6 +23,9 @@ import MobileSettings from '../tools/settings/MobileSettings.vue'
 // Chat tools
 import ChatWindow from '../tools/chat/ChatWindow.vue'
 
+// Dash tools
+import MobileDash from '../tools/dash/MobileDash.vue'
+
 /**
  * Register all tools with the ToolRegistry.
  * Call this once during app initialization.
@@ -104,5 +107,20 @@ export function registerAllTools(): void {
       resizable: true,
     },
     mobileComponent: ChatWindow,
+  })
+
+  // Dash (mobile only - Performance Dashboard)
+  ToolRegistry.register({
+    id: 'dash',
+    label: 'Dash',
+    icon: 'dash',
+    windowConfig: {
+      width: 400,
+      height: 550,
+      minWidth: 300,
+      minHeight: 400,
+      resizable: true,
+    },
+    mobileComponent: MobileDash,
   })
 }
