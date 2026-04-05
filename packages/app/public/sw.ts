@@ -3,15 +3,13 @@
  * 实现完整的 PWA 功能：离线缓存、性能优化、后台同步
  */
 
-const CACHE_NAME = 'scp-os-v1'
-const CACHE_VERSION = 1
+const CACHE_NAME = 'scp-os-v2'
+const CACHE_VERSION = 2
 
-// 需要缓存的资源
+// 需要缓存的资源 (使用通配符，不缓存带 hash 的 JS/CSS 文件)
 const CACHE_URLS = [
   '/',
   '/index.html',
-  '/assets/index.js',
-  '/assets/index.css',
   '/favicon.ico',
   '/favicon.svg',
   '/icon-512x512.png',
@@ -184,36 +182,51 @@ async function handleAPIRequest(request: Request): Promise<Response> {
 
 /**
  * 处理静态资源请求
+ * HTML 使用 network-first，确保总是获取最新内容
+ * JS/CSS 使用 cache-first（带 hash 的文件天然可缓存）
  */
 async function handleStaticRequest(request: Request): Promise<Response> {
+  const url = new URL(request.url)
+  const isNavigation = request.mode === 'navigate' || url.pathname.endsWith('.html')
+
+  // HTML 文件：优先从网络获取，确保用户看到最新版本
+  if (isNavigation) {
+    try {
+      const response = await fetch(request)
+      if (response.ok) {
+        const cache = await caches.open(CACHE_NAME)
+        await cache.put(request, response.clone())
+        return response
+      }
+    } catch (error) {
+      console.warn('[SW] Network failed for HTML, trying cache:', error)
+    }
+    // 网络失败时，尝试缓存
+    const cached = await caches.match(request)
+    if (cached) return cached
+    return caches.match('/') || new Response('Offline', { status: 503 })
+  }
+
+  // JS/CSS/图片等静态资源：先尝试缓存，未命中再从网络获取
   try {
-    // 先尝试缓存
     const cachedResponse = await caches.match(request)
     if (cachedResponse) {
       return cachedResponse
     }
 
-    // 缓存未命中，从网络获取
     const response = await fetch(request)
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
     }
 
-    // 缓存响应
     const cache = await caches.open(CACHE_NAME)
     await cache.put(request, response.clone())
-    
+
     return response
   } catch (error) {
     console.error('[SW] Static fetch error:', error)
-    
-    // 返回离线页面
-    if (request.mode === 'navigate') {
-      return caches.match('/') || new Response('Offline', { status: 503 })
-    }
-    
-    throw error
+    return new Response('Offline', { status: 503 })
   }
 }
 
