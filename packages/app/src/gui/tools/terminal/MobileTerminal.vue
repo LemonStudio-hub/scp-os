@@ -41,6 +41,7 @@ import { useThemeStore } from '../../stores/themeStore'
 import { useSystemStore } from '../../../stores/system'
 import { getBootLogs, getShutdownLogs } from '../../../constants/bootLogs'
 import { config } from '../../../config'
+import { getResponsiveFontSize, isMobileDevice } from '../../../utils/terminal'
 
 const { t } = useI18n()
 
@@ -182,7 +183,9 @@ function displayStartupPrompt(): void {
 function displayWelcomeMessage(): void {
   const term = terminal.value
   if (!term) return
-  
+
+  const isMobile = isMobileDevice()
+
   term.writeln('')
   term.writeln('\x1b[32m   _____ __________ \x1b[0m')
   term.writeln('\x1b[32m  / ___// ____/ __ \\\x1b[0m')
@@ -192,10 +195,21 @@ function displayWelcomeMessage(): void {
   term.writeln('\x1b[32m                    \x1b[0m')
   term.writeln('\x1b[32m   Foundation Terminal System\x1b[0m')
   term.writeln('')
-  term.writeln('\x1b[32m╔══════════════════════════════════════════════════════════╗\x1b[0m')
-  term.writeln('\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Terminal System\x1b[0m            \x1b[32m║\x1b[0m')
-  term.writeln('\x1b[32m║\x1b[0m              \x1b[33mSecure. Contain. Protect.\x1b[0m              \x1b[32m║\x1b[0m')
-  term.writeln('\x1b[32m╚══════════════════════════════════════════════════════════╝\x1b[0m')
+
+  if (isMobile) {
+    // Mobile: shorter box to fit narrow terminals (~40 cols)
+    term.writeln('\x1b[32m╔══════════════════════════════════╗\x1b[0m')
+    term.writeln('\x1b[32m║\x1b[0m   \x1b[1;32mSCP Foundation Terminal\x1b[0m      \x1b[32m║\x1b[0m')
+    term.writeln('\x1b[32m║\x1b[0m     \x1b[33mSecure. Contain. Protect.\x1b[0m      \x1b[32m║\x1b[0m')
+    term.writeln('\x1b[32m╚══════════════════════════════════╝\x1b[0m')
+  } else {
+    // Desktop: full width box
+    term.writeln('\x1b[32m╔══════════════════════════════════════════════════════════╗\x1b[0m')
+    term.writeln('\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Terminal System\x1b[0m            \x1b[32m║\x1b[0m')
+    term.writeln('\x1b[32m║\x1b[0m              \x1b[33mSecure. Contain. Protect.\x1b[0m              \x1b[32m║\x1b[0m')
+    term.writeln('\x1b[32m╚══════════════════════════════════════════════════════════╝\x1b[0m')
+  }
+
   term.writeln('')
   term.writeln('Type \x1b[1;33m"help"\x1b[0m to see available commands.')
   writePrompt()
@@ -216,10 +230,15 @@ function setupTerminalController(): void {
 function initTerminal(): void {
   if (!terminalRef.value) return
 
+  // Use responsive font size for mobile
+  const fontSize = getResponsiveFontSize()
+
   const term = new Terminal({
     cursorBlink: true,
-    fontSize: 14,
+    fontSize,
     fontFamily: "'JetBrains Mono', 'Cascadia Code', Consolas, monospace",
+    lineHeight: 1.6,
+    allowProposedApi: true,
     theme: getMobileTerminalTheme(),
     scrollback: 1000,
   })
@@ -228,10 +247,8 @@ function initTerminal(): void {
   term.loadAddon(fit)
   term.open(terminalRef.value)
 
-  // Fit with safe area consideration
-  setTimeout(() => {
-    fit.fit()
-  }, 100)
+  // Fit SYNCHRONOUSLY to avoid race condition with content writing
+  fit.fit()
 
   terminal.value = term
   fitAddon.value = fit
@@ -301,7 +318,10 @@ onBeforeUnmount(() => {
 
 .mobile-terminal__container :deep(.xterm-viewport) {
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 
 /* ── Virtual Keyboard (iOS Style) ───────────────────────────────────── */

@@ -1,29 +1,46 @@
 import { ANSICode } from './theme'
 import { config } from '../config'
+import { isNarrowTerminal, createBorderLine } from '../utils/terminalResponsive'
 
 /**
  * 系统启动日志配置
  */
 export const BOOT_LOGS_CONFIG = {
   /**
-   * 快速模式 - 只显示关键信息
+   * 快速模式 - 显示响应式信息
    */
-  fastMode: [
-    `${ANSICode.green}[    0.000000] SCP Foundation System v${config.app.version} Initializing...${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000100] Security Protocols: ACTIVE${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000200] Network Connection: ESTABLISHED${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000300] Terminal Interface: READY${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000400] System Boot: COMPLETE${ANSICode.reset}`,
-    '',
-    `${ANSICode.green}[    0.000500] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000600] █     SCP Foundation - Site-19 Terminal System v${config.app.version}     █${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000700] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000800] █  System Status: ONLINE                                    █${ANSICode.reset}`,
-    `${ANSICode.green}[    0.000900] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-    '',
-    `${ANSICode.green}[    0.001000] All systems operational. Ready for commands.${ANSICode.reset}`,
-    '',
-  ],
+  get fastMode(): string[] {
+    const isNarrow = isNarrowTerminal()
+    const borderChar = '█'
+    const border = createBorderLine(borderChar)
+    const title = `SCP Foundation - Site-19 Terminal System v${config.app.version}`
+    const status = 'System Status: ONLINE'
+
+    const titleLine = isNarrow
+      ? `${ANSICode.green}[    0.000600] ${borderChar} ${title} ${borderChar}${ANSICode.reset}`
+      : `${ANSICode.green}[    0.000600] ${borderChar}     ${title}     ${borderChar}${ANSICode.reset}`
+
+    const statusLine = isNarrow
+      ? `${ANSICode.green}[    0.000800] ${borderChar} ${status} ${borderChar}${ANSICode.reset}`
+      : `${ANSICode.green}[    0.000800] ${borderChar}  ${status}                                    ${borderChar}${ANSICode.reset}`
+
+    return [
+      `${ANSICode.green}[    0.000000] SCP Foundation System v${config.app.version} Initializing...${ANSICode.reset}`,
+      `${ANSICode.green}[    0.000100] Security Protocols: ACTIVE${ANSICode.reset}`,
+      `${ANSICode.green}[    0.000200] Network Connection: ESTABLISHED${ANSICode.reset}`,
+      `${ANSICode.green}[    0.000300] Terminal Interface: READY${ANSICode.reset}`,
+      `${ANSICode.green}[    0.000400] System Boot: COMPLETE${ANSICode.reset}`,
+      '',
+      `${ANSICode.green}[    0.000500] ${border}${ANSICode.reset}`,
+      titleLine,
+      `${ANSICode.green}[    0.000700] ${border}${ANSICode.reset}`,
+      statusLine,
+      `${ANSICode.green}[    0.000900] ${border}${ANSICode.reset}`,
+      '',
+      `${ANSICode.green}[    0.001000] All systems operational. Ready for commands.${ANSICode.reset}`,
+      '',
+    ]
+  },
 
   /**
    * 正常模式 - 完整的启动日志
