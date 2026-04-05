@@ -153,6 +153,19 @@
       </div>
     </MobileBottomSheet>
 
+    <!-- Dialog Modal -->
+    <DialogModal
+      v-model:visible="dialogVisible"
+      :type="dialogType"
+      :title="dialogTitle"
+      :message="dialogMessage"
+      :placeholder="dialogPlaceholder"
+      :default-value="dialogDefault"
+      :confirm-text="dialogConfirmText"
+      :danger="dialogDanger"
+      @confirm="onDialogConfirm"
+    />
+
     <!-- Text Editor Modal -->
     <TextEditorModal
       v-model:visible="textEditorVisible"
@@ -172,6 +185,7 @@
 import { ref, computed, onMounted } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
+import DialogModal from './DialogModal.vue'
 import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
 import { useFileManagerStore } from '../../stores/fileManager'
@@ -222,14 +236,45 @@ function onBreadcrumbClick(event: MouseEvent) {
   }
 }
 
-// State
-const contextSheetVisible = ref(false)
-const contextSheetTitle = ref('')
-const contextActions = ref<ContextAction[]>([])
-const contextTargetFile = ref<any>(null)
-const listRef = ref<HTMLElement | null>(null)
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const isDragOver = ref(false)
+// Dialog state
+const dialogVisible = ref(false)
+const dialogType = ref<'input' | 'confirm'>('input')
+const dialogTitle = ref('')
+const dialogMessage = ref('')
+const dialogPlaceholder = ref('')
+const dialogDefault = ref('')
+const dialogConfirmText = ref('Confirm')
+const dialogDanger = ref(false)
+let dialogCallback: ((value: string | true) => void) | null = null
+
+function showDialog(options: {
+  type?: 'input' | 'confirm'
+  title: string
+  message?: string
+  placeholder?: string
+  defaultValue?: string
+  confirmText?: string
+  danger?: boolean
+}): Promise<string | true> {
+  return new Promise((resolve) => {
+    dialogType.value = options.type || 'input'
+    dialogTitle.value = options.title
+    dialogMessage.value = options.message || ''
+    dialogPlaceholder.value = options.placeholder || ''
+    dialogDefault.value = options.defaultValue || ''
+    dialogConfirmText.value = options.confirmText || 'Confirm'
+    dialogDanger.value = options.danger || false
+    dialogCallback = resolve
+    dialogVisible.value = true
+  })
+}
+
+function onDialogConfirm(value: string | true) {
+  if (dialogCallback) {
+    dialogCallback(value)
+    dialogCallback = null
+  }
+}
 
 // Text Editor
 const textEditorVisible = ref(false)
@@ -238,6 +283,15 @@ const editingFile = ref<any>(null)
 // Image Viewer
 const imageViewerVisible = ref(false)
 const viewingImageFile = ref<any>(null)
+
+// Context Menu State
+const contextSheetVisible = ref(false)
+const contextSheetTitle = ref('')
+const contextActions = ref<ContextAction[]>([])
+const contextTargetFile = ref<any>(null)
+const listRef = ref<HTMLElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const isDragOver = ref(false)
 
 // File type detection helpers
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
@@ -323,9 +377,16 @@ async function onFileUpload(event: Event) {
   input.value = ''
 }
 
-function createNewFile() {
-  const name = prompt('Enter file name:', 'untitled.txt')
-  if (name) {
+async function createNewFile() {
+  const name = await showDialog({
+    type: 'input',
+    title: 'New File',
+    placeholder: 'Enter file name',
+    defaultValue: 'untitled.txt',
+    confirmText: 'Create',
+  })
+  
+  if (name && typeof name === 'string' && name.trim()) {
     const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
     try {
       filesystem.writeFile(path, '')
@@ -336,9 +397,16 @@ function createNewFile() {
   }
 }
 
-function createNewFolder() {
-  const name = prompt('Enter folder name:', 'New Folder')
-  if (name) {
+async function createNewFolder() {
+  const name = await showDialog({
+    type: 'input',
+    title: 'New Folder',
+    placeholder: 'Enter folder name',
+    defaultValue: 'New Folder',
+    confirmText: 'Create',
+  })
+  
+  if (name && typeof name === 'string' && name.trim()) {
     const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
     try {
       filesystem.createDirectory(path)
@@ -390,9 +458,16 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
       id: 'rename',
       label: 'Rename',
 
-      fn: () => {
-        const newName = prompt('New name:', file.name)
-        if (newName && newName !== file.name) {
+      fn: async () => {
+        const newName = await showDialog({
+          type: 'input',
+          title: 'Rename',
+          placeholder: 'Enter new name',
+          defaultValue: file.name,
+          confirmText: 'Rename',
+        })
+        
+        if (newName && typeof newName === 'string' && newName !== file.name) {
           const oldPath = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
           const newPath = fmStore.currentPath === '/' ? '/' + newName : fmStore.currentPath + '/' + newName
           try {
@@ -410,8 +485,16 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
       label: 'Delete',
 
       danger: true,
-      fn: () => {
-        if (confirm(`Delete "${file.name}"?`)) {
+      fn: async () => {
+        const confirmed = await showDialog({
+          type: 'confirm',
+          title: 'Delete',
+          message: `Are you sure you want to delete "${file.name}"?`,
+          confirmText: 'Delete',
+          danger: true,
+        })
+        
+        if (confirmed) {
           const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
           try {
             filesystem.deleteNode(path)
