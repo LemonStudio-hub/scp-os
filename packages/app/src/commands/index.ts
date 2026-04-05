@@ -573,27 +573,38 @@ export const commandHandlers: CommandMap = {
     writeln('')
   },
 
-  performance: (_args, _write, writeln) => {
+  performance: async (_args, _write, writeln) => {
     writeln(`${ANSICode.cyan}Opening Performance Monitor Dashboard...${ANSICode.reset}`)
     writeln('')
-    
-    console.log('[Performance Command] Executing performance command')
-    console.log('[Performance Command] window.openPerformanceDashboard exists:', typeof window.openPerformanceDashboard)
-    
+
     if (window.openPerformanceDashboard) {
-      console.log('[Performance Command] Calling openPerformanceDashboard function')
       window.openPerformanceDashboard()
       writeln(`${ANSICode.green}✓ Performance Dashboard opened${ANSICode.reset}`)
       writeln('')
       writeln(`${ANSICode.gray}Monitor real-time metrics, view performance issues,${ANSICode.reset}`)
       writeln(`${ANSICode.gray}and receive optimization recommendations.${ANSICode.reset}`)
     } else {
-      console.error('[Performance Command] openPerformanceDashboard function not found')
-      writeln(`${ANSICode.red}✗ Failed to open Performance Dashboard${ANSICode.reset}`)
+      // Fallback: show text-based performance info
+      writeln(`${ANSICode.yellow}⚠ GUI Dashboard not available, showing text summary...${ANSICode.reset}`)
       writeln('')
-      writeln(`${ANSICode.yellow}Debug info:${ANSICode.reset}`)
-      writeln(`  - Function exists: ${typeof window.openPerformanceDashboard !== 'undefined'}`)
-      writeln(`  - Window object: ${typeof window !== 'undefined'}`)
+
+      const mem = window.performance?.memory
+      if (mem) {
+        writeln(`${ANSICode.green}Memory Usage:${ANSICode.reset}`)
+        writeln(`  Used: ${(mem.usedJSHeapSize / 1024 / 1024).toFixed(1)} MB`)
+        writeln(`  Total: ${(mem.totalJSHeapSize / 1024 / 1024).toFixed(1)} MB`)
+        writeln(`  Limit: ${(mem.jsHeapSizeLimit / 1024 / 1024).toFixed(0)} MB`)
+      } else {
+        writeln(`${ANSICode.gray}Memory info not available in this browser${ANSICode.reset}`)
+      }
+
+      writeln('')
+      writeln(`${ANSICode.green}Performance Tips:${ANSICode.reset}`)
+      writeln('  - Use "clear" to clear terminal screen')
+      writeln('  - Close unused tabs to free memory')
+      writeln('  - Reduce font size for better rendering')
+      writeln('')
+      writeln(`${ANSICode.yellow}Tip: Use the desktop version for full GUI dashboard${ANSICode.reset}`)
     }
   },
 
