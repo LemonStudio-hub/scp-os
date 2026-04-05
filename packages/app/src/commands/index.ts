@@ -6,6 +6,7 @@ import { filesystem } from '../utils/filesystem'
 import { useTabsStore } from '../stores/tabs'
 import { useSystemStore } from '../stores/system'
 import { createBorderLine, createBorderedTitle, isNarrowTerminal } from '../utils/terminalResponsive'
+import { generateInfoQueryLogs } from '../utils/infoQueryLogs'
 
 // 响应式边框辅助函数
 function border(color: string = ANSICode.red, char: string = '═'): string {
@@ -242,14 +243,25 @@ export const commandHandlers: CommandMap = {
       scpNumber = input.slice(3) // 移除 EN- 前缀
     }
 
-    writeln(`${ANSICode.cyan}Querying SCP-${scpNumber}...${ANSICode.reset}`)
-    writeln('')
-
     try {
       if (forcedBranch) {
         // 用户强制指定了分部，直接查询
         writeln(`${ANSICode.cyan}Connecting to ${forcedBranch.toUpperCase()} Branch Wiki...${ANSICode.reset}`)
         writeln('')
+
+        // 显示查询日志（带动画效果）
+        const queryLogs = generateInfoQueryLogs(scpNumber, forcedBranch)
+        for (const line of queryLogs) {
+          writeln(line)
+          // 动态延迟，模拟真实查询过程
+          let delay = 20
+          if (line.includes('[NET]') || line.includes('[AUTH]')) delay = 40
+          if (line.includes('[FETCH]') || line.includes('[HTTP]')) delay = 60
+          if (line.includes('[PARSE]') || line.includes('[CLEAN]')) delay = 30
+          if (line.includes('[DONE]')) delay = 100
+          if (line.trim() === '') delay = 10
+          await new Promise(r => setTimeout(r, delay + Math.random() * 20))
+        }
 
         const result = await scraper.scrapeSCP(scpNumber, forcedBranch)
 
@@ -278,6 +290,19 @@ export const commandHandlers: CommandMap = {
         writeln(`${ANSICode.cyan}Connecting to Chinese Branch Wiki...${ANSICode.reset}`)
         writeln('')
 
+        // 显示查询日志（带动画效果）
+        const queryLogs = generateInfoQueryLogs(scpNumber, 'cn')
+        for (const line of queryLogs) {
+          writeln(line)
+          let delay = 20
+          if (line.includes('[NET]') || line.includes('[AUTH]')) delay = 40
+          if (line.includes('[FETCH]') || line.includes('[HTTP]')) delay = 60
+          if (line.includes('[PARSE]') || line.includes('[CLEAN]')) delay = 30
+          if (line.includes('[DONE]')) delay = 100
+          if (line.trim() === '') delay = 10
+          await new Promise(r => setTimeout(r, delay + Math.random() * 20))
+        }
+
         const cnResult = await scraper.scrapeSCP(scpNumber, 'cn')
 
         if (cnResult.success && cnResult.data) {
@@ -295,6 +320,19 @@ export const commandHandlers: CommandMap = {
           // 中文分部找不到，尝试英文主站点
           writeln(`${ANSICode.yellow}Not found on Chinese Branch, trying English Main Site...${ANSICode.reset}`)
           writeln('')
+
+          // 显示查询日志（带动画效果）
+          const enQueryLogs = generateInfoQueryLogs(scpNumber, 'en')
+          for (const line of enQueryLogs) {
+            writeln(line)
+            let delay = 20
+            if (line.includes('[NET]') || line.includes('[AUTH]')) delay = 40
+            if (line.includes('[FETCH]') || line.includes('[HTTP]')) delay = 60
+            if (line.includes('[PARSE]') || line.includes('[CLEAN]')) delay = 30
+            if (line.includes('[DONE]')) delay = 100
+            if (line.trim() === '') delay = 10
+            await new Promise(r => setTimeout(r, delay + Math.random() * 20))
+          }
 
           const enResult = await scraper.scrapeSCP(scpNumber, 'en')
 
