@@ -26,6 +26,9 @@ import ChatWindow from '../tools/chat/ChatWindow.vue'
 // Dash tools
 import MobileDash from '../tools/dash/MobileDash.vue'
 
+// Feedback tools
+import MobileFeedback from '../tools/feedback/MobileFeedback.vue'
+
 /**
  * Register all tools with the ToolRegistry.
  * Call this once during app initialization.
@@ -122,5 +125,20 @@ export function registerAllTools(): void {
       resizable: true,
     },
     mobileComponent: MobileDash,
+  })
+
+  // Feedback (mobile only - Public Feedback Board)
+  ToolRegistry.register({
+    id: 'feedback',
+    label: 'Feedback',
+    icon: 'feedback',
+    windowConfig: {
+      width: 400,
+      height: 600,
+      minWidth: 300,
+      minHeight: 450,
+      resizable: true,
+    },
+    mobileComponent: MobileFeedback,
   })
 }

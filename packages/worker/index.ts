@@ -5,6 +5,7 @@
 
 import { getConfig } from './shared/config'
 import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput } from './shared/types'
+import * as feedbackAPI from './api/feedback'
 
 // 解析器
 import { HTMLParser } from './parsers/htmlParser'
@@ -1170,6 +1171,62 @@ export default {
           logger.error('Failed to parse nickname', error as Error)
           return corsManager.createErrorResponse('Invalid request body', 400, context)
         }
+      } else if (path === '/feedback/submit') {
+        // 提交反馈
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        try {
+          const body = await request.json() as any
+          const { user_id, nickname, title, content, category } = body
+
+          if (!user_id || !title || !content) {
+            return corsManager.createErrorResponse('Missing required fields', 400, context)
+          }
+
+          const result = await feedbackAPI.submitFeedback(scraper['db'] as D1Database, {
+            user_id, nickname, title, content, category
+          })
+          return corsManager.createResponse(result, result.success ? 201 : 500, context)
+        } catch (error) {
+          logger.error('Failed to submit feedback', error as Error)
+          return corsManager.createErrorResponse('Invalid request body', 400, context)
+        }
+      } else if (path === '/feedback/list') {
+        // 获取反馈列表
+        const limit = parseInt(url.searchParams.get('limit') || '50')
+        const offset = parseInt(url.searchParams.get('offset') || '0')
+        const category = url.searchParams.get('category') || undefined
+
+        const result = await feedbackAPI.getFeedbackList(
+          scraper['db'] as D1Database, limit, offset, category
+        )
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/feedback/like') {
+        // 点赞反馈
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        try {
+          const body = await request.json() as any
+          const { id } = body
+
+          if (!id) {
+            return corsManager.createErrorResponse('Missing feedback id', 400, context)
+          }
+
+          const result = await feedbackAPI.likeFeedback(scraper['db'] as D1Database, id)
+          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+        } catch (error) {
+          logger.error('Failed to like feedback', error as Error)
+          return corsManager.createErrorResponse('Invalid request body', 400, context)
+        }
+      } else if (path === '/feedback/categories') {
+        // 获取反馈分类统计
+        const result = await feedbackAPI.getFeedbackCategories(scraper['db'] as D1Database)
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/chat/broadcast') {
         // 定时任务：广播新消息
         const result = await scraper.broadcastNewMessages()

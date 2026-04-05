@@ -77,6 +77,13 @@
               <rect x="3" y="16" width="7" height="5" rx="1"/>
             </svg>
           </template>
+          <template v-else-if="app.id === 'feedback'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              <line x1="9" y1="9" x2="15" y2="9"/>
+              <line x1="9" y1="13" x2="13" y2="13"/>
+            </svg>
+          </template>
         </div>
         <span class="home-screen__app-label">{{ app.label }}</span>
       </button>
@@ -104,6 +111,7 @@ const apps: HomeApp[] = [
   { id: 'files', label: 'Files', tool: 'filemanager', color: 'var(--gui-accent)' },
   { id: 'chat', label: 'Chat', tool: 'chat', color: 'var(--gui-accent)' },
   { id: 'dash', label: 'Dash', tool: 'dash', color: 'var(--gui-accent)' },
+  { id: 'feedback', label: 'Feedback', tool: 'feedback', color: 'var(--gui-accent)' },
   { id: 'settings', label: 'Settings', tool: 'settings', color: 'var(--gui-accent)' },
 ]
 

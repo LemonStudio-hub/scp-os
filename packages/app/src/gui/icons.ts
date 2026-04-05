@@ -135,6 +135,10 @@ export function iconDash(p: IconProps = {}) {
   return `<svg ${attrSize(p)} ${attrBase()}><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>`
 }
 
+export function iconFeedback(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="13" y2="13"/></svg>`
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────
 
 function attrSize(p: IconProps): string {
@@ -172,7 +176,7 @@ export const iconNames = [
   'grid', 'list', 'search', 'save', 'chevron-right', 'chevron-left',
   'x', 'minus', 'maximize', 'minimize', 'folder-open', 'arrow-up',
   'arrow-down', 'arrow-left', 'arrow-right', 'home', 'settings',
-  'empty-folder', 'empty-doc', 'chat', 'dash',
+  'empty-folder', 'empty-doc', 'chat', 'dash', 'feedback',
 ] as const
 
 export type IconName = typeof iconNames[number]
@@ -186,7 +190,7 @@ const iconFnMap: Record<string, (p?: IconProps) => string> = {
   'folder-open': iconFolderOpen, 'arrow-up': iconArrowUp, 'arrow-down': iconArrowDown,
   'arrow-left': iconArrowLeft, 'arrow-right': iconArrowRight,
   'home': iconHome, 'settings': iconSettings,
-  'empty-folder': iconEmptyFolder, 'empty-doc': iconEmptyDoc, 'chat': iconChat, 'dash': iconDash,
+  'empty-folder': iconEmptyFolder, 'empty-doc': iconEmptyDoc, 'chat': iconChat, 'dash': iconDash, 'feedback': iconFeedback,
 }
 
 export function icon(name: IconName, size: number = 20): string {
