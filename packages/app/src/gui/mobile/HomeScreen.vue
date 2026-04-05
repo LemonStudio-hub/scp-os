@@ -29,7 +29,7 @@
     <!-- Wallpaper -->
     <div class="home-screen__wallpaper" :class="{ 'has-custom-wallpaper': !!customWallpaperUrl }">
       <!-- Custom wallpaper image -->
-      <img v-if="customWallpaperUrl" :src="customWallpaperUrl" class="home-screen__wallpaper-image" alt="Custom wallpaper" />
+      <img v-if="customWallpaperUrl" :src="customWallpaperUrl" class="home-screen__wallpaper-image" alt="Custom wallpaper" fetchpriority="high" />
       <!-- Default gradient overlay -->
       <div class="home-screen__wallpaper-gradient" />
       <!-- SVG pattern overlay -->
@@ -256,6 +256,8 @@ onMounted(async () => {
   object-fit: cover;
   object-position: center;
   opacity: 0.3;
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .home-screen__wallpaper-gradient {

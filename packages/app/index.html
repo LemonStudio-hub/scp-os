@@ -2,6 +2,8 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/main.ts" as="script" crossorigin>
     <!-- Favicon (new icons, Apr 2026) -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -47,156 +49,36 @@
     <link rel="dns-prefetch" href="https://api.scpos.site">
     <link rel="preconnect" href="https://api.scpos.site">
     <link rel="preconnect" href="https://scp-wiki-cn.wikidot.com">
-    <!-- Service Worker 注册 -->
+    <!-- Critical inline styles for above-the-fold content -->
+    <style>
+      /* Prevent pull-to-refresh on mobile */
+      body{overscroll-behavior-y:contain;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+      /* Initial app container - prevents layout shift */
+      #app{width:100%;height:100dvh;overflow:hidden;position:relative}
+      /* Minimal dark background to prevent flash */
+      html,body{margin:0;padding:0;background:#0A0A0A}
+    </style>
+    <!-- Theme Initialization (minimized) -->
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.ts')
-            .then(registration => {
-              console.log('SW registered: ', registration)
-            })
-            .catch(registrationError => {
-              console.log('SW registration failed: ', registrationError)
-            })
-        })
-      }
-    </script>
-    <!-- Theme Initialization (prevents flash of dark mode) -->
-    <script>
-      (function() {
-        var savedTheme = localStorage.getItem('scp-os-selected-theme') || 'dark';
-        var themes = {
-          dark: {
-            bgBase: '#0A0A0A', bgSurface: '#1C1C1E', bgSurfaceRaised: '#2C2C2E',
-            bgSurfaceOverlay: 'rgba(28,28,30,0.8)', bgSurfaceHover: '#3A3A3C',
-            bgSurfaceActive: '#48484A', textPrimary: '#FFFFFF', textSecondary: '#8E8E93',
-            textTertiary: '#636366', textDisabled: '#48484A', textInverse: '#000000',
-            accent: '#007AFF', accentHover: '#0056CC', accentMuted: 'rgba(0,122,255,0.5)',
-            accentGlow: 'rgba(0,122,255,0.3)', accentSoft: 'rgba(0,122,255,0.15)',
-            borderSubtle: 'rgba(255,255,255,0.06)', borderDefault: 'rgba(255,255,255,0.1)',
-            borderStrong: 'rgba(255,255,255,0.2)', separator: 'rgba(255,255,255,0.06)',
-            success: '#34C759', warning: '#FF9500', error: '#FF3B30', info: '#5AC8FA',
-            glassBg: 'rgba(28,28,30,0.6)', glassBorder: 'rgba(255,255,255,0.1)',
-            dockBg: 'rgba(28,28,30,0.5)', dockBorder: 'rgba(255,255,255,0.1)',
-            dockItemBg: '#3A3A3C', dockItemHover: '#48484A', dockItemActive: '#5C5C5E',
-            windowHeaderBg: 'rgba(28,28,30,0.9)', windowBorder: 'rgba(255,255,255,0.1)',
-            windowBorderActive: 'rgba(0,122,255,0.5)', appIconFrom: '#4A4A4C',
-            appIconTo: '#636366', wallpaperGradient1: 'rgba(10,10,10,0.4)',
-            wallpaperGradient2: 'rgba(15,15,15,0.3)', wallpaperGradient3: 'rgba(20,20,20,0.2)',
-            statusBarText: '#FFFFFF', statusBarBattery: '#34C759', handleBar: '#FFFFFF',
-            homeIndicator: '#FFFFFF', backdropBg: 'rgba(0,0,0,0.5)', fileSelected: 'rgba(0,122,255,0.3)',
-            fileHover: 'rgba(255,255,255,0.05)', editorGutter: '#1E1E1E',
-            editorLineHighlight: 'rgba(255,255,255,0.04)', iosToggleOff: '#39393D',
-            iosToggleOn: '#34C759', iosToggleThumb: '#FFFFFF', iosSliderTrack: '#39393D',
-            iosSliderThumb: '#FFFFFF', iconFg: '#FFFFFF'
-          },
-          light: {
-            bgBase: '#F2F2F7', bgSurface: '#FFFFFF', bgSurfaceRaised: '#FFFFFF',
-            bgSurfaceOverlay: 'rgba(255,255,255,0.9)', bgSurfaceHover: '#F2F2F7',
-            bgSurfaceActive: '#E5E5EA', textPrimary: '#000000', textSecondary: '#8E8E93',
-            textTertiary: '#AEAEB2', textDisabled: '#C7C7CC', textInverse: '#FFFFFF',
-            accent: '#007AFF', accentHover: '#0056CC', accentMuted: 'rgba(0,122,255,0.5)',
-            accentGlow: 'rgba(0,122,255,0.3)', accentSoft: 'rgba(0,122,255,0.15)',
-            borderSubtle: 'rgba(0,0,0,0.06)', borderDefault: 'rgba(0,0,0,0.1)',
-            borderStrong: 'rgba(0,0,0,0.2)', separator: 'rgba(0,0,0,0.06)',
-            success: '#34C759', warning: '#FF9500', error: '#FF3B30', info: '#5AC8FA',
-            glassBg: 'rgba(255,255,255,0.6)', glassBorder: 'rgba(0,0,0,0.05)',
-            dockBg: 'rgba(242,242,247,0.5)', dockBorder: 'rgba(0,0,0,0.05)',
-            dockItemBg: '#FFFFFF', dockItemHover: '#F2F2F7', dockItemActive: '#E5E5EA',
-            windowHeaderBg: 'rgba(255,255,255,0.9)', windowBorder: 'rgba(0,0,0,0.1)',
-            windowBorderActive: 'rgba(0,122,255,0.5)', appIconFrom: '#E5E5EA',
-            appIconTo: '#F2F2F7', wallpaperGradient1: 'rgba(242,242,247,0.4)',
-            wallpaperGradient2: 'rgba(229,229,234,0.3)', wallpaperGradient3: 'rgba(200,200,210,0.2)',
-            statusBarText: '#000000', statusBarBattery: '#34C759', handleBar: '#000000',
-            homeIndicator: '#000000', backdropBg: 'rgba(255,255,255,0.5)', fileSelected: 'rgba(0,122,255,0.15)',
-            fileHover: 'rgba(0,0,0,0.02)', editorGutter: '#FFFFFF',
-            editorLineHighlight: 'rgba(0,0,0,0.04)', iosToggleOff: '#E5E5EA',
-            iosToggleOn: '#34C759', iosToggleThumb: '#FFFFFF', iosSliderTrack: '#E5E5EA',
-            iosSliderThumb: '#FFFFFF', iconFg: '#000000'
-          },
-          retro: {
-            bgBase: '#000000', bgSurface: '#0A0A0A', bgSurfaceRaised: '#141414',
-            bgSurfaceOverlay: 'rgba(0,0,0,0.8)', bgSurfaceHover: '#1E1E1E',
-            bgSurfaceActive: '#282828', textPrimary: '#00FF00', textSecondary: '#00CC00',
-            textTertiary: '#009900', textDisabled: '#006600', textInverse: '#000000',
-            accent: '#00FF00', accentHover: '#00CC00', accentMuted: 'rgba(0,255,0,0.5)',
-            accentGlow: 'rgba(0,255,0,0.3)', accentSoft: 'rgba(0,255,0,0.15)',
-            borderSubtle: 'rgba(0,255,0,0.1)', borderDefault: 'rgba(0,255,0,0.2)',
-            borderStrong: 'rgba(0,255,0,0.3)', separator: 'rgba(0,255,0,0.1)',
-            success: '#00FF00', warning: '#FFCC00', error: '#FF3333', info: '#00CCFF',
-            glassBg: 'rgba(0,0,0,0.6)', glassBorder: 'rgba(0,255,0,0.2)',
-            dockBg: 'rgba(0,0,0,0.5)', dockBorder: 'rgba(0,255,0,0.1)',
-            dockItemBg: '#141414', dockItemHover: '#1E1E1E', dockItemActive: '#282828',
-            windowHeaderBg: 'rgba(0,0,0,0.9)', windowBorder: 'rgba(0,255,0,0.2)',
-            windowBorderActive: 'rgba(0,255,0,0.5)', appIconFrom: '#0A0A0A',
-            appIconTo: '#141414', wallpaperGradient1: 'rgba(0,0,0,0.4)',
-            wallpaperGradient2: 'rgba(0,10,0,0.3)', wallpaperGradient3: 'rgba(0,20,0,0.2)',
-            statusBarText: '#00FF00', statusBarBattery: '#00FF00', handleBar: '#00FF00',
-            homeIndicator: '#00FF00', backdropBg: 'rgba(0,0,0,0.5)', fileSelected: 'rgba(0,255,0,0.2)',
-            fileHover: 'rgba(0,255,0,0.05)', editorGutter: '#000000',
-            editorLineHighlight: 'rgba(0,255,0,0.04)', iosToggleOff: '#1E1E1E',
-            iosToggleOn: '#00FF00', iosToggleThumb: '#000000', iosSliderTrack: '#1E1E1E',
-            iosSliderThumb: '#00FF00', iconFg: '#00FF00'
-          },
-          modern: {
-            bgBase: '#1C1C1E', bgSurface: '#2C2C2E', bgSurfaceRaised: '#3A3A3C',
-            bgSurfaceOverlay: 'rgba(44,44,46,0.8)', bgSurfaceHover: '#48484A',
-            bgSurfaceActive: '#5C5C5E', textPrimary: '#FFFFFF', textSecondary: '#8E8E93',
-            textTertiary: '#636366', textDisabled: '#48484A', textInverse: '#000000',
-            accent: '#E94560', accentHover: '#D63851', accentMuted: 'rgba(233,69,96,0.5)',
-            accentGlow: 'rgba(233,69,96,0.3)', accentSoft: 'rgba(233,69,96,0.15)',
-            borderSubtle: 'rgba(255,255,255,0.06)', borderDefault: 'rgba(255,255,255,0.1)',
-            borderStrong: 'rgba(255,255,255,0.2)', separator: 'rgba(255,255,255,0.06)',
-            success: '#34C759', warning: '#FF9500', error: '#FF3B30', info: '#5AC8FA',
-            glassBg: 'rgba(44,44,46,0.6)', glassBorder: 'rgba(255,255,255,0.1)',
-            dockBg: 'rgba(28,28,30,0.5)', dockBorder: 'rgba(255,255,255,0.1)',
-            dockItemBg: '#3A3A3C', dockItemHover: '#48484A', dockItemActive: '#5C5C5E',
-            windowHeaderBg: 'rgba(44,44,46,0.9)', windowBorder: 'rgba(255,255,255,0.1)',
-            windowBorderActive: 'rgba(233,69,96,0.5)', appIconFrom: '#4A4A4C',
-            appIconTo: '#636366', wallpaperGradient1: 'rgba(28,28,30,0.4)',
-            wallpaperGradient2: 'rgba(33,33,35,0.3)', wallpaperGradient3: 'rgba(38,38,40,0.2)',
-            statusBarText: '#FFFFFF', statusBarBattery: '#34C759', handleBar: '#FFFFFF',
-            homeIndicator: '#FFFFFF', backdropBg: 'rgba(0,0,0,0.5)', fileSelected: 'rgba(233,69,96,0.3)',
-            fileHover: 'rgba(255,255,255,0.05)', editorGutter: '#2C2C2E',
-            editorLineHighlight: 'rgba(255,255,255,0.04)', iosToggleOff: '#39393D',
-            iosToggleOn: '#E94560', iosToggleThumb: '#FFFFFF', iosSliderTrack: '#39393D',
-            iosSliderThumb: '#E94560', iconFg: '#FFFFFF'
-          }
-        };
-        var theme = themes[savedTheme] || themes.dark;
-        var isDark = savedTheme !== 'light';
-        var root = document.documentElement;
-        Object.keys(theme).forEach(function(key) {
-          root.style.setProperty('--gui-' + key, theme[key]);
-        });
-        if (isDark) {
-          root.classList.add('dark');
-          root.classList.remove('light');
-        } else {
-          root.classList.add('light');
-          root.classList.remove('dark');
-        }
-        if (!isDark) {
-          var metaTheme = document.querySelector('meta[name="theme-color"]');
-          if (metaTheme) metaTheme.setAttribute('content', theme.bgBase);
-          var tileColor = document.querySelector('meta[name="msapplication-TileColor"]');
-          if (tileColor) tileColor.setAttribute('content', theme.bgBase);
-        }
+      (function(){
+        var t=localStorage.getItem('scp-os-selected-theme')||'dark';
+        var d=t!=='light',r=document.documentElement;
+        var themes={dark:{bgBase:'#0A0A0A',bgSurface:'#1C1C1E',bgSurfaceRaised:'#2C2C2E',bgSurfaceOverlay:'rgba(28,28,30,0.8)',bgSurfaceHover:'#3A3A3C',bgSurfaceActive:'#48484A',textPrimary:'#FFFFFF',textSecondary:'#8E8E93',textTertiary:'#636366',textDisabled:'#48484A',textInverse:'#000000',accent:'#007AFF',accentHover:'#0056CC',accentMuted:'rgba(0,122,255,0.5)',accentGlow:'rgba(0,122,255,0.3)',accentSoft:'rgba(0,122,255,0.15)',borderSubtle:'rgba(255,255,255,0.06)',borderDefault:'rgba(255,255,255,0.1)',borderStrong:'rgba(255,255,255,0.2)',separator:'rgba(255,255,255,0.06)',success:'#34C759',warning:'#FF9500',error:'#FF3B30',info:'#5AC8FA',glassBg:'rgba(28,28,30,0.6)',glassBorder:'rgba(255,255,255,0.1)',dockBg:'rgba(28,28,30,0.5)',dockBorder:'rgba(255,255,255,0.1)',dockItemBg:'#3A3A3C',dockItemHover:'#48484A',dockItemActive:'#5C5C5E',windowHeaderBg:'rgba(28,28,30,0.9)',windowBorder:'rgba(255,255,255,0.1)',windowBorderActive:'rgba(0,122,255,0.5)',appIconFrom:'#4A4A4C',appIconTo:'#636366',wallpaperGradient1:'rgba(10,10,10,0.4)',wallpaperGradient2:'rgba(15,15,15,0.3)',wallpaperGradient3:'rgba(20,20,20,0.2)',statusBarText:'#FFFFFF',statusBarBattery:'#34C759',handleBar:'#FFFFFF',homeIndicator:'#FFFFFF',backdropBg:'rgba(0,0,0,0.5)',fileSelected:'rgba(0,122,255,0.3)',fileHover:'rgba(255,255,255,0.05)',editorGutter:'#1E1E1E',editorLineHighlight:'rgba(255,255,255,0.04)',iosToggleOff:'#39393D',iosToggleOn:'#34C759',iosToggleThumb:'#FFFFFF',iosSliderTrack:'#39393D',iosSliderThumb:'#FFFFFF',iconFg:'#FFFFFF'},light:{bgBase:'#F2F2F7',bgSurface:'#FFFFFF',bgSurfaceRaised:'#FFFFFF',bgSurfaceOverlay:'rgba(255,255,255,0.9)',bgSurfaceHover:'#F2F2F7',bgSurfaceActive:'#E5E5EA',textPrimary:'#000000',textSecondary:'#8E8E93',textTertiary:'#AEAEB2',textDisabled:'#C7C7CC',textInverse:'#FFFFFF',accent:'#007AFF',accentHover:'#0056CC',accentMuted:'rgba(0,122,255,0.5)',accentGlow:'rgba(0,122,255,0.3)',accentSoft:'rgba(0,122,255,0.15)',borderSubtle:'rgba(0,0,0,0.06)',borderDefault:'rgba(0,0,0,0.1)',borderStrong:'rgba(0,0,0,0.2)',separator:'rgba(0,0,0,0.06)',success:'#34C759',warning:'#FF9500',error:'#FF3B30',info:'#5AC8FA',glassBg:'rgba(255,255,255,0.6)',glassBorder:'rgba(0,0,0,0.05)',dockBg:'rgba(242,242,247,0.5)',dockBorder:'rgba(0,0,0,0.05)',dockItemBg:'#FFFFFF',dockItemHover:'#F2F2F7',dockItemActive:'#E5E5EA',windowHeaderBg:'rgba(255,255,255,0.9)',windowBorder:'rgba(0,0,0,0.1)',windowBorderActive:'rgba(0,122,255,0.5)',appIconFrom:'#E5E5EA',appIconTo:'#F2F2F7',wallpaperGradient1:'rgba(242,242,247,0.4)',wallpaperGradient2:'rgba(229,229,234,0.3)',wallpaperGradient3:'rgba(200,200,210,0.2)',statusBarText:'#000000',statusBarBattery:'#34C759',handleBar:'#000000',homeIndicator:'#000000',backdropBg:'rgba(255,255,255,0.5)',fileSelected:'rgba(0,122,255,0.15)',fileHover:'rgba(0,0,0,0.02)',editorGutter:'#FFFFFF',editorLineHighlight:'rgba(0,0,0,0.04)',iosToggleOff:'#E5E5EA',iosToggleOn:'#34C759',iosToggleThumb:'#FFFFFF',iosSliderTrack:'#E5E5EA',iosSliderThumb:'#FFFFFF',iconFg:'#000000'},retro:{bgBase:'#000000',bgSurface:'#0A0A0A',bgSurfaceRaised:'#141414',bgSurfaceOverlay:'rgba(0,0,0,0.8)',bgSurfaceHover:'#1E1E1E',bgSurfaceActive:'#282828',textPrimary:'#00FF00',textSecondary:'#00CC00',textTertiary:'#009900',textDisabled:'#006600',textInverse:'#000000',accent:'#00FF00',accentHover:'#00CC00',accentMuted:'rgba(0,255,0,0.5)',accentGlow:'rgba(0,255,0,0.3)',accentSoft:'rgba(0,255,0,0.15)',borderSubtle:'rgba(0,255,0,0.1)',borderDefault:'rgba(0,255,0,0.2)',borderStrong:'rgba(0,255,0,0.3)',separator:'rgba(0,255,0,0.1)',success:'#00FF00',warning:'#FFCC00',error:'#FF3333',info:'#00CCFF',glassBg:'rgba(0,0,0,0.6)',glassBorder:'rgba(0,255,0,0.2)',dockBg:'rgba(0,0,0,0.5)',dockBorder:'rgba(0,255,0,0.1)',dockItemBg:'#141414',dockItemHover:'#1E1E1E',dockItemActive:'#282828',windowHeaderBg:'rgba(0,0,0,0.9)',windowBorder:'rgba(0,255,0,0.2)',windowBorderActive:'rgba(0,255,0,0.5)',appIconFrom:'#0A0A0A',appIconTo:'#141414',wallpaperGradient1:'rgba(0,0,0,0.4)',wallpaperGradient2:'rgba(0,10,0,0.3)',wallpaperGradient3:'rgba(0,20,0,0.2)',statusBarText:'#00FF00',statusBarBattery:'#00FF00',handleBar:'#00FF00',homeIndicator:'#00FF00',backdropBg:'rgba(0,0,0,0.5)',fileSelected:'rgba(0,255,0,0.2)',fileHover:'rgba(0,255,0,0.05)',editorGutter:'#000000',editorLineHighlight:'rgba(0,255,0,0.04)',iosToggleOff:'#1E1E1E',iosToggleOn:'#00FF00',iosToggleThumb:'#000000',iosSliderTrack:'#1E1E1E',iosSliderThumb:'#00FF00',iconFg:'#00FF00'},modern:{bgBase:'#1C1C1E',bgSurface:'#2C2C2E',bgSurfaceRaised:'#3A3A3C',bgSurfaceOverlay:'rgba(44,44,46,0.8)',bgSurfaceHover:'#48484A',bgSurfaceActive:'#5C5C5E',textPrimary:'#FFFFFF',textSecondary:'#8E8E93',textTertiary:'#636366',textDisabled:'#48484A',textInverse:'#000000',accent:'#E94560',accentHover:'#D63851',accentMuted:'rgba(233,69,96,0.5)',accentGlow:'rgba(233,69,96,0.3)',accentSoft:'rgba(233,69,96,0.15)',borderSubtle:'rgba(255,255,255,0.06)',borderDefault:'rgba(255,255,255,0.1)',borderStrong:'rgba(255,255,255,0.2)',separator:'rgba(255,255,255,0.06)',success:'#34C759',warning:'#FF9500',error:'#FF3B30',info:'#5AC8FA',glassBg:'rgba(44,44,46,0.6)',glassBorder:'rgba(255,255,255,0.1)',dockBg:'rgba(28,28,30,0.5)',dockBorder:'rgba(255,255,255,0.1)',dockItemBg:'#3A3A3C',dockItemHover:'#48484A',dockItemActive:'#5C5C5E',windowHeaderBg:'rgba(44,44,46,0.9)',windowBorder:'rgba(255,255,255,0.1)',windowBorderActive:'rgba(233,69,96,0.5)',appIconFrom:'#4A4A4C',appIconTo:'#636366',wallpaperGradient1:'rgba(28,28,30,0.4)',wallpaperGradient2:'rgba(33,33,35,0.3)',wallpaperGradient3:'rgba(38,38,40,0.2)',statusBarText:'#FFFFFF',statusBarBattery:'#34C759',handleBar:'#FFFFFF',homeIndicator:'#FFFFFF',backdropBg:'rgba(0,0,0,0.5)',fileSelected:'rgba(233,69,96,0.3)',fileHover:'rgba(255,255,255,0.05)',editorGutter:'#2C2C2E',editorLineHighlight:'rgba(255,255,255,0.04)',iosToggleOff:'#39393D',iosToggleOn:'#E94560',iosToggleThumb:'#FFFFFF',iosSliderTrack:'#39393D',iosSliderThumb:'#E94560',iconFg:'#FFFFFF'}};
+        var theme=themes[t]||themes.dark;
+        for(var k in theme)r.style.setProperty('--gui-'+k,theme[k]);
+        r.classList.add(d?'dark':'light');
+        r.classList.remove(d?'light':'dark');
+        if(!d){var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',theme.bgBase);var tc=document.querySelector('meta[name="msapplication-TileColor"]');if(tc)tc.setAttribute('content',theme.bgBase);}
       })();
     </script>
     <title>SCP-OS</title>
-    <style>
-      /* Prevent pull-to-refresh on mobile */
-      body {
-        overscroll-behavior-y: contain;
-        touch-action: manipulation;
-        -webkit-user-select: none;
-        user-select: none;
-      }
-    </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" src="./src/main.ts"></script>
+    <!-- Service Worker (deferred) -->
+    <script>
+      if('serviceWorker'in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.ts')})}
+    </script>
   </body>
 </html>

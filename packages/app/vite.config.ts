@@ -63,6 +63,14 @@ export default defineConfig({
     outDir: '../../dist',
     emptyOutDir: true,
     minify: 'terser',
+    modulePreload: { polyfill: false },
+    cssCodeSplit: true,
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      }
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
