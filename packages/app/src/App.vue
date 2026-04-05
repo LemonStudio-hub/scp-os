@@ -2,14 +2,11 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import PCNotification from './gui/components/PCNotification.vue'
-import FileManagerWindow from './gui/tools/filemanager/FileManagerWindow.vue'
-import EditorWindow from './gui/tools/editor/EditorWindow.vue'
-import TerminalPanel from './gui/tools/terminal/TerminalPanel.vue'
 import MobileApp from './gui/mobile/MobileApp.vue'
 import { useTabsStore } from './stores/tabs'
 import { useWindowManagerStore } from './gui/stores/windowManager'
 import { injectGUITokens } from './gui/design-tokens'
-import { registerAllTools } from './gui'
+import { registerAllTools, ToolRegistry } from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
@@ -66,19 +63,14 @@ onUnmounted(() => {
         @close="showPerformanceDashboard = false"
       />
 
-      <!-- GUI Windows (rendered by DesktopScreen's slot) -->
+      <!-- GUI Windows rendered via ToolRegistry (dynamic, no hardcoded v-if chain) -->
       <template v-for="win in wmStore.openWindows" :key="win.config.id">
-        <FileManagerWindow
-          v-if="win.config.tool === 'filemanager'"
+        <!-- Existing tools (FileManagerWindow, EditorWindow, TerminalPanel) have their own window chrome -->
+        <!-- They are rendered directly without PCWindow wrapper -->
+        <component
+          :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
           :window-instance="win"
-        />
-        <EditorWindow
-          v-else-if="win.config.tool === 'editor'"
-          :window-instance="win"
-        />
-        <TerminalPanel
-          v-else-if="win.config.tool === 'terminal'"
-          :window-instance="win"
+          :window-id="win.config.id"
         />
       </template>
     </template>

@@ -1,6 +1,7 @@
 /**
  * Window Manager Store
  * Manages the lifecycle of all GUI windows (open, close, focus, minimize, maximize).
+ * Uses a single reactive Map as data source, ordered by insertion order.
  */
 
 import { defineStore } from 'pinia'
@@ -13,15 +14,12 @@ import indexedDBService from '../../utils/indexedDB'
 const { getNextZIndex, bringToFront, setFocusedWindow, getFocusedWindowId } = useZIndex()
 
 export const useWindowManagerStore = defineStore('windowManager', () => {
-  // State
+  // Single source of truth - reactive Map
   const windows = ref<Map<string, WindowInstance>>(new Map())
-  const windowOrder = ref<string[]>([])
 
-  // Computed
+  // Computed: ordered by insertion order (Map preserves insertion order)
   const openWindows = computed(() => {
-    return windowOrder.value
-      .map(id => windows.value.get(id))
-      .filter((w): w is WindowInstance => w !== undefined)
+    return Array.from(windows.value.values())
   })
 
   const focusedWindow = computed(() => {
@@ -48,9 +46,10 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     }
 
     const zIndex = getNextZIndex()
+    const openWindowCount = windows.value.size
     const position = {
-      x: config.x ?? windowDefaults.xOffset * (windowOrder.value.length % 5),
-      y: config.y ?? windowDefaults.yOffset * (windowOrder.value.length % 5),
+      x: config.x ?? windowDefaults.xOffset * (openWindowCount % 5),
+      y: config.y ?? windowDefaults.yOffset * (openWindowCount % 5),
     }
     const size = {
       width: config.width ?? windowDefaults.width,
@@ -71,7 +70,6 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     }
 
     windows.value.set(config.id, windowInstance)
-    windowOrder.value.push(config.id)
     setFocusedWindow(config.id)
 
     // Persist to IndexedDB
@@ -85,12 +83,11 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     if (!win) return false
 
     windows.value.delete(windowId)
-    windowOrder.value = windowOrder.value.filter(id => id !== windowId)
 
     // Delete persisted state
     deleteWindowState(windowId)
 
-    // Focus the next window in order
+    // Focus the next window in order (last opened)
     const remainingWindows = openWindows.value
     if (remainingWindows.length > 0) {
       const lastWindow = remainingWindows[remainingWindows.length - 1]
@@ -238,7 +235,6 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       if (savedWindows && savedWindows.length > 0) {
         for (const savedWindow of savedWindows) {
           windows.value.set(savedWindow.config.id, savedWindow)
-          windowOrder.value.push(savedWindow.config.id)
         }
         console.log(`[WindowManager] Restored ${savedWindows.length} windows from IndexedDB`)
       }
@@ -256,9 +252,8 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
   }
 
   return {
-    // State
+    // State (single source of truth)
     windows,
-    windowOrder,
 
     // Computed
     openWindows,
