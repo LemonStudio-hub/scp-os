@@ -1,44 +1,44 @@
 <template>
-  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-[200] bg-[rgba(44,44,46,0.95)] backdrop-blur-[20px] border-t border-white/[0.08] shadow-[0_-2px_10px_rgba(0,0,0,0.3)]">
-    <div class="pc-taskbar__container flex items-center justify-between px-2 h-[48px]">
+  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-[200]">
+    <div class="pc-taskbar__container">
       <!-- Start Button -->
-      <button 
-        class="pc-taskbar__start-btn flex items-center gap-2 px-3 py-1.5 bg-transparent border-none rounded-[6px] cursor-pointer select-none transition-all duration-200 hover:bg-[rgba(142,142,147,0.15)]"
+      <button
+        class="pc-taskbar__start-btn"
         @click="$emit('start-click')"
       >
         <GUIIcon :name="'menu'" :size="20" />
-        <span class="text-sm font-medium text-white whitespace-nowrap">{{ t('pc.start') }}</span>
+        <span class="pc-taskbar__start-label">{{ t('pc.start') }}</span>
       </button>
 
       <!-- Pinned Apps -->
-      <div class="pc-taskbar__pinned flex items-center gap-1 flex-1 mx-4">
+      <div class="pc-taskbar__pinned">
         <button
           v-for="item in items"
           :key="item.id"
           :class="[
-            'pc-taskbar__app-btn flex flex-col items-center gap-[2px] px-3 py-1.5 bg-transparent border-none rounded-[6px] cursor-pointer select-none transition-all duration-200',
-            { 'opacity-50 cursor-not-allowed': item.disabled },
-            { 'bg-[rgba(142,142,147,0.15)]': activeTools.includes(item.tool) },
+            'pc-taskbar__app-btn',
+            { 'pc-taskbar__app-btn--disabled': item.disabled },
+            { 'pc-taskbar__app-btn--active': activeTools.includes(item.tool) },
           ]"
           :disabled="item.disabled"
           :title="item.label"
           @click="onClick(item)"
         >
           <GUIIcon :name="item.iconName" :size="20" />
-          <span v-if="activeTools.includes(item.tool)" class="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-white rounded-full" />
+          <span v-if="activeTools.includes(item.tool)" class="pc-taskbar__indicator" />
         </button>
       </div>
 
       <!-- System Tray -->
-      <div class="pc-taskbar__tray flex items-center gap-2 px-3">
-        <div class="pc-taskbar__tray-item flex items-center gap-1.5 cursor-pointer px-2 py-1 rounded-[4px] hover:bg-[rgba(142,142,147,0.15)] transition-all duration-200">
+      <div class="pc-taskbar__tray">
+        <div class="pc-taskbar__tray-item">
           <GUIIcon :name="'wifi'" :size="16" />
         </div>
-        <div class="pc-taskbar__tray-item flex items-center gap-1.5 cursor-pointer px-2 py-1 rounded-[4px] hover:bg-[rgba(142,142,147,0.15)] transition-all duration-200">
+        <div class="pc-taskbar__tray-item">
           <GUIIcon :name="'battery'" :size="16" />
         </div>
-        <div class="pc-taskbar__tray-item flex items-center gap-1.5 cursor-pointer px-2 py-1 rounded-[4px] hover:bg-[rgba(142,142,147,0.15)] transition-all duration-200">
-          <span class="text-sm font-medium text-white">{{ currentTime }}</span>
+        <div class="pc-taskbar__tray-item pc-taskbar__time">
+          <span class="pc-taskbar__time-text">{{ currentTime }}</span>
         </div>
       </div>
     </div>
@@ -114,20 +114,70 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── PC Taskbar - iOS Frosted Glass Style ──────────────────────────── */
 .pc-taskbar {
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  background: var(--gui-glass-bg, rgba(44, 44, 46, 0.85));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4), 0 -2px 8px rgba(0, 0, 0, 0.2);
+  transition: background var(--gui-transition-base, 200ms ease);
 }
 
 .pc-taskbar__container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 var(--gui-spacing-base, 16px);
   max-width: 100vw;
   overflow: hidden;
 }
 
+/* ── Start Button ──────────────────────────────────────────────────── */
 .pc-taskbar__start-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px);
+  background: transparent;
+  border: none;
+  border-radius: var(--gui-radius-base, 8px);
+  color: var(--gui-text-primary, #FFFFFF);
+  cursor: pointer;
+  user-select: none;
+  transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
   flex-shrink: 0;
 }
 
+.pc-taskbar__start-label {
+  font-size: var(--gui-font-sm, 12px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #FFFFFF);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.pc-taskbar__start-btn:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  transform: scale(1.02);
+}
+
+.pc-taskbar__start-btn:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+/* ── Pinned Apps ───────────────────────────────────────────────────── */
 .pc-taskbar__pinned {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-xs, 4px);
+  flex: 1;
+  margin: 0 var(--gui-spacing-xl, 24px);
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -139,15 +189,147 @@ onUnmounted(() => {
 
 .pc-taskbar__app-btn {
   position: relative;
-  min-width: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 2px;
+  min-width: 52px;
+  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
+  background: transparent;
+  border: none;
+  border-radius: var(--gui-radius-lg, 12px);
+  cursor: pointer;
+  user-select: none;
+  color: var(--gui-text-secondary, #8E8E93);
+  transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
 }
 
+.pc-taskbar__app-btn:hover {
+  background: var(--gui-dock-item-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #FFFFFF);
+  transform: scale(1.08);
+}
+
+.pc-taskbar__app-btn:active {
+  transform: scale(0.88);
+  opacity: 0.7;
+}
+
+.pc-taskbar__app-btn--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pc-taskbar__app-btn--active {
+  background: var(--gui-dock-item-active, rgba(142, 142, 147, 0.15));
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+.pc-taskbar__app-btn--active::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--gui-accent, #8E8E93);
+  border-radius: var(--radius-full, 999px);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ── System Tray ───────────────────────────────────────────────────── */
 .pc-taskbar__tray {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
   flex-shrink: 0;
 }
 
 .pc-taskbar__tray-item {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-xs, 4px);
+  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
+  border-radius: var(--gui-radius-base, 8px);
+  cursor: pointer;
+  color: var(--gui-text-secondary, #8E8E93);
+  transition: all var(--gui-transition-base, 200ms ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pc-taskbar__tray-item:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+.pc-taskbar__tray-item:active {
+  transform: scale(0.92);
+  opacity: 0.7;
+}
+
+/* ── Time Display ──────────────────────────────────────────────────── */
+.pc-taskbar__time {
+  padding-left: var(--gui-spacing-sm, 8px);
+  border-left: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+.pc-taskbar__time-text {
+  font-size: var(--gui-font-sm, 12px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #FFFFFF);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Responsive Adjustments ────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .pc-taskbar__container {
+    height: 48px;
+    padding: 0 var(--gui-spacing-sm, 8px);
+  }
+
+  .pc-taskbar__start-btn {
+    padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
+  }
+
+  .pc-taskbar__start-label {
+    display: none;
+  }
+
+  .pc-taskbar__pinned {
+    margin: 0 var(--gui-spacing-sm, 8px);
+  }
+
+  .pc-taskbar__app-btn {
+    min-width: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  .pc-taskbar {
+    height: 48px;
+  }
+
+  .pc-taskbar__tray {
+    gap: var(--gui-spacing-xxs, 2px);
+  }
+
+  .pc-taskbar__time {
+    display: none;
+  }
 }
 </style>

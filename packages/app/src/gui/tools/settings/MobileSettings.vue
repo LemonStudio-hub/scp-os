@@ -52,6 +52,21 @@
         <!-- Appearance Section -->
         <div class="k-ios-block__title">{{ t('settings.appearance') }}</div>
         <div class="k-ios-list">
+          <!-- Language Selection -->
+          <div class="k-ios-list__item" @click="openLanguagePicker">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">{{ t('settings.language') }}</div>
+                <div class="k-ios-list__item-description">{{ currentLanguageName }}</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
           <!-- Theme Selection -->
           <div v-for="theme in themeStore.availableThemes" :key="theme.id" class="k-ios-list__item" @click="themeStore.setTheme(theme.id)">
             <div class="k-ios-list__item-left">
@@ -249,6 +264,26 @@
           </div>
         </div>
       </Sheet>
+
+      <!-- Language Picker Sheet -->
+      <Sheet v-model:visible="sliderSheets.language">
+        <div class="settings-language-sheet">
+          <div class="settings-language-sheet__title">{{ t('settings.language') }}</div>
+          <div class="settings-language-sheet__options">
+            <div
+              v-for="loc in availableLocales"
+              :key="loc"
+              :class="['settings-language-sheet__option', { 'settings-language-sheet__option--active': locale === loc }]"
+              @click="selectLanguage(loc)"
+            >
+              <span class="settings-language-sheet__label">{{ localeNames[loc] }}</span>
+              <svg v-if="locale === loc" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 10L9 14L15 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </Sheet>
     </div>
 
     <!-- Wallpaper Picker -->
@@ -270,7 +305,7 @@ import { useTerminalStore } from '../../../stores/terminal'
 import { useThemeStore } from '../../stores/themeStore'
 import indexedDBService from '../../../utils/indexedDB'
 
-const { t } = useI18n()
+const { t, locale, availableLocales } = useI18n()
 
 interface Props {
   visible: boolean
@@ -308,6 +343,9 @@ defineProps<Props>()
 const terminalStore = useTerminalStore()
 const themeStore = useThemeStore()
 
+// Import localeNames for display
+import { localeNames } from '../../../locales'
+
 // Initialize theme store
 themeStore.init()
 
@@ -342,6 +380,24 @@ async function loadWallpaperName() {
 
 // Load on mount
 loadWallpaperName()
+
+// Current language display name
+const currentLanguageName = computed(() => localeNames[locale.value] || 'English')
+
+function openLanguagePicker() {
+  triggerHaptic()
+  sliderSheets.language = true
+}
+
+function selectLanguage(loc: 'en' | 'zh-CN') {
+  locale.value = loc
+  triggerHaptic()
+  sliderSheets.language = false
+  // Reload to apply language
+  setTimeout(() => {
+    loadWallpaperName()
+  }, 100)
+}
 
 function onWallpaperChange(wallpaperId: string | null) {
   // Reload home screen wallpaper by dispatching event
@@ -384,7 +440,7 @@ function applySettings(): void {
   }
 }
 
-const sliderSheets = reactive({ fontSize: false })
+const sliderSheets = reactive({ fontSize: false, language: false })
 const sliderValues = reactive({ fontSize: settings.fontSize })
 
 function openSlider(type: 'fontSize'): void {
@@ -666,5 +722,56 @@ function formatBytes(bytes: number): string {
 .settings-color-sheet__label {
   font-size: var(--gui-font-sm, 12px);
   color: var(--gui-text-tertiary, #636366);
+}
+
+/* Language Picker Sheet */
+.settings-language-sheet {
+  padding: var(--gui-spacing-lg, 20px) var(--gui-spacing-base, 16px);
+  padding-bottom: max(var(--gui-spacing-xl, 24px), env(safe-area-inset-bottom, 24px));
+}
+
+.settings-language-sheet__title {
+  font-size: var(--gui-font-lg, 15px);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  color: var(--gui-text-primary, #FFFFFF);
+  text-align: center;
+  margin-bottom: var(--gui-spacing-base, 16px);
+}
+
+.settings-language-sheet__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gui-spacing-xxs, 2px);
+}
+
+.settings-language-sheet__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gui-spacing-md, 12px) var(--gui-spacing-base, 16px);
+  background: var(--gui-bg-surface-raised, #3A3A3C);
+  border-radius: var(--gui-radius-base, 8px);
+  cursor: pointer;
+  transition: all var(--gui-transition-fast, 120ms ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-language-sheet__option:active {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+.settings-language-sheet__option--active {
+  background: var(--gui-accent-soft, rgba(142, 142, 147, 0.15));
+}
+
+.settings-language-sheet__option--active svg {
+  color: var(--gui-accent, #8E8E93);
+}
+
+.settings-language-sheet__label {
+  font-size: var(--gui-font-base, 13px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #FFFFFF);
 }
 </style>

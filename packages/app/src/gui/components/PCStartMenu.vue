@@ -1,97 +1,99 @@
 <template>
-  <div v-if="isOpen" class="pc-start-menu fixed bottom-[48px] left-0 z-[199] bg-[rgba(32,32,34,0.95)] backdrop-blur-[20px] border border-white/[0.08] shadow-[0_-2px_10px_rgba(0,0,0,0.3)] rounded-t-[12px] w-[600px] max-w-[80vw] overflow-hidden animate-fade-in">
-    <div class="pc-start-menu__container flex flex-col h-[500px]">
+  <div v-if="isOpen" class="pc-start-menu">
+    <div class="pc-start-menu__container">
       <!-- Search Bar -->
-      <div class="pc-start-menu__search p-4 border-b border-white/[0.08]">
-        <div class="relative">
-          <GUIIcon name="search" ::size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" />
+      <div class="pc-start-menu__search">
+        <div class="pc-start-menu__search-input">
+          <GUIIcon name="search" :size="16" class="pc-start-menu__search-icon" />
           <input
             v-model="searchQuery"
             type="text"
             :placeholder="t('pc.searchPlaceholder')"
-            class="w-full pl-10 pr-4 py-2 bg-[rgba(255,255,255,0.08)] border border-white/[0.08] rounded-[8px] text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[rgba(139,92,246,0.5)] transition-all"
+            class="pc-start-menu__search-field"
             @focus="showSearchResults = true"
             @blur="showSearchResults = false"
           />
         </div>
         <!-- Search Results -->
-        <div v-if="showSearchResults && filteredItems.length > 0" class="mt-2 absolute z-10 bg-[rgba(32,32,34,0.98)] backdrop-blur-[20px] border border-white/[0.08] rounded-[8px] w-[568px] max-h-[300px] overflow-y-auto">
-          <div
-            v-for="item in filteredItems"
-            :key="item.id"
-            class="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-white/[0.08] transition-colors"
-            @click="onItemClick(item)"
-          >
-            <div class="w-8 h-8 flex items-center justify-center rounded">
-              <GUIIcon :name="item.iconName" :size="16" />
+        <Transition name="search-fade">
+          <div v-if="showSearchResults && filteredItems.length > 0" class="pc-start-menu__search-results">
+            <div
+              v-for="item in filteredItems"
+              :key="item.id"
+              class="pc-start-menu__search-item"
+              @click="onItemClick(item)"
+            >
+              <div class="pc-start-menu__search-item-icon">
+                <GUIIcon :name="item.iconName" :size="16" />
+              </div>
+              <span class="pc-start-menu__search-item-label">{{ item.label }}</span>
             </div>
-            <span class="text-white">{{ item.label }}</span>
           </div>
-        </div>
+        </Transition>
       </div>
 
       <!-- Main Content -->
-      <div class="flex flex-1 overflow-hidden">
+      <div class="pc-start-menu__content">
         <!-- App List -->
-        <div class="pc-start-menu__apps w-1/2 border-r border-white/[0.08] overflow-y-auto">
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.pinned') }}</h3>
-          <div class="grid grid-cols-3 gap-2 p-4">
+        <div class="pc-start-menu__apps">
+          <h3 class="pc-start-menu__section-title">{{ t('pc.pinned') }}</h3>
+          <div class="pc-start-menu__apps-grid">
             <button
               v-for="app in apps"
               :key="app.id"
-              class="pc-start-menu__app flex flex-col items-center gap-2 p-3 rounded-[8px] cursor-pointer hover:bg-white/[0.08] transition-colors"
+              class="pc-start-menu__app"
               @click="onAppClick(app)"
             >
-              <div class="w-12 h-12 flex items-center justify-center rounded-[12px] bg-gradient-to-br from-[#8B5CF6] to-[#6366F1]">
+              <div class="pc-start-menu__app-icon">
                 <GUIIcon :name="app.iconName" :size="20" />
               </div>
-              <span class="text-sm text-white text-center">{{ app.label }}</span>
+              <span class="pc-start-menu__app-label">{{ app.label }}</span>
             </button>
           </div>
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.allApps') }}</h3>
-          <div class="grid grid-cols-3 gap-2 p-4">
+          <h3 class="pc-start-menu__section-title">{{ t('pc.allApps') }}</h3>
+          <div class="pc-start-menu__apps-grid">
             <button
               v-for="app in allApps"
               :key="app.id"
-              class="pc-start-menu__app flex flex-col items-center gap-2 p-3 rounded-[8px] cursor-pointer hover:bg-white/[0.08] transition-colors"
+              class="pc-start-menu__app"
               @click="onAppClick(app)"
             >
-              <div class="w-12 h-12 flex items-center justify-center rounded-[12px] bg-gradient-to-br from-[#8B5CF6] to-[#6366F1]">
+              <div class="pc-start-menu__app-icon">
                 <GUIIcon :name="app.iconName" :size="20" />
               </div>
-              <span class="text-sm text-white text-center">{{ app.label }}</span>
+              <span class="pc-start-menu__app-label">{{ app.label }}</span>
             </button>
           </div>
         </div>
 
         <!-- System Options -->
-        <div class="pc-start-menu__system w-1/2 overflow-y-auto">
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.system') }}</h3>
-          <div class="p-4 space-y-2">
+        <div class="pc-start-menu__system">
+          <h3 class="pc-start-menu__section-title">{{ t('pc.system') }}</h3>
+          <div class="pc-start-menu__system-list">
             <button
               v-for="option in systemOptions"
               :key="option.id"
-              class="flex items-center gap-3 w-full px-4 py-3 rounded-[8px] cursor-pointer hover:bg-white/[0.08] transition-colors"
+              class="pc-start-menu__system-item"
               @click="onSystemOptionClick(option)"
             >
-              <div class="w-10 h-10 flex items-center justify-center rounded-[8px] bg-white/[0.08]">
+              <div class="pc-start-menu__system-item-icon">
                 <GUIIcon :name="option.iconName" :size="20" />
               </div>
-              <span class="text-white">{{ option.label }}</span>
+              <span class="pc-start-menu__system-item-label">{{ option.label }}</span>
             </button>
           </div>
-          <h3 class="px-4 py-3 text-sm font-medium text-white/60 uppercase tracking-wider">{{ t('pc.power') }}</h3>
-          <div class="p-4 grid grid-cols-3 gap-3">
+          <h3 class="pc-start-menu__section-title">{{ t('pc.power') }}</h3>
+          <div class="pc-start-menu__power-grid">
             <button
               v-for="powerOption in powerOptions"
               :key="powerOption.id"
-              class="flex flex-col items-center gap-2 p-3 rounded-[8px] cursor-pointer hover:bg-white/[0.08] transition-colors"
+              class="pc-start-menu__power-item"
               @click="onPowerOptionClick(powerOption)"
             >
-              <div class="w-12 h-12 flex items-center justify-center rounded-[12px] bg-white/[0.08]">
+              <div class="pc-start-menu__power-item-icon">
                 <GUIIcon :name="powerOption.iconName" :size="20" />
               </div>
-              <span class="text-sm text-white text-center">{{ powerOption.label }}</span>
+              <span class="pc-start-menu__power-item-label">{{ powerOption.label }}</span>
             </button>
           </div>
         </div>
@@ -238,44 +240,388 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── PC Start Menu - iOS Frosted Glass Style ───────────────────────── */
 .pc-start-menu {
+  position: fixed;
+  bottom: 52px;
+  left: 0;
+  z-index: 199;
+  width: 640px;
+  max-width: 85vw;
+  max-height: 580px;
+  background: var(--gui-glass-bg-strong, rgba(32, 32, 34, 0.95));
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-bottom: none;
+  border-radius: var(--gui-radius-xl, 14px) var(--gui-radius-xl, 14px) 0 0;
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.5), 0 -4px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-  animation: fadeIn 0.2s ease-out;
+  animation: menuSlideUp 0.35s var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
 }
 
+@keyframes menuSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.pc-start-menu__container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 580px;
+}
+
+/* ── Search Bar ────────────────────────────────────────────────────── */
+.pc-start-menu__search {
+  position: relative;
+  padding: var(--gui-spacing-base, 16px);
+  border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+}
+
+.pc-start-menu__search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pc-start-menu__search-icon {
+  position: absolute;
+  left: var(--gui-spacing-sm, 8px);
+  color: var(--gui-text-tertiary, #636366);
+  pointer-events: none;
+}
+
+.pc-start-menu__search-field {
+  width: 100%;
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) 36px;
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: var(--gui-radius-base, 8px);
+  color: var(--gui-text-primary, #FFFFFF);
+  font-size: var(--gui-font-sm, 12px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  outline: none;
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
+.pc-start-menu__search-field::placeholder {
+  color: var(--gui-text-tertiary, #636366);
+}
+
+.pc-start-menu__search-field:focus {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(142, 142, 147, 0.15));
+}
+
+/* ── Search Results ────────────────────────────────────────────────── */
+.pc-start-menu__search-results {
+  position: absolute;
+  top: calc(100% - 8px);
+  left: var(--gui-spacing-base, 16px);
+  right: var(--gui-spacing-base, 16px);
+  z-index: 10;
+  max-height: 320px;
+  padding: var(--gui-spacing-xs, 4px);
+  background: var(--gui-glass-bg-strong, rgba(32, 32, 34, 0.98));
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+  box-shadow: var(--gui-shadow-ios-dropdown, 0 8px 32px rgba(0, 0, 0, 0.6));
+  overflow-y: auto;
+}
+
+.pc-start-menu__search-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px);
+  border-radius: var(--gui-radius-sm, 6px);
+  cursor: pointer;
+  transition: all var(--gui-transition-fast, 120ms ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pc-start-menu__search-item:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+}
+
+.pc-start-menu__search-item:active {
+  transform: scale(0.98);
+  opacity: 0.8;
+}
+
+.pc-start-menu__search-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--gui-text-secondary, #8E8E93);
+}
+
+.pc-start-menu__search-item-label {
+  font-size: var(--gui-font-sm, 12px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+/* ── Content Area ──────────────────────────────────────────────────── */
+.pc-start-menu__content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Apps Section ──────────────────────────────────────────────────── */
+.pc-start-menu__apps {
+  flex: 1;
+  border-right: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  overflow-y: auto;
+  padding: var(--gui-spacing-base, 16px);
+}
+
+.pc-start-menu__section-title {
+  font-size: var(--gui-font-xs, 11px);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  color: var(--gui-text-secondary, #8E8E93);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--gui-spacing-sm, 8px);
+  padding-left: var(--gui-spacing-xs, 4px);
+}
+
+.pc-start-menu__apps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gui-spacing-sm, 8px);
+  margin-bottom: var(--gui-spacing-base, 16px);
+}
+
+.pc-start-menu__app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gui-spacing-xs, 4px);
+  padding: var(--gui-spacing-sm, 8px);
+  background: transparent;
+  border: none;
+  border-radius: var(--gui-radius-lg, 12px);
+  cursor: pointer;
+  transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+.pc-start-menu__app:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  transform: scale(1.04);
+}
+
+.pc-start-menu__app:active {
+  transform: scale(0.92);
+  opacity: 0.7;
+}
+
+.pc-start-menu__app-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+  color: var(--gui-text-primary, #FFFFFF);
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
+.pc-start-menu__app-label {
+  font-size: var(--gui-font-xs, 11px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #FFFFFF);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── System Options ────────────────────────────────────────────────── */
+.pc-start-menu__system {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--gui-spacing-base, 16px);
+}
+
+.pc-start-menu__system-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gui-spacing-xxs, 2px);
+  margin-bottom: var(--gui-spacing-base, 16px);
+}
+
+.pc-start-menu__system-item {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px);
+  background: transparent;
+  border: none;
+  border-radius: var(--gui-radius-base, 8px);
+  cursor: pointer;
+  transition: all var(--gui-transition-base, 200ms ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pc-start-menu__system-item:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+}
+
+.pc-start-menu__system-item:active {
+  transform: scale(0.98);
+  opacity: 0.7;
+}
+
+.pc-start-menu__system-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-base, 8px);
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+.pc-start-menu__system-item-label {
+  font-size: var(--gui-font-sm, 12px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+/* ── Power Options ─────────────────────────────────────────────────── */
+.pc-start-menu__power-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gui-spacing-sm, 8px);
+}
+
+.pc-start-menu__power-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gui-spacing-xs, 4px);
+  padding: var(--gui-spacing-sm, 8px);
+  background: transparent;
+  border: none;
+  border-radius: var(--gui-radius-lg, 12px);
+  cursor: pointer;
+  transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+.pc-start-menu__power-item:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  transform: scale(1.04);
+}
+
+.pc-start-menu__power-item:active {
+  transform: scale(0.92);
+  opacity: 0.7;
+}
+
+.pc-start-menu__power-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+.pc-start-menu__power-item-label {
+  font-size: var(--gui-font-xs, 11px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-primary, #FFFFFF);
+  text-align: center;
+}
+
+/* ── Scrollbars ────────────────────────────────────────────────────── */
 .pc-start-menu__apps::-webkit-scrollbar,
-.pc-start-menu__system::-webkit-scrollbar {
+.pc-start-menu__system::-webkit-scrollbar,
+.pc-start-menu__search-results::-webkit-scrollbar {
   width: 6px;
 }
 
 .pc-start-menu__apps::-webkit-scrollbar-track,
-.pc-start-menu__system::-webkit-scrollbar-track {
+.pc-start-menu__system::-webkit-scrollbar-track,
+.pc-start-menu__search-results::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .pc-start-menu__apps::-webkit-scrollbar-thumb,
-.pc-start-menu__system::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+.pc-start-menu__system::-webkit-scrollbar-thumb,
+.pc-start-menu__search-results::-webkit-scrollbar-thumb {
+  background: var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-sm, 6px);
 }
 
 .pc-start-menu__apps::-webkit-scrollbar-thumb:hover,
-.pc-start-menu__system::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+.pc-start-menu__system::-webkit-scrollbar-thumb:hover,
+.pc-start-menu__search-results::-webkit-scrollbar-thumb:hover {
+  background: var(--gui-border-default, rgba(255, 255, 255, 0.15));
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* ── Search Fade Animation ─────────────────────────────────────────── */
+.search-fade-enter-active,
+.search-fade-leave-active {
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
+.search-fade-enter-from,
+.search-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ── Responsive Adjustments ────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .pc-start-menu {
+    width: 560px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .pc-start-menu__apps-grid,
+  .pc-start-menu__power-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-out;
+@media (max-width: 768px) {
+  .pc-start-menu {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 70vh;
+  }
+
+  .pc-start-menu__content {
+    flex-direction: column;
+  }
+
+  .pc-start-menu__apps {
+    border-right: none;
+    border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  }
 }
 </style>

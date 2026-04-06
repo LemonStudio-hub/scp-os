@@ -25,10 +25,17 @@
     "security": {
       "csp": {
         "default-src": "'self'",
-        "script-src": "'self' 'unsafe-inline'",
+        "script-src": "'self'",
         "style-src": "'self' 'unsafe-inline'",
         "img-src": "'self' data: blob:",
-        "connect-src": "'self' https://api.scpos.site https://api.scpos.site"
+        "connect-src": "'self' https://api.scpos.site",
+        "font-src": "'self' data:",
+        "media-src": "'self' blob:",
+        "worker-src": "'self' blob:",
+        "frame-src": "'none'",
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'self'"
       }
     }
   },

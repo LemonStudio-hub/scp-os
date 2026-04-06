@@ -19,7 +19,13 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      enabled: false,  // Disable coverage to avoid memory issues
+      enabled: true,
+      thresholds: {
+        lines: 30,
+        branches: 20,
+        functions: 25,
+        statements: 30,
+      },
       exclude: [
         'node_modules/',
         'dist/',
@@ -28,6 +34,7 @@ export default defineConfig({
         '**/test/**',
         'src/test/**',
         'src/**/*.test.ts',
+        'src/**/*.spec.ts',
       ],
     },
   },

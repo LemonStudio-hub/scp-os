@@ -548,11 +548,11 @@ onUnmounted(() => {
 }
 
 .desktop-screen__icon:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
 }
 
 .desktop-screen__icon:active {
-  transform: scale(0.92);
+  transform: scale(0.9);
 }
 
 .desktop-screen__icon-content {
@@ -563,51 +563,85 @@ onUnmounted(() => {
 }
 
 .desktop-screen__icon-bg {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 72px;
   height: 72px;
-  border-radius: var(--gui-radius-lg, 14px);
+  border-radius: var(--gui-radius-xl, 14px);
   color: var(--gui-text-inverse, #FFFFFF);
-  box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
+  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4)), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  overflow: hidden;
+}
+
+/* Frosted glass overlay effect on icons */
+.desktop-screen__icon-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.1) 100%);
+  border-radius: inherit;
+  pointer-events: none;
 }
 
 .desktop-screen__icon-bg svg {
+  position: relative;
+  z-index: 1;
   width: 32px;
   height: 32px;
   flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
 .desktop-screen__icon-text {
+  position: relative;
+  z-index: 1;
   font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", "SF Mono", Consolas, monospace);
   font-size: 32px;
   font-weight: var(--gui-font-weight-bold, 700);
   color: var(--gui-text-inverse, #FFFFFF);
   letter-spacing: -1px;
   line-height: 1;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .desktop-screen__icon:hover .desktop-screen__icon-bg {
-  box-shadow: var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6));
-  transform: scale(1.08);
+  box-shadow: var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6)),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: scale(1.1);
+}
+
+.desktop-screen__icon:active .desktop-screen__icon-bg {
+  transform: scale(0.95);
+  box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 .desktop-screen__icon-label {
   width: 100%;
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--desktop-text, #FFFFFF);
+  color: var(--gui-text-primary, #FFFFFF);
   text-align: center;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 2px 8px;
-  border-radius: var(--gui-radius-sm, 6px);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 4px 10px;
+  border-radius: var(--gui-radius-base, 8px);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
+.desktop-screen__icon:hover .desktop-screen__icon-label {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 /* Responsive adjustments */

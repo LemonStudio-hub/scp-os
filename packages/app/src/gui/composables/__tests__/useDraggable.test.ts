@@ -8,9 +8,9 @@ import { useDraggable } from '../useDraggable'
 
 describe('useDraggable', () => {
   let element: HTMLElement
-  let onMove: ReturnType<typeof vi.fn>
-  let onStart: ReturnType<typeof vi.fn>
-  let onEnd: ReturnType<typeof vi.fn>
+  let onMove: (x: number, y: number) => void
+  let onStart: () => void
+  let onEnd: () => void
 
   beforeEach(() => {
     element = document.createElement('div')
@@ -20,9 +20,9 @@ describe('useDraggable', () => {
     element.style.top = '0px'
     document.body.appendChild(element)
 
-    onMove = vi.fn()
-    onStart = vi.fn()
-    onEnd = vi.fn()
+    onMove = vi.fn() as (x: number, y: number) => void
+    onStart = vi.fn() as () => void
+    onEnd = vi.fn() as () => void
   })
 
   it('should initialize with default drag state', () => {

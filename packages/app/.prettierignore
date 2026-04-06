@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+*.local
+*.log
+.DS_Store
+*.bak
+pnpm-lock.yaml
+package-lock.json

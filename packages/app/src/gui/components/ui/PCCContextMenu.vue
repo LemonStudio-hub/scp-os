@@ -167,19 +167,33 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ── Context Menu ───────────────────────────────────────────────────── */
+/* ── Context Menu - iOS Frosted Glass Style ────────────────────────── */
 .pcc-context-menu {
   position: fixed;
-  min-width: 200px;
-  padding: 2px 0;
-  background: var(--gui-bg-surface, #2d2d2d);
-  border: 1px solid var(--gui-border, #444444);
-  border-radius: var(--gui-radius-md, 6px);
-  box-shadow: var(--gui-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.3));
+  min-width: 220px;
+  padding: var(--gui-spacing-xxs, 2px);
+  background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.95));
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+  box-shadow: var(--gui-shadow-ios-dropdown, 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08));
   z-index: var(--gui-z-context-menu, 500);
   max-height: 80vh;
   overflow-y: auto;
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  animation: contextMenuSpringIn 0.3s var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+}
+
+@keyframes contextMenuSpringIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── Menu Item ─────────────────────────────────────────────────────── */
@@ -188,86 +202,102 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
   width: 100%;
-  padding: 6px 12px;
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px);
   background: none;
   border: none;
-  border-radius: 0;
-  color: var(--gui-text-primary, #f0f0f0);
+  border-radius: var(--gui-radius-sm, 6px);
+  color: var(--gui-text-primary, #FFFFFF);
   font-size: var(--gui-font-sm, 12px);
+  font-weight: var(--gui-font-weight-medium, 500);
   cursor: pointer;
-  transition: background var(--gui-transition-fast, 120ms ease);
+  transition: all var(--gui-transition-fast, 120ms ease);
   text-align: left;
   position: relative;
+  margin: 1px 2px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .pcc-context-menu__item:hover:not(.pcc-context-menu__item--disabled) {
-  background: var(--gui-bg-surface-hover, #3a3a3a);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+}
+
+.pcc-context-menu__item:active:not(.pcc-context-menu__item--disabled) {
+  transform: scale(0.98);
+  opacity: 0.8;
 }
 
 .pcc-context-menu__item--disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .pcc-context-menu__divider {
-  height: 1px;
-  background: var(--gui-border-subtle, #444444);
-  margin: 2px 0;
+  height: 0.5px;
+  background: var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  margin: 4px 8px;
 }
 
 .pcc-context-menu__icon {
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 16px;
   height: 16px;
-  color: var(--gui-text-secondary, #a8a8a8);
+  color: var(--gui-text-secondary, #8E8E93);
   flex-shrink: 0;
 }
 
 .pcc-context-menu__label {
   flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pcc-context-menu__arrow {
-  font-size: 10px;
-  color: var(--gui-text-secondary, #a8a8a8);
+  font-size: 11px;
+  color: var(--gui-text-tertiary, #636366);
   margin-left: auto;
+  font-weight: var(--gui-font-weight-medium, 500);
 }
 
 /* ── Submenu ─────────────────────────────────────────────────────── */
 .pcc-context-menu__submenu {
   position: absolute;
   top: 0;
-  left: 100%;
-  min-width: 180px;
-  padding: 2px 0;
-  background: var(--gui-bg-surface, #2d2d2d);
-  border: 1px solid var(--gui-border, #444444);
-  border-radius: var(--gui-radius-md, 6px);
-  box-shadow: var(--gui-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.3));
+  left: calc(100% + 4px);
+  min-width: 200px;
+  padding: var(--gui-spacing-xxs, 2px);
+  background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.95));
+  backdrop-filter: blur(30px) saturate(200%);
+  -webkit-backdrop-filter: blur(30px) saturate(200%);
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+  box-shadow: var(--gui-shadow-ios-dropdown, 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08));
   z-index: var(--gui-z-context-menu, 500);
   max-height: 80vh;
   overflow-y: auto;
+  animation: submenuFadeIn 0.2s var(--gui-transition-base, 200ms ease) both;
+}
+
+@keyframes submenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* ── Animations ───────────────────────────────────────────────────── */
 .context-menu-enter-active {
-  animation: contextMenuFadeIn 0.15s ease both;
+  animation: contextMenuSpringIn 0.3s var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1)) both;
 }
 
 .context-menu-leave-active {
-  animation: contextMenuFadeOut 0.1s ease both;
-}
-
-@keyframes contextMenuFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  animation: contextMenuFadeOut 0.15s var(--gui-transition-fast, 120ms ease) both;
 }
 
 @keyframes contextMenuFadeOut {
@@ -282,20 +312,24 @@ onBeforeUnmount(() => {
 }
 
 /* ── Scrollbar ───────────────────────────────────────────────────── */
-.pcc-context-menu::-webkit-scrollbar {
-  width: 8px;
+.pcc-context-menu::-webkit-scrollbar,
+.pcc-context-menu__submenu::-webkit-scrollbar {
+  width: 6px;
 }
 
-.pcc-context-menu::-webkit-scrollbar-track {
+.pcc-context-menu::-webkit-scrollbar-track,
+.pcc-context-menu__submenu::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.pcc-context-menu::-webkit-scrollbar-thumb {
-  background: var(--gui-bg-surface-hover, #3a3a3a);
-  border-radius: 4px;
+.pcc-context-menu::-webkit-scrollbar-thumb,
+.pcc-context-menu__submenu::-webkit-scrollbar-thumb {
+  background: var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-sm, 6px);
 }
 
-.pcc-context-menu::-webkit-scrollbar-thumb:hover {
-  background: var(--gui-border, #444444);
+.pcc-context-menu::-webkit-scrollbar-thumb:hover,
+.pcc-context-menu__submenu::-webkit-scrollbar-thumb:hover {
+  background: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
 }
 </style>

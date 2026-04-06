@@ -213,7 +213,7 @@ import AudioPlayerModal from './AudioPlayerModal.vue'
 import VideoPlayerModal from './VideoPlayerModal.vue'
 import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
-import { useFileManagerStore } from '../../stores/fileManager'
+import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { filesystem } from '../../../utils/filesystem'
 
 interface Props {
@@ -231,7 +231,12 @@ interface ContextAction {
 defineProps<Props>()
 defineEmits<{ close: [] }>()
 
-const { t } = useI18n()
+const i18n = useI18n()
+const { t } = i18n
+
+// Wire i18n to file manager store
+setFileManagerI18n({ t: i18n.t })
+
 const fmStore = useFileManagerStore()
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)

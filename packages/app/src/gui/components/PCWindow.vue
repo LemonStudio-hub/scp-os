@@ -219,62 +219,67 @@ function handleWindowResize() {
 </script>
 
 <style scoped>
-/* ── Window Shell ──────────────────────────────────────────────────── */
+/* ── Window Shell - iOS-Style Window ───────────────────────────────── */
 .pc-window {
   position: fixed;
   display: flex;
   flex-direction: column;
-  background: var(--gui-bg-base, #1C1C1E);
-  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  background: var(--gui-window-bg, #1C1C1E);
+  border: 0.5px solid var(--gui-window-border, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-xl, 14px);
   overflow: hidden;
-  animation: windowOpenSpring 0.4s cubic-bezier(0.32, 0.72, 0, 1) both;
+  animation: windowOpenSpring 0.45s var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
   will-change: transform, opacity;
-  transition: border-color 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3));
+  transition: border-color var(--gui-transition-base, 200ms ease),
+              box-shadow var(--gui-transition-base, 200ms ease);
 }
 
 @keyframes windowOpenSpring {
   from {
-    transform: scale(0.92);
+    transform: scale(0.94) translateY(8px);
     opacity: 0;
   }
   to {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
     opacity: 1;
   }
 }
 
 .pc-window--focused {
-  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
+  border-color: var(--gui-window-border-active, rgba(255, 255, 255, 0.12));
   box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06));
 }
 
 .pc-window:not(.pc-window--focused) {
-  opacity: 0.92;
-  box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
+  opacity: 0.95;
+  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3));
 }
 
 .pc-window--minimized {
   display: none !important;
 }
 
-/* ── Header / Title Bar ────────────────────────────────────────────── */
+.pc-window--maximized {
+  border-radius: 0;
+  border: none;
+}
+
+/* ── Header / Title Bar - iOS Frosted Glass ────────────────────────── */
 .pc-window__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 40px;
-  padding: 0 14px;
+  height: 44px;
+  padding: 0 var(--gui-spacing-base, 16px);
   background: var(--gui-glass-bg-subtle, rgba(44, 44, 46, 0.6));
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   cursor: grab;
   user-select: none;
   flex-shrink: 0;
-  transition: background 120ms ease;
+  transition: background var(--gui-transition-fast, 120ms ease);
 }
 
 .pc-window__header:active {
@@ -282,20 +287,21 @@ function handleWindowResize() {
 }
 
 .pc-window__header--dragging {
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.85));
 }
 
 .pc-window__header-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gui-spacing-sm, 8px);
   min-width: 0;
+  flex: 1;
 }
 
 .pc-window__title {
   font-family: var(--gui-font-sans);
-  font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-medium, 500);
+  font-size: var(--gui-font-base, 13px);
+  font-weight: var(--gui-font-weight-semibold, 600);
   color: var(--gui-text-primary, #FFFFFF);
   white-space: nowrap;
   overflow: hidden;
@@ -303,52 +309,87 @@ function handleWindowResize() {
   letter-spacing: -0.01em;
 }
 
-/* ── Header Actions ────────────────────────────────────────────────── */
+/* ── Header Actions - macOS Style Buttons ──────────────────────────── */
 .pc-window__header-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--gui-spacing-xs, 4px);
+  margin-left: var(--gui-spacing-sm, 8px);
 }
 
 .pc-window__btn--icon {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
+  width: 14px;
+  height: 14px;
+  background: var(--gui-bg-surface-raised, #3A3A3C);
   border: none;
   border-radius: var(--gui-radius-full, 999px);
-  color: var(--gui-text-secondary, #8E8E93);
+  color: transparent;
   cursor: pointer;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              background 120ms ease,
-              color 120ms ease;
+  transition: all var(--gui-transition-snappy, 250ms cubic-bezier(0.2, 0.9, 0.3, 1.1));
   -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
 }
 
-.pc-window__btn--icon:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
-  color: var(--gui-text-primary, #FFFFFF);
-}
-
-.pc-window__btn--icon:active {
-  transform: scale(0.88);
-}
-
-.pc-window__btn--close:hover {
-  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
-  color: var(--gui-error, #FF3B30);
+/* Minimize button - Yellow */
+.pc-window__btn--minimize {
+  background: var(--gui-warning, #FFCC00);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--minimize:hover {
-  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.12));
-  color: var(--gui-warning, #FFCC00);
+  background: var(--gui-warning, #FFCC00);
+  filter: brightness(1.1);
+}
+
+.pc-window__btn--minimize:hover svg {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Maximize button - Green */
+.pc-window__btn--maximize {
+  background: var(--gui-success, #34C759);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--maximize:hover {
-  background: var(--gui-success-bg, rgba(52, 199, 89, 0.12));
-  color: var(--gui-success, #34C759);
+  background: var(--gui-success, #34C759);
+  filter: brightness(1.1);
+}
+
+.pc-window__btn--maximize:hover svg {
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Close button - Red */
+.pc-window__btn--close {
+  background: var(--gui-error, #FF3B30);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.pc-window__btn--close:hover {
+  background: var(--gui-error, #FF3B30);
+  filter: brightness(1.1);
+}
+
+.pc-window__btn--close:hover svg {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pc-window__btn--icon:active {
+  transform: scale(0.9);
+  filter: brightness(0.9);
+}
+
+.pc-window__btn--icon svg {
+  position: absolute;
+  opacity: 0;
+  transition: opacity var(--gui-transition-fast, 120ms ease);
+  width: 8px;
+  height: 8px;
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */
@@ -357,6 +398,26 @@ function handleWindowResize() {
   overflow: auto;
   background: var(--gui-bg-base, #1C1C1E);
   min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Scrollbar Styling ─────────────────────────────────────────────── */
+.pc-window__content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pc-window__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pc-window__content::-webkit-scrollbar-thumb {
+  background: var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-sm, 6px);
+}
+
+.pc-window__content::-webkit-scrollbar-thumb:hover {
+  background: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
 }
 
 /* ── Resize Handles ────────────────────────────────────────────────── */
@@ -366,28 +427,28 @@ function handleWindowResize() {
 }
 
 .pc-window__resize--n {
-  top: -3px; left: 12px; right: 12px; height: 6px; cursor: n-resize;
+  top: -4px; left: 16px; right: 16px; height: 8px; cursor: n-resize;
 }
 .pc-window__resize--s {
-  bottom: -3px; left: 12px; right: 12px; height: 6px; cursor: s-resize;
+  bottom: -4px; left: 16px; right: 16px; height: 8px; cursor: s-resize;
 }
 .pc-window__resize--e {
-  top: 12px; right: -3px; bottom: 12px; width: 6px; cursor: e-resize;
+  top: 16px; right: -4px; bottom: 16px; width: 8px; cursor: e-resize;
 }
 .pc-window__resize--w {
-  top: 12px; left: -3px; bottom: 12px; width: 6px; cursor: w-resize;
+  top: 16px; left: -4px; bottom: 16px; width: 8px; cursor: w-resize;
 }
 .pc-window__resize--ne {
-  top: -3px; right: -3px; width: 16px; height: 16px; cursor: ne-resize;
+  top: -4px; right: -4px; width: 20px; height: 20px; cursor: ne-resize;
 }
 .pc-window__resize--nw {
-  top: -3px; left: -3px; width: 16px; height: 16px; cursor: nw-resize;
+  top: -4px; left: -4px; width: 20px; height: 20px; cursor: nw-resize;
 }
 .pc-window__resize--se {
-  bottom: -3px; right: -3px; width: 16px; height: 16px; cursor: se-resize;
+  bottom: -4px; right: -4px; width: 20px; height: 20px; cursor: se-resize;
 }
 .pc-window__resize--sw {
-  bottom: -3px; left: -3px; width: 16px; height: 16px; cursor: sw-resize;
+  bottom: -4px; left: -4px; width: 20px; height: 20px; cursor: sw-resize;
 }
 
 /* ── PC Specific Styles ────────────────────────────────────────────── */
@@ -397,12 +458,23 @@ function handleWindowResize() {
   }
 
   .pc-window__header {
-    height: 40px;
-    padding: 0 14px;
+    height: 44px;
+    padding: 0 var(--gui-spacing-base, 16px);
   }
 
   .pc-window__resize {
     display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .pc-window__header {
+    height: 48px;
+    padding: 0 var(--gui-spacing-sm, 8px);
+  }
+
+  .pc-window__resize {
+    display: none;
   }
 }
 </style>

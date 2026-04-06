@@ -19,6 +19,7 @@ import EditorWindow from '../tools/editor/EditorWindow.vue'
 import MobileEditor from '../tools/editor/MobileEditor.vue'
 
 // Settings tools
+import SettingsWindow from '../tools/settings/SettingsWindow.vue'
 import MobileSettings from '../tools/settings/MobileSettings.vue'
 
 // Chat tools
@@ -92,18 +93,19 @@ export function registerAllTools(): void {
     mobileComponent: MobileEditor,
   })
 
-  // Settings (mobile only — no desktop component)
+  // Settings (now with desktop support)
   ToolRegistry.register({
     id: 'settings',
     label: lbl('app.settings'),
     icon: 'settings',
     windowConfig: {
-      width: 400,
-      height: 500,
-      minWidth: 300,
-      minHeight: 300,
-      resizable: false,
+      width: 800,
+      height: 550,
+      minWidth: 600,
+      minHeight: 400,
+      resizable: true,
     },
+    desktopComponent: SettingsWindow,
     mobileComponent: MobileSettings,
   })
 

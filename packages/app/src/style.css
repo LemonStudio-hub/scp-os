@@ -209,3 +209,274 @@
   transform: translateY(-2px) scale(1.01);
   box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
 }
+
+/* ── Enhanced Global Animations for PC ─────────────────────────────── */
+
+/* Window Animations */
+@keyframes window-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes window-fade-down {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+/* Menu Animations */
+@keyframes menu-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes menu-fade-down {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Dialog/Modal Animations */
+@keyframes modal-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+/* Notification/Toast Animations */
+@keyframes toast-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-slide-down {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
+/* Icon Animations */
+@keyframes icon-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes icon-tap {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.88);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Button Press Effect */
+@keyframes button-press {
+  0% {
+    transform: scale(1);
+    box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
+  }
+  50% {
+    transform: scale(0.96);
+    box-shadow: none;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
+  }
+}
+
+/* Glow Effect */
+@keyframes subtle-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(142, 142, 147, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(142, 142, 147, 0.15);
+  }
+}
+
+/* Skeleton Loading */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Utility Classes */
+.window-slide-up {
+  animation: window-slide-up 0.4s var(--ease-ios-spring) both;
+}
+
+.window-fade-down {
+  animation: window-fade-down 0.3s ease both;
+}
+
+.menu-slide-up {
+  animation: menu-slide-up 0.35s var(--ease-ios-spring) both;
+}
+
+.menu-fade-down {
+  animation: menu-fade-down 0.2s ease both;
+}
+
+.modal-scale-in {
+  animation: modal-scale-in 0.35s var(--ease-ios-spring) both;
+}
+
+.modal-scale-out {
+  animation: modal-scale-out 0.25s ease both;
+}
+
+.toast-slide-up {
+  animation: toast-slide-up 0.3s var(--ease-ios-bounce) both;
+}
+
+.toast-slide-down {
+  animation: toast-slide-down 0.2s ease both;
+}
+
+.icon-pop {
+  animation: icon-pop 0.3s var(--ease-ios-bounce) both;
+}
+
+.icon-tap {
+  animation: icon-tap 0.2s var(--ease-ios-snappy) both;
+}
+
+.button-press {
+  animation: button-press 0.2s var(--ease-ios-snappy) both;
+}
+
+.subtle-glow {
+  animation: subtle-glow 2s ease-in-out infinite;
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+/* ── iOS-Style Focus States ────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--gui-accent, #8E8E93);
+  outline-offset: 2px;
+  border-radius: var(--gui-radius-sm, 6px);
+}
+
+/* ── Enhanced Scrollbars ───────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-sm, 6px);
+  transition: background var(--gui-transition-base, 200ms ease);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
+}
+
+/* ── Selection Style ───────────────────────────────────────────────── */
+::selection {
+  background: var(--gui-accent-soft, rgba(142, 142, 147, 0.2));
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+/* ── Smooth Transitions for Interactive Elements ───────────────────── */
+button,
+a,
+[role="button"],
+input,
+select,
+textarea {
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
+/* ── Performance Optimizations ─────────────────────────────────────── */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Reduced Motion Support ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
