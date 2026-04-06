@@ -9,8 +9,6 @@ on:
 permissions:
   contents: read
   security-events: write
-  id-token: write
-  pages: write
 
 jobs:
   test:
@@ -149,39 +147,3 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
         continue-on-error: true
-
-  pages-deploy:
-    name: Deploy to Pages
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [test, build]
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build for production
-        run: pnpm run build:production
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './dist'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
