@@ -173,7 +173,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Rust stable
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rustup-toolchain-install-action@master
         with:
           toolchain: stable
 
