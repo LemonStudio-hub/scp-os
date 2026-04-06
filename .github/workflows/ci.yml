@@ -201,3 +201,8 @@ jobs:
         with:
           projectPath: packages/desktop
           tauriScript: pnpm --filter @scp-os/desktop tauri
+          tagName: v__VERSION__
+          releaseName: "v__VERSION__"
+          releaseBody: "See the [assets](https://github.com/${{ github.repository }}/releases) for this release."
+          releaseDraft: false
+          prerelease: false
