@@ -5,6 +5,27 @@ All notable changes to SCP-OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-04-06
+
+### 🚀 New Features
+
+#### App Loading Indicator
+- **Animated loading screen** with SCP-themed design
+  - Rotating ring animations with SCP logo
+  - Progress bar with percentage display (0-100%)
+  - Loading step text with i18n support (EN/ZH)
+  - Bouncing dots animation
+  - Smooth fade-in transition when ready
+- **Loading step tracking**:
+  - Initializing system
+  - Loading themes
+  - Preparing interface
+  - Registering components
+  - Loading data from IndexedDB
+  - Restoring windows
+  - Ready to use
+- **Accessibility**: Full reduced motion support
+
 ## [0.1.6] - 2026-04-06
 
 ### 🔧 Fixes
@@ -289,7 +310,8 @@ First official release of SCP-OS - SCP Foundation Terminal System.
 - Test suite expansion (144 tests, 100% pass)
 - Comprehensive code review
 
-[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.7
 [0.1.6]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.6
 [0.1.5]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.5
 [0.1.4]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.4
