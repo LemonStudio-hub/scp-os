@@ -9,12 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,ts}'],
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    pool: 'threads',
     maxConcurrency: 1,
     coverage: {
       provider: 'v8',
