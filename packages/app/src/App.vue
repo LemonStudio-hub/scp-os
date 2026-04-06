@@ -10,31 +10,58 @@ import { registerAllTools, ToolRegistry } from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
+import { useI18n } from './gui/composables/useI18n'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
 const themeStore = useThemeStore()
 const { addNotification } = useNotification()
 const mobile = useMobile()
+const { t } = useI18n()
 
 // Performance Dashboard state
 const showPerformanceDashboard = ref(false)
 
+// App loading state
+const isAppReady = ref(false)
+const loadingProgress = ref(0)
+const loadingStep = ref('loading.steps.initializing')
+
 onMounted(async () => {
-  // Initialize theme store FIRST (before any components render)
+  // Step 1: Initialize theme store
+  loadingStep.value = 'loading.steps.themes'
+  loadingProgress.value = 10
   themeStore.init()
 
-  // Inject GUI design tokens
+  // Step 2: Inject GUI design tokens
+  loadingStep.value = 'loading.steps.ui'
+  loadingProgress.value = 20
   injectGUITokens()
 
-  // Register all GUI tools with the ToolRegistry
+  // Step 3: Register all GUI tools
+  loadingStep.value = 'loading.steps.components'
+  loadingProgress.value = 30
   registerAllTools()
 
-  // Initialize tabs store with IndexedDB
+  // Step 4: Initialize tabs store with IndexedDB
+  loadingStep.value = 'loading.steps.data'
+  loadingProgress.value = 50
   await tabsStore.initialize()
+  loadingProgress.value = 70
 
-  // Load saved GUI windows
+  // Step 5: Load saved GUI windows
+  loadingStep.value = 'loading.steps.windows'
   await wmStore.loadWindowStates()
+  loadingProgress.value = 90
+
+  // Brief delay for visual smoothness
+  await new Promise(resolve => setTimeout(resolve, 200))
+  loadingProgress.value = 100
+  loadingStep.value = 'loading.steps.ready'
+
+  // Final delay before showing app
+  await new Promise(resolve => setTimeout(resolve, 300))
+  isAppReady.value = true
 
   // Test notification
   setTimeout(() => {
@@ -53,8 +80,38 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- App Loading Overlay -->
+  <div v-if="!isAppReady" class="app-loading-overlay">
+    <div class="app-loading-content">
+      <!-- SCP Logo Animation -->
+      <div class="app-loading-logo">
+        <div class="app-loading-logo-ring"></div>
+        <div class="app-loading-logo-ring app-loading-logo-ring--delayed"></div>
+        <div class="app-loading-logo-text">SCP</div>
+      </div>
+
+      <!-- Loading Text -->
+      <div class="app-loading-text">{{ t(loadingStep) }}</div>
+
+      <!-- Progress Bar -->
+      <div class="app-loading-progress">
+        <div class="app-loading-progress-bar">
+          <div class="app-loading-progress-fill" :style="{ width: `${loadingProgress}%` }"></div>
+        </div>
+        <div class="app-loading-progress-percent">{{ loadingProgress }}%</div>
+      </div>
+
+      <!-- Loading Dots Animation -->
+      <div class="app-loading-dots">
+        <div class="app-loading-dot"></div>
+        <div class="app-loading-dot"></div>
+        <div class="app-loading-dot"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- MobileApp handles mobile vs desktop routing internally -->
-  <MobileApp>
+  <MobileApp :class="{ 'app-loaded': isAppReady }">
     <!-- Desktop-only components (only mounted on desktop) -->
     <template v-if="!mobile.isMobile.value">
       <!-- Performance Dashboard -->

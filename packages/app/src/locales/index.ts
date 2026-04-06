@@ -18,6 +18,15 @@ export const en = {
   'common.n/a': 'N/A',
   'common.file': 'File',
 
+  // ── Loading Steps ───────────────────────────────────────────────────
+  'loading.steps.initializing': 'Initializing...',
+  'loading.steps.themes': 'Loading themes...',
+  'loading.steps.ui': 'Preparing interface...',
+  'loading.steps.components': 'Registering components...',
+  'loading.steps.data': 'Loading data...',
+  'loading.steps.windows': 'Restoring windows...',
+  'loading.steps.ready': 'Ready',
+
   // ── App Names ───────────────────────────────────────────────────────
   'app.terminal': 'Terminal',
   'app.files': 'Files',
@@ -236,6 +245,15 @@ export const zhCN: Record<string, string> = {
   'common.unknown': '未知',
   'common.n/a': '暂无',
   'common.file': '文件',
+
+  // ── Loading Steps ───────────────────────────────────────────────────
+  'loading.steps.initializing': '正在初始化...',
+  'loading.steps.themes': '加载主题...',
+  'loading.steps.ui': '准备界面...',
+  'loading.steps.components': '注册组件...',
+  'loading.steps.data': '加载数据...',
+  'loading.steps.windows': '恢复窗口...',
+  'loading.steps.ready': '准备就绪',
 
   // ── App Names ───────────────────────────────────────────────────────
   'app.terminal': '终端',
