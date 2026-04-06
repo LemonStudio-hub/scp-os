@@ -19,6 +19,8 @@ export interface DragState {
 
 export interface UseDraggableOptions {
   disabled?: boolean
+  /** Minimum distance in pixels before drag starts (prevents accidental drags on click) */
+  dragThreshold?: number
   boundary?: {
     minX?: number
     minY?: number
@@ -28,6 +30,7 @@ export interface UseDraggableOptions {
   onMove?: (x: number, y: number) => void
   onStart?: (x: number, y: number) => void
   onEnd?: (x: number, y: number) => void
+  onClick?: () => void
 }
 
 export function useDraggable(
@@ -36,10 +39,12 @@ export function useDraggable(
 ) {
   const {
     disabled = false,
+    dragThreshold = 5, // 5px threshold before drag starts
     boundary = {},
     onMove,
     onStart,
     onEnd,
+    onClick,
   } = options
 
   const dragState = ref<DragState>({
@@ -68,29 +73,42 @@ export function useDraggable(
     if (disabled) return
     if (e.button !== 0) return
 
-    e.preventDefault()
-
+    // Don't preventDefault here - let click events through
     const initialX = dragState.value.currentX
-    const initialY = dragState.value.currentY
 
     dragState.value = {
-      isDragging: true,
+      isDragging: false, // Don't mark as dragging until threshold is met
       startX: e.clientX,
       startY: e.clientY,
       initialX,
-      initialY,
+      initialY: dragState.value.currentY,
       currentX: initialX,
-      currentY: initialY,
+      currentY: dragState.value.currentY,
     }
 
-    onStart?.(initialX, initialY)
-
+    // Listen for move/up on document
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
   }
 
   function handleMouseMove(e: MouseEvent): void {
-    if (!dragState.value.isDragging) return
+    // Check if drag threshold has been met
+    if (!dragState.value.isDragging) {
+      const deltaX = e.clientX - dragState.value.startX
+      const deltaY = e.clientY - dragState.value.startY
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+
+      // Only start dragging if threshold is exceeded
+      if (distance < dragThreshold) {
+        return
+      }
+
+      // Threshold met, now mark as dragging
+      dragState.value.isDragging = true
+      e.preventDefault()
+      onStart?.(dragState.value.currentX, dragState.value.currentY)
+      return
+    }
 
     e.preventDefault()
 
@@ -109,12 +127,17 @@ export function useDraggable(
   }
 
   function handleMouseUp(): void {
-    if (!dragState.value.isDragging) return
-
-    dragState.value.isDragging = false
-
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
+
+    // If never actually started dragging (click without move)
+    if (!dragState.value.isDragging) {
+      onClick?.()
+      dragState.value.isDragging = false
+      return
+    }
+
+    dragState.value.isDragging = false
 
     onEnd?.(dragState.value.currentX, dragState.value.currentY)
   }

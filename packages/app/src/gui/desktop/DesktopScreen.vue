@@ -184,6 +184,10 @@ const initDraggable = (app: DesktopApp, element: HTMLElement) => {
       maxX: window.innerWidth - 100,
       maxY: window.innerHeight - 150, // Account for taskbar
     },
+    onClick: () => {
+      // Single click launches the app
+      emit('launch', app)
+    },
     onEnd: (x, y) => {
       // Update app position
       const appIndex = apps.findIndex(a => a.id === app.id)
@@ -193,7 +197,7 @@ const initDraggable = (app: DesktopApp, element: HTMLElement) => {
       }
     },
   })
-  
+
   dragStates.set(app.id, draggable)
   return draggable
 }
@@ -544,7 +548,7 @@ onUnmounted(() => {
   pointer-events: auto;
   cursor: move;
   -webkit-tap-highlight-color: transparent;
-  transition: transform var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .desktop-screen__icon:hover {
@@ -571,9 +575,9 @@ onUnmounted(() => {
   height: 72px;
   border-radius: var(--gui-radius-xl, 14px);
   color: var(--gui-text-inverse, #FFFFFF);
-  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4)), 
+  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4)),
               inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
 }
 

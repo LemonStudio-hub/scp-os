@@ -56,6 +56,17 @@ const activeToolModule = computed(() => {
 })
 
 function onHomeLaunch(app: HomeApp | DesktopApp): void {
+  // Guard: prevent opening duplicate windows on desktop
+  if (!mobile.isMobile.value) {
+    const existingWindow = wmStore.getWindowByTool(app.tool as ToolType)
+    if (existingWindow) {
+      // Window already open, just focus it
+      wmStore.focusWindow(existingWindow.config.id)
+      return
+    }
+  }
+
+  // Mobile: prevent re-opening same active tool
   if (mobile.isMobile.value && activeTool.value === app.tool) {
     return
   }
