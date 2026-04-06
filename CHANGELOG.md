@@ -5,6 +5,22 @@ All notable changes to SCP-OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-04-06
+
+### 🔧 Fixes
+
+#### PC Desktop UX Improvements
+- **Desktop icon click responsiveness**: Changed from double-click to single-click launch
+  - Added drag threshold (5px) to distinguish between clicks and drags
+  - Fixed mousedown event consumption - now allows click events through
+  - Users no longer need multiple clicks to open applications
+- **Duplicate window prevention**: Desktop now prevents opening duplicate application windows
+  - Clicking an already-open app icon will focus the existing window instead
+  - Improves workflow continuity and prevents confusion
+- **Visual feedback optimization**: CSS transitions reduced from 400ms to 200ms
+  - Snappier, more responsive hover and click animations
+  - Maintains smooth spring easing curve
+
 ## [0.1.5] - 2026-04-06
 
 ### 🚀 New Features
@@ -273,7 +289,8 @@ First official release of SCP-OS - SCP Foundation Terminal System.
 - Test suite expansion (144 tests, 100% pass)
 - Comprehensive code review
 
-[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.6
 [0.1.5]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.5
 [0.1.4]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.4
 [0.1.0]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.0
