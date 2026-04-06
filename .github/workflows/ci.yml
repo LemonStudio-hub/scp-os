@@ -201,8 +201,9 @@ jobs:
         with:
           projectPath: packages/desktop
           tauriScript: pnpm --filter @scp-os/desktop tauri
+          artifactPath: packages/desktop/target/release/bundle
           tagName: v__VERSION__
-          releaseName: "v__VERSION__"
-          releaseBody: "See the [assets](https://github.com/${{ github.repository }}/releases) for this release."
+          releaseName: "SCP-OS v__VERSION__"
+          releaseBody: "## SCP Foundation Terminal v__VERSION__\n\n### 📦 桌面客户端\n\nLinux AppImage 安装包已提供。\n\n### 🔧 安装说明\n\n- **Linux**: 下载 `.AppImage.tar.gz` 文件，解压后运行\n- 赋予执行权限: `chmod +x *.AppImage`\n- 运行: `./SCP.Foundation.Terminal.AppImage`"
           releaseDraft: false
           prerelease: false
