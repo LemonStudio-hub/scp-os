@@ -1,6 +1,6 @@
 [package]
 name = "scp-os-desktop"
-version = "0.1.0"
+version = "0.1.5"
 description = "SCP Foundation Terminal Desktop Application"
 authors = ["SCP-OS Team"]
 license = "MIT"

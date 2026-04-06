@@ -1,0 +1,14 @@
+{
+  "name": "@scp-os/desktop",
+  "private": true,
+  "version": "0.1.5",
+  "description": "SCP Foundation Terminal Desktop Application (Tauri)",
+  "scripts": {
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

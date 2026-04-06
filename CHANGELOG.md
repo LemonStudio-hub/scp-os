@@ -5,6 +5,25 @@ All notable changes to SCP-OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-04-06
+
+### 🚀 New Features
+
+#### Desktop Application Release
+- **Cross-Platform Desktop Client**: Official desktop application via Tauri 2
+  - Linux (.deb), macOS (.dmg), Windows (.msi/.nsis) support
+  - Native window management with proper CSP security
+  - 1200x800 default resolution, resizable
+  - Automated CI pipeline for desktop builds
+
+### 🔧 Fixes
+
+#### CI/CD Pipeline
+- Fixed Tauri build workflow to use `tauri-apps/tauri-action@v0`
+- Corrected artifact path configuration for proper release uploads
+- Added proper Rust toolchain setup with `actions-rust-lang/setup-rust-toolchain@v1`
+- Configured deb bundle matching Tauri configuration
+
 ## [Unreleased]
 
 ### 🚀 New Features
@@ -254,5 +273,7 @@ First official release of SCP-OS - SCP Foundation Terminal System.
 - Test suite expansion (144 tests, 100% pass)
 - Comprehensive code review
 
-[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.5
+[0.1.4]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.4
 [0.1.0]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.0
