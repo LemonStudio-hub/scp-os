@@ -9,7 +9,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.{test,spec}.{js,ts}'],
-    pool: 'threads',
     maxConcurrency: 1,
     coverage: {
       provider: 'v8',
