@@ -89,6 +89,8 @@ onMounted(async () => {
               height: config.height,
             })
           })
+        }).catch(() => {
+          // Silently handle import errors
         })
       }
     },

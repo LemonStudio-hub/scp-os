@@ -45,12 +45,12 @@
                 @keydown.enter="findNext"
                 @keydown.escape="closeFindReplace"
               />
-              <button class="text-editor__find-btn" @click="findPrev">
+              <button class="text-editor__find-btn" @click="findPrev" :aria-label="Find previous">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M13 10L8 5L3 10"/>
                 </svg>
               </button>
-              <button class="text-editor__find-btn" @click="findNext">
+              <button class="text-editor__find-btn" @click="findNext" :aria-label="Find next">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M3 6L8 11L13 6"/>
                 </svg>
