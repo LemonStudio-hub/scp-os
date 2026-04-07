@@ -70,6 +70,22 @@ export type { SwipeThresholds, SwipeState } from './composables/useSwipeGesture'
 export { useTerminalEmulator } from './composables/useTerminalEmulator'
 export type { UseTerminalEmulatorOptions } from './composables/useTerminalEmulator'
 
+// Keyboard Shortcuts
+export {
+  useKeyboardShortcuts,
+  useKeyboardShortcutManager,
+  registerShortcut,
+  unregisterShortcut,
+  updateShortcut,
+  getShortcuts,
+  formatShortcut,
+  parseShortcut,
+  matchesShortcut,
+  setContext,
+  getContext,
+} from './composables/useKeyboardShortcuts'
+export type { KeyboardShortcut, ShortcutBinding } from './composables/useKeyboardShortcuts'
+
 // Components (UI primitives)
 export { default as SCPWindow } from './components/SCPWindow.vue'
 export { default as SCPToolbar } from './components/SCPToolbar.vue'

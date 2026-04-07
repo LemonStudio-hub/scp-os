@@ -6,7 +6,7 @@ import MobileApp from './gui/mobile/MobileApp.vue'
 import { useTabsStore } from './stores/tabs'
 import { useWindowManagerStore } from './gui/stores/windowManager'
 import { injectGUITokens } from './gui/design-tokens'
-import { registerAllTools, ToolRegistry } from './gui'
+import { registerAllTools, ToolRegistry, useKeyboardShortcutManager, registerShortcut, setContext } from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
@@ -18,6 +18,9 @@ const themeStore = useThemeStore()
 const { addNotification } = useNotification()
 const mobile = useMobile()
 const { t } = useI18n()
+
+// Keyboard shortcut manager
+useKeyboardShortcutManager()
 
 // Performance Dashboard state
 const showPerformanceDashboard = ref(false)
@@ -62,6 +65,75 @@ onMounted(async () => {
   // Final delay before showing app
   await new Promise(resolve => setTimeout(resolve, 300))
   isAppReady.value = true
+
+  // Register global keyboard shortcuts
+  setContext('global')
+
+  // Ctrl+T: New terminal tab
+  registerShortcut({
+    id: 'global-new-terminal',
+    keys: 'Ctrl+Shift+T',
+    description: '打开新终端',
+    category: 'global',
+    handler: () => {
+      const terminal = ToolRegistry.get('terminal')
+      if (terminal) {
+        import('./gui/registry/ToolRegistry').then(({ openTool }) => {
+          openTool('terminal', (config) => {
+            wmStore.openWindow({
+              id: config.id,
+              tool: config.tool,
+              title: config.title,
+              iconName: config.iconName,
+              width: config.width,
+              height: config.height,
+            })
+          })
+        })
+      }
+    },
+  })
+
+  // Ctrl+W: Close focused window
+  registerShortcut({
+    id: 'global-close-window',
+    keys: 'Ctrl+W',
+    description: '关闭当前窗口',
+    category: 'global',
+    handler: () => {
+      const openWindows = wmStore.openWindows
+      if (openWindows.length > 0) {
+        const lastWindow = openWindows[openWindows.length - 1]
+        wmStore.closeWindow(lastWindow.config.id)
+      }
+    },
+  })
+
+  // F11: Toggle fullscreen (browser native)
+  registerShortcut({
+    id: 'global-fullscreen',
+    keys: 'F11',
+    description: '切换全屏',
+    category: 'global',
+    handler: () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {})
+      } else {
+        document.exitFullscreen().catch(() => {})
+      }
+    },
+  })
+
+  // Ctrl+Shift+P: Toggle Performance Dashboard
+  registerShortcut({
+    id: 'global-performance-dashboard',
+    keys: 'Ctrl+Shift+P',
+    description: '切换性能面板',
+    category: 'global',
+    handler: () => {
+      showPerformanceDashboard.value = !showPerformanceDashboard.value
+    },
+  })
 
   // Test notification
   setTimeout(() => {

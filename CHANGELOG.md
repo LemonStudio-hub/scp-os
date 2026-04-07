@@ -5,6 +5,70 @@ All notable changes to SCP-OS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-04-06
+
+### 🚀 Major Update - Professional Editor, Dashboard & Shortcuts
+
+#### Text Editor Upgrade (CodeMirror 6)
+- **Professional code editor** replacing basic textarea
+  - Syntax highlighting for 7+ languages (JS/TS, Python, HTML, CSS, JSON, Markdown, SQL)
+  - Line numbers gutter with active line highlighting
+  - Bracket matching and auto-closing
+  - Code folding support
+  - Multi-cursor editing
+  - Tab indentation and auto-indent
+- **Find & Replace panel** (Ctrl+F)
+  - Real-time search with match count
+  - Navigate between matches (next/previous)
+  - Replace single occurrence
+  - Replace all occurrences
+- **Status bar** shows language, line/column position, encoding
+- **Multi-tab support** with dirty indicators
+- **Keyboard shortcuts**: Ctrl+S to save, Ctrl+F to find/replace
+- Theme-reactive styling matching the SCP aesthetic
+
+#### Desktop Dashboard
+- **Real-time performance monitoring** for desktop
+  - Performance score ring chart (0-100)
+  - Quick stats: Memory, CPU, Network latency
+- **Live history charts** with SVG-based line graphs
+  - Memory usage history (30 data points, 5s intervals)
+  - CPU usage history with gradient fills
+  - Color-coded thresholds (green/yellow/red)
+- **Detailed metrics grid**
+  - JS Heap size
+  - DOM node count
+  - Resource count
+  - Event listeners
+- **Network status panel**
+  - Connection status (Online/Slow/Offline)
+  - Latency measurement
+  - Connection type display
+- **Auto-refresh** every 5 seconds with live indicator
+- **Manual refresh** button with animation
+
+#### Keyboard Shortcuts System
+- **Global shortcut manager** with context awareness
+- **Registered shortcuts**:
+  - `Ctrl+Shift+T` — Open new terminal window
+  - `Ctrl+W` — Close focused window
+  - `F11` — Toggle fullscreen mode
+  - `Ctrl+Shift+P` — Toggle performance dashboard
+- **Editor-specific shortcuts**:
+  - `Ctrl+S` — Save current file
+  - `Ctrl+F` — Open find/replace panel
+- **Shortcut management API** for extensibility
+  - Register/unregister shortcuts dynamically
+  - Enable/disable shortcuts
+  - Context-based filtering (global, editor, terminal)
+  - Platform-aware modifier handling (Cmd on Mac, Ctrl on Windows/Linux)
+  - Formatted display (⌘T on Mac, Ctrl+T on Windows)
+
+### 🔧 Improvements
+- Dashboard now available on both desktop and mobile
+- Editor window properly sized for productivity (700x500 default)
+- Dashboard optimized for desktop with wider charts and metrics
+
 ## [0.1.7] - 2026-04-06
 
 ### 🚀 New Features
@@ -310,7 +374,8 @@ First official release of SCP-OS - SCP Foundation Terminal System.
 - Test suite expansion (144 tests, 100% pass)
 - Comprehensive code review
 
-[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/LemonStudio-hub/scp-os/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.2.0
 [0.1.7]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.7
 [0.1.6]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.6
 [0.1.5]: https://github.com/LemonStudio-hub/scp-os/releases/tag/v0.1.5

@@ -27,6 +27,7 @@ import ChatWindow from '../tools/chat/ChatWindow.vue'
 
 // Dash tools
 import MobileDash from '../tools/dash/MobileDash.vue'
+import PCDashboard from '../tools/dash/PCDashboard.vue'
 
 // Feedback tools
 import MobileFeedback from '../tools/feedback/MobileFeedback.vue'
@@ -124,18 +125,19 @@ export function registerAllTools(): void {
     mobileComponent: ChatWindow,
   })
 
-  // Dash (mobile only - Performance Dashboard)
+  // Dash (both mobile and desktop)
   ToolRegistry.register({
     id: 'dash',
     label: lbl('app.dash'),
     icon: 'dash',
     windowConfig: {
-      width: 400,
+      width: 700,
       height: 550,
-      minWidth: 300,
+      minWidth: 500,
       minHeight: 400,
       resizable: true,
     },
+    desktopComponent: PCDashboard,
     mobileComponent: MobileDash,
   })
 
