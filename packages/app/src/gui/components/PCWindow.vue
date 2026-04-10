@@ -2,9 +2,9 @@
   <div
     ref="windowRef"
     :class="['pc-window', {
-      'pc-window--focused': windowInstance.focused,
-      'pc-window--minimized': windowInstance.minimized,
-      'pc-window--maximized': windowInstance.maximized,
+      'pc-window--focused': win.focused,
+      'pc-window--minimized': win.minimized,
+      'pc-window--maximized': win.maximized,
     }]"
     :style="windowStyle"
     @mousedown="onWindowClick"
@@ -16,11 +16,11 @@
       @mousedown="onTitleBarMouseDown"
     >
       <div class="pc-window__header-title">
-        <span class="pc-window__title">{{ windowInstance.config.title }}</span>
+        <span class="pc-window__title">{{ win.config.title }}</span>
       </div>
       <div class="pc-window__header-actions">
         <button
-          v-if="windowInstance.config.minimizable"
+          v-if="win.config.minimizable"
           class="pc-window__btn pc-window__btn--icon pc-window__btn--minimize"
           :title="t('pc.minimize')"
           @click.stop="onMinimize"
@@ -28,12 +28,12 @@
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="6" width="8" height="1.5" rx="0.75"/></svg>
         </button>
         <button
-          v-if="windowInstance.config.maximizable"
+          v-if="win.config.maximizable"
           class="pc-window__btn pc-window__btn--icon pc-window__btn--maximize"
-          :title="windowInstance.maximized ? t('pc.restore') : t('pc.maximize')"
+          :title="win.maximized ? t('pc.restore') : t('pc.maximize')"
           @click.stop="onMaximize"
         >
-          <svg v-if="!windowInstance.maximized" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <svg v-if="!win.maximized" width="12" height="12" viewBox="0 0 12 12" fill="none">
             <rect x="2" y="2" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
           </svg>
           <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -42,7 +42,7 @@
           </svg>
         </button>
         <button
-          v-if="windowInstance.config.closable !== false"
+          v-if="win.config.closable !== false"
           class="pc-window__btn pc-window__btn--icon pc-window__btn--close"
           :title="t('pc.close')"
           @click.stop="onClose"
@@ -60,7 +60,7 @@
     </div>
 
     <!-- Resize Handles -->
-    <template v-if="windowInstance.config.resizable !== false && !windowInstance.maximized">
+    <template v-if="win.config.resizable !== false && !win.maximized">
       <div class="pc-window__resize pc-window__resize--n" @mousedown.stop="onResizeStart('n', $event)" />
       <div class="pc-window__resize pc-window__resize--s" @mousedown.stop="onResizeStart('s', $event)" />
       <div class="pc-window__resize pc-window__resize--e" @mousedown.stop="onResizeStart('e', $event)" />
@@ -84,7 +84,7 @@ import { useWindowManagerStore } from '../stores/windowManager'
 const { t } = useI18n()
 
 interface Props {
-  windowInstance: WindowInstance
+  windowInstance?: WindowInstance
 }
 
 const props = defineProps<Props>()
@@ -94,6 +94,17 @@ const emit = defineEmits<{
   maximize: []
   focus: []
 }>()
+
+// Safe window instance with defaults for standalone usage
+const win = computed(() => props.windowInstance ?? {
+  config: { id: '', title: '', minimizable: true, maximizable: true, closable: true, resizable: true },
+  position: { x: 0, y: 0 },
+  size: { width: 800, height: 600 },
+  zIndex: 100,
+  focused: true,
+  minimized: false,
+  maximized: false,
+} as WindowInstance)
 
 const windowManager = useWindowManagerStore()
 
@@ -116,7 +127,7 @@ const { dragState, handleMouseDown: onTitleBarMouseDown, stop: stopDrag } = useD
   {
     boundary: getScreenBounds(),
     onMove: (x: number, y: number) => {
-      windowManager.updateWindowPosition(props.windowInstance.config.id, Math.round(x), Math.round(y))
+      windowManager.updateWindowPosition(win.value.config.id, Math.round(x), Math.round(y))
     },
   }
 )
@@ -125,12 +136,12 @@ const { dragState, handleMouseDown: onTitleBarMouseDown, stop: stopDrag } = useD
 const { handleMouseDown: onResizeStart, stop: stopResize, setInitialSize } = useResizable(
   windowRef,
   {
-    minWidth: props.windowInstance.config.minWidth ?? 320,
-    minHeight: props.windowInstance.config.minHeight ?? 240,
+    minWidth: win.value.config.minWidth ?? 320,
+    minHeight: win.value.config.minHeight ?? 240,
     maxWidth: window.innerWidth,
     maxHeight: window.innerHeight,
     onResize: (width: number, height: number, x: number, y: number) => {
-      windowManager.updateWindowDimensions(props.windowInstance.config.id, {
+      windowManager.updateWindowDimensions(win.value.config.id, {
         x: Math.round(x),
         y: Math.round(y),
         width: Math.round(width),
@@ -142,7 +153,7 @@ const { handleMouseDown: onResizeStart, stop: stopResize, setInitialSize } = use
 
 // ── Window Style (Single Source of Truth) ────────────────────────────
 const windowStyle = computed(() => {
-  const { position, size, zIndex, minimized, maximized } = props.windowInstance
+  const { position, size, zIndex, minimized, maximized } = win.value
 
   if (minimized) {
     return { display: 'none' as const }
@@ -169,31 +180,31 @@ const windowStyle = computed(() => {
 
 // ── Event Handlers ───────────────────────────────────────────────────
 function onWindowClick() {
-  if (!props.windowInstance.focused) {
-    windowManager.focusWindow(props.windowInstance.config.id)
+  if (!win.value.focused) {
+    windowManager.focusWindow(win.value.config.id)
     emit('focus')
   }
 }
 
 function onClose() {
-  windowManager.closeWindow(props.windowInstance.config.id)
+  windowManager.closeWindow(win.value.config.id)
   emit('close')
 }
 
 function onMinimize() {
-  windowManager.minimizeWindow(props.windowInstance.config.id)
+  windowManager.minimizeWindow(win.value.config.id)
   emit('minimize')
 }
 
 function onMaximize() {
-  windowManager.maximizeWindow(props.windowInstance.config.id)
+  windowManager.maximizeWindow(win.value.config.id)
   emit('maximize')
 }
 
 // ── Lifecycle ────────────────────────────────────────────────────────
 onMounted(() => {
   // Set initial position/size in composables
-  const { position, size } = props.windowInstance
+  const { position, size } = win.value
   dragState.value.currentX = position.x
   dragState.value.currentY = position.y
   dragState.value.initialX = position.x

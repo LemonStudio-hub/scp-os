@@ -107,7 +107,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '../../stores/authStore'
 
 const emit = defineEmits<{
   'login-success': []
@@ -142,7 +142,7 @@ function onInputChange(): void {
   }
 }
 
-async function handleLogin(): void {
+async function handleLogin(): Promise<void> {
   const trimmedNickname = nickname.value.trim()
 
   // Client-side validation
