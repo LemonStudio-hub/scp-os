@@ -35,6 +35,7 @@ import HomeScreen from './HomeScreen.vue'
 import DesktopScreen from '../desktop/DesktopScreen.vue'
 import { useMobile } from '../composables/useMobile'
 import { useWindowManagerStore } from '../stores/windowManager'
+import { useAuthStore } from '../../stores/authStore'
 import { ToolRegistry, openTool } from '../registry/ToolRegistry'
 import type { HomeApp } from './HomeScreen.vue'
 import type { DesktopApp } from '../desktop/DesktopScreen.vue'
@@ -42,6 +43,7 @@ import type { ToolType } from '../types'
 
 const mobile = useMobile()
 const wmStore = useWindowManagerStore()
+const authStore = useAuthStore()
 
 // On mobile, we track the "active tool" instead of floating windows
 const activeTool = computed<ToolType | null>(() => {
@@ -56,6 +58,12 @@ const activeToolModule = computed(() => {
 })
 
 function onHomeLaunch(app: HomeApp | DesktopApp): void {
+  // Security check: prevent launching apps if not logged in
+  if (!authStore.isLoggedIn) {
+    console.warn('[MobileApp] Attempted to launch app while not logged in')
+    return
+  }
+
   // Guard: prevent opening duplicate windows on desktop
   if (!mobile.isMobile.value) {
     const existingWindow = wmStore.getWindowByTool(app.tool as ToolType)
@@ -84,6 +92,12 @@ function onHomeLaunch(app: HomeApp | DesktopApp): void {
 }
 
 function closeActiveTool(): void {
+  // Security check: prevent closing tools if not logged in
+  if (!authStore.isLoggedIn) {
+    console.warn('[MobileApp] Attempted to close tool while not logged in')
+    return
+  }
+
   const topWindow = wmStore.openWindows[wmStore.openWindows.length - 1]
   if (topWindow) {
     wmStore.closeWindow(topWindow.config.id)

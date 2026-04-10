@@ -24,6 +24,7 @@ import MobileSettings from '../tools/settings/MobileSettings.vue'
 
 // Chat tools
 import ChatWindow from '../tools/chat/ChatWindow.vue'
+import PCChatWindow from '../tools/chat/PCChatWindow.vue'
 
 // Dash tools
 import MobileDash from '../tools/dash/MobileDash.vue'
@@ -31,6 +32,7 @@ import PCDashboard from '../tools/dash/PCDashboard.vue'
 
 // Feedback tools
 import MobileFeedback from '../tools/feedback/MobileFeedback.vue'
+import PCFeedbackWindow from '../tools/feedback/PCFeedbackWindow.vue'
 
 // i18n — resolved at runtime via the composable
 // Labels are functions that call t() when evaluated (in openTool / getToolLabel)
@@ -122,7 +124,7 @@ export function registerAllTools(): void {
       minHeight: 400,
       resizable: true,
     },
-    desktopComponent: ChatWindow,
+    desktopComponent: PCChatWindow,
     mobileComponent: ChatWindow,
   })
 
@@ -154,7 +156,7 @@ export function registerAllTools(): void {
       minHeight: 450,
       resizable: true,
     },
-    desktopComponent: MobileFeedback,
+    desktopComponent: PCFeedbackWindow,
     mobileComponent: MobileFeedback,
   })
 }

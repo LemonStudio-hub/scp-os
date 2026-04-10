@@ -18,6 +18,23 @@ export const en = {
   'common.n/a': 'N/A',
   'common.file': 'File',
 
+  // ── Login ─────────────────────────────────────────────────────────────
+  'login.welcome': 'Welcome',
+  'login.subtitle': 'Enter your work code to begin',
+  'login.placeholder': 'Work code / Nickname',
+  'login.button': 'Start',
+  'login.verifying': 'Verifying...',
+  'login.errorEmpty': 'Please enter your work code',
+  'login.errorLength': 'Nickname must be 2-20 characters',
+  'login.errorFormat': 'Only letters, numbers, underscores and Chinese',
+  'login.errorNetwork': 'Network error, please retry',
+  'login.errorGeneric': 'Login failed, please try again',
+  'login.footer': 'SCP Foundation — Secure. Contain. Protect.',
+  'login.welcomeBack': 'Welcome Back',
+  'login.workCodeLabel': 'WORK CODE',
+  'login.charCount': '{max} characters max',
+  'login.minChars': 'At least {min} characters required',
+
   // ── Loading Steps ───────────────────────────────────────────────────
   'loading.steps.initializing': 'Initializing...',
   'loading.steps.themes': 'Loading themes...',
@@ -25,6 +42,7 @@ export const en = {
   'loading.steps.components': 'Registering components...',
   'loading.steps.data': 'Loading data...',
   'loading.steps.windows': 'Restoring windows...',
+  'loading.steps.auth': 'Checking authentication...',
   'loading.steps.ready': 'Ready',
 
   // ── App Names ───────────────────────────────────────────────────────
@@ -246,6 +264,23 @@ export const zhCN: Record<string, string> = {
   'common.n/a': '暂无',
   'common.file': '文件',
 
+  // ── Login ─────────────────────────────────────────────────────────────
+  'login.welcome': '欢迎',
+  'login.subtitle': '输入您的工作代号以开始',
+  'login.placeholder': '工作代号 / 昵称',
+  'login.button': '开始',
+  'login.verifying': '验证中...',
+  'login.errorEmpty': '请输入您的工作代号',
+  'login.errorLength': '昵称长度需在 2-20 个字符之间',
+  'login.errorFormat': '仅允许字母、数字、下划线和中文',
+  'login.errorNetwork': '网络错误，请重试',
+  'login.errorGeneric': '登录失败，请重试',
+  'login.footer': 'SCP Foundation — 安全、收容、保护',
+  'login.welcomeBack': '欢迎回来',
+  'login.workCodeLabel': '工作代号',
+  'login.charCount': '最多 {max} 个字符',
+  'login.minChars': '至少需要 {min} 个字符',
+
   // ── Loading Steps ───────────────────────────────────────────────────
   'loading.steps.initializing': '正在初始化...',
   'loading.steps.themes': '加载主题...',
@@ -253,6 +288,7 @@ export const zhCN: Record<string, string> = {
   'loading.steps.components': '注册组件...',
   'loading.steps.data': '加载数据...',
   'loading.steps.windows': '恢复窗口...',
+  'loading.steps.auth': '检查认证状态...',
   'loading.steps.ready': '准备就绪',
 
   // ── App Names ───────────────────────────────────────────────────────

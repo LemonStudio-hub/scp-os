@@ -255,10 +255,18 @@ onUnmounted(() => {
   border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
   border-bottom: none;
   border-radius: var(--gui-radius-xl, 14px) var(--gui-radius-xl, 14px) 0 0;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.5), 0 -4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.5), 0 -4px 16px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.03);
   overflow: hidden;
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   animation: menuSlideUp 0.35s var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
+.pc-start-menu:hover {
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6), 0 -6px 20px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: var(--gui-glass-bg-strong, rgba(32, 32, 34, 0.98));
 }
 
 @keyframes menuSlideUp {
@@ -420,16 +428,19 @@ onUnmounted(() => {
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
+  box-shadow: inset 0 0 0 1px transparent;
 }
 
 .pc-start-menu__app:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
-  transform: scale(1.04);
+  transform: scale(1.08) translateY(-2px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 .pc-start-menu__app:active {
-  transform: scale(0.92);
+  transform: scale(0.92) translateY(0);
   opacity: 0.7;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 .pc-start-menu__app-icon {
@@ -442,17 +453,33 @@ onUnmounted(() => {
   border-radius: var(--gui-radius-lg, 12px);
   color: var(--gui-text-primary, #FFFFFF);
   transition: all var(--gui-transition-base, 200ms ease);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.pc-start-menu__app:hover .pc-start-menu__app-icon {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: scale(1.05);
 }
 
 .pc-start-menu__app-label {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #000000);
+  color: var(--gui-text-primary, #FFFFFF);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
+.pc-start-menu__app:hover .pc-start-menu__app-label {
+  color: var(--gui-accent, #8E8E93);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  transform: translateY(-1px);
 }
 
 /* ── System Options ────────────────────────────────────────────────── */

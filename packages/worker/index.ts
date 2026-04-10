@@ -6,6 +6,7 @@
 import { getConfig } from './shared/config'
 import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput } from './shared/types'
 import * as feedbackAPI from './api/feedback'
+import * as userAPI from './api/user'
 
 // 解析器
 import { HTMLParser } from './parsers/htmlParser'
@@ -1287,6 +1288,39 @@ export default {
         // 获取反馈分类统计
         const result = await feedbackAPI.getFeedbackCategories(scraper['db'] as D1Database)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/api/user/register') {
+        // 注册/更新用户信息
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        try {
+          const body = await request.json() as any
+          const { userId, nickname } = body
+
+          if (!userId || !nickname) {
+            return corsManager.createErrorResponse('Missing userId or nickname', 400, context)
+          }
+
+          const result = await userAPI.registerUser(scraper['db'] as D1Database, { userId, nickname })
+          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+        } catch (error) {
+          logger.error('Failed to register user', error as Error)
+          return corsManager.createErrorResponse('Invalid request body', 400, context)
+        }
+      } else if (path.startsWith('/api/user/') && path !== '/api/user/register') {
+        // 获取用户信息（根据 UUID）
+        if (request.method !== 'GET') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        const userId = path.replace('/api/user/', '')
+        if (!userId) {
+          return corsManager.createErrorResponse('Missing userId', 400, context)
+        }
+
+        const result = await userAPI.getUserByUserId(scraper['db'] as D1Database, userId)
+        return corsManager.createResponse(result, result.success ? 200 : 404, context)
       } else if (path === '/chat/broadcast') {
         // 定时任务：广播新消息
         const result = await scraper.broadcastNewMessages()

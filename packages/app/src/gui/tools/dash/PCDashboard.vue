@@ -498,6 +498,8 @@ function onClose(): void {
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
   overflow-y: auto;
   padding: 16px;
+  background-image: radial-gradient(circle at 50% 50%, rgba(142, 142, 147, 0.05) 0%, transparent 70%);
+  background-attachment: fixed;
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -591,6 +593,28 @@ function onClose(): void {
   background: var(--gui-bg-surface, #2C2C2E);
   border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all var(--gui-transition-base, 200ms ease);
+  animation: cardFadeIn 0.4s ease both;
+}
+
+.pc-dashboard__score-section:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .pc-dashboard__score-ring {
@@ -685,7 +709,18 @@ function onClose(): void {
   border-radius: 12px;
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
-  animation: chartFadeIn 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all var(--gui-transition-base, 200ms ease);
+  animation: cardFadeIn 0.4s ease both;
+  animation-delay: 0.1s;
+}
+
+.pc-dashboard__chart-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
 }
 
 @keyframes chartFadeIn {
@@ -744,6 +779,18 @@ function onClose(): void {
   display: flex;
   align-items: center;
   gap: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all var(--gui-transition-base, 200ms ease);
+  animation: cardFadeIn 0.4s ease both;
+  animation-delay: 0.2s;
+}
+
+.pc-dashboard__metric-item:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
 }
 
 .pc-dashboard__metric-icon {
@@ -786,6 +833,18 @@ function onClose(): void {
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
   margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: all var(--gui-transition-base, 200ms ease);
+  animation: cardFadeIn 0.4s ease both;
+  animation-delay: 0.3s;
+}
+
+.pc-dashboard__network:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
 }
 
 .pc-dashboard__network-header {

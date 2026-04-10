@@ -3,8 +3,11 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import PCNotification from './gui/components/PCNotification.vue'
 import MobileApp from './gui/mobile/MobileApp.vue'
+import LoginScreen from './gui/mobile/LoginScreen.vue'
+import PCLoginScreen from './gui/desktop/PCLoginScreen.vue'
 import { useTabsStore } from './stores/tabs'
 import { useWindowManagerStore } from './gui/stores/windowManager'
+import { useAuthStore } from './stores/authStore'
 import { injectGUITokens } from './gui/design-tokens'
 import { registerAllTools, ToolRegistry, useKeyboardShortcutManager, registerShortcut, setContext } from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
@@ -14,6 +17,7 @@ import { useI18n } from './gui/composables/useI18n'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
+const authStore = useAuthStore()
 const themeStore = useThemeStore()
 const { addNotification } = useNotification()
 const mobile = useMobile()
@@ -29,6 +33,9 @@ const showPerformanceDashboard = ref(false)
 const isAppReady = ref(false)
 const loadingProgress = ref(0)
 const loadingStep = ref('loading.steps.initializing')
+
+// Auth state
+const isAuthReady = ref(false)
 
 onMounted(async () => {
   // Step 1: Initialize theme store
@@ -65,6 +72,11 @@ onMounted(async () => {
   // Final delay before showing app
   await new Promise(resolve => setTimeout(resolve, 300))
   isAppReady.value = true
+
+  // Step 6: Initialize authentication state
+  loadingStep.value = 'loading.steps.auth'
+  await authStore.initAuth()
+  isAuthReady.value = true
 
   // Register global keyboard shortcuts
   setContext('global')
@@ -151,11 +163,21 @@ onMounted(async () => {
 onUnmounted(() => {
   // Nothing to clean up for now
 })
+
+/**
+ * Handle successful login
+ * Called when user completes login from LoginScreen or PCLoginScreen
+ */
+function handleLoginSuccess(): void {
+  // The authStore.isLoggedIn is already set to true by the login action
+  // This function can be extended for additional post-login logic
+  console.log('[App] User logged in successfully, transitioning to main interface')
+}
 </script>
 
 <template>
   <!-- App Loading Overlay -->
-  <div v-if="!isAppReady" class="app-loading-overlay">
+  <div v-if="!isAppReady || !isAuthReady" class="app-loading-overlay">
     <div class="app-loading-content">
       <!-- SCP Logo Animation -->
       <div class="app-loading-logo">
@@ -184,31 +206,49 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <!-- MobileApp handles mobile vs desktop routing internally -->
-  <MobileApp :class="{ 'app-loaded': isAppReady }">
-    <!-- Desktop-only components (only mounted on desktop) -->
-    <template v-if="!mobile.isMobile.value">
-      <!-- Performance Dashboard -->
-      <PerformanceDashboard
-        :isVisible="showPerformanceDashboard"
-        @close="showPerformanceDashboard = false"
+  <!-- Login Screen (shown when auth is ready but user not logged in) -->
+  <transition name="fade" mode="out-in">
+    <template v-if="isAuthReady && !authStore.isLoggedIn">
+      <LoginScreen
+        v-if="mobile.isMobile.value"
+        key="mobile-login"
+        @login-success="handleLoginSuccess"
       />
-
-      <!-- GUI Windows rendered via ToolRegistry (dynamic, no hardcoded v-if chain) -->
-      <template v-for="win in wmStore.openWindows" :key="win.config.id">
-        <!-- Existing tools (FileManagerWindow, EditorWindow, TerminalPanel) have their own window chrome -->
-        <!-- They are rendered directly without PCWindow wrapper -->
-        <component
-          :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
-          :window-instance="win"
-          :window-id="win.config.id"
-        />
-      </template>
+      <PCLoginScreen
+        v-else
+        key="desktop-login"
+        @login-success="handleLoginSuccess"
+      />
     </template>
 
-    <!-- System Notifications (always rendered) -->
-    <PCNotification />
-  </MobileApp>
+    <!-- Main App (shown when user is logged in) -->
+    <template v-else-if="isAuthReady && authStore.isLoggedIn">
+      <MobileApp :class="{ 'app-loaded': true }" key="main-app">
+        <!-- Desktop-only components (only mounted on desktop) -->
+        <template v-if="!mobile.isMobile.value">
+          <!-- Performance Dashboard -->
+          <PerformanceDashboard
+            :isVisible="showPerformanceDashboard"
+            @close="showPerformanceDashboard = false"
+          />
+
+          <!-- GUI Windows rendered via ToolRegistry (dynamic, no hardcoded v-if chain) -->
+          <template v-for="win in wmStore.openWindows" :key="win.config.id">
+            <!-- Existing tools (FileManagerWindow, EditorWindow, TerminalPanel) have their own window chrome -->
+            <!-- They are rendered directly without PCWindow wrapper -->
+            <component
+              :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
+              :window-instance="win"
+              :window-id="win.config.id"
+            />
+          </template>
+        </template>
+
+        <!-- System Notifications (always rendered) -->
+        <PCNotification />
+      </MobileApp>
+    </template>
+  </transition>
 </template>
 
 <style>
@@ -238,5 +278,27 @@ body {
   overflow: hidden;
   position: relative;
   padding-bottom: 48px; /* Reserve space for toolbar */
+}
+
+/* ── Fade Transition for Login/Main App Switching ──────────────── */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 </style>

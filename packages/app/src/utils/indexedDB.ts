@@ -523,6 +523,36 @@ class IndexedDBService {
       request.onerror = () => reject(request.error)
     })
   }
+
+  // ==================== User Authentication ====================
+
+  /**
+   * 保存用户昵称
+   */
+  async saveNickname(nickname: string): Promise<void> {
+    return this.saveSetting('nickname', nickname)
+  }
+
+  /**
+   * 获取已保存的昵称
+   */
+  async getNickname(): Promise<string | null> {
+    const value = await this.loadSetting('nickname')
+    return value as string | null
+  }
+
+  /**
+   * 清除用户相关数据（昵称等）
+   */
+  async clearUserData(): Promise<void> {
+    try {
+      await this.deleteSetting('nickname')
+      console.log('[IndexedDB] User data cleared')
+    } catch (error) {
+      console.error('[IndexedDB] Failed to clear user data:', error)
+      throw error
+    }
+  }
 }
 
 // Export singleton instance
