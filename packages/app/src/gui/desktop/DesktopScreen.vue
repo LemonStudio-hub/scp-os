@@ -408,17 +408,24 @@ const onContextMenuSelect = (item: ContextMenuItem) => {
 }
 
 // Close start menu when clicking outside
-const startMenuRef = ref<HTMLElement | null>(null)
-const startButtonRef = ref<HTMLElement | null>(null)
-const contextMenuRef = ref<HTMLElement | null>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const startMenuRef = ref<any>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const startButtonRef = ref<any>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const contextMenuRef = ref<any>(null)
 
 function handleClickOutside(event: MouseEvent) {
-  if (startMenuRef.value && !startMenuRef.value.contains(event.target as Node) &&
-      startButtonRef.value && !startButtonRef.value.contains(event.target as Node)) {
+  const startMenuEl = startMenuRef.value?.$el ?? startMenuRef.value
+  const startButtonEl = startButtonRef.value?.$el ?? startButtonRef.value
+  const contextMenuEl = contextMenuRef.value?.$el ?? contextMenuRef.value
+
+  if (startMenuEl && !startMenuEl.contains(event.target as Node) &&
+      startButtonEl && !startButtonEl.contains(event.target as Node)) {
     isStartMenuOpen.value = false
   }
 
-  if (contextMenuRef.value && !contextMenuRef.value.contains(event.target as Node)) {
+  if (contextMenuEl && !contextMenuEl.contains(event.target as Node)) {
     contextMenu.value.visible = false
   }
 }
