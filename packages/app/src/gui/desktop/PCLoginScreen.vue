@@ -132,7 +132,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/stores'
+import { useAuthStore } from '../../stores/authStore'
 
 const emit = defineEmits<{
   'login-success': []
