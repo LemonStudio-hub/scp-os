@@ -447,7 +447,7 @@ onUnmounted(() => {
 .pc-start-menu__app-label {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #000000);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;

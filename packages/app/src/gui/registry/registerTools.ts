@@ -110,7 +110,7 @@ export function registerAllTools(): void {
     mobileComponent: MobileSettings,
   })
 
-  // Chat (mobile only)
+  // Chat (both mobile and desktop)
   ToolRegistry.register({
     id: 'chat',
     label: lbl('app.chat'),
@@ -122,6 +122,7 @@ export function registerAllTools(): void {
       minHeight: 400,
       resizable: true,
     },
+    desktopComponent: ChatWindow,
     mobileComponent: ChatWindow,
   })
 
@@ -141,7 +142,7 @@ export function registerAllTools(): void {
     mobileComponent: MobileDash,
   })
 
-  // Feedback (mobile only - Public Feedback Board)
+  // Feedback (both mobile and desktop - Public Feedback Board)
   ToolRegistry.register({
     id: 'feedback',
     label: lbl('app.feedback'),
@@ -153,6 +154,7 @@ export function registerAllTools(): void {
       minHeight: 450,
       resizable: true,
     },
+    desktopComponent: MobileFeedback,
     mobileComponent: MobileFeedback,
   })
 }

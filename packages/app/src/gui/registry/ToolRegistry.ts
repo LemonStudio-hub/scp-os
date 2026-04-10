@@ -112,6 +112,7 @@ export function openTool(toolId: ToolType, openWindow: (config: {
   iconName?: string
   width: number
   height: number
+  isFullscreen?: boolean
 }) => void): void {
   const tool = ToolRegistry.get(toolId)
   if (!tool) {
@@ -131,6 +132,7 @@ export function openTool(toolId: ToolType, openWindow: (config: {
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
+    isFullscreen: true, // Default to fullscreen on PC
   })
 }
 

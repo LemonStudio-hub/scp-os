@@ -32,6 +32,7 @@ export interface WindowConfig {
   closable?: boolean
   minimizable?: boolean
   maximizable?: boolean
+  isFullscreen?: boolean
 }
 
 export interface WindowInstance {
