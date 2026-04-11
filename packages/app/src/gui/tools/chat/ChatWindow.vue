@@ -9,21 +9,50 @@
       <!-- Room Selector -->
       <div class="chat-app__room-selector">
         <div class="chat-app__rooms">
-          <button
-            v-for="room in rooms"
-            :key="room.id"
-            class="chat-app__room-tab"
-            :class="{ 'chat-app__room-tab--active': currentRoomId === room.id }"
-            @click="switchRoom(room.id)"
-          >
-            <span class="chat-app__room-label">{{ room.name }}</span>
-            <span v-if="getUnreadCount(room.id) > 0" class="chat-app__room-badge">{{ getUnreadCount(room.id) }}</span>
-          </button>
-          <button class="chat-app__room-tab chat-app__room-tab--add" @click="showCreateRoom = true">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
+          <!-- 加载状态 -->
+          <div v-if="loadingRooms" class="chat-app__loading-rooms">
+            <div class="chat-app__loading-dot"></div>
+            <div class="chat-app__loading-dot"></div>
+            <div class="chat-app__loading-dot"></div>
+          </div>
+          <!-- 聊天室列表 -->
+          <template v-else>
+            <div
+              v-for="room in rooms"
+              :key="room.id"
+              class="chat-app__room-item"
+              :class="{ 'chat-app__room-item--active': currentRoomId === room.id }"
+            >
+              <div class="chat-app__room-header" @click="switchRoom(room.id)">
+                <div class="chat-app__room-info">
+                  <span class="chat-app__room-name">{{ room.name }}</span>
+                  <span class="chat-app__room-meta">
+                    <span class="chat-app__room-members">{{ room.member_count }} 人</span>
+                    <span v-if="getUnreadCount(room.id) > 0" class="chat-app__room-badge">{{ getUnreadCount(room.id) }}</span>
+                  </span>
+                </div>
+                <div class="chat-app__room-last-message" v-if="room.last_message">
+                  <span class="chat-app__room-last-sender">{{ room.last_message_sender }}: </span>
+                  <span class="chat-app__room-last-content">{{ truncateMessage(room.last_message) }}</span>
+                </div>
+              </div>
+              <!-- 室长设置按钮 -->
+              <button
+                v-if="room.created_by === userId"
+                class="chat-app__room-settings-btn"
+                @click.stop="openRoomSettings(room)"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 1.66667C5.46 1.66667 1.66667 5.46 1.66667 10C1.66667 14.54 5.46 18.3333 10 18.3333C14.54 18.3333 18.3333 14.54 18.3333 10C18.3333 5.46 14.54 1.66667 10 1.66667ZM10 16.6667C6.43 16.6667 3.33333 13.57 3.33333 10C3.33333 6.43 6.43 3.33333 10 3.33333C13.57 3.33333 16.6667 6.43 16.6667 10C16.6667 13.57 13.57 16.6667 10 16.6667ZM10 8.33333C10.46 8.33333 10.8333 8.70667 10.8333 9.16667V10.8333C10.8333 11.2933 10.46 11.6667 10 11.6667C9.54 11.6667 9.16667 11.2933 9.16667 10.8333V9.16667C9.16667 8.70667 9.54 8.33333 10 8.33333Z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <button class="chat-app__room-tab chat-app__room-tab--add" @click="showCreateRoom = true">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </template>
         </div>
         <button class="chat-app__nickname-btn" @click="showNicknameDialog = true">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -102,7 +131,7 @@
 
       <!-- Create Room Dialog -->
       <Transition name="gui-ios-fade">
-        <div v-if="showCreateRoom" class="chat-app__dialog-overlay" @click.self="showCreateRoom = false">
+        <div v-if="showCreateRoom" class="chat-app__dialog-overlay" @click.self="closeCreateRoomDialog">
           <div class="chat-app__dialog">
             <h3 class="chat-app__dialog-title">{{ t('chat.createRoom') }}</h3>
             <input
@@ -111,11 +140,33 @@
               class="chat-app__dialog-input"
               :placeholder="t('chat.roomPlaceholder')"
               maxlength="50"
-              @keyup.enter="createRoom"
+              :disabled="creatingRoom"
             />
+            <textarea
+              v-model="newRoomDescription"
+              class="chat-app__dialog-textarea"
+              :placeholder="t('chat.roomDescriptionPlaceholder')"
+              maxlength="200"
+              :disabled="creatingRoom"
+            ></textarea>
+            <div class="chat-app__dialog-toggle">
+              <span class="chat-app__dialog-toggle-label">{{ t('chat.privateRoom') }}</span>
+              <label class="chat-app__toggle">
+                <input
+                  type="checkbox"
+                  v-model="newRoomPrivate"
+                  :disabled="creatingRoom"
+                />
+                <span class="chat-app__toggle-slider"></span>
+              </label>
+            </div>
+            <div v-if="createRoomError" class="chat-app__dialog-error">{{ createRoomError }}</div>
             <div class="chat-app__dialog-actions">
-              <button class="chat-app__dialog-btn" @click="showCreateRoom = false">{{ t('common.cancel') }}</button>
-              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="createRoom">{{ t('common.create') }}</button>
+              <button class="chat-app__dialog-btn" @click="closeCreateRoomDialog" :disabled="creatingRoom">{{ t('common.cancel') }}</button>
+              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="createRoom" :disabled="!newRoomName.trim() || creatingRoom">
+                <span v-if="!creatingRoom">{{ t('common.create') }}</span>
+                <div v-else class="chat-app__spinner"></div>
+              </button>
             </div>
           </div>
         </div>
@@ -138,6 +189,54 @@
               <button class="chat-app__dialog-btn" @click="showNicknameDialog = false">{{ t('common.cancel') }}</button>
               <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="saveNickname">{{ t('common.save') }}</button>
             </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Room Settings Dialog -->
+      <Transition name="gui-ios-fade">
+        <div v-if="showRoomSettings" class="chat-app__dialog-overlay" @click.self="closeRoomSettingsDialog">
+          <div class="chat-app__dialog">
+            <h3 class="chat-app__dialog-title">{{ t('chat.roomSettings') }}</h3>
+            <input
+              v-model="editRoomName"
+              type="text"
+              class="chat-app__dialog-input"
+              :placeholder="t('chat.roomPlaceholder')"
+              maxlength="50"
+              :disabled="savingRoomSettings"
+            />
+            <textarea
+              v-model="editRoomDescription"
+              class="chat-app__dialog-textarea"
+              :placeholder="t('chat.roomDescriptionPlaceholder')"
+              maxlength="200"
+              :disabled="savingRoomSettings"
+            ></textarea>
+            <div class="chat-app__dialog-toggle">
+              <span class="chat-app__dialog-toggle-label">{{ t('chat.privateRoom') }}</span>
+              <label class="chat-app__toggle">
+                <input
+                  type="checkbox"
+                  v-model="editRoomPrivate"
+                  :disabled="savingRoomSettings"
+                />
+                <span class="chat-app__toggle-slider"></span>
+              </label>
+            </div>
+            <div v-if="roomSettingsError" class="chat-app__dialog-error">{{ roomSettingsError }}</div>
+            <div class="chat-app__dialog-actions">
+              <button class="chat-app__dialog-btn" @click="closeRoomSettingsDialog" :disabled="savingRoomSettings || deletingRoom">{{ t('common.cancel') }}</button>
+              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="saveRoomSettings" :disabled="!editRoomName.trim() || savingRoomSettings || deletingRoom">
+                <span v-if="!savingRoomSettings">{{ t('common.save') }}</span>
+                <div v-else class="chat-app__spinner"></div>
+              </button>
+            </div>
+            <div class="chat-app__dialog-divider"></div>
+            <button class="chat-app__dialog-btn chat-app__dialog-btn--danger" @click="deleteRoom" :disabled="savingRoomSettings || deletingRoom">
+              <span v-if="!deletingRoom">{{ t('chat.deleteRoom') }}</span>
+              <div v-else class="chat-app__spinner"></div>
+            </button>
           </div>
         </div>
       </Transition>
@@ -175,6 +274,12 @@ interface ChatRoom {
   name: string
   description: string
   message_count: number
+  member_count: number
+  last_message: string
+  last_message_sender: string
+  last_message_time: string
+  created_by: string
+  is_private?: boolean
 }
 
 defineProps<Props>()
@@ -194,6 +299,7 @@ const messages = reactive<ChatMessage[]>([])
 const rooms = reactive<ChatRoom[]>([])
 const currentRoomId = ref(1)
 const loading = ref(false)
+const loadingRooms = ref(false)
 const sending = ref(false)
 const nickname = ref('')
 const rateLimitWarning = ref('')
@@ -204,7 +310,19 @@ let userId = ''
 // Dialogs
 const showCreateRoom = ref(false)
 const showNicknameDialog = ref(false)
+const showRoomSettings = ref(false)
+const editingRoomId = ref<number | null>(null)
+const editRoomName = ref('')
+const editRoomDescription = ref('')
+const editRoomPrivate = ref(false)
+const savingRoomSettings = ref(false)
+const roomSettingsError = ref('')
+const deletingRoom = ref(false)
 const newRoomName = ref('')
+const newRoomDescription = ref('')
+const newRoomPrivate = ref(false)
+const creatingRoom = ref(false)
+const createRoomError = ref('')
 const newNickname = ref('')
 
 // 未读消息追踪
@@ -267,6 +385,7 @@ async function loadUnreadCounts() {
 }
 
 async function loadRooms() {
+  loadingRooms.value = true
   try {
     const response = await fetch(`${API_BASE}/chat/rooms`)
     const data = await response.json()
@@ -286,6 +405,8 @@ async function loadRooms() {
     }
   } catch (error) {
     console.error('[Chat] Failed to load rooms:', error)
+  } finally {
+    loadingRooms.value = false
   }
 }
 
@@ -321,15 +442,49 @@ async function saveNickname() {
   }
 }
 
-async function createRoom() {
-  if (!newRoomName.value.trim()) return
+function closeCreateRoomDialog() {
+  showCreateRoom.value = false
+  newRoomName.value = ''
+  newRoomDescription.value = ''
+  newRoomPrivate.value = false
+  createRoomError.value = ''
+  creatingRoom.value = false
+}
+
+function openRoomSettings(room: ChatRoom) {
+  editingRoomId.value = room.id
+  editRoomName.value = room.name
+  editRoomDescription.value = room.description
+  editRoomPrivate.value = room.is_private || false
+  roomSettingsError.value = ''
+  showRoomSettings.value = true
+}
+
+function closeRoomSettingsDialog() {
+  showRoomSettings.value = false
+  editingRoomId.value = null
+  editRoomName.value = ''
+  editRoomDescription.value = ''
+  editRoomPrivate.value = false
+  roomSettingsError.value = ''
+  savingRoomSettings.value = false
+  deletingRoom.value = false
+}
+
+async function saveRoomSettings() {
+  if (!editingRoomId.value || !editRoomName.value.trim()) return
+
+  savingRoomSettings.value = true
+  roomSettingsError.value = ''
 
   try {
-    const response = await fetch(`${API_BASE}/chat/rooms`, {
-      method: 'POST',
+    const response = await fetch(`${API_BASE}/chat/rooms/${editingRoomId.value}`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: newRoomName.value.trim(),
+        name: editRoomName.value.trim(),
+        description: editRoomDescription.value.trim(),
+        is_private: editRoomPrivate.value,
         created_by: userId,
       }),
     })
@@ -337,11 +492,89 @@ async function createRoom() {
     const data = await response.json()
     if (data.success) {
       await loadRooms()
-      newRoomName.value = ''
-      showCreateRoom.value = false
+      closeRoomSettingsDialog()
+    } else {
+      roomSettingsError.value = data.error || t('chat.failedSaveSettings')
+    }
+  } catch (error) {
+    console.error('[Chat] Failed to save room settings:', error)
+    roomSettingsError.value = t('chat.networkError')
+  } finally {
+    savingRoomSettings.value = false
+  }
+}
+
+async function deleteRoom() {
+  if (!editingRoomId.value) return
+
+  if (!confirm(t('chat.confirmDeleteRoom'))) return
+
+  deletingRoom.value = true
+
+  try {
+    const response = await fetch(`${API_BASE}/chat/rooms/${editingRoomId.value}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ created_by: userId }),
+    })
+
+    const data = await response.json()
+    if (data.success) {
+      await loadRooms()
+      // 如果删除的是当前房间，切换到第一个可用房间
+      if (currentRoomId.value === editingRoomId.value && rooms.length > 0) {
+        switchRoom(rooms[0].id)
+      } else if (rooms.length === 0) {
+        currentRoomId.value = 0
+        messages.length = 0
+      }
+      closeRoomSettingsDialog()
+    } else {
+      roomSettingsError.value = data.error || t('chat.failedDeleteRoom')
+    }
+  } catch (error) {
+    console.error('[Chat] Failed to delete room:', error)
+    roomSettingsError.value = t('chat.networkError')
+  } finally {
+    deletingRoom.value = false
+  }
+}
+
+async function createRoom() {
+  if (!newRoomName.value.trim()) return
+
+  creatingRoom.value = true
+  createRoomError.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE}/chat/rooms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: newRoomName.value.trim(),
+        description: newRoomDescription.value.trim(),
+        is_private: newRoomPrivate.value,
+        created_by: userId,
+      }),
+    })
+
+    const data = await response.json()
+    if (data.success) {
+      await loadRooms()
+      closeCreateRoomDialog()
+    } else {
+      // 处理创建限制错误
+      if (data.error && data.error.includes('maximum number of rooms')) {
+        createRoomError.value = t('chat.maxRoomsReached')
+      } else {
+        createRoomError.value = data.error || t('chat.failedCreateRoom')
+      }
     }
   } catch (error) {
     console.error('[Chat] Failed to create room:', error)
+    createRoomError.value = t('chat.networkError')
+  } finally {
+    creatingRoom.value = false
   }
 }
 
@@ -491,6 +724,11 @@ function formatTime(dateStr: string): string {
   const date = new Date(dateStr)
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
+
+function truncateMessage(message: string, maxLength: number = 20): string {
+  if (message.length <= maxLength) return message
+  return message.substring(0, maxLength) + '...'
+}
 </script>
 
 <style scoped>
@@ -504,7 +742,7 @@ function formatTime(dateStr: string): string {
 /* Room Selector */
 .chat-app__room-selector {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 10px 12px;
   padding-top: max(10px, env(safe-area-inset-top, 10px));
@@ -515,15 +753,113 @@ function formatTime(dateStr: string): string {
 
 .chat-app__rooms {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
   scrollbar-width: none;
   flex: 1;
+  max-height: 300px;
   -webkit-overflow-scrolling: touch;
 }
 
 .chat-app__rooms::-webkit-scrollbar {
   display: none;
+}
+
+.chat-app__room-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
+  cursor: pointer;
+  transition: background 150ms ease, transform 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chat-app__room-item:active {
+  transform: scale(0.98);
+}
+
+.chat-app__room-item--active {
+  background: var(--chat-accent, #007AFF);
+}
+
+.chat-app__room-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-app__room-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-app__room-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
+}
+
+.chat-app__room-item--active .chat-app__room-name {
+  color: #FFFFFF;
+}
+
+.chat-app__room-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-app__room-members {
+  font-size: 12px;
+  color: var(--chat-text-secondary, var(--gui-text-secondary, #8E8E93));
+}
+
+.chat-app__room-item--active .chat-app__room-members {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.chat-app__room-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--chat-error, #FF3B30);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.chat-app__room-last-message {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--chat-text-secondary, var(--gui-text-secondary, #8E8E93));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-app__room-item--active .chat-app__room-last-message {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.chat-app__room-last-sender {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.chat-app__room-last-content {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-app__room-tab {
@@ -547,40 +883,86 @@ function formatTime(dateStr: string): string {
   transform: scale(0.96);
 }
 
-.chat-app__room-tab--active {
-  background: var(--chat-accent, #007AFF);
-  color: #FFFFFF;
-}
-
 .chat-app__room-tab--add {
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: var(--chat-accent, #007AFF);
+  color: #FFFFFF;
+  border-radius: 50%;
+  margin-top: 8px;
 }
 
-.chat-app__room-label {
-  max-width: 80px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chat-app__room-badge {
-  display: inline-flex;
+.chat-app__room-settings-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--chat-surface, var(--gui-bg-surface, #2C2C2E));
+  color: var(--chat-text-secondary, var(--gui-text-secondary, #8E8E93));
+  display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease, transform 100ms ease;
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1;
+}
+
+.chat-app__room-settings-btn:active {
+  transform: scale(0.95);
+}
+
+.chat-app__room-item {
+  position: relative;
+}
+
+.chat-app__loading-rooms {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 0;
+}
+
+.chat-app__loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--chat-accent, #007AFF);
+  animation: ios-bounce 1.2s ease-in-out infinite;
+}
+
+.chat-app__loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.chat-app__loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.chat-app__dialog-divider {
+  height: 0.5px;
+  background: var(--chat-border, var(--gui-border-subtle, #38383A));
+  margin: 16px 0;
+}
+
+.chat-app__dialog-btn--danger {
   background: var(--chat-error, #FF3B30);
   color: #FFFFFF;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1;
+  width: 100%;
+}
+
+.chat-app__dialog-btn--danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .chat-app__nickname-btn {
@@ -838,6 +1220,90 @@ function formatTime(dateStr: string): string {
   font-size: 14px;
   outline: none;
   box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+.chat-app__dialog-textarea {
+  width: 100%;
+  height: 80px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 0.5px solid var(--chat-border, var(--gui-border-subtle, #38383A));
+  background: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  resize: none;
+  margin-bottom: 12px;
+}
+
+.chat-app__dialog-textarea::placeholder {
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
+}
+
+.chat-app__dialog-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.chat-app__dialog-toggle-label {
+  font-size: 14px;
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
+}
+
+.chat-app__toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.chat-app__toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.chat-app__toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
+  transition: .3s;
+  border-radius: 24px;
+}
+
+.chat-app__toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.chat-app__toggle input:checked + .chat-app__toggle-slider {
+  background-color: var(--chat-accent, #007AFF);
+}
+
+.chat-app__toggle input:checked + .chat-app__toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.chat-app__dialog-error {
+  color: var(--chat-error, #FF3B30);
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: center;
 }
 
 .chat-app__dialog-actions {

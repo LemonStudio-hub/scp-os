@@ -726,8 +726,18 @@ class SCPScraper {
     }
 
     try {
+      // 获取聊天室列表，包含成员数量和最后消息信息
       const rooms = await this.db.prepare(
-        'SELECT * FROM chat_rooms ORDER BY id ASC'
+        `
+        SELECT 
+          cr.*,
+          (SELECT COUNT(DISTINCT user_id) FROM chat_messages WHERE room_id = cr.id) as member_count,
+          (SELECT content FROM chat_messages WHERE room_id = cr.id ORDER BY created_at DESC LIMIT 1) as last_message,
+          (SELECT username FROM chat_messages WHERE room_id = cr.id ORDER BY created_at DESC LIMIT 1) as last_message_sender,
+          (SELECT created_at FROM chat_messages WHERE room_id = cr.id ORDER BY created_at DESC LIMIT 1) as last_message_time
+        FROM chat_rooms cr
+        ORDER BY cr.id ASC
+        `
       ).all<ChatRoom>()
 
       return {
@@ -755,6 +765,15 @@ class SCPScraper {
       // 验证名称
       if (!input.name || input.name.length > 50) {
         return { success: false, error: 'Invalid room name (max 50 characters)' }
+      }
+
+      // 检查用户创建的聊天室数量限制（最多5个）
+      const userRoomCount = await this.db.prepare(
+        'SELECT COUNT(*) as count FROM chat_rooms WHERE created_by = ?'
+      ).bind(input.created_by).first<{ count: number }>()
+
+      if (userRoomCount?.count >= 5) {
+        return { success: false, error: 'You can create at most 5 chat rooms' }
       }
 
       const result = await this.db.prepare(

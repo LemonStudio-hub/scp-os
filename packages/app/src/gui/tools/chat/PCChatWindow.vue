@@ -8,16 +8,41 @@
       <!-- Room Selector -->
       <div class="pc-chat-app__room-selector">
         <div class="pc-chat-app__rooms">
-          <button
+          <div
             v-for="room in rooms"
             :key="room.id"
             class="pc-chat-app__room-tab"
             :class="{ 'pc-chat-app__room-tab--active': currentRoomId === room.id }"
             @click="switchRoom(room.id)"
           >
-            <span class="pc-chat-app__room-label">{{ room.name }}</span>
-            <span v-if="getUnreadCount(room.id) > 0" class="pc-chat-app__room-badge">{{ getUnreadCount(room.id) }}</span>
-          </button>
+            <div class="pc-chat-app__room-info">
+              <div class="pc-chat-app__room-header">
+                <span class="pc-chat-app__room-label">{{ room.name }}</span>
+                <div class="pc-chat-app__room-actions">
+                  <button 
+                    v-if="room.created_by === userId"
+                    class="pc-chat-app__room-setting-btn"
+                    @click.stop="openRoomSettings(room)"
+                    :title="'Room Settings'"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M12.25 1.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zm-10 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zm9.5 9.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zm-10 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zM7.5 12.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zM7.5 1.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zM12.25 7.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-10a.75.75 0 0 1 0-1.5h10a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-10a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h10z" fill="currentColor"/>
+                    </svg>
+                  </button>
+                  <span v-if="getUnreadCount(room.id) > 0" class="pc-chat-app__room-badge">{{ getUnreadCount(room.id) }}</span>
+                </div>
+              </div>
+              <div class="pc-chat-app__room-details">
+                <span class="pc-chat-app__room-member-count">{{ room.member_count || 0 }} members</span>
+                <span v-if="room.last_message" class="pc-chat-app__room-last-message">
+                  {{ room.last_message_sender }}: {{ truncateMessage(room.last_message) }}
+                </span>
+                <span v-else class="pc-chat-app__room-last-message pc-chat-app__room-last-message--empty">
+                  No messages yet
+                </span>
+              </div>
+            </div>
+          </div>
           <button class="pc-chat-app__room-tab pc-chat-app__room-tab--add" @click="showCreateRoom = true">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -105,9 +130,84 @@
               maxlength="50"
               @keyup.enter="createRoom"
             />
+            <textarea
+              v-model="newRoomDescription"
+              class="pc-chat-app__dialog-textarea"
+              :placeholder="'Description (optional)'"
+              maxlength="200"
+              rows="3"
+            />
+            <div class="pc-chat-app__dialog-checkbox">
+              <input
+                v-model="newRoomPublic"
+                type="checkbox"
+                id="room-public"
+                class="pc-chat-app__dialog-checkbox-input"
+              />
+              <label for="room-public" class="pc-chat-app__dialog-checkbox-label">
+                Public Room (visible to all users)
+              </label>
+            </div>
             <div class="pc-chat-app__dialog-actions">
-              <button class="pc-chat-app__dialog-btn" @click="showCreateRoom = false">{{ t('common.cancel') }}</button>
-              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" @click="createRoom">{{ t('common.create') }}</button>
+              <button class="pc-chat-app__dialog-btn" @click="showCreateRoom = false" :disabled="creatingRoom">{{ t('common.cancel') }}</button>
+              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" @click="createRoom" :disabled="creatingRoom">
+                <div v-if="creatingRoom" class="pc-chat-app__dialog-spinner" />
+                <span v-else>{{ t('common.create') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Room Settings Dialog -->
+      <Transition name="gui-ios-fade">
+        <div v-if="showRoomSettings" class="pc-chat-app__dialog-overlay" @click.self="showRoomSettings = false">
+          <div class="pc-chat-app__dialog pc-chat-app__dialog--settings">
+            <h3 class="pc-chat-app__dialog-title">Room Settings</h3>
+            <div class="pc-chat-app__dialog-section">
+              <h4 class="pc-chat-app__dialog-section-title">Room Information</h4>
+              <input
+                v-model="editRoomName"
+                type="text"
+                class="pc-chat-app__dialog-input"
+                placeholder="Room name"
+                maxlength="50"
+              />
+              <textarea
+                v-model="editRoomDescription"
+                class="pc-chat-app__dialog-textarea"
+                placeholder="Description (optional)"
+                maxlength="200"
+                rows="3"
+              />
+              <div class="pc-chat-app__dialog-checkbox">
+                <input
+                  v-model="editRoomPublic"
+                  type="checkbox"
+                  id="edit-room-public"
+                  class="pc-chat-app__dialog-checkbox-input"
+                />
+                <label for="edit-room-public" class="pc-chat-app__dialog-checkbox-label">
+                  Public Room (visible to all users)
+                </label>
+              </div>
+            </div>
+            <div class="pc-chat-app__dialog-section">
+              <h4 class="pc-chat-app__dialog-section-title">Room Management</h4>
+              <button class="pc-chat-app__dialog-danger-btn" @click="deleteRoom" :disabled="deletingRoom || savingSettings">
+                <div v-if="deletingRoom" class="pc-chat-app__dialog-spinner pc-chat-app__dialog-spinner--small" />
+                <svg v-if="!deletingRoom" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3.5 3.5h9M3.5 3.5v9.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V3.5m-10-1a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5M5.5 3.5v-.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v.5M7.5 7.5v3M8.5 7.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span v-if="!deletingRoom">Delete Room</span>
+              </button>
+            </div>
+            <div class="pc-chat-app__dialog-actions">
+              <button class="pc-chat-app__dialog-btn" @click="showRoomSettings = false" :disabled="savingSettings || deletingRoom">Cancel</button>
+              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" @click="saveRoomSettings" :disabled="savingSettings || deletingRoom">
+                <div v-if="savingSettings" class="pc-chat-app__dialog-spinner" />
+                <span v-else>Save Changes</span>
+              </button>
             </div>
           </div>
         </div>
@@ -147,6 +247,12 @@ interface ChatRoom {
   name: string
   description: string
   message_count: number
+  created_by: string
+  is_public: number
+  member_count?: number
+  last_message?: string
+  last_message_sender?: string
+  last_message_time?: string
 }
 
 defineProps<Props>()
@@ -174,12 +280,25 @@ const loading = ref(false)
 const sending = ref(false)
 const rateLimitWarning = ref('')
 const rateLimited = ref(false)
+const loadingRooms = ref(false)
+const creatingRoom = ref(false)
+const savingSettings = ref(false)
+const deletingRoom = ref(false)
 let pollTimer: number | null = null
 let userId = ''
 
 // Dialogs
 const showCreateRoom = ref(false)
 const newRoomName = ref('')
+const newRoomDescription = ref('')
+const newRoomPublic = ref(true)
+
+// Room settings
+const showRoomSettings = ref(false)
+const currentRoom = ref<ChatRoom | null>(null)
+const editRoomName = ref('')
+const editRoomDescription = ref('')
+const editRoomPublic = ref(true)
 
 // 未读消息追踪
 const unreadCounts = ref<Record<number, number>>({})
@@ -247,6 +366,7 @@ async function loadUnreadCounts() {
 }
 
 async function loadRooms() {
+  loadingRooms.value = true
   try {
     const response = await fetch(`${API_BASE}/chat/rooms`)
     const data = await response.json()
@@ -266,19 +386,24 @@ async function loadRooms() {
     }
   } catch (error) {
     console.error('[Chat] Failed to load rooms:', error)
+  } finally {
+    loadingRooms.value = false
   }
 }
 
 async function createRoom() {
   if (!newRoomName.value.trim()) return
 
+  creatingRoom.value = true
   try {
     const response = await fetch(`${API_BASE}/chat/rooms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: newRoomName.value.trim(),
+        description: newRoomDescription.value.trim(),
         created_by: userId,
+        is_public: newRoomPublic.value ? 1 : 0,
       }),
     })
 
@@ -286,10 +411,22 @@ async function createRoom() {
     if (data.success) {
       await loadRooms()
       newRoomName.value = ''
+      newRoomDescription.value = ''
+      newRoomPublic.value = true
       showCreateRoom.value = false
+    } else {
+      // 显示错误信息
+      if (data.error === 'You can create at most 5 chat rooms') {
+        alert('You can create at most 5 chat rooms')
+      } else {
+        alert(data.error || 'Failed to create room')
+      }
     }
   } catch (error) {
     console.error('[Chat] Failed to create room:', error)
+    alert('Failed to create room. Please try again.')
+  } finally {
+    creatingRoom.value = false
   }
 }
 
@@ -439,6 +576,74 @@ function formatTime(dateStr: string): string {
   const date = new Date(dateStr)
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
+
+function truncateMessage(message: string, maxLength: number = 20): string {
+  if (message.length <= maxLength) return message
+  return message.substring(0, maxLength) + '...'
+}
+
+// Room settings functions
+function openRoomSettings(room: ChatRoom) {
+  currentRoom.value = room
+  editRoomName.value = room.name
+  editRoomDescription.value = room.description || ''
+  editRoomPublic.value = room.is_public === 1
+  showRoomSettings.value = true
+}
+
+async function saveRoomSettings() {
+  if (!currentRoom.value) return
+
+  savingSettings.value = true
+  try {
+    // In a real implementation, this would call an API to update the room
+    // For now, we'll just update the local state
+    const roomIndex = rooms.findIndex(r => r.id === currentRoom.value?.id)
+    if (roomIndex !== -1) {
+      rooms[roomIndex] = {
+        ...rooms[roomIndex],
+        name: editRoomName.value,
+        description: editRoomDescription.value,
+        is_public: editRoomPublic.value ? 1 : 0
+      }
+    }
+    showRoomSettings.value = false
+  } catch (error) {
+    console.error('[Chat] Failed to save room settings:', error)
+    alert('Failed to save room settings. Please try again.')
+  } finally {
+    savingSettings.value = false
+  }
+}
+
+async function deleteRoom() {
+  if (!currentRoom.value) return
+
+  if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+    return
+  }
+
+  deletingRoom.value = true
+  try {
+    // In a real implementation, this would call an API to delete the room
+    // For now, we'll just remove it from the local state
+    const roomIndex = rooms.findIndex(r => r.id === currentRoom.value?.id)
+    if (roomIndex !== -1) {
+      rooms.splice(roomIndex, 1)
+      if (currentRoomId.value === currentRoom.value?.id && rooms.length > 0) {
+        currentRoomId.value = rooms[0].id
+        messages.length = 0
+        loadMessages()
+      }
+    }
+    showRoomSettings.value = false
+  } catch (error) {
+    console.error('[Chat] Failed to delete room:', error)
+    alert('Failed to delete room. Please try again.')
+  } finally {
+    deletingRoom.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -452,42 +657,54 @@ function formatTime(dateStr: string): string {
 /* Room Selector */
 .pc-chat-app__room-selector {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 10px 12px;
   background: var(--chat-surface, var(--gui-bg-surface, #2C2C2E));
   border-bottom: 0.5px solid var(--chat-border, var(--gui-border-subtle, #38383A));
   gap: 8px;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .pc-chat-app__rooms {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
   flex: 1;
   -webkit-overflow-scrolling: touch;
 }
 
 .pc-chat-app__rooms::-webkit-scrollbar {
-  display: none;
+  width: 6px;
+}
+
+.pc-chat-app__rooms::-webkit-scrollbar-track {
+  background: var(--chat-surface, var(--gui-bg-surface, #2C2C2E));
+}
+
+.pc-chat-app__rooms::-webkit-scrollbar-thumb {
+  background-color: var(--chat-border, var(--gui-border-subtle, #38383A));
+  border-radius: 3px;
 }
 
 .pc-chat-app__room-tab {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 4px;
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
   border: none;
   background: transparent;
   color: var(--chat-text-secondary, var(--gui-text-secondary, #8E8E93));
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  white-space: nowrap;
+  text-align: left;
   transition: background 150ms ease, color 150ms ease, transform 100ms ease;
   -webkit-tap-highlight-color: transparent;
+  min-height: 60px;
 }
 
 .pc-chat-app__room-tab:hover {
@@ -495,7 +712,7 @@ function formatTime(dateStr: string): string {
 }
 
 .pc-chat-app__room-tab:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
 }
 
 .pc-chat-app__room-tab--active {
@@ -504,19 +721,61 @@ function formatTime(dateStr: string): string {
 }
 
 .pc-chat-app__room-tab--add {
-  width: 28px;
-  height: 28px;
-  padding: 0;
+  min-height: 60px;
+  padding: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
+.pc-chat-app__room-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.pc-chat-app__room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .pc-chat-app__room-label {
-  max-width: 80px;
+  font-size: 14px;
+  font-weight: 600;
+  color: inherit;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pc-chat-app__room-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pc-chat-app__room-setting-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 150ms ease;
+  flex-shrink: 0;
+}
+
+.pc-chat-app__room-setting-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .pc-chat-app__room-badge {
@@ -532,6 +791,38 @@ function formatTime(dateStr: string): string {
   font-size: 10px;
   font-weight: 600;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+.pc-chat-app__room-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
+}
+
+.pc-chat-app__room-tab--active .pc-chat-app__room-details {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.pc-chat-app__room-member-count {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pc-chat-app__room-last-message {
+  font-size: 11px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pc-chat-app__room-last-message--empty {
+  font-style: italic;
+  opacity: 0.6;
 }
 
 /* Messages */
@@ -753,6 +1044,67 @@ function formatTime(dateStr: string): string {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
+.pc-chat-app__dialog--settings {
+  max-width: 400px;
+}
+
+.pc-chat-app__dialog-section {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 0.5px solid var(--chat-border, var(--gui-border-subtle, #38383A));
+}
+
+.pc-chat-app__dialog-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.pc-chat-app__dialog-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
+  margin: 0 0 12px 0;
+}
+
+.pc-chat-app__dialog-danger-btn {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  border: 0.5px solid var(--chat-error, #FF3B30);
+  background: transparent;
+  color: var(--chat-error, #FF3B30);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pc-chat-app__dialog-danger-btn:hover {
+  background: var(--chat-error, #FF3B30);
+  color: #FFFFFF;
+}
+
+.pc-chat-app__dialog-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.pc-chat-app__dialog-spinner--small {
+  width: 12px;
+  height: 12px;
+  border-width: 1.5px;
+}
+
 .pc-chat-app__dialog-title {
   margin: 0 0 16px;
   font-size: 17px;
@@ -772,6 +1124,46 @@ function formatTime(dateStr: string): string {
   font-size: 14px;
   outline: none;
   box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+.pc-chat-app__dialog-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 0.5px solid var(--chat-border, var(--gui-border-subtle, #38383A));
+  background: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.pc-chat-app__dialog-textarea::placeholder {
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
+}
+
+.pc-chat-app__dialog-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.pc-chat-app__dialog-checkbox-input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--chat-accent, #007AFF);
+}
+
+.pc-chat-app__dialog-checkbox-label {
+  font-size: 14px;
+  color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
+  cursor: pointer;
 }
 
 .pc-chat-app__dialog-actions {
