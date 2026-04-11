@@ -112,7 +112,6 @@ const win = computed(() => props.windowInstance ?? {
 const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
-const titleBarRef = ref<HTMLElement>()
 
 // ── Screen Boundaries (reactive) ──────────────────────────────────────
 const getScreenBounds = () => {

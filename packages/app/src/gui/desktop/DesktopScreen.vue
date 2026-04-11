@@ -158,7 +158,6 @@ const emit = defineEmits<{
   'start-click': []
 }>()
 
-const desktopRef = ref<HTMLDivElement | null>(null)
 const appIcons = ref<HTMLElement[]>([])
 const customWallpaperUrl = ref<string | null>(null)
 const themeStore = useThemeStore()

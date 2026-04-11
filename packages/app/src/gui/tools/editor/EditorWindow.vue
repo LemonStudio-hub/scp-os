@@ -120,7 +120,6 @@ interface Props {
 defineProps<Props>()
 
 const editorStore = useTextEditorStore()
-const editorContainerRef = ref<HTMLElement>()
 const codemirrorRef = ref<HTMLElement>()
 const findInputRef = ref<HTMLInputElement>()
 

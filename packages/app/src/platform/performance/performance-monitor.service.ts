@@ -300,9 +300,10 @@ export class PerformanceMonitorService {
           totalDuration += res.duration
           totalSize += (res.transferSize || 0)
 
-          if (res.responseStatus && res.responseStatus >= 400) {
-            errorCount++
-          }
+          // 暂时注释掉错误检测逻辑，因为PerformanceResourceTiming接口中不存在responseStatus属性
+          // if (res.responseStatus && res.responseStatus >= 400) {
+          //   errorCount++
+          // }
         }
 
         this.recordMetric('avg-resource-time', totalDuration / totalResources, 'ms', now)

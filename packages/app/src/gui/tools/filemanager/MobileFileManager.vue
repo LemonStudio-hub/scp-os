@@ -328,7 +328,6 @@ const contextSheetVisible = ref(false)
 const contextSheetTitle = ref('')
 const contextActions = ref<ContextAction[]>([])
 const contextTargetFile = ref<any>(null)
-const listRef = ref<HTMLElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragOver = ref(false)
 

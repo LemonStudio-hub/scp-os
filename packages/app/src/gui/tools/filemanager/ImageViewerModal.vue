@@ -92,7 +92,6 @@ const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
 
-const imageContainerRef = ref<HTMLElement | null>(null)
 const imageSrc = ref<string>('')
 const zoom = ref(1)
 const rotation = ref(0)

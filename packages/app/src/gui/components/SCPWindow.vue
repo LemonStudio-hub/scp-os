@@ -95,7 +95,6 @@ const emit = defineEmits<{
 const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
-const titleBarRef = ref<HTMLElement>()
 
 const { dragState, handleMouseDown: onTitleBarMouseDown } = useDraggable(
   windowRef,
