@@ -51,7 +51,7 @@ export class HTMLCleaner {
   /**
    * 查找内容容器
    */
-  private findContentContainer($: cheerio.CheerioAPI): cheerio.Cheerio<cheerio.Element> {
+  private findContentContainer($: cheerio.CheerioAPI): cheerio.Cheerio<any> {
     const selectors = ['#page-content', '#main-content', '.page-content', 'main']
 
     for (const selector of selectors) {

@@ -429,7 +429,7 @@ export async function getFeedbackListWithVotes(
     // Add user votes if userId is provided
     if (userId) {
       for (const feedback of feedbacks.results || []) {
-        feedback.userVote = await getUserVote(db, feedback.id, userId)
+        feedback.userVote = await getUserVote(db, feedback.id, userId) || undefined
       }
     }
 

@@ -4,7 +4,7 @@
  */
 
 import { getConfig } from './shared/config'
-import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput } from './shared/types'
+import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput, ObjectClass } from './shared/types'
 import * as feedbackAPI from './api/feedback'
 import * as userAPI from './api/user'
 
@@ -801,7 +801,7 @@ class SCPScraper {
         'SELECT COUNT(*) as count FROM chat_rooms WHERE created_by = ?'
       ).bind(input.created_by).first<{ count: number }>()
 
-      if (userRoomCount?.count >= 5) {
+      if ((userRoomCount?.count || 0) >= 5) {
         return { success: false, error: 'You can create at most 5 chat rooms' }
       }
 

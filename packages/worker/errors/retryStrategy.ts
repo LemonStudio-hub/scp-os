@@ -18,7 +18,7 @@ export class RetryStrategy {
    */
   shouldRetry(error: ScraperError, attempt: number, maxAttempts: number): boolean {
     return (
-      this.RETRYABLE_ERRORS.includes(error.type) &&
+      RetryStrategy.RETRYABLE_ERRORS.includes(error.type) &&
       error.retryable &&
       attempt < maxAttempts
     )
