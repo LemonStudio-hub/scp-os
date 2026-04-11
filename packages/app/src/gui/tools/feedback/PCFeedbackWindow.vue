@@ -133,11 +133,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import PCWindow from '../../components/PCWindow.vue'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 import { useI18n } from '../../composables/useI18n'
+import { useAuthStore } from '../../../stores/authStore'
 
 interface Props {
   visible: boolean
@@ -149,6 +150,7 @@ defineEmits<{
 }>()
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 
 const API_BASE = config.api.workerUrl
 
@@ -187,8 +189,15 @@ const limit = 20
 let userId = ''
 
 onMounted(async () => {
-  userId = await indexedDBService.getUserId()
+  userId = authStore.userId || await indexedDBService.getUserId()
   loadFeedbacks()
+})
+
+// 监听 authStore 的 userId 变化
+watch(() => authStore.userId, (newUserId) => {
+  if (newUserId) {
+    userId = newUserId
+  }
 })
 
 async function submitFeedback() {
@@ -201,6 +210,7 @@ async function submitFeedback() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: userId,
+        nickname: authStore.nickname || undefined,
         title: form.title.trim(),
         content: form.content.trim(),
         category: form.category,

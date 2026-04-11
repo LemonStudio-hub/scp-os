@@ -40,6 +40,15 @@ export async function registerUser(
       'SELECT id FROM users WHERE user_id = ?'
     ).bind(input.userId).first<{ id: number }>()
 
+    // Check if nickname is already used by another user
+    const existingNicknameUser = await db.prepare(
+      'SELECT id FROM users WHERE nickname = ? AND user_id != ?'
+    ).bind(input.nickname, input.userId).first<{ id: number }>()
+
+    if (existingNicknameUser) {
+      return { success: false, error: 'Nickname already taken' }
+    }
+
     if (existingUser) {
       // Update existing user
       await db.prepare(

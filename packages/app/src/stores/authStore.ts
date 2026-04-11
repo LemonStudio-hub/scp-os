@@ -83,6 +83,20 @@ export const useAuthStore = defineStore('auth', () => {
         })
 
         if (!response.ok) {
+          // Try to parse error response
+          try {
+            const errorData = await response.json()
+            if (errorData.success === false && errorData.error === 'Nickname already taken') {
+              // Nickname is already taken, roll back local changes
+              await indexedDBService.clearUserData()
+              nickname.value = null
+              isLoggedIn.value = false
+              return { success: false, error: 'Nickname already taken' }
+            }
+          } catch (parseError) {
+            // Failed to parse error response
+            console.warn('[Auth] Failed to parse error response:', parseError)
+          }
           console.warn('[Auth] Failed to register user on remote API, but local login succeeded')
         }
       } catch (apiError) {

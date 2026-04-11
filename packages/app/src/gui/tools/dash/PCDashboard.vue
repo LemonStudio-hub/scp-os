@@ -239,6 +239,41 @@
             <span class="pc-dashboard__network-value">{{ connectionType }}</span>
           </div>
         </div>
+        
+        <!-- Speed Test -->
+        <div class="pc-dashboard__network-speed">
+          <div class="pc-dashboard__network-speed-header">
+            <span class="pc-dashboard__network-speed-label">Speed Test</span>
+            <button 
+              class="pc-dashboard__network-speed-btn" 
+              @click="runSpeedTest" 
+              :class="{ 'is-testing': isSpeedTesting }"
+              :disabled="isSpeedTesting"
+            >
+              <svg v-if="!isSpeedTesting" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 6c2-3 10-3 14 0"/>
+                <path d="M3 9c1.5-2 7.5-2 10 0"/>
+                <circle cx="8" cy="14" r="1" fill="currentColor"/>
+              </svg>
+              <div v-else class="pc-dashboard__network-speed-spinner" />
+              <span>{{ isSpeedTesting ? 'Testing...' : 'Run Test' }}</span>
+            </button>
+          </div>
+          <div v-if="downloadSpeed > 0 || uploadSpeed > 0" class="pc-dashboard__network-speed-results">
+            <div class="pc-dashboard__network-speed-item">
+              <span class="pc-dashboard__network-speed-result-label">Download</span>
+              <span class="pc-dashboard__network-speed-result-value">{{ downloadSpeed }} Mbps</span>
+            </div>
+            <div class="pc-dashboard__network-speed-item">
+              <span class="pc-dashboard__network-speed-result-label">Upload</span>
+              <span class="pc-dashboard__network-speed-result-value">{{ uploadSpeed }} Mbps</span>
+            </div>
+            <div class="pc-dashboard__network-speed-item">
+              <span class="pc-dashboard__network-speed-result-label">Ping</span>
+              <span class="pc-dashboard__network-speed-result-value">{{ ping }} ms</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Footer -->
@@ -255,6 +290,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import type { WindowInstance } from '../../types'
+import speedtest from '@cloudflare/speedtest'
 
 interface Props {
   windowInstance: WindowInstance
@@ -285,6 +321,12 @@ const currentTime = ref('')
 const lastUpdated = ref('—')
 const isRefreshing = ref(false)
 const isAutoRefresh = ref(true)
+
+// Network speed test
+const isSpeedTesting = ref(false)
+const downloadSpeed = ref(0)
+const uploadSpeed = ref(0)
+const ping = ref(0)
 
 // Chart state
 const chartWidth = 300
@@ -485,6 +527,48 @@ onUnmounted(() => {
 
 function onClose(): void {
   // Window manager handles cleanup
+}
+
+async function runSpeedTest() {
+  if (isSpeedTesting.value) return
+  
+  isSpeedTesting.value = true
+  
+  try {
+    const test = new speedtest({
+      autoStart: true
+    })
+    
+    test.onFinish = (results) => {
+      const summary = results.getSummary()
+      
+      // summary.download, summary.upload are already in Mbps
+      // summary.latency is already in ms
+      downloadSpeed.value = Math.round(summary.download || 0)
+      uploadSpeed.value = Math.round(summary.upload || 0)
+      ping.value = Math.round(summary.latency || 0)
+      
+      // Update latency in the main metrics
+      latency.value = ping.value
+      
+      console.log('[Dash] Speed test results:', {
+        download: downloadSpeed.value,
+        upload: uploadSpeed.value,
+        ping: ping.value
+      })
+      
+      isSpeedTesting.value = false
+    }
+    
+    // Handle errors
+    test.onError = (error) => {
+      console.error('[Dash] Speed test error:', error)
+      isSpeedTesting.value = false
+    }
+  } catch (error) {
+    console.error('[Dash] Speed test failed:', error)
+    isSpeedTesting.value = false
+  }
 }
 </script>
 
@@ -860,6 +944,7 @@ function onClose(): void {
 .pc-dashboard__network-grid {
   display: flex;
   gap: 24px;
+  margin-bottom: 16px;
 }
 
 .pc-dashboard__network-item {
@@ -889,6 +974,92 @@ function onClose(): void {
 
 .pc-dashboard__network-status--offline {
   color: #FF3B30;
+}
+
+/* ── Network Speed Test ──────────────────────────────────────────────── */
+.pc-dashboard__network-speed {
+  border-top: 0.5px solid var(--gui-border-subtle, #38383A);
+  padding-top: 12px;
+}
+
+.pc-dashboard__network-speed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pc-dashboard__network-speed-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gui-text-primary, #FFFFFF);
+}
+
+.pc-dashboard__network-speed-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--gui-bg-surface-hover, #3A3A3C);
+  color: var(--gui-text-primary, #FFFFFF);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pc-dashboard__network-speed-btn:hover:not(:disabled) {
+  background: var(--gui-bg-surface-2, #48484A);
+}
+
+.pc-dashboard__network-speed-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pc-dashboard__network-speed-btn.is-testing {
+  cursor: wait;
+}
+
+.pc-dashboard__network-speed-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top: 2px solid var(--gui-text-primary, #FFFFFF);
+  border-radius: 50%;
+  animation: dash-spin 1s linear infinite;
+}
+
+.pc-dashboard__network-speed-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px;
+  background: var(--gui-bg-base, #0A0A0A);
+  border-radius: 8px;
+  border: 0.5px solid var(--gui-border-subtle, #38383A);
+}
+
+.pc-dashboard__network-speed-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pc-dashboard__network-speed-result-label {
+  font-size: 10px;
+  color: var(--gui-text-tertiary, #636366);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pc-dashboard__network-speed-result-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gui-text-primary, #FFFFFF);
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
 }
 
 /* ── Footer ─────────────────────────────────────────────────────────── */

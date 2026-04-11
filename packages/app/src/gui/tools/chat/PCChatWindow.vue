@@ -24,13 +24,6 @@
             </svg>
           </button>
         </div>
-        <button class="pc-chat-app__nickname-btn" @click="showNicknameDialog = true">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
-            <path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-          </svg>
-          <span class="pc-chat-app__nickname-text">{{ nickname || t('chat.setNickname') }}</span>
-        </button>
       </div>
 
       <!-- Messages List -->
@@ -119,36 +112,16 @@
           </div>
         </div>
       </Transition>
-
-      <!-- Nickname Dialog -->
-      <Transition name="gui-ios-fade">
-        <div v-if="showNicknameDialog" class="pc-chat-app__dialog-overlay" @click.self="showNicknameDialog = false">
-          <div class="pc-chat-app__dialog">
-            <h3 class="pc-chat-app__dialog-title">{{ t('chat.setNickname') }}</h3>
-            <input
-              v-model="newNickname"
-              type="text"
-              class="pc-chat-app__dialog-input"
-              :placeholder="t('chat.nicknamePlaceholder')"
-              maxlength="30"
-              @keyup.enter="saveNickname"
-            />
-            <div class="pc-chat-app__dialog-actions">
-              <button class="pc-chat-app__dialog-btn" @click="showNicknameDialog = false">{{ t('common.cancel') }}</button>
-              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" @click="saveNickname">{{ t('common.save') }}</button>
-            </div>
-          </div>
-        </div>
-      </Transition>
     </div>
   </PCWindow>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import PCWindow from '../../components/PCWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
+import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 
@@ -185,6 +158,7 @@ defineEmits<{
 const themeStore = useThemeStore()
 themeStore.init()
 
+const authStore = useAuthStore()
 const { t } = useI18n()
 
 const API_BASE = config.api.workerUrl
@@ -198,7 +172,6 @@ const rooms = reactive<ChatRoom[]>([])
 const currentRoomId = ref(1)
 const loading = ref(false)
 const sending = ref(false)
-const nickname = ref('')
 const rateLimitWarning = ref('')
 const rateLimited = ref(false)
 let pollTimer: number | null = null
@@ -206,9 +179,7 @@ let userId = ''
 
 // Dialogs
 const showCreateRoom = ref(false)
-const showNicknameDialog = ref(false)
 const newRoomName = ref('')
-const newNickname = ref('')
 
 // 未读消息追踪
 const unreadCounts = ref<Record<number, number>>({})
@@ -246,9 +217,8 @@ const chatThemeStyles = computed(() => ({
 }))
 
 onMounted(async () => {
-  userId = await indexedDBService.getUserId()
+  userId = authStore.userId || await indexedDBService.getUserId()
   await loadRooms()
-  await loadNickname()
   await loadUnreadCounts()
   await loadMessages()
   startPolling()
@@ -256,6 +226,13 @@ onMounted(async () => {
 
 onUnmounted(() => {
   stopPolling()
+})
+
+// 监听 authStore 的 userId 变化
+watch(() => authStore.userId, (newUserId) => {
+  if (newUserId) {
+    userId = newUserId
+  }
 })
 
 async function loadUnreadCounts() {
@@ -289,38 +266,6 @@ async function loadRooms() {
     }
   } catch (error) {
     console.error('[Chat] Failed to load rooms:', error)
-  }
-}
-
-async function loadNickname() {
-  try {
-    const stored = await indexedDBService.loadSetting('chat_nickname')
-    if (stored) {
-      nickname.value = stored
-    }
-  } catch (error) {
-    console.error('[Chat] Failed to load nickname:', error)
-  }
-}
-
-async function saveNickname() {
-  if (!newNickname.value.trim()) return
-
-  try {
-    const response = await fetch(`${API_BASE}/chat/nickname`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, nickname: newNickname.value.trim() }),
-    })
-
-    const data = await response.json()
-    if (data.success) {
-      nickname.value = newNickname.value.trim()
-      await indexedDBService.saveSetting('chat_nickname', nickname.value)
-      showNicknameDialog.value = false
-    }
-  } catch (error) {
-    console.error('[Chat] Failed to save nickname:', error)
   }
 }
 
@@ -403,7 +348,7 @@ async function sendMessage() {
   const optimisticMessage: ChatMessage = {
     tempId,
     user_id: userId,
-    username: nickname.value || t('chat.you'),
+    username: authStore.nickname || t('chat.you'),
     content,
     created_at: now,
     isSelf: true,
@@ -424,7 +369,7 @@ async function sendMessage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         user_id: userId,
-        nickname: nickname.value || undefined,
+        nickname: authStore.nickname || undefined,
         content,
         room_id: currentRoomId.value,
       }),
@@ -587,40 +532,6 @@ function formatTime(dateStr: string): string {
   font-size: 10px;
   font-weight: 600;
   line-height: 1;
-}
-
-.pc-chat-app__nickname-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 16px;
-  border: none;
-  background: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
-  color: var(--chat-text-secondary, var(--gui-text-secondary, #8E8E93));
-  font-size: 12px;
-  cursor: pointer;
-  transition: background 150ms ease;
-  flex-shrink: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.pc-chat-app__nickname-btn:hover {
-  background: var(--chat-border, var(--gui-border-subtle, #38383A));
-}
-
-.pc-chat-app__nickname-btn:active {
-  background: var(--chat-border, var(--gui-border-subtle, #38383A));
-}
-
-.pc-chat-app__nickname-btn svg {
-  flex-shrink: 0;
-}
-
-.pc-chat-app__nickname-text {
-  max-width: 60px;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Messages */

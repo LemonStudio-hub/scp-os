@@ -1,12 +1,13 @@
 <template>
   <div
     ref="windowRef"
-    :class="['pc-window', {
-      'pc-window--focused': win.focused,
-      'pc-window--minimized': win.minimized,
-      'pc-window--maximized': win.maximized,
+    :class="['pc-window', { 
+      'pc-window--focused': win.focused, 
+      'pc-window--minimized': win.minimized, 
+      'pc-window--maximized': win.maximized, 
     }]"
     :style="windowStyle"
+    :data-theme="themeStore.currentTheme.name"
     @mousedown="onWindowClick"
   >
     <!-- Title Bar -->
@@ -80,8 +81,10 @@ import { useResizable } from '../composables/useResizable'
 import { useI18n } from '../composables/useI18n'
 import type { WindowInstance } from '../types'
 import { useWindowManagerStore } from '../stores/windowManager'
+import { useThemeStore } from '../stores/themeStore'
 
 const { t } = useI18n()
+const themeStore = useThemeStore()
 
 interface Props {
   windowInstance?: WindowInstance
@@ -203,6 +206,9 @@ function onMaximize() {
 
 // ── Lifecycle ────────────────────────────────────────────────────────
 onMounted(() => {
+  // Initialize theme store
+  themeStore.init()
+  
   // Set initial position/size in composables
   const { position, size } = win.value
   dragState.value.currentX = position.x
@@ -331,6 +337,12 @@ function handleWindowResize() {
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: -0.01em;
+  transition: color var(--gui-transition-base, 200ms ease);
+}
+
+/* Ensure title is visible in light mode */
+.pc-window[data-theme="light"] .pc-window__title {
+  color: var(--gui-text-primary, #000000);
 }
 
 /* ── Header Actions - macOS Style Buttons ──────────────────────────── */

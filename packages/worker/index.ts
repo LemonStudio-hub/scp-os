@@ -350,7 +350,7 @@ class SCPScraper {
     // 从头部提取项目等级 - 在整个内容中搜索
     const fullContent = elements.join(' ')
     const objectClassMatch = fullContent.match(/Object\s+Class[:：]?\s*([A-Z]+)/i)
-    const objectClass = objectClassMatch ? objectClassMatch[1].toUpperCase() : 'UNKNOWN'
+    const objectClass = (objectClassMatch ? objectClassMatch[1].toUpperCase() : 'UNKNOWN') as ObjectClass
 
     const branchUrl = branch === 'cn'
       ? 'https://scp-wiki-cn.wikidot.com'
@@ -426,7 +426,7 @@ class SCPScraper {
   /**
    * 从页面中提取作者信息
    */
-  private extractAuthorFromPage($content: ReturnType<typeof import('cheerio').load>['$']): string | undefined {
+  private extractAuthorFromPage($content: import('cheerio').CheerioAPI): string | undefined {
     // 查找作者信息通常在页面底部
     const authorSelectors = [
       'p strong:contains("Author")',
@@ -435,7 +435,7 @@ class SCPScraper {
     ]
 
     for (const selector of authorSelectors) {
-      const $author = $(selector).first()
+      const $author = $content(selector).first()
       if ($author.length > 0) {
         const text = $author.text()
         const match = text.match(/Author[:：]\s*([^,\n]+)/i)
@@ -675,43 +675,7 @@ class SCPScraper {
     }
   }
 
-  /**
-   * 获取聊天消息
-   */
-  async getChatMessages(limit: number = 50, after?: string): Promise<ChatApiResponse> {
-    if (!this.db) {
-      return { success: false, error: 'Database not available' }
-    }
 
-    try {
-      let query = 'SELECT * FROM chat_messages'
-      const params: any[] = []
-
-      if (after) {
-        query += ' WHERE created_at > ?'
-        params.push(after)
-      }
-
-      query += ' ORDER BY created_at DESC LIMIT ?'
-      params.push(limit)
-
-      const messages = await this.db.prepare(query)
-        .bind(...params)
-        .all<ChatMessage>()
-
-      return {
-        success: true,
-        data: (messages.results || []).reverse(), // 反转为用户时间顺序
-        count: messages.results?.length || 0,
-      }
-    } catch (error) {
-      logger.error('Failed to get chat messages', error as Error)
-      return {
-        success: false,
-        error: `Database error: ${(error as Error).message}`
-      }
-    }
-  }
 
   /**
    * 定时任务：广播新消息

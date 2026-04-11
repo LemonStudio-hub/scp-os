@@ -56,8 +56,8 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       height: config.height ?? windowDefaults.height,
     }
 
-    // Handle fullscreen option
-    const isFullscreen = config.isFullscreen || false
+    // Handle fullscreen option - default to true for all apps
+    const isFullscreen = config.isFullscreen ?? true
 
     const windowInstance: WindowInstance = {
       config,

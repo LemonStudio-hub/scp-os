@@ -1,5 +1,5 @@
 <template>
-  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-[200]">
+  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-200">
     <div class="pc-taskbar__container">
       <!-- Start Button -->
       <button
