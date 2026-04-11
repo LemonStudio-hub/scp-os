@@ -15,7 +15,10 @@ export interface Feedback {
   status: string
   created_at: string
   updated_at: string
-  likes: number
+  upvotes: number
+  downvotes: number
+  commentsCount: number
+  userVote?: 'up' | 'down'
 }
 
 export interface FeedbackInput {
@@ -24,6 +27,29 @@ export interface FeedbackInput {
   title: string
   content: string
   category?: string
+}
+
+export interface Comment {
+  id: number
+  feedback_id: number
+  user_id: string
+  nickname: string
+  content: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CommentInput {
+  feedback_id: number
+  user_id: string
+  nickname?: string
+  content: string
+}
+
+export interface VoteInput {
+  id: number
+  user_id: string
+  vote: 'up' | 'down'
 }
 
 /**
@@ -173,6 +199,244 @@ export async function getFeedbackCategories(
     return {
       success: true,
       data: categories.results || [],
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `Database error: ${(error as Error).message}`
+    }
+  }
+}
+
+/**
+ * Submit a comment on feedback
+ */
+export async function submitComment(
+  db: D1Database,
+  input: CommentInput
+): Promise<ChatApiResponse> {
+  try {
+    // Validate
+    if (!input.content || input.content.length > 500) {
+      return { success: false, error: 'Comment must be 1-500 characters' }
+    }
+
+    // Check if feedback exists
+    const feedback = await db.prepare(
+      'SELECT id FROM feedbacks WHERE id = ? AND status = ?'
+    ).bind(input.feedback_id, 'published').first<{ id: number }>()
+
+    if (!feedback) {
+      return { success: false, error: 'Feedback not found' }
+    }
+
+    // Insert comment
+    const result = await db.prepare(
+      `INSERT INTO feedback_comments (feedback_id, user_id, nickname, content) VALUES (?, ?, ?, ?)`
+    ).bind(
+      input.feedback_id,
+      input.user_id,
+      input.nickname || 'Anonymous',
+      input.content
+    ).run()
+
+    if (!result.success) {
+      return { success: false, error: 'Failed to submit comment' }
+    }
+
+    // Update comments count
+    await db.prepare(
+      'UPDATE feedbacks SET commentsCount = commentsCount + 1 WHERE id = ?'
+    ).bind(input.feedback_id).run()
+
+    // Return the created comment
+    const comment = await db.prepare(
+      'SELECT * FROM feedback_comments WHERE id = ?'
+    ).bind(result.meta?.last_row_id).first<Comment>()
+
+    return { success: true, data: comment }
+  } catch (error) {
+    return {
+      success: false,
+      error: `Database error: ${(error as Error).message}`
+    }
+  }
+}
+
+/**
+ * Get comments for a feedback
+ */
+export async function getComments(
+  db: D1Database,
+  feedbackId: number
+): Promise<ChatApiResponse> {
+  try {
+    // Check if feedback exists
+    const feedback = await db.prepare(
+      'SELECT id FROM feedbacks WHERE id = ? AND status = ?'
+    ).bind(feedbackId, 'published').first<{ id: number }>()
+
+    if (!feedback) {
+      return { success: false, error: 'Feedback not found' }
+    }
+
+    // Get comments
+    const comments = await db.prepare(
+      'SELECT * FROM feedback_comments WHERE feedback_id = ? ORDER BY created_at ASC'
+    ).bind(feedbackId).all<Comment>()
+
+    return {
+      success: true,
+      data: comments.results || [],
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `Database error: ${(error as Error).message}`
+    }
+  }
+}
+
+/**
+ * Vote on feedback
+ */
+export async function voteFeedback(
+  db: D1Database,
+  input: VoteInput
+): Promise<ChatApiResponse> {
+  try {
+    // Check if feedback exists
+    const feedback = await db.prepare(
+      'SELECT id FROM feedbacks WHERE id = ? AND status = ?'
+    ).bind(input.id, 'published').first<{ id: number }>()
+
+    if (!feedback) {
+      return { success: false, error: 'Feedback not found' }
+    }
+
+    // Check if user already voted
+    const existingVote = await db.prepare(
+      'SELECT id, vote FROM feedback_votes WHERE feedback_id = ? AND user_id = ?'
+    ).bind(input.id, input.user_id).first<{ id: number; vote: 'up' | 'down' }>()
+
+    if (existingVote) {
+      return { success: false, error: 'You have already voted on this feedback' }
+    }
+
+    // Begin transaction
+    await db.exec('BEGIN TRANSACTION')
+
+    try {
+      // Insert vote
+      await db.prepare(
+        `INSERT INTO feedback_votes (feedback_id, user_id, vote) VALUES (?, ?, ?)`
+      ).bind(
+        input.id,
+        input.user_id,
+        input.vote
+      ).run()
+
+      // Update vote counts
+      if (input.vote === 'up') {
+        await db.prepare(
+          'UPDATE feedbacks SET upvotes = upvotes + 1 WHERE id = ?'
+        ).bind(input.id).run()
+      } else {
+        await db.prepare(
+          'UPDATE feedbacks SET downvotes = downvotes + 1 WHERE id = ?'
+        ).bind(input.id).run()
+      }
+
+      // Commit transaction
+      await db.exec('COMMIT')
+
+      return {
+        success: true,
+        data: { id: input.id, vote: input.vote }
+      }
+    } catch (error) {
+      // Rollback transaction
+      await db.exec('ROLLBACK')
+      throw error
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: `Database error: ${(error as Error).message}`
+    }
+  }
+}
+
+/**
+ * Get user's vote for a feedback
+ */
+export async function getUserVote(
+  db: D1Database,
+  feedbackId: number,
+  userId: string
+): Promise<'up' | 'down' | null> {
+  try {
+    const vote = await db.prepare(
+      'SELECT vote FROM feedback_votes WHERE feedback_id = ? AND user_id = ?'
+    ).bind(feedbackId, userId).first<{ vote: 'up' | 'down' }>()
+
+    return vote?.vote || null
+  } catch (error) {
+    console.error('Error getting user vote:', error)
+    return null
+  }
+}
+
+/**
+ * Get feedback list with user votes
+ */
+export async function getFeedbackListWithVotes(
+  db: D1Database,
+  limit: number = 50,
+  offset: number = 0,
+  category?: string,
+  userId?: string
+): Promise<ChatApiResponse> {
+  try {
+    let query = 'SELECT * FROM feedbacks WHERE status = ?'
+    const params: any[] = ['published']
+
+    if (category && category !== 'all') {
+      query += ' AND category = ?'
+      params.push(category)
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
+    params.push(limit, offset)
+
+    const feedbacks = await db.prepare(query)
+      .bind(...params)
+      .all<Feedback>()
+
+    // Get total count
+    let countQuery = 'SELECT COUNT(*) as total FROM feedbacks WHERE status = ?'
+    const countParams: any[] = ['published']
+
+    if (category && category !== 'all') {
+      countQuery += ' AND category = ?'
+      countParams.push(category)
+    }
+
+    const countResult = await db.prepare(countQuery)
+      .bind(...countParams)
+      .first<{ total: number }>()
+
+    // Add user votes if userId is provided
+    if (userId) {
+      for (const feedback of feedbacks.results || []) {
+        feedback.userVote = await getUserVote(db, feedback.id, userId)
+      }
+    }
+
+    return {
+      success: true,
+      data: feedbacks.results || [],
+      count: countResult?.total || 0,
     }
   } catch (error) {
     return {

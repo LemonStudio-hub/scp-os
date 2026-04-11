@@ -4,6 +4,7 @@
  */
 
 import type { PerformanceMetric, PerformanceReport } from './performance-monitor.service'
+import logger from '../../utils/logger'
 
 /**
  * Performance API Service
@@ -24,7 +25,7 @@ export class PerformanceApiService {
    */
   async sendMetrics(metrics: PerformanceMetric[]): Promise<boolean> {
     if (this.isSending) {
-      console.warn('[PerformanceAPI] Already sending metrics')
+      logger.warn('Already sending metrics')
       return false
     }
 
@@ -49,10 +50,10 @@ export class PerformanceApiService {
       }
 
       const result = await response.json()
-      console.log('[PerformanceAPI] Metrics sent successfully', result)
+      logger.info('Metrics sent successfully', result)
       return true
     } catch (error) {
-      console.error('[PerformanceAPI] Failed to send metrics', error)
+      logger.error('Failed to send metrics', error)
       return false
     } finally {
       this.isSending = false
@@ -84,10 +85,10 @@ export class PerformanceApiService {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
-      console.log('[PerformanceAPI] Report sent successfully')
+      logger.info('Report sent successfully')
       return true
     } catch (error) {
-      console.error('[PerformanceAPI] Failed to send report', error)
+      logger.error('Failed to send report', error)
       return false
     }
   }
@@ -113,7 +114,7 @@ export class PerformanceApiService {
       const result = await response.json()
       return result.metrics || []
     } catch (error) {
-      console.error('[PerformanceAPI] Failed to retrieve metrics', error)
+      logger.error('Failed to retrieve metrics', error)
       return []
     }
   }
@@ -125,11 +126,11 @@ export class PerformanceApiService {
    */
   startAutoSend(intervalMs: number = 60000, metricsProvider: () => PerformanceMetric[]): void {
     if (this.sendInterval) {
-      console.warn('[PerformanceAPI] Auto-send already started')
+      logger.warn('Auto-send already started')
       return
     }
 
-    console.log(`[PerformanceAPI] Starting auto-send every ${intervalMs}ms`)
+    logger.info(`Starting auto-send every ${intervalMs}ms`)
     
     this.sendInterval = window.setInterval(async () => {
       const metrics = metricsProvider()
@@ -146,7 +147,7 @@ export class PerformanceApiService {
     if (this.sendInterval) {
       clearInterval(this.sendInterval)
       this.sendInterval = null
-      console.log('[PerformanceAPI] Auto-send stopped')
+      logger.info('Auto-send stopped')
     }
   }
 
@@ -165,7 +166,7 @@ export class PerformanceApiService {
 
       return response.ok
     } catch (error) {
-      console.error('[PerformanceAPI] API status check failed', error)
+      logger.error('API status check failed', error)
       return false
     }
   }

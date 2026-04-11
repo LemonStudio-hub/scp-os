@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import indexedDBService from '../utils/indexedDB'
+import logger from '../utils/logger'
 
 export interface Tab {
   id: string
@@ -50,9 +51,9 @@ export const useTabsStore = defineStore('tabs', () => {
       }
 
       isInitialized.value = true
-      console.log('[Tabs Store] Initialized with IndexedDB')
+      logger.info('[Tabs Store] Initialized with IndexedDB')
     } catch (error) {
-      console.error('[Tabs Store] Failed to initialize:', error)
+      logger.error('[Tabs Store] Failed to initialize:', error)
       // Fallback: create default tab
       createDefaultTab()
       isInitialized.value = true
@@ -70,7 +71,7 @@ export const useTabsStore = defineStore('tabs', () => {
         sidebarOpen.value
       )
     } catch (error) {
-      console.error('[Tabs Store] Failed to save tabs:', error)
+      logger.error('[Tabs Store] Failed to save tabs:', error)
     }
   }
 
@@ -134,10 +135,10 @@ export const useTabsStore = defineStore('tabs', () => {
     if (!tab) return false
 
     // Cannot close locked tabs
-    if (tab.isLocked) {
-      console.warn('[Tabs Store] Cannot close locked tab:', tabId)
-      return false
-    }
+      if (tab.isLocked) {
+        logger.warn('[Tabs Store] Cannot close locked tab:', tabId)
+        return false
+      }
 
     // Remove tab
     const index = tabs.value.findIndex(t => t.id === tabId)
@@ -216,7 +217,7 @@ export const useTabsStore = defineStore('tabs', () => {
       try {
         await indexedDBService.deleteTerminalState(tabId)
       } catch (error) {
-        console.error('[Tabs Store] Failed to delete terminal state during cleanup:', error)
+        logger.error('[Tabs Store] Failed to delete terminal state during cleanup:', error)
       }
     }
   }
@@ -243,7 +244,7 @@ export const useTabsStore = defineStore('tabs', () => {
       try {
         await indexedDBService.deleteTerminalState(tabId)
       } catch (error) {
-        console.error('[Tabs Store] Failed to delete terminal state:', error)
+        logger.error('[Tabs Store] Failed to delete terminal state:', error)
       }
     }
     
@@ -254,7 +255,7 @@ export const useTabsStore = defineStore('tabs', () => {
     // Save to IndexedDB
     saveTabs()
     
-    console.log('[Tabs Store] All tabs cleared')
+    logger.info('[Tabs Store] All tabs cleared')
   }
 
   // Watch for tab changes and auto-save

@@ -3,12 +3,13 @@
  * Provides extension points for plugins to extend the platform
  */
 
-import type { ExtensionPoint, Extension, ExtensionMetadata } from '../plugins/types'
+import type { Extension, ExtensionPoint, ExtensionMetadata } from '../plugins/types'
+import logger from '../../utils/logger'
 
 /**
  * Generic extension point
  */
-class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
+class GenericExtensionPoint<T = unknown> implements ExtensionPoint<T> {
   id: string
   name: string
   description: string
@@ -43,7 +44,7 @@ class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
       author: extension.author || 'Unknown'
     })
 
-    console.log(`[ExtensionPoint] Registered extension ${extension.id} in ${this.id}`)
+    logger.info(`Registered extension ${extension.id} in ${this.id}`)
   }
 
   unregister(extensionId: string): void {
@@ -56,7 +57,7 @@ class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
       (e: { id: string }) => e.id !== extensionId
     )
 
-    console.log(`[ExtensionPoint] Unregistered extension ${extensionId} from ${this.id}`)
+    logger.info(`Unregistered extension ${extensionId} from ${this.id}`)
   }
 
   get(extensionId: string): Extension<T> | undefined {
@@ -74,7 +75,7 @@ class GenericExtensionPoint<T = any> implements ExtensionPoint<T> {
   clear(): void {
     this.extensions.clear()
     this.metadata.extensions = []
-    console.log(`[ExtensionPoint] Cleared all extensions from ${this.id}`)
+    logger.info(`Cleared all extensions from ${this.id}`)
   }
 }
 
@@ -91,7 +92,7 @@ export class ExtensionRegistry {
     // Register built-in extension points
     this.registerBuiltInExtensionPoints()
 
-    console.log('[ExtensionRegistry] Extension registry initialized')
+    logger.info('Extension registry initialized')
   }
 
   /**
@@ -142,7 +143,7 @@ export class ExtensionRegistry {
     const extensionPoint = new GenericExtensionPoint(id, name, description)
     this.extensionPoints.set(id, extensionPoint)
 
-    console.log(`[ExtensionRegistry] Registered extension point: ${id}`)
+    logger.info(`Registered extension point: ${id}`)
 
     return extensionPoint
   }
@@ -157,13 +158,13 @@ export class ExtensionRegistry {
 
     this.extensionPoints.delete(id)
 
-    console.log(`[ExtensionRegistry] Unregistered extension point: ${id}`)
+    logger.info(`Unregistered extension point: ${id}`)
   }
 
   /**
    * Get an extension point
    */
-  getExtensionPoint<T = any>(id: string): ExtensionPoint<T> | undefined {
+  getExtensionPoint<T = unknown>(id: string): ExtensionPoint<T> | undefined {
     return this.extensionPoints.get(id) as ExtensionPoint<T>
   }
 
@@ -184,7 +185,7 @@ export class ExtensionRegistry {
   /**
    * Register an extension to an extension point
    */
-  registerExtension<T = any>(
+  registerExtension<T = unknown>(
     extensionPointId: string,
     extension: Extension<T>
   ): void {
@@ -257,7 +258,7 @@ export class ExtensionRegistry {
    */
   clear(): void {
     this.extensionPoints.clear()
-    console.log('[ExtensionRegistry] Cleared all extension points')
+    logger.info('Cleared all extension points')
   }
 
   /**

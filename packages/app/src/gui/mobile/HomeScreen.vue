@@ -52,7 +52,8 @@
         class="home-screen__app"
         @click="onAppTap(app)"
       >
-        <div class="home-screen__app-icon" :class="`home-screen__app-icon--${app.id}`"
+        <div
+class="home-screen__app-icon" :class="`home-screen__app-icon--${app.id}`"
              :style="iconGradientStyle">
           <template v-if="app.id === 'terminal'">
             <span class="home-screen__app-icon--terminal-text">&gt;_</span>
@@ -182,7 +183,7 @@ onMounted(async () => {
     await wallpaperService.init()
     const url = await wallpaperService.getCurrentWallpaper()
     if (url) customWallpaperUrl.value = url
-  } catch (error) {
+  } catch {
     // Silently fail - wallpaper is optional
   }
 

@@ -31,20 +31,20 @@
             class="mobile-file-manager__file-input"
             @change="onFileUpload"
           />
-          <button class="mobile-file-manager__action-btn" @click="triggerUpload" :title="t('fm.dropFiles')">
+          <button class="mobile-file-manager__action-btn" :title="t('fm.dropFiles')" @click="triggerUpload">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M9 12V3M9 3L6 6M9 3l3 3"/>
               <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3"/>
             </svg>
           </button>
-          <button class="mobile-file-manager__action-btn" @click="createNewFile" title="New file">
+          <button class="mobile-file-manager__action-btn" title="New file" @click="createNewFile">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M10 1H4a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V5z"/>
               <path d="M10 1v4h4"/>
               <path d="M9 9v6M6 12h6"/>
             </svg>
           </button>
-          <button class="mobile-file-manager__action-btn" @click="createNewFolder" title="New folder">
+          <button class="mobile-file-manager__action-btn" title="New folder" @click="createNewFolder">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M1 5V15h16V5H1z"/>
               <path d="M1 5l3-3h6l2 2"/>
@@ -328,6 +328,7 @@ const contextSheetVisible = ref(false)
 const contextSheetTitle = ref('')
 const contextActions = ref<ContextAction[]>([])
 const contextTargetFile = ref<any>(null)
+// const listRef = ref<HTMLElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragOver = ref(false)
 

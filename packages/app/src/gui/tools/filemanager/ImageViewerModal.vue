@@ -6,25 +6,25 @@
         <div class="fm-image-viewer__header">
           <span class="fm-image-viewer__title">{{ fileName }}</span>
           <div class="fm-image-viewer__actions">
-            <button class="fm-image-viewer__action-btn" @click="rotate" :title="t('viewer.rotate')">
+            <button class="fm-image-viewer__action-btn" :title="t('viewer.rotate')" @click="rotate">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M14 3h3v3"/>
                 <path d="M14 9a5 5 0 10-2 4"/>
               </svg>
             </button>
-            <button class="fm-image-viewer__action-btn" @click="zoomIn" :title="t('viewer.zoomIn')">
+            <button class="fm-image-viewer__action-btn" :title="t('viewer.zoomIn')" @click="zoomIn">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="8" cy="8" r="5"/>
                 <path d="M12 12l4 4M6 8h4M8 6v4"/>
               </svg>
             </button>
-            <button class="fm-image-viewer__action-btn" @click="zoomOut" :title="t('viewer.zoomOut')">
+            <button class="fm-image-viewer__action-btn" :title="t('viewer.zoomOut')" @click="zoomOut">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                 <circle cx="8" cy="8" r="5"/>
                 <path d="M12 12l4 4M6 8h4"/>
               </svg>
             </button>
-            <button class="fm-image-viewer__action-btn" @click="resetView" :title="t('viewer.reset')">
+            <button class="fm-image-viewer__action-btn" :title="t('viewer.reset')" @click="resetView">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M3 3v4h4M15 15v-4h-4"/>
                 <path d="M15 3L9 9M3 15l6-6"/>
@@ -93,6 +93,7 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 
 const imageSrc = ref<string>('')
+// const imageContainerRef = ref<HTMLElement | null>(null)
 const zoom = ref(1)
 const rotation = ref(0)
 const panX = ref(0)

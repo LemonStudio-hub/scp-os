@@ -38,7 +38,7 @@
           <!-- File Info -->
           <div class="video-player__info">
             <span class="video-player__name">{{ fileName }}</span>
-            <span class="video-player__size" v-if="fileSize">{{ fileSize }}</span>
+            <span v-if="fileSize" class="video-player__size">{{ fileSize }}</span>
           </div>
         </div>
       </div>

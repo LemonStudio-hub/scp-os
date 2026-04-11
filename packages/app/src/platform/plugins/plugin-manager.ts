@@ -17,6 +17,7 @@ import { PluginStatus as Status } from './types'
 import { ExtensionRegistry, getGlobalExtensionRegistry } from '../extensions/extension-point'
 import { EventBus, getGlobalEventBus } from '../events/event-bus'
 import { EventType } from '../events/types'
+import logger from '../../utils/logger'
 
 /**
  * Plugin manager configuration
@@ -64,7 +65,7 @@ export class PluginManager {
     this.extensionRegistry = this.config.extensionRegistry
 
     if (this.config.debug) {
-      console.log('[PluginManager] Plugin manager initialized', this.config)
+      logger.info('Plugin manager initialized', this.config)
     }
   }
 
@@ -110,7 +111,7 @@ export class PluginManager {
     this.plugins.set(plugin.name, entry)
 
     if (this.config.debug) {
-      console.log(`[PluginManager] Registered plugin: ${plugin.name} v${plugin.version}`)
+      logger.info(`Registered plugin: ${plugin.name} v${plugin.version}`)
     }
 
     // Emit plugin load event
@@ -158,7 +159,7 @@ export class PluginManager {
       await this.registerExtensions(entry.plugin)
 
       if (this.config.debug) {
-        console.log(`[PluginManager] Loaded plugin: ${pluginName}`)
+        logger.info(`Loaded plugin: ${pluginName}`)
       }
 
       return {
@@ -169,7 +170,7 @@ export class PluginManager {
       entry.status = Status.ERROR
       entry.error = error instanceof Error ? error.message : String(error)
 
-      console.error(`[PluginManager] Failed to load plugin ${pluginName}:`, error)
+      logger.error(`Failed to load plugin ${pluginName}:`, error)
 
       return {
         success: false,
@@ -223,7 +224,7 @@ export class PluginManager {
       entry.status = Status.ENABLED
 
       if (this.config.debug) {
-        console.log(`[PluginManager] Enabled plugin: ${pluginName}`)
+        logger.info(`Enabled plugin: ${pluginName}`)
       }
 
       // Emit plugin enable event
@@ -241,7 +242,7 @@ export class PluginManager {
       entry.status = Status.ERROR
       entry.error = error instanceof Error ? error.message : String(error)
 
-      console.error(`[PluginManager] Failed to enable plugin ${pluginName}:`, error)
+      logger.error(`Failed to enable plugin ${pluginName}:`, error)
 
       return {
         success: false,
@@ -280,7 +281,7 @@ export class PluginManager {
       entry.status = Status.DISABLED
 
       if (this.config.debug) {
-        console.log(`[PluginManager] Disabled plugin: ${pluginName}`)
+        logger.info(`Disabled plugin: ${pluginName}`)
       }
 
       // Emit plugin disable event
@@ -298,7 +299,7 @@ export class PluginManager {
       entry.status = Status.ERROR
       entry.error = error instanceof Error ? error.message : String(error)
 
-      console.error(`[PluginManager] Failed to disable plugin ${pluginName}:`, error)
+      logger.error(`Failed to disable plugin ${pluginName}:`, error)
 
       return {
         success: false,
@@ -338,7 +339,7 @@ export class PluginManager {
       entry.status = Status.UNLOADED
 
       if (this.config.debug) {
-        console.log(`[PluginManager] Unloaded plugin: ${pluginName}`)
+        logger.info(`Unloaded plugin: ${pluginName}`)
       }
 
       // Emit plugin unload event
@@ -356,7 +357,7 @@ export class PluginManager {
       entry.status = Status.ERROR
       entry.error = error instanceof Error ? error.message : String(error)
 
-      console.error(`[PluginManager] Failed to unload plugin ${pluginName}:`, error)
+      logger.error(`Failed to unload plugin ${pluginName}:`, error)
 
       return {
         success: false,
@@ -382,7 +383,7 @@ export class PluginManager {
     this.plugins.delete(pluginName)
 
     if (this.config.debug) {
-      console.log(`[PluginManager] Unregistered plugin: ${pluginName}`)
+      logger.info(`Unregistered plugin: ${pluginName}`)
     }
   }
 

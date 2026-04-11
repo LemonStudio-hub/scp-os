@@ -53,8 +53,8 @@
             <label class="pc-login-screen__label" for="nickname-input">工作代号</label>
             <div class="pc-login-screen__input-wrapper">
               <input
-                ref="inputRef"
                 id="nickname-input"
+                ref="inputRef"
                 v-model="nickname"
                 type="text"
                 class="pc-login-screen__input"

@@ -1,8 +1,10 @@
 <template>
-  <div class="scp-terminal w-screen h-dvh relative flex flex-col overflow-hidden"
+  <div
+class="scp-terminal w-screen h-dvh relative flex flex-col overflow-hidden"
        :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
     <!-- Terminal Header -->
-    <div class="scp-terminal__header flex items-center justify-between h-11 px-4 border-b flex-shrink-0"
+    <div
+class="scp-terminal__header flex items-center justify-between h-11 px-4 border-b flex-shrink-0"
          :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg, borderColor: themeStore.currentTheme.colors.borderSubtle }"
          style="padding-top: env(safe-area-inset-top, 0px);">
       <!-- Traffic Lights -->
@@ -27,16 +29,19 @@
     </div>
 
     <!-- Terminal Body -->
-    <div class="scp-terminal__body flex-1 relative overflow-hidden"
+    <div
+class="scp-terminal__body flex-1 relative overflow-hidden"
          :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
-      <div id="terminal-container" ref="terminalContainer" class="w-full h-full"
+      <div
+id="terminal-container" ref="terminalContainer" class="w-full h-full"
            style="touch-action: pan-y; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;"
            :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }" />
     </div>
 
     <!-- Virtual Keyboard (Termux-style) -->
     <Transition name="scp-terminal__keyboard">
-      <div v-if="isMobile" class="scp-terminal__keyboard"
+      <div
+v-if="isMobile" class="scp-terminal__keyboard"
            :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
         <!-- Extra Keys Row (ESC, TAB, CTRL, ALT, HOME, END, PGUP, PGDN, ←, →, ↑, ↓) -->
         <div class="scp-terminal__extra-keys">

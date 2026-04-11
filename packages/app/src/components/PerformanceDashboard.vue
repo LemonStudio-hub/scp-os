@@ -262,10 +262,10 @@ onMounted(() => {
 
     if (apiService.value && monitorService.value) {
       apiService.value.startAutoSend(60000, () => {
-        const names = monitorService.value!.getMetricNames()
+        const names = monitorService.value?.getMetricNames() || []
         const allMetrics: any[] = []
         for (const name of names) {
-          const latest = monitorService.value!.getLatestMetric(name)
+          const latest = monitorService.value?.getLatestMetric(name)
           if (latest) allMetrics.push(latest)
         }
         return allMetrics
@@ -304,9 +304,9 @@ onUnmounted(() => {
         <div class="dashboard-container">
           <!-- Header -->
           <DashboardHeader
-            :isMonitoring="isMonitoring"
+            :is-monitoring="isMonitoring"
             :version="version"
-            @toggleMonitoring="toggleMonitoring"
+            @toggle-monitoring="toggleMonitoring"
             @refresh="refreshData"
             @close="handleClose"
           />
@@ -314,7 +314,7 @@ onUnmounted(() => {
           <!-- Performance Score -->
           <PerformanceScore
             :score="latestReport?.score ?? 0"
-            :issueCount="issues.length"
+            :issue-count="issues.length"
           />
 
           <!-- Real-time Metrics Grid -->
@@ -333,8 +333,8 @@ onUnmounted(() => {
                 unit="%"
                 type="memory"
                 :progress="memoryPercentage"
-                metaLabel="Used"
-                :metaValue="formatBytes(memoryUsage)"
+                meta-label="Used"
+                :meta-value="formatBytes(memoryUsage)"
                 :footer="`of ${formatBytes(memoryLimit)}`"
                 :status="getMemoryStatus(memoryPercentage)"
               />
@@ -348,8 +348,8 @@ onUnmounted(() => {
                 unit="FPS"
                 type="fps"
                 :progress="(fpsInfo.current / 60) * 100"
-                metaLabel="Min / Avg / Max"
-                :metaValue="`${fpsInfo.min} / ${fpsInfo.avg} / ${fpsInfo.max}`"
+                meta-label="Min / Avg / Max"
+                :meta-value="`${fpsInfo.min} / ${fpsInfo.avg} / ${fpsInfo.max}`"
                 footer="Target: 60 FPS"
                 :status="getFPSStatus(fpsInfo.current)"
               />
@@ -462,16 +462,16 @@ onUnmounted(() => {
               <!-- Network -->
               <div class="info-card">
                 <div class="info-card-title">
-                  <span v-html="ICON_NET" class="info-icon" />
+                  <span class="info-icon" v-html="ICON_NET" />
                   Network
                 </div>
-                <div class="info-card-body" v-if="networkInfo">
+                <div v-if="networkInfo" class="info-card-body">
                   <div class="info-row"><span>Type</span><span class="info-val">{{ networkInfo.effectiveType.toUpperCase() }} ({{ networkInfo.type }})</span></div>
                   <div class="info-row"><span>Downlink</span><span class="info-val">{{ networkInfo.downlink }} Mbps</span></div>
                   <div class="info-row"><span>RTT</span><span class="info-val">{{ networkInfo.rtt }} ms</span></div>
                   <div class="info-row"><span>Save Data</span><span class="info-val">{{ networkInfo.saveData ? 'Yes' : 'No' }}</span></div>
                 </div>
-                <div class="info-card-body" v-else>
+                <div v-else class="info-card-body">
                   <p class="info-placeholder">Network API not available</p>
                 </div>
               </div>
@@ -479,7 +479,7 @@ onUnmounted(() => {
               <!-- Storage -->
               <div class="info-card">
                 <div class="info-card-title">
-                  <span v-html="ICON_STORAGE" class="info-icon" />
+                  <span class="info-icon" v-html="ICON_STORAGE" />
                   Storage
                 </div>
                 <div class="info-card-body">
@@ -498,7 +498,7 @@ onUnmounted(() => {
               <!-- Resources -->
               <div class="info-card">
                 <div class="info-card-title">
-                  <span v-html="ICON_DOM" class="info-icon" />
+                  <span class="info-icon" v-html="ICON_DOM" />
                   Resources
                 </div>
                 <div class="info-card-body">
@@ -513,14 +513,14 @@ onUnmounted(() => {
           <IssueList :issues="issues" />
 
           <!-- Recommendations Section -->
-          <RecommendationList :recommendations="recommendations" :showSteps="true" />
+          <RecommendationList :recommendations="recommendations" :show-steps="true" />
 
           <!-- Footer -->
           <DashboardFooter
-            :metricCount="metricCount"
-            :lastUpdated="lastUpdated"
-            :apiStatus="apiStatus"
-            :statusMessage="statusMessage"
+            :metric-count="metricCount"
+            :last-updated="lastUpdated"
+            :api-status="apiStatus"
+            :status-message="statusMessage"
             @export="handleExport"
             @refresh="refreshData"
             @clear="handleClear"

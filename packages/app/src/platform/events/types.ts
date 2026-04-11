@@ -5,7 +5,7 @@
 /**
  * Event handler function type
  */
-export type EventHandler<T = any> = (data: T) => void | Promise<void>
+export type EventHandler<T = unknown> = (data: T) => void | Promise<void>
 
 /**
  * Event configuration
@@ -16,7 +16,7 @@ export interface EventConfig {
   /** Whether to emit events asynchronously */
   async?: boolean
   /** Error handler for event processing errors */
-  errorHandler?: (error: Error, event: string, data: any) => void
+  errorHandler?: (error: Error, event: string, data: unknown) => void
 }
 
 /**
@@ -45,7 +45,7 @@ export interface CommandEventData {
  */
 export interface TerminalEventData {
   action: 'init' | 'write' | 'clear' | 'resize'
-  data?: any
+  data?: unknown
   timestamp: number
 }
 
@@ -81,7 +81,7 @@ export interface ThemeEventData {
  */
 export interface AppEventData {
   action: 'init' | 'ready' | 'error'
-  data?: any
+  data?: unknown
   timestamp: number
 }
 

@@ -32,7 +32,8 @@
         @contextmenu="handleAppContextMenu($event, app)"
       >
         <div class="desktop-screen__icon-content">
-          <div class="desktop-screen__icon-bg" :class="`desktop-screen__icon-bg--${app.id}`"
+          <div
+class="desktop-screen__icon-bg" :class="`desktop-screen__icon-bg--${app.id}`"
                :style="iconGradientStyle">
             <template v-if="app.id === 'terminal'">
               <span class="desktop-screen__icon-text">&gt;_</span>
@@ -78,7 +79,7 @@
     <PCTaskbar 
       ref="startButtonRef"
       :items="taskbarItems"
-      :activeTools="activeTools"
+      :active-tools="activeTools"
       @launch="onTaskbarLaunch"
       @start-click="onStartClick"
     />
@@ -86,7 +87,7 @@
     <!-- PC Start Menu -->
     <PCStartMenu
       ref="startMenuRef"
-      :isOpen="isStartMenuOpen"
+      :is-open="isStartMenuOpen"
       @launch="onStartMenuLaunch"
       @system-action="onSystemAction"
       @power-action="onPowerAction"
@@ -114,6 +115,7 @@ import PCCContextMenu from '../components/ui/PCCContextMenu.vue'
 import { useDraggable } from '../composables/useDraggable'
 import { useI18n } from '../composables/useI18n'
 import type { ToolType, ContextMenuItem } from '../types'
+import logger from '../../utils/logger'
 
 export interface DesktopApp {
   id: string
@@ -250,14 +252,14 @@ const onStartMenuLaunch = (app: StartMenuApp) => {
 
 // Handle system actions
 const onSystemAction = (action: string) => {
-  console.log('System action:', action)
+  logger.info('System action:', action)
   // Implement system action handling here
   isStartMenuOpen.value = false
 }
 
 // Handle power actions
 const onPowerAction = (action: string) => {
-  console.log('Power action:', action)
+  logger.info('Power action:', action)
   // Implement power action handling here
   isStartMenuOpen.value = false
 }
@@ -276,7 +278,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         label: t('fm.newFolder'),
         icon: 'folder',
         action: () => {
-          console.log('Create new folder')
+          logger.info('Create new folder')
           // Implement new folder creation
         },
       },
@@ -285,7 +287,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         label: t('pc.newTextFile'),
         icon: 'file-text',
         action: () => {
-          console.log('Create new text file')
+          logger.info('Create new text file')
           // Implement new text file creation
         },
       },
@@ -299,7 +301,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
             id: 'view-large-icons',
             label: t('pc.largeIcons'),
             action: () => {
-              console.log('View large icons')
+              logger.info('View large icons')
               // Implement view mode change
             },
           },
@@ -307,7 +309,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
             id: 'view-medium-icons',
             label: t('pc.mediumIcons'),
             action: () => {
-              console.log('View medium icons')
+              logger.info('View medium icons')
               // Implement view mode change
             },
           },
@@ -315,7 +317,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
             id: 'view-small-icons',
             label: t('pc.smallIcons'),
             action: () => {
-              console.log('View small icons')
+              logger.info('View small icons')
               // Implement view mode change
             },
           },
@@ -330,7 +332,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
             id: 'sort-by-name',
             label: t('pc.name'),
             action: () => {
-              console.log('Sort by name')
+              logger.info('Sort by name')
               // Implement sort by name
             },
           },
@@ -338,7 +340,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
             id: 'sort-by-date',
             label: t('pc.dateModified'),
             action: () => {
-              console.log('Sort by date')
+              logger.info('Sort by date')
               // Implement sort by date
             },
           },
@@ -350,7 +352,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         label: t('pc.personalize'),
         icon: 'settings',
         action: () => {
-          console.log('Open personalization settings')
+          logger.info('Open personalization settings')
           // Implement personalization settings
         },
       },
@@ -381,7 +383,7 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
         label: t('pc.pinTaskbar'),
         icon: 'pin',
         action: () => {
-          console.log('Pin to taskbar:', app.id)
+          logger.info('Pin to taskbar:', app.id)
           // Implement pin to taskbar
         },
       },
@@ -391,7 +393,7 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
         label: t('pc.properties'),
         icon: 'info',
         action: () => {
-          console.log('Properties:', app.id)
+          logger.info('Properties:', app.id)
           // Implement properties dialog
         },
       },
@@ -402,7 +404,7 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
 
 // Handle context menu selection
 const onContextMenuSelect = (item: ContextMenuItem) => {
-  console.log('Context menu selected:', item.id)
+  logger.info('Context menu selected:', item.id)
   // Additional handling if needed
 }
 

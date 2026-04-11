@@ -4,6 +4,7 @@
  */
 
 import type { IDataSourcePlugin, DataSourceMetadata, DataSourceDefinition, DataSourceQueryOptions, DataSourceQueryResult } from '../datasource-plugin.interface'
+import logger from '../../../utils/logger'
 
 /**
  * SCP Wiki Data Source Plugin
@@ -107,7 +108,7 @@ export class ScpWikiDataSourcePlugin implements IDataSourcePlugin {
       
       return null
     } catch (error) {
-      console.error(`Failed to fetch SCP ${id}:`, error)
+      logger.error(`Failed to fetch SCP ${id}:`, error)
       return null
     }
   }
@@ -171,12 +172,12 @@ export class ScpWikiDataSourcePlugin implements IDataSourcePlugin {
   }
   
   async onLoad(): Promise<void> {
-    console.log(`[ScpWikiDataSourcePlugin] Loaded`)
+    logger.info(`[ScpWikiDataSourcePlugin] Loaded`)
   }
   
   async onUnload(): Promise<void> {
     this.cache.clear()
-    console.log(`[ScpWikiDataSourcePlugin] Unloaded`)
+    logger.info(`[ScpWikiDataSourcePlugin] Unloaded`)
   }
   
   dependencies?: string[]

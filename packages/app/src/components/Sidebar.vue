@@ -9,8 +9,8 @@
         <h2>Tabs</h2>
         <button 
           class="btn-icon" 
-          @click="handleClose" 
-          aria-label="Close sidebar"
+          aria-label="Close sidebar" 
+          @click="handleClose"
         >
           &times;
         </button>
@@ -19,8 +19,8 @@
       <div class="sidebar-actions">
         <button 
           class="btn-primary" 
-          @click="handleCreateTab"
           :disabled="tabs.length >= 10"
+          @click="handleCreateTab"
         >
           + New Tab
         </button>
@@ -43,13 +43,13 @@
             </span>
             <input
               v-if="editingTabId === tab.id"
+              ref="renameInput"
               v-model="tempTitle"
+              class="tab-title-input"
+              maxlength="20"
               @blur="handleRenameComplete"
               @keyup.enter="handleRenameComplete"
               @keyup.esc="handleRenameCancel"
-              ref="renameInput"
-              class="tab-title-input"
-              maxlength="20"
             />
             <span v-else class="tab-title" @dblclick="handleRenameStart(tab)">
               {{ tab.title }}
@@ -60,8 +60,8 @@
             <button 
               v-if="!tab.isLocked"
               class="btn-icon btn-small"
-              @click.stop="handleCloseTab(tab.id)"
               aria-label="Close tab"
+              @click.stop="handleCloseTab(tab.id)"
             >
               &times;
             </button>
@@ -82,8 +82,8 @@
         </div>
         <button 
           class="btn-secondary btn-small"
-          @click="handleCleanup"
           title="Clean up unused tabs (7 days)"
+          @click="handleCleanup"
         >
           Cleanup
         </button>

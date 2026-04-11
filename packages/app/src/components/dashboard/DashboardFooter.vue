@@ -12,7 +12,7 @@
           <span class="info-label">Updated:</span>
           <span class="info-value">{{ lastUpdated }}</span>
         </div>
-        <div class="info-item" v-if="apiStatus">
+        <div v-if="apiStatus" class="info-item">
           <span class="info-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
           <span class="info-label">API:</span>
           <span class="info-value" :class="apiStatusClass">{{ apiStatus }}</span>
@@ -22,8 +22,8 @@
       <div class="footer-actions">
         <button 
           class="btn-action"
-          @click="$emit('export')"
           title="Export data"
+          @click="$emit('export')"
         >
           <span class="btn-icon">↓</span>
           <span class="btn-text">Export</span>
@@ -31,8 +31,8 @@
         
         <button 
           class="btn-action"
-          @click="$emit('refresh')"
           title="Refresh data"
+          @click="$emit('refresh')"
         >
           <span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
           <span class="btn-text">Refresh</span>
@@ -40,8 +40,8 @@
         
         <button 
           class="btn-action btn-danger"
-          @click="$emit('clear')"
           title="Clear all data"
+          @click="$emit('clear')"
         >
           <span class="btn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
           <span class="btn-text">Clear</span>
@@ -49,7 +49,7 @@
       </div>
     </div>
     
-    <div class="footer-status" v-if="statusMessage">
+    <div v-if="statusMessage" class="footer-status">
       <span class="status-icon">{{ statusIcon }}</span>
       <span class="status-text">{{ statusMessage }}</span>
     </div>

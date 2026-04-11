@@ -8,9 +8,10 @@ import { ref, computed } from 'vue'
 import { filesystem } from '../../utils/filesystem'
 import type { FileSystemNode } from '../../utils/filesystem'
 import type { ViewMode, SortField, SortOrder, FileItem, ContextMenuIcon, ContextMenuState } from '../types'
+import logger from '../../utils/logger'
 
 // i18n — set by consuming component via setI18n()
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 let _t: ((key: string, params?: Record<string, string | number>) => string) = (key: string) => key
 
 export function setI18n(i18n: { t: (key: string, params?: Record<string, string | number>) => string }): void {
@@ -97,7 +98,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
       const nodes = filesystem.listDirectory()
       files.value = nodes.map(nodeToItem)
     } catch (error) {
-      console.error('[FileManager] Failed to load directory:', error)
+      logger.error('[FileManager] Failed to load directory:', error)
     } finally {
       loading.value = false
     }
@@ -243,7 +244,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     const fsPath = currentPath.value === '/' ? `/${fileName}` : `${currentPath.value}/${fileName}`
     const content = filesystem.readFile(fsPath)
     if (content !== null) {
-      console.log('[FileManager] Open file:', fileName, content)
+      logger.info('[FileManager] Open file:', fileName, content)
     }
   }
 

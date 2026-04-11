@@ -76,7 +76,7 @@ async function loadFile() {
       content.value = ''
     }
     isNewFile.value = false
-  } catch (error) {
+  } catch {
     // File might not exist yet (new file)
     content.value = ''
     isNewFile.value = true

@@ -3,12 +3,12 @@
     <Transition name="context-menu">
       <div
         v-if="visible"
+        ref="menuRef"
         class="pcc-context-menu"
         :style="{ left: `${x}px`, top: `${y}px` }"
+        tabindex="-1"
         @click.stop
         @keydown="handleKeydown"
-        ref="menuRef"
-        tabindex="-1"
       >
         <template v-for="(item, index) in items" :key="item.id || index">
           <div v-if="item.divider" class="pcc-context-menu__divider" />

@@ -4,6 +4,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid'
+import logger from './logger'
 
 const DB_NAME = 'scp-terminal-db'
 const DB_VERSION = 4
@@ -26,13 +27,13 @@ class IndexedDBService {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to open database:', request.error)
+        logger.error('[IndexedDB] Failed to open database:', request.error)
         reject(request.error)
       }
 
       request.onsuccess = () => {
         this.db = request.result
-        console.log('[IndexedDB] Database opened successfully')
+        logger.info('[IndexedDB] Database opened successfully')
         resolve()
       }
 
@@ -46,21 +47,21 @@ class IndexedDBService {
           tabsStore.createIndex('isLocked', 'isLocked', { unique: false })
           tabsStore.createIndex('createdAt', 'createdAt', { unique: false })
           tabsStore.createIndex('lastActiveAt', 'lastActiveAt', { unique: false })
-          console.log('[IndexedDB] Created tabs store')
+          logger.info('[IndexedDB] Created tabs store')
         }
 
         // Create terminal states store
         if (!db.objectStoreNames.contains(STORES.TERMINAL_STATES)) {
           const terminalStore = db.createObjectStore(STORES.TERMINAL_STATES, { keyPath: 'tabId' })
           terminalStore.createIndex('updatedAt', 'updatedAt', { unique: false })
-          console.log('[IndexedDB] Created terminal states store')
+          logger.info('[IndexedDB] Created terminal states store')
         }
 
         // Create filesystem store
         if (!db.objectStoreNames.contains(STORES.FILESYSTEM)) {
           const fsStore = db.createObjectStore(STORES.FILESYSTEM, { keyPath: 'key' })
           fsStore.createIndex('updatedAt', 'updatedAt', { unique: false })
-          console.log('[IndexedDB] Created filesystem store')
+          logger.info('[IndexedDB] Created filesystem store')
         }
 
         // Create GUI windows store
@@ -68,14 +69,14 @@ class IndexedDBService {
           const guiStore = db.createObjectStore(STORES.GUI_WINDOWS, { keyPath: 'config.id' })
           guiStore.createIndex('tool', 'config.tool', { unique: false })
           guiStore.createIndex('createdAt', 'createdAt', { unique: false })
-          console.log('[IndexedDB] Created GUI windows store')
+          logger.info('[IndexedDB] Created GUI windows store')
         }
 
         // Create user settings store
         if (!db.objectStoreNames.contains(STORES.USER_SETTINGS)) {
           const userStore = db.createObjectStore(STORES.USER_SETTINGS, { keyPath: 'key' })
           userStore.createIndex('updatedAt', 'updatedAt', { unique: false })
-          console.log('[IndexedDB] Created user settings store')
+          logger.info('[IndexedDB] Created user settings store')
         }
       }
     })
@@ -437,17 +438,17 @@ class IndexedDBService {
       await this.init()
       const savedId = await this.loadSetting('user_id')
       if (savedId) {
-        console.log('[IndexedDB] Loaded existing user ID:', savedId)
+        logger.info('[IndexedDB] Loaded existing user ID:', savedId)
         return savedId
       }
 
       // 首次访问，使用 uuid 包生成新的用户 ID
       const newUserId = uuidv4()
       await this.saveSetting('user_id', newUserId)
-      console.log('[IndexedDB] Generated new user ID:', newUserId)
+      logger.info('[IndexedDB] Generated new user ID:', newUserId)
       return newUserId
     } catch (error) {
-      console.error('[IndexedDB] Failed to get user ID:', error)
+      logger.error('[IndexedDB] Failed to get user ID:', error)
       // 降级方案：使用 uuid 包生成 UUID
       return uuidv4()
     }
@@ -547,9 +548,9 @@ class IndexedDBService {
   async clearUserData(): Promise<void> {
     try {
       await this.deleteSetting('nickname')
-      console.log('[IndexedDB] User data cleared')
+      logger.info('[IndexedDB] User data cleared')
     } catch (error) {
-      console.error('[IndexedDB] Failed to clear user data:', error)
+      logger.error('[IndexedDB] Failed to clear user data:', error)
       throw error
     }
   }

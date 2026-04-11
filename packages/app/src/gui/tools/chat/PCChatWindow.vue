@@ -22,8 +22,8 @@
                   <button 
                     v-if="room.created_by === userId"
                     class="pc-chat-app__room-setting-btn"
-                    @click.stop="openRoomSettings(room)"
                     :title="'Room Settings'"
+                    @click.stop="openRoomSettings(room)"
                   >
                     <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
                       <path d="M12.25 1.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zm-10 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zm9.5 9.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zm-10 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zM7.5 12.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zM7.5 1.25a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-1.5a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h1.5zM12.25 7.5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-.75.75h-10a.75.75 0 0 1 0-1.5h10a.25.25 0 0 0 .25-.25v-1.5a.25.25 0 0 0-.25-.25h-10a.25.25 0 0 0-.25.25v1.5a.25.25 0 0 0 .25.25h10z" fill="currentColor"/>
@@ -52,7 +52,7 @@
       </div>
 
       <!-- Messages List -->
-      <div class="pc-chat-app__messages gui-scrollable" ref="messagesRef">
+      <div ref="messagesRef" class="pc-chat-app__messages gui-scrollable">
         <div v-if="messages.length === 0 && !loading" class="pc-chat-app__empty">
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
             <path d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z" stroke="currentColor" stroke-width="2"/>
@@ -139,9 +139,9 @@
             />
             <div class="pc-chat-app__dialog-checkbox">
               <input
+                id="room-public"
                 v-model="newRoomPublic"
                 type="checkbox"
-                id="room-public"
                 class="pc-chat-app__dialog-checkbox-input"
               />
               <label for="room-public" class="pc-chat-app__dialog-checkbox-label">
@@ -149,8 +149,8 @@
               </label>
             </div>
             <div class="pc-chat-app__dialog-actions">
-              <button class="pc-chat-app__dialog-btn" @click="showCreateRoom = false" :disabled="creatingRoom">{{ t('common.cancel') }}</button>
-              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" @click="createRoom" :disabled="creatingRoom">
+              <button class="pc-chat-app__dialog-btn" :disabled="creatingRoom" @click="showCreateRoom = false">{{ t('common.cancel') }}</button>
+              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" :disabled="creatingRoom" @click="createRoom">
                 <div v-if="creatingRoom" class="pc-chat-app__dialog-spinner" />
                 <span v-else>{{ t('common.create') }}</span>
               </button>
@@ -182,9 +182,9 @@
               />
               <div class="pc-chat-app__dialog-checkbox">
                 <input
+                  id="edit-room-public"
                   v-model="editRoomPublic"
                   type="checkbox"
-                  id="edit-room-public"
                   class="pc-chat-app__dialog-checkbox-input"
                 />
                 <label for="edit-room-public" class="pc-chat-app__dialog-checkbox-label">
@@ -194,7 +194,7 @@
             </div>
             <div class="pc-chat-app__dialog-section">
               <h4 class="pc-chat-app__dialog-section-title">Room Management</h4>
-              <button class="pc-chat-app__dialog-danger-btn" @click="deleteRoom" :disabled="deletingRoom || savingSettings">
+              <button class="pc-chat-app__dialog-danger-btn" :disabled="deletingRoom || savingSettings" @click="deleteRoom">
                 <div v-if="deletingRoom" class="pc-chat-app__dialog-spinner pc-chat-app__dialog-spinner--small" />
                 <svg v-if="!deletingRoom" width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M3.5 3.5h9M3.5 3.5v9.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V3.5m-10-1a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5M5.5 3.5v-.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v.5M7.5 7.5v3M8.5 7.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -203,8 +203,8 @@
               </button>
             </div>
             <div class="pc-chat-app__dialog-actions">
-              <button class="pc-chat-app__dialog-btn" @click="showRoomSettings = false" :disabled="savingSettings || deletingRoom">Cancel</button>
-              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" @click="saveRoomSettings" :disabled="savingSettings || deletingRoom">
+              <button class="pc-chat-app__dialog-btn" :disabled="savingSettings || deletingRoom" @click="showRoomSettings = false">Cancel</button>
+              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" :disabled="savingSettings || deletingRoom" @click="saveRoomSettings">
                 <div v-if="savingSettings" class="pc-chat-app__dialog-spinner" />
                 <span v-else>Save Changes</span>
               </button>
@@ -319,7 +319,9 @@ function setUnreadCount(roomId: number, count: number) {
 function markRoomAsRead(roomId: number) {
   setUnreadCount(roomId, 0)
   // 保存到 IndexedDB
-  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch(() => {})
+  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch((error) => {
+    console.error('[Chat] Failed to save unread counts:', error)
+  })
 }
 
 // Theme-reactive computed styles

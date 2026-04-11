@@ -17,7 +17,7 @@
           </div>
           <div class="mobile-dash__header-right">
             <span class="mobile-dash__time">{{ currentTime }}</span>
-            <button class="mobile-dash__refresh-btn" @click="refreshMetrics" :class="{ 'is-refreshing': isRefreshing }">
+            <button class="mobile-dash__refresh-btn" :class="{ 'is-refreshing': isRefreshing }" @click="refreshMetrics">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3.5 9a5.5 5.5 0 0110.37-3.5M14.5 9a5.5 5.5 0 01-10.37 3.5"/>
                 <path d="M16 5v3h-3M2 13v-3h3"/>

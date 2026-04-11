@@ -6,6 +6,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { indexedDBService } from '../utils/indexedDB'
+import logger from '../utils/logger'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -30,13 +31,13 @@ export const useAuthStore = defineStore('auth', () => {
       if (savedNickname) {
         nickname.value = savedNickname
         isLoggedIn.value = true
-        console.log('[Auth] Auto-login with existing user:', { userId: savedUserId, nickname: savedNickname })
+        logger.info('[Auth] Auto-login with existing user:', { userId: savedUserId, nickname: savedNickname })
       } else {
         isLoggedIn.value = false
-        console.log('[Auth] No saved nickname found, user not logged in')
+        logger.info('[Auth] No saved nickname found, user not logged in')
       }
     } catch (error) {
-      console.error('[Auth] Failed to initialize auth:', error)
+      logger.error('[Auth] Failed to initialize auth:', error)
       isLoggedIn.value = false
     } finally {
       isLoading.value = false
@@ -95,20 +96,20 @@ export const useAuthStore = defineStore('auth', () => {
             }
           } catch (parseError) {
             // Failed to parse error response
-            console.warn('[Auth] Failed to parse error response:', parseError)
+            logger.warn('[Auth] Failed to parse error response:', parseError)
           }
-          console.warn('[Auth] Failed to register user on remote API, but local login succeeded')
+          logger.warn('[Auth] Failed to register user on remote API, but local login succeeded')
         }
       } catch (apiError) {
         // Remote API failure should not block local login
-        console.warn('[Auth] Remote API unavailable, local login succeeded:', apiError)
+        logger.warn('[Auth] Remote API unavailable, local login succeeded:', apiError)
       }
 
       isLoggedIn.value = true
-      console.log('[Auth] User logged in successfully:', { userId: currentUserId, nickname: trimmedNickname })
+      logger.info('[Auth] User logged in successfully:', { userId: currentUserId, nickname: trimmedNickname })
       return { success: true }
     } catch (error) {
-      console.error('[Auth] Login failed:', error)
+      logger.error('[Auth] Login failed:', error)
       return { success: false, error: `Login failed: ${(error as Error).message}` }
     } finally {
       isLoading.value = false
@@ -124,9 +125,9 @@ export const useAuthStore = defineStore('auth', () => {
       isLoggedIn.value = false
       nickname.value = null
       // Keep userId as it's a persistent identifier
-      console.log('[Auth] User logged out successfully')
+      logger.info('[Auth] User logged out successfully')
     } catch (error) {
-      console.error('[Auth] Logout failed:', error)
+      logger.error('[Auth] Logout failed:', error)
       throw error
     }
   }

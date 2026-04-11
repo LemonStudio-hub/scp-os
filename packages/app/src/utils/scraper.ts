@@ -2,6 +2,7 @@ import axios from 'axios'
 import { OBJECT_CLASSES } from '../constants/scraperConfig'
 import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
 import { config } from '../config'
+import logger from './logger'
 
 // Worker 统一配置（与 Worker 保持一致）
 const WORKER_CONFIG = {
@@ -171,7 +172,7 @@ class SCPScraper {
     for (let attempt = 1; attempt <= WORKER_CONFIG.retryAttempts; attempt++) {
       try {
         const apiUrl = `${config.api.workerUrl}/scrape`
-        console.log(`[Scraper] [尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`)
+        logger.info(`[尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`)
 
         // 调用Cloudflare Worker API
         const response = await axios.get(apiUrl, {
@@ -184,8 +185,8 @@ class SCPScraper {
           withCredentials: false,
         })
 
-        console.log(`[Scraper] API 响应状态: ${response.status}`)
-        console.log(`[Scraper] API 响应数据:`, response.data)
+        logger.info(`API 响应状态: ${response.status}`)
+        logger.info(`API 响应数据:`, response.data)
 
         if (response.data.success && response.data.data) {
           const data = this.normalizeData(response.data.data)
@@ -205,7 +206,7 @@ class SCPScraper {
         if (axios.isAxiosError(error)) {
           if (error.response) {
             // 服务器响应了错误状态码 - 不重试
-            console.error(`[Scraper] API 错误响应:`, {
+            logger.error(`API 错误响应:`, {
               status: error.response.status,
               data: error.response.data,
               headers: error.response.headers,
@@ -221,7 +222,7 @@ class SCPScraper {
             // 5xx 错误可以重试
           } else if (error.request) {
             // 请求已发出但没有收到响应 - 可以重试
-            console.error(`[Scraper] 无响应:`, {
+            logger.error(`无响应:`, {
               message: error.message,
               code: error.code,
               attempt,
@@ -240,7 +241,7 @@ class SCPScraper {
             await this.sleep(WORKER_CONFIG.retryDelay * attempt)
           } else {
             // 请求配置错误 - 不重试
-            console.error(`[Scraper] 请求配置错误:`, error.message)
+            logger.error(`请求配置错误:`, error.message)
             return {
               success: false,
               error: `请求配置错误: ${error.message}`
@@ -248,7 +249,7 @@ class SCPScraper {
           }
         } else {
           // 其他错误 - 不重试
-          console.error(`[Scraper] 未知错误:`, error)
+          logger.error(`未知错误:`, error)
           return {
             success: false,
             error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
@@ -279,7 +280,7 @@ class SCPScraper {
   async searchSCP(keyword: string): Promise<ScraperResult> {
     try {
       const apiUrl = `${config.api.workerUrl}/search`
-      console.log(`[Scraper] 正在搜索: ${apiUrl}?keyword=${keyword}`)
+      logger.info(`正在搜索: ${apiUrl}?keyword=${keyword}`)
 
       // 调用Cloudflare Worker API
       const response = await axios.get(apiUrl, {
@@ -290,8 +291,8 @@ class SCPScraper {
         },
       })
 
-      console.log(`[Scraper] 搜索响应状态: ${response.status}`)
-      console.log(`[Scraper] 搜索响应数据:`, response.data)
+      logger.info(`搜索响应状态: ${response.status}`)
+      logger.info(`搜索响应数据:`, response.data)
 
       if (response.data.success && response.data.data) {
         // 如果返回的是数组（数据库搜索结果）
@@ -331,7 +332,7 @@ class SCPScraper {
       if (axios.isAxiosError(error)) {
         if (error.response) {
           // 服务器响应了错误状态码
-          console.error(`[Scraper] 搜索错误响应:`, {
+          logger.error(`搜索错误响应:`, {
             status: error.response.status,
             data: error.response.data,
           })
@@ -341,7 +342,7 @@ class SCPScraper {
           }
         } else if (error.request) {
           // 请求已发出但没有收到响应
-          console.error(`[Scraper] 搜索无响应:`, {
+          logger.error(`搜索无响应:`, {
             message: error.message,
             code: error.code,
           })
@@ -351,7 +352,7 @@ class SCPScraper {
           }
         } else {
           // 请求配置错误
-          console.error(`[Scraper] 搜索配置错误:`, error.message)
+          logger.error(`搜索配置错误:`, error.message)
           return {
             success: false,
             error: `请求配置错误: ${error.message}`
@@ -359,7 +360,7 @@ class SCPScraper {
         }
       } else {
         // 其他错误
-        console.error(`[Scraper] 搜索未知错误:`, error)
+        logger.error(`搜索未知错误:`, error)
         return {
           success: false,
           error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
@@ -628,7 +629,7 @@ class SCPScraper {
    */
   async testConnection(): Promise<{ success: boolean; message: string; details?: any }> {
     try {
-      console.log('[Scraper] 测试 API 连接...')
+      logger.info('测试 API 连接...')
       const response = await axios.get(`${config.api.workerUrl}/`, {
         timeout: 10000,
         headers: {
@@ -636,7 +637,7 @@ class SCPScraper {
         },
       })
 
-      console.log('[Scraper] API 连接测试成功:', response.data)
+      logger.info('API 连接测试成功:', response.data)
 
       return {
         success: true,
@@ -644,7 +645,7 @@ class SCPScraper {
         details: response.data
       }
     } catch (error) {
-      console.error('[Scraper] API 连接测试失败:', error)
+      logger.error('API 连接测试失败:', error)
 
       if (axios.isAxiosError(error)) {
         if (error.response) {
@@ -712,7 +713,7 @@ class SCPScraper {
         params.clearance_level = clearanceLevel
       }
 
-      console.log(`[Scraper] 正在获取 SCP 列表: ${apiUrl}`, params)
+      logger.info(`正在获取 SCP 列表: ${apiUrl}`, params)
 
       const response = await axios.get(apiUrl, {
         params,
@@ -722,7 +723,7 @@ class SCPScraper {
         },
       })
 
-      console.log(`[Scraper] 列表响应状态: ${response.status}`)
+      logger.info(`列表响应状态: ${response.status}`)
 
       if (response.data.success) {
         return {

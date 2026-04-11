@@ -5,6 +5,7 @@
 
 import type { IRepository, QueryOptions, QueryResult } from '../../domain/repositories'
 import type { Entity } from '../../domain/entities'
+import logger from '../../utils/logger'
 
 /**
  * IndexedDB Base Repository
@@ -33,13 +34,13 @@ export abstract class IndexedDBBaseRepository<T extends Entity> implements IRepo
       const request = indexedDB.open(this.dbName, this.dbVersion)
 
       request.onerror = () => {
-        console.error(`[IndexedDB] Failed to open database:`, request.error)
+        logger.error(`[IndexedDB] Failed to open database:`, request.error)
         reject(request.error)
       }
 
       request.onsuccess = () => {
         this.db = request.result
-        console.log(`[IndexedDB] Database opened successfully`)
+        logger.info(`[IndexedDB] Database opened successfully`)
         resolve()
       }
 

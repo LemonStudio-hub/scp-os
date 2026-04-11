@@ -80,7 +80,7 @@ export class TabMemoryRepository
    * Find with query options
    */
   async findWithQuery(options: TabQueryOptions): Promise<TabEntity[]> {
-    let filters: ((entity: TabEntity) => boolean)[] = []
+    const filters: ((entity: TabEntity) => boolean)[] = []
 
     if (options.filter) {
       filters.push(options.filter)

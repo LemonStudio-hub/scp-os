@@ -17,7 +17,7 @@
       @blur="isFocused = false"
       @keydown="$emit('keydown', $event)"
     />
-    <button v-if="clearable && modelValue" class="scp-input__clear" @click="onClear" tabindex="-1">
+    <button v-if="clearable && modelValue" class="scp-input__clear" tabindex="-1" @click="onClear">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
         <path d="M4 4L10 10M10 4L4 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
       </svg>

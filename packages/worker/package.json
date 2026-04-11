@@ -9,10 +9,13 @@
     "tail": "wrangler tail"
   },
   "dependencies": {
-    "cheerio": "^1.2.0"
+    "@flicknote/defuddle": "^1.0.1",
+    "cheerio": "^1.2.0",
+    "jsdom": "^24.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260411.1",
+    "@types/jsdom": "^28.0.1",
     "wrangler": "^4.69.0"
   }
 }

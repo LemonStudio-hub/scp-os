@@ -10,6 +10,7 @@ import type { WindowInstance, WindowConfig, WindowState, ToolType, WindowDimensi
 import { useZIndex } from '../composables/useZIndex'
 import { windowDefaults } from '../design-tokens'
 import indexedDBService from '../../utils/indexedDB'
+import logger from '../../utils/logger'
 
 const { getNextZIndex, bringToFront, setFocusedWindow, getFocusedWindowId } = useZIndex()
 
@@ -220,16 +221,16 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     try {
       await indexedDBService.saveGUIWindowState(windowInstance)
     } catch (error) {
-      console.error('[WindowManager] Failed to save window state:', error)
-    }
+        logger.error('[WindowManager] Failed to save window state:', error)
+      }
   }
 
   async function deleteWindowState(windowId: string): Promise<void> {
     try {
       await indexedDBService.deleteGUIWindowState(windowId)
     } catch (error) {
-      console.error('[WindowManager] Failed to delete window state:', error)
-    }
+        logger.error('[WindowManager] Failed to delete window state:', error)
+      }
   }
 
   async function loadWindowStates(): Promise<void> {
@@ -239,10 +240,10 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
         for (const savedWindow of savedWindows) {
           windows.value.set(savedWindow.config.id, savedWindow)
         }
-        console.log(`[WindowManager] Restored ${savedWindows.length} windows from IndexedDB`)
+        logger.info(`[WindowManager] Restored ${savedWindows.length} windows from IndexedDB`)
       }
     } catch (error) {
-      console.error('[WindowManager] Failed to load window states:', error)
+      logger.error('[WindowManager] Failed to load window states:', error)
     }
   }
 

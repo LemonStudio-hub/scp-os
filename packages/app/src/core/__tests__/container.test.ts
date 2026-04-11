@@ -149,10 +149,10 @@ describe('DIContainer', () => {
 
       expect(childScope?.parent).toBe(parentScope)
 
-      container.destroyScope(childScope!.id)
+      if (childScope) container.destroyScope(childScope.id)
       expect(container.getCurrentScope()).toBe(parentScope)
 
-      container.destroyScope(parentScope!.id)
+      if (parentScope) container.destroyScope(parentScope.id)
       expect(container.getCurrentScope()).toBe(null)
     })
   })

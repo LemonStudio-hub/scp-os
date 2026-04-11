@@ -4,6 +4,7 @@
  */
 
 import type { EventHandler, EventSubscription } from './types'
+import logger from '../../utils/logger'
 
 /**
  * Event Bus Interface
@@ -14,21 +15,21 @@ export interface IEventBus {
    * @param event - Event name
    * @param handler - Event handler function
    */
-  on<T = any>(event: string, handler: EventHandler<T>): void
+  on<T = unknown>(event: string, handler: EventHandler<T>): void
 
   /**
    * Unregister an event handler
    * @param event - Event name
    * @param handler - Event handler function
    */
-  off<T = any>(event: string, handler: EventHandler<T>): void
+  off<T = unknown>(event: string, handler: EventHandler<T>): void
 
   /**
    * Emit an event
    * @param event - Event name
    * @param data - Event data
    */
-  emit<T = any>(event: string, data: T): void
+  emit<T = unknown>(event: string, data: T): void
 
   /**
    * Register a one-time event handler
@@ -63,7 +64,7 @@ const DEFAULT_CONFIG = {
  * Event Bus Implementation
  */
 export class EventBus implements IEventBus {
-  private handlers = new Map<string, Set<EventHandler>>()
+  private handlers = new Map<string, Set<EventHandler<unknown>>>()
   private subscriptions = new Map<string, Set<EventSubscription>>()
   private config: typeof DEFAULT_CONFIG
 
@@ -74,18 +75,21 @@ export class EventBus implements IEventBus {
   /**
    * Register an event handler
    */
-  on<T = any>(event: string, handler: EventHandler<T>): void {
+  on<T = unknown>(event: string, handler: EventHandler<T>): void {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, new Set())
     }
-    this.handlers.get(event)!.add(handler)
+    const handlers = this.handlers.get(event)
+    if (handlers) {
+      handlers.add(handler as EventHandler<unknown>)
+    }
 
     // Check for potential memory leak
     if (this.config.warnOnMemoryLeak) {
       const count = this.listenerCount(event)
       if (count > this.config.maxListeners) {
-        console.warn(
-          `[EventBus] Possible memory leak detected. ${count} listeners added for event "${event}". Use emitter.setMaxListeners() to increase limit.`
+        logger.warn(
+          `Possible memory leak detected. ${count} listeners added for event "${event}". Use emitter.setMaxListeners() to increase limit.`
         )
       }
     }
@@ -94,10 +98,10 @@ export class EventBus implements IEventBus {
   /**
    * Unregister an event handler
    */
-  off<T = any>(event: string, handler: EventHandler<T>): void {
+  off<T = unknown>(event: string, handler: EventHandler<T>): void {
     const handlers = this.handlers.get(event)
     if (handlers) {
-      handlers.delete(handler)
+      handlers.delete(handler as EventHandler<unknown>)
       if (handlers.size === 0) {
         this.handlers.delete(event)
       }
@@ -107,7 +111,7 @@ export class EventBus implements IEventBus {
   /**
    * Emit an event
    */
-  emit<T = any>(event: string, data: T): void {
+  emit<T = unknown>(event: string, data: T): void {
     const handlers = this.handlers.get(event)
     if (handlers) {
       for (const handler of handlers) {
@@ -115,15 +119,15 @@ export class EventBus implements IEventBus {
           const result = handler(data)
           if (result instanceof Promise) {
             result.catch((err: unknown) => {
-              console.error(
-                `[EventBus] Error in async handler for event "${event}":`,
+              logger.error(
+                `Error in async handler for event "${event}":`,
                 err
               )
             })
           }
         } catch (error) {
-          console.error(
-            `[EventBus] Error in handler for event "${event}":`,
+          logger.error(
+            `Error in handler for event "${event}":`,
             error
           )
         }
@@ -134,7 +138,7 @@ export class EventBus implements IEventBus {
   /**
    * Register a one-time event handler
    */
-  once<T = any>(event: string, handler: EventHandler<T>): void {
+  once<T = unknown>(event: string, handler: EventHandler<T>): void {
     const wrappedHandler = (data: T) => {
       this.off(event, wrappedHandler)
       handler(data)
@@ -206,7 +210,7 @@ export function resetGlobalEventBus(): void {
 /**
  * Subscribe to an event with automatic cleanup
  */
-export function subscribe<T = any>(
+export function subscribe<T = unknown>(
   eventBus: EventBus,
   event: string,
   handler: EventHandler<T>

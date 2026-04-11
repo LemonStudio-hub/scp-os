@@ -170,7 +170,7 @@ export class PerformanceMonitorService {
   private startFPSMonitor(): void {
     let lastTime = performance.now()
     let frames = 0
-    let fpsValues: number[] = []
+    const fpsValues: number[] = []
     let minFps = 60
     let maxFps = 60
     let totalFrames = 0
@@ -293,7 +293,7 @@ export class PerformanceMonitorService {
       if (totalResources > 0) {
         let totalDuration = 0
         let totalSize = 0
-        let errorCount = 0
+        const errorCount = 0
 
         for (const entry of resourceEntries) {
           const res = entry as PerformanceResourceTiming

@@ -33,7 +33,7 @@
           </div>
         </div>
         <div class="score-marks">
-          <span class="mark" v-for="n in 5" :key="n"></span>
+          <span v-for="n in 5" :key="n" class="mark"></span>
         </div>
       </div>
       

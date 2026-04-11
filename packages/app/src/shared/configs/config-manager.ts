@@ -12,6 +12,7 @@ import type {
   Environment
 } from './types'
 import { EventBus, getGlobalEventBus } from '../../platform/events/event-bus'
+import logger from '../../utils/logger'
 
 /**
  * Environment configuration source
@@ -20,11 +21,11 @@ class EnvironmentSource implements ConfigSource {
   name = 'environment'
   priority = 1000
 
-  constructor() {}
+
 
   get(key: string): ConfigValue | undefined {
     const envKey = key.toUpperCase().replace(/-/g, '_')
-    return (import.meta.env as any)[`VITE_${envKey}`]
+    return (import.meta.env as Record<string, ConfigValue>)[`VITE_${envKey}`]
   }
 
   has(key: string): boolean {
@@ -120,7 +121,7 @@ export class ConfigManager {
     }
 
     if (this.config.debug) {
-      console.log('[ConfigManager] Configuration manager initialized', {
+      logger.info('[ConfigManager] Configuration manager initialized', {
         environment: this.config.environment,
         sources: this.sources.map(s => s.name),
         schemas: this.schemas.size
@@ -154,7 +155,7 @@ export class ConfigManager {
     this.clearCache()
 
     if (this.config.debug) {
-      console.log(`[ConfigManager] Added source: ${source.name} (priority: ${source.priority})`)
+      logger.info(`[ConfigManager] Added source: ${source.name} (priority: ${source.priority})`)
     }
   }
 
@@ -166,7 +167,7 @@ export class ConfigManager {
     this.clearCache()
 
     if (this.config.debug) {
-      console.log(`[ConfigManager] Removed source: ${sourceName}`)
+      logger.info(`[ConfigManager] Removed source: ${sourceName}`)
     }
   }
 
@@ -219,7 +220,7 @@ export class ConfigManager {
     } as ConfigChangeEvent)
 
     if (this.config.debug) {
-      console.log(`[ConfigManager] Set ${key} =`, value, `(source: ${source})`)
+      logger.info(`[ConfigManager] Set ${key} =`, value, `(source: ${source})`)
     }
   }
 
@@ -255,7 +256,7 @@ export class ConfigManager {
     this.cache.clear()
 
     if (this.config.debug) {
-      console.log('[ConfigManager] Cache cleared')
+      logger.info('[ConfigManager] Cache cleared')
     }
   }
 
@@ -266,7 +267,7 @@ export class ConfigManager {
     this.schemas.set(schema.key, schema)
 
     if (this.config.debug) {
-      console.log(`[ConfigManager] Registered schema: ${schema.key}`)
+      logger.info(`[ConfigManager] Registered schema: ${schema.key}`)
     }
   }
 
@@ -277,7 +278,7 @@ export class ConfigManager {
     this.schemas.delete(key)
 
     if (this.config.debug) {
-      console.log(`[ConfigManager] Unregistered schema: ${key}`)
+      logger.info(`[ConfigManager] Unregistered schema: ${key}`)
     }
   }
 
@@ -359,7 +360,7 @@ export class ConfigManager {
     this.clearCache()
 
     if (this.config.debug) {
-      console.log(`[ConfigManager] Environment set to: ${environment}`)
+      logger.info(`[ConfigManager] Environment set to: ${environment}`)
     }
   }
 
@@ -375,7 +376,7 @@ export class ConfigManager {
     this.clearCache()
 
     if (this.config.debug) {
-      console.log('[ConfigManager] Configuration reset')
+      logger.info('[ConfigManager] Configuration reset')
     }
   }
 

@@ -7,6 +7,7 @@ import type { ITabRepository, TabQueryOptions } from '../../domain/repositories'
 import { TabEntity, TabCollection } from '../../domain/entities'
 import type { TabType, TabStatus } from '../../domain/entities'
 import { IndexedDBBaseRepository } from './indexeddb-base.repository'
+import logger from '../../utils/logger'
 
 /**
  * Tab IndexedDB Repository
@@ -31,7 +32,7 @@ export class TabIndexedDBRepository
       store.createIndex('status', 'status', { unique: false })
       store.createIndex('createdAt', 'createdAt', { unique: false })
       store.createIndex('updatedAt', 'updatedAt', { unique: false })
-      console.log(`[IndexedDB] Created ${this.storeName} store`)
+      logger.info(`[IndexedDB] Created ${this.storeName} store`)
     }
   }
 
@@ -63,7 +64,7 @@ export class TabIndexedDBRepository
       try {
         collection.setActive(metadata.activeTabId)
       } catch (error) {
-        console.warn(`[TabRepository] Failed to set active tab: ${error}`)
+        logger.warn(`[TabRepository] Failed to set active tab: ${error}`)
       }
     }
 
@@ -112,7 +113,7 @@ export class TabIndexedDBRepository
    * Find with query options
    */
   async findWithQuery(options: TabQueryOptions): Promise<TabEntity[]> {
-    let filters: ((entity: TabEntity) => boolean)[] = []
+    const filters: ((entity: TabEntity) => boolean)[] = []
 
     if (options.filter) {
       filters.push(options.filter)

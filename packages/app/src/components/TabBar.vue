@@ -17,8 +17,8 @@
         <button 
           v-if="!tab.isLocked"
           class="tab-close-btn"
-          @click.stop="handleCloseTab(tab.id)"
           aria-label="Close tab"
+          @click.stop="handleCloseTab(tab.id)"
         >
           &times;
         </button>
@@ -27,9 +27,9 @@
       <button 
         v-if="tabs.length < 10"
         class="tab-new-btn"
-        @click="handleCreateTab"
         aria-label="New tab"
         title="New tab"
+        @click="handleCreateTab"
       >
         +
       </button>

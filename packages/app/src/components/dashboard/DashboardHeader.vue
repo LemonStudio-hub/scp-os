@@ -16,26 +16,26 @@
       
       <button 
         class="btn-control" 
-        @click="$emit('toggleMonitoring')"
         :title="isMonitoring ? 'Stop monitoring' : 'Start monitoring'"
         aria-label="Toggle monitoring"
+        @click="$emit('toggleMonitoring')"
       >
         {{ isMonitoring ? '⏹' : '▶' }}
       </button>
       
       <button 
         class="btn-control" 
-        @click="$emit('refresh')"
         title="Refresh data"
         aria-label="Refresh data"
+        @click="$emit('refresh')"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       </button>
       
       <button 
         class="btn-close" 
-        @click="$emit('close')"
         aria-label="Close dashboard"
+        @click="$emit('close')"
       >
         X
       </button>

@@ -6,6 +6,7 @@
 import type { Plugin, PluginLoadResult } from './types'
 import { PluginManager } from './plugin-manager'
 import { getGlobalPluginManager } from './plugin-manager'
+import logger from '../../utils/logger'
 
 /**
  * Plugin loader options
@@ -51,7 +52,7 @@ export class PluginLoader {
     this.pluginManager = this.config.pluginManager
 
     if (this.config.debug) {
-      console.log('[PluginLoader] Plugin loader initialized', this.config)
+      logger.info('Plugin loader initialized', this.config)
     }
   }
 
@@ -61,7 +62,7 @@ export class PluginLoader {
    */
   async loadFromFile(filePath: string): Promise<PluginLoadResult> {
     if (this.config.debug) {
-      console.log(`[PluginLoader] Loading plugin from file: ${filePath}`)
+      logger.info(`Loading plugin from file: ${filePath}`)
     }
 
     try {
@@ -93,7 +94,7 @@ export class PluginLoader {
       return result
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
-      console.error(`[PluginLoader] Failed to load plugin from ${filePath}:`, error)
+      logger.error(`Failed to load plugin from ${filePath}:`, error)
 
       return {
         success: false,
@@ -108,7 +109,7 @@ export class PluginLoader {
    */
   async loadFromURL(url: string): Promise<PluginLoadResult> {
     if (this.config.debug) {
-      console.log(`[PluginLoader] Loading plugin from URL: ${url}`)
+      logger.info(`Loading plugin from URL: ${url}`)
     }
 
     try {
@@ -167,7 +168,7 @@ export class PluginLoader {
       return result
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
-      console.error(`[PluginLoader] Failed to load plugin from ${url}:`, error)
+      logger.error(`Failed to load plugin from ${url}:`, error)
 
       return {
         success: false,
@@ -182,7 +183,7 @@ export class PluginLoader {
    */
   async loadFromObject(plugin: Plugin): Promise<PluginLoadResult> {
     if (this.config.debug) {
-      console.log(`[PluginLoader] Loading plugin from object: ${plugin.name}`)
+      logger.info(`Loading plugin from object: ${plugin.name}`)
     }
 
     try {
@@ -201,7 +202,7 @@ export class PluginLoader {
       return result
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error)
-      console.error(`[PluginLoader] Failed to load plugin ${plugin.name}:`, error)
+      logger.error(`Failed to load plugin ${plugin.name}:`, error)
 
       return {
         success: false,
@@ -241,7 +242,7 @@ export class PluginLoader {
     this.loadHistory.delete(pluginName)
 
     if (this.config.debug) {
-      console.log(`[PluginLoader] Unloaded plugin: ${pluginName}`)
+      logger.info(`Unloaded plugin: ${pluginName}`)
     }
   }
 

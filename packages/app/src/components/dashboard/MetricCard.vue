@@ -6,7 +6,7 @@
       </div>
       <div class="metric-info">
         <span class="metric-name">{{ name }}</span>
-        <span class="metric-unit" v-if="unit">{{ unit }}</span>
+        <span v-if="unit" class="metric-unit">{{ unit }}</span>
       </div>
     </div>
     
@@ -15,20 +15,20 @@
         {{ displayValue }}
       </span>
       <span 
-        class="metric-trend" 
+        v-if="showTrend" 
+        class="metric-trend"
         :class="trendClass"
-        v-if="showTrend"
       >
         {{ trendIcon }}
       </span>
     </div>
     
-    <div class="metric-meta" v-if="showMeta">
+    <div v-if="showMeta" class="metric-meta">
       <span class="metric-label">{{ metaLabel }}</span>
       <span class="metric-detail" :class="statusClass">{{ metaValue }}</span>
     </div>
     
-    <div class="metric-progress" v-if="showProgress">
+    <div v-if="showProgress" class="metric-progress">
       <div class="progress-bg">
         <div 
           class="progress-fill" 
@@ -41,7 +41,7 @@
       <span class="progress-text">{{ progressValue }}%</span>
     </div>
     
-    <div class="metric-footer" v-if="footer">
+    <div v-if="footer" class="metric-footer">
       <svg class="footer-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"/>
         <line x1="12" y1="16" x2="12" y2="12"/>
@@ -127,7 +127,7 @@ const trendIcon = computed(() => {
 
 const cardClass = computed(() => ({
   [`type-${props.type}`]: true,
-  [`status-${props.status}`]: !!props.status
+  [`status-${props.status}`]: Boolean(props.status)
 }))
 
 const metaValue = computed(() => {

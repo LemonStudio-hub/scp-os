@@ -3,9 +3,9 @@
     <div class="text-editor">
       <!-- Menu Bar -->
       <div class="text-editor__menu">
-        <div class="text-editor__menu-item" @click="editorStore.openNewFile()">File</div>
-        <div class="text-editor__menu-item" @click="saveActive">Save</div>
-        <div class="text-editor__menu-item" @click="saveAll">Save All</div>
+        <div class="text-editor__menu-item" @click.exact="editorStore.openNewFile">File</div>
+        <div class="text-editor__menu-item" @click.exact="saveActive">Save</div>
+        <div class="text-editor__menu-item" @click.exact="saveAll">Save All</div>
       </div>
 
       <!-- Tab Bar -->
@@ -18,7 +18,7 @@
       />
 
       <!-- Editor Area -->
-      <div class="text-editor__area" ref="editorContainerRef">
+      <div ref="editorContainerRef" class="text-editor__area">
         <template v-if="editorStore.openFiles.length === 0">
           <div class="text-editor__empty">
             <GUIIcon name="empty-doc" :size="48" class="text-editor__empty-icon" />
@@ -45,12 +45,12 @@
                 @keydown.enter="findNext"
                 @keydown.escape="closeFindReplace"
               />
-              <button class="text-editor__find-btn" @click="findPrev" :aria-label="'Find previous'">
+              <button class="text-editor__find-btn" :aria-label="'Find previous'" @click="findPrev">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M13 10L8 5L3 10"/>
                 </svg>
               </button>
-              <button class="text-editor__find-btn" @click="findNext" :aria-label="'Find next'">
+              <button class="text-editor__find-btn" :aria-label="'Find next'" @click="findNext">
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M3 6L8 11L13 6"/>
                 </svg>
@@ -65,7 +65,7 @@
                 v-model="replaceText"
                 class="text-editor__find-input"
                 placeholder="Replace"
-                @keydown.enter="replaceCurrent"
+                @keydown.enter.exact="replaceCurrent"
                 @keydown.ctrl.enter="replaceAll"
                 @keydown.escape="closeFindReplace"
               />

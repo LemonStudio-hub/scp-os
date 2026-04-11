@@ -31,7 +31,7 @@
                     <span v-if="getUnreadCount(room.id) > 0" class="chat-app__room-badge">{{ getUnreadCount(room.id) }}</span>
                   </span>
                 </div>
-                <div class="chat-app__room-last-message" v-if="room.last_message">
+                <div v-if="room.last_message" class="chat-app__room-last-message">
                   <span class="chat-app__room-last-sender">{{ room.last_message_sender }}: </span>
                   <span class="chat-app__room-last-content">{{ truncateMessage(room.last_message) }}</span>
                 </div>
@@ -64,7 +64,7 @@
       </div>
 
       <!-- Messages List -->
-      <div class="chat-app__messages gui-scrollable" ref="messagesRef">
+      <div ref="messagesRef" class="chat-app__messages gui-scrollable">
         <div v-if="messages.length === 0 && !loading" class="chat-app__empty">
           <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
             <path d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z" stroke="currentColor" stroke-width="2"/>
@@ -153,8 +153,8 @@
               <span class="chat-app__dialog-toggle-label">{{ t('chat.privateRoom') }}</span>
               <label class="chat-app__toggle">
                 <input
-                  type="checkbox"
                   v-model="newRoomPrivate"
+                  type="checkbox"
                   :disabled="creatingRoom"
                 />
                 <span class="chat-app__toggle-slider"></span>
@@ -162,8 +162,8 @@
             </div>
             <div v-if="createRoomError" class="chat-app__dialog-error">{{ createRoomError }}</div>
             <div class="chat-app__dialog-actions">
-              <button class="chat-app__dialog-btn" @click="closeCreateRoomDialog" :disabled="creatingRoom">{{ t('common.cancel') }}</button>
-              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="createRoom" :disabled="!newRoomName.trim() || creatingRoom">
+              <button class="chat-app__dialog-btn" :disabled="creatingRoom" @click="closeCreateRoomDialog">{{ t('common.cancel') }}</button>
+              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" :disabled="!newRoomName.trim() || creatingRoom" @click="createRoom">
                 <span v-if="!creatingRoom">{{ t('common.create') }}</span>
                 <div v-else class="chat-app__spinner"></div>
               </button>
@@ -217,8 +217,8 @@
               <span class="chat-app__dialog-toggle-label">{{ t('chat.privateRoom') }}</span>
               <label class="chat-app__toggle">
                 <input
-                  type="checkbox"
                   v-model="editRoomPrivate"
+                  type="checkbox"
                   :disabled="savingRoomSettings"
                 />
                 <span class="chat-app__toggle-slider"></span>
@@ -226,14 +226,14 @@
             </div>
             <div v-if="roomSettingsError" class="chat-app__dialog-error">{{ roomSettingsError }}</div>
             <div class="chat-app__dialog-actions">
-              <button class="chat-app__dialog-btn" @click="closeRoomSettingsDialog" :disabled="savingRoomSettings || deletingRoom">{{ t('common.cancel') }}</button>
-              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="saveRoomSettings" :disabled="!editRoomName.trim() || savingRoomSettings || deletingRoom">
+              <button class="chat-app__dialog-btn" :disabled="savingRoomSettings || deletingRoom" @click="closeRoomSettingsDialog">{{ t('common.cancel') }}</button>
+              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" :disabled="!editRoomName.trim() || savingRoomSettings || deletingRoom" @click="saveRoomSettings">
                 <span v-if="!savingRoomSettings">{{ t('common.save') }}</span>
                 <div v-else class="chat-app__spinner"></div>
               </button>
             </div>
             <div class="chat-app__dialog-divider"></div>
-            <button class="chat-app__dialog-btn chat-app__dialog-btn--danger" @click="deleteRoom" :disabled="savingRoomSettings || deletingRoom">
+            <button class="chat-app__dialog-btn chat-app__dialog-btn--danger" :disabled="savingRoomSettings || deletingRoom" @click="deleteRoom">
               <span v-if="!deletingRoom">{{ t('chat.deleteRoom') }}</span>
               <div v-else class="chat-app__spinner"></div>
             </button>
@@ -283,6 +283,9 @@ interface ChatRoom {
 }
 
 defineProps<Props>()
+defineEmits<{
+  (e: 'close'): void
+}>()
 
 const themeStore = useThemeStore()
 themeStore.init()
@@ -344,7 +347,9 @@ function setUnreadCount(roomId: number, count: number) {
 function markRoomAsRead(roomId: number) {
   setUnreadCount(roomId, 0)
   // 保存到 IndexedDB
-  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch(() => {})
+  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch((error) => {
+    console.error('[Chat] Failed to save unread counts:', error)
+  })
 }
 
 // Theme-reactive computed styles

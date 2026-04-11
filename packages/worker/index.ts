@@ -19,6 +19,8 @@ import { HTMLSanitizer } from './utils/htmlSanitizer'
 import { ParagraphFilter } from './utils/paragraphFilter'
 import { logger } from './utils/logger'
 import { performanceMonitor } from './utils/performanceMonitor'
+import Defuddle from '@flicknote/defuddle'
+import { JSDOM } from 'jsdom'
 
 // 安全
 import { RateLimiter } from './security/rateLimiter'
@@ -231,16 +233,19 @@ class SCPScraper {
       // 先消毒 HTML（防止 XSS）
       const sanitizedHTML = this.htmlSanitizer.sanitize(html)
 
+      // 使用 Defuddle 提取主要内容
+      const cleanedHTML = this.extractMainContentWithDefuddle(sanitizedHTML)
+
       // 根据分支使用不同的解析策略
       let data: SCPWikiData
       if (branch === 'en') {
         // 英文站点也需要清理广告和无关内容
-        const cleanedHTML = this.htmlCleaner.clean(sanitizedHTML)
-        data = await this.parseEnglishPage(cleanedHTML, scpNumber, branch)
+        const finalHTML = this.htmlCleaner.clean(cleanedHTML)
+        data = await this.parseEnglishPage(finalHTML, scpNumber, branch)
       } else {
         // 中文站点使用清理后的文本
-        const cleanedHTML = this.htmlCleaner.clean(sanitizedHTML)
-        const text = this.htmlParser.extractText(cleanedHTML)
+        const finalHTML = this.htmlCleaner.clean(cleanedHTML)
+        const text = this.htmlParser.extractText(finalHTML)
         const sections = this.sectionParser.parseSections(text)
         data = this.buildDataFromSections(sections, scpNumber, branch)
       }
@@ -253,6 +258,30 @@ class SCPScraper {
     } catch (error) {
       parseTimer()
       throw ScraperError.parseError((error as Error).message)
+    }
+  }
+
+  /**
+   * 使用 Defuddle 提取主要内容
+   */
+  private extractMainContentWithDefuddle(html: string): string {
+    try {
+      // 创建 JSDOM 实例
+      const dom = new JSDOM(html)
+      const doc = dom.window.document
+      
+      // 创建 Defuddle 实例
+      const defuddle = new Defuddle(doc)
+      
+      // 解析内容
+      const result = defuddle.parse()
+      
+      // 返回提取的主要内容
+      return result.content || html
+    } catch (error) {
+      logger.error('Defuddle extraction failed', error as Error)
+      // 如果失败，返回原始 HTML
+      return html
     }
   }
 
@@ -869,7 +898,8 @@ class SCPScraper {
       if (!rateLimit.allowed) {
         return {
           success: false,
-          error: `Rate limit exceeded. Try again after ${new Date(rateLimit.resetAt!).toLocaleTimeString()}`,
+          error: `Rate limit exceeded. Try again later.`,
+
         }
       }
 
@@ -922,7 +952,8 @@ class SCPScraper {
    */
   private async getUserNickname(userId: string): Promise<string | null> {
     try {
-      const result = await this.db!.prepare(
+      if (!this.db) return null
+      const result = await this.db.prepare(
         'SELECT value FROM user_settings WHERE key = ?'
       ).bind(`nickname_${userId}`).first<{ value: string }>()
 
@@ -1270,6 +1301,71 @@ export default {
       } else if (path === '/feedback/categories') {
         // 获取反馈分类统计
         const result = await feedbackAPI.getFeedbackCategories(scraper['db'] as D1Database)
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/feedback/comment') {
+        // 提交反馈评论
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        try {
+          const body = await request.json() as any
+          const { feedback_id, user_id, nickname, content } = body
+
+          if (!feedback_id || !user_id || !content) {
+            return corsManager.createErrorResponse('Missing required fields', 400, context)
+          }
+
+          const result = await feedbackAPI.submitComment(scraper['db'] as D1Database, {
+            feedback_id, user_id, nickname, content
+          })
+          return corsManager.createResponse(result, result.success ? 201 : 500, context)
+        } catch (error) {
+          logger.error('Failed to submit comment', error as Error)
+          return corsManager.createErrorResponse('Invalid request body', 400, context)
+        }
+      } else if (path === '/feedback/comments') {
+        // 获取反馈评论
+        const feedbackId = parseInt(url.searchParams.get('feedback_id') || '0')
+
+        if (!feedbackId) {
+          return corsManager.createErrorResponse('Missing feedback_id parameter', 400, context)
+        }
+
+        const result = await feedbackAPI.getComments(scraper['db'] as D1Database, feedbackId)
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path === '/feedback/vote') {
+        // 投票反馈
+        if (request.method !== 'POST') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        try {
+          const body = await request.json() as any
+          const { id, user_id, vote } = body
+
+          if (!id || !user_id || !vote || (vote !== 'up' && vote !== 'down')) {
+            return corsManager.createErrorResponse('Missing or invalid required fields', 400, context)
+          }
+
+          const result = await feedbackAPI.voteFeedback(scraper['db'] as D1Database, {
+            id, user_id, vote
+          })
+          return corsManager.createResponse(result, result.success ? 200 : 500, context)
+        } catch (error) {
+          logger.error('Failed to vote on feedback', error as Error)
+          return corsManager.createErrorResponse('Invalid request body', 400, context)
+        }
+      } else if (path === '/feedback/list-with-votes') {
+        // 获取反馈列表（带用户投票状态）
+        const limit = parseInt(url.searchParams.get('limit') || '50')
+        const offset = parseInt(url.searchParams.get('offset') || '0')
+        const category = url.searchParams.get('category') || undefined
+        const userId = url.searchParams.get('user_id') || undefined
+
+        const result = await feedbackAPI.getFeedbackListWithVotes(
+          scraper['db'] as D1Database, limit, offset, category, userId
+        )
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/api/user/register') {
         // 注册/更新用户信息

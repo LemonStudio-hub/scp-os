@@ -6,7 +6,7 @@
         <div class="wallpaper-picker__header">
           <span class="wallpaper-picker__title">{{ t('wp.title') }}</span>
           <div class="wallpaper-picker__actions">
-            <button class="wallpaper-picker__action-btn" @click="triggerUpload" :title="t('wp.upload')">
+            <button class="wallpaper-picker__action-btn" :title="t('wp.upload')" @click="triggerUpload">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M9 12V3M9 3L6 6M9 3l3 3"/>
                 <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3"/>

@@ -1,6 +1,7 @@
 import { ref, type Ref } from 'vue'
 import { SCPError, ErrorType, ErrorSeverity, type ErrorConfig, type ErrorLog } from '../types/error'
 import { ANSICode } from '../constants/theme'
+import logger from './logger'
 
 // Re-export error types for convenience
 export { ErrorType, ErrorSeverity }
@@ -92,15 +93,15 @@ export class ErrorHandler {
   }
 
   private logToConsole(error: SCPError) {
-    console.group(`[${error.severity}] ${error.type}`)
-    console.error(`Message: ${error.message}`)
+    // 错误处理模块中使用 logger 是合理的，因为它本身就是处理错误的
+    const message = `[${error.severity}] ${error.type}: ${error.message}`
     if (error.details) {
-      console.error(`Details: ${error.details}`)
+      logger.error(message, error.details)
+    } else if (error.stack) {
+      logger.error(message, error.stack)
+    } else {
+      logger.error(message)
     }
-    if (error.stack) {
-      console.error(`Stack: ${error.stack}`)
-    }
-    console.groupEnd()
   }
 
   private logToTerminal(error: SCPError) {

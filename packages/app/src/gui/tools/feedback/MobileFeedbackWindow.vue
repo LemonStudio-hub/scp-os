@@ -1,19 +1,19 @@
 <template>
-  <PCWindow
+  <MobileWindow
     :visible="visible"
     :title="t('fb.title')"
     @close="$emit('close')"
   >
-    <div class="pc-feedback">
-      <div class="pc-feedback__content">
+    <div class="mobile-feedback">
+      <div class="mobile-feedback__content">
         
         <!-- Tab Bar -->
-        <div class="pc-feedback__tabs">
+        <div class="mobile-feedback__tabs">
           <button
             v-for="tab in tabs"
             :key="tab.id"
-            class="pc-feedback__tab"
-            :class="{ 'pc-feedback__tab--active': activeTab === tab.id }"
+            class="mobile-feedback__tab"
+            :class="{ 'mobile-feedback__tab--active': activeTab === tab.id }"
             @click="activeTab = tab.id"
           >
             {{ tab.label }}
@@ -21,26 +21,26 @@
         </div>
 
         <!-- Submit Form -->
-        <div v-if="activeTab === 'submit'" class="pc-feedback__form">
-          <div class="pc-feedback__form-group">
-            <label class="pc-feedback__label">{{ t('fb.formTitle') }}</label>
+        <div v-if="activeTab === 'submit'" class="mobile-feedback__form">
+          <div class="mobile-feedback__form-group">
+            <label class="mobile-feedback__label">{{ t('fb.formTitle') }}</label>
             <input
               v-model="form.title"
               type="text"
-              class="pc-feedback__input"
+              class="mobile-feedback__input"
               :placeholder="t('fb.formTitlePlaceholder')"
               maxlength="100"
             />
           </div>
 
-          <div class="pc-feedback__form-group">
-            <label class="pc-feedback__label">{{ t('fb.formCategory') }}</label>
-            <div class="pc-feedback__categories">
+          <div class="mobile-feedback__form-group">
+            <label class="mobile-feedback__label">{{ t('fb.formCategory') }}</label>
+            <div class="mobile-feedback__categories">
               <button
                 v-for="cat in categories"
                 :key="cat.id"
-                class="pc-feedback__category"
-                :class="{ 'pc-feedback__category--active': form.category === cat.id }"
+                class="mobile-feedback__category"
+                :class="{ 'mobile-feedback__category--active': form.category === cat.id }"
                 @click="form.category = cat.id"
               >
                 {{ cat.icon }} {{ cat.label }}
@@ -48,20 +48,20 @@
             </div>
           </div>
 
-          <div class="pc-feedback__form-group">
-            <label class="pc-feedback__label">{{ t('fb.formContent') }}</label>
+          <div class="mobile-feedback__form-group">
+            <label class="mobile-feedback__label">{{ t('fb.formContent') }}</label>
             <textarea
               v-model="form.content"
-              class="pc-feedback__textarea"
+              class="mobile-feedback__textarea"
               :placeholder="t('fb.formContentPlaceholder')"
               rows="6"
               maxlength="2000"
             />
-            <div class="pc-feedback__char-count">{{ form.content.length }}/2000</div>
+            <div class="mobile-feedback__char-count">{{ form.content.length }}/2000</div>
           </div>
 
           <button
-            class="pc-feedback__submit-btn"
+            class="mobile-feedback__submit-btn"
             :disabled="!canSubmit || isSubmitting"
             @click="submitFeedback"
           >
@@ -70,16 +70,16 @@
         </div>
 
         <!-- Feedback List -->
-        <div v-else class="pc-feedback__list">
+        <div v-else class="mobile-feedback__list">
           <!-- Loading -->
-          <div v-if="isLoading" class="pc-feedback__loading">
-            <div class="pc-feedback__loading-dot" />
-            <div class="pc-feedback__loading-dot" />
-            <div class="pc-feedback__loading-dot" />
+          <div v-if="isLoading" class="mobile-feedback__loading">
+            <div class="mobile-feedback__loading-dot" />
+            <div class="mobile-feedback__loading-dot" />
+            <div class="mobile-feedback__loading-dot" />
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="feedbacks.length === 0" class="pc-feedback__empty">
+          <div v-else-if="feedbacks.length === 0" class="mobile-feedback__empty">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z"/>
               <path d="M16 20h16M16 26h10"/>
@@ -88,52 +88,52 @@
           </div>
 
           <!-- Feedback Items -->
-          <div v-else class="pc-feedback__items">
+          <div v-else class="mobile-feedback__items">
             <div
               v-for="item in feedbacks"
               :key="item.id"
-              class="pc-feedback__item"
+              class="mobile-feedback__item"
             >
-              <div class="pc-feedback__item-header">
-                <div class="pc-feedback__item-user">
-                  <div class="pc-feedback__avatar">{{ item.nickname.charAt(0).toUpperCase() }}</div>
-                  <div class="pc-feedback__item-info">
-                    <span class="pc-feedback__item-name">{{ item.nickname }}</span>
-                    <span class="pc-feedback__item-time">{{ formatTime(item.created_at) }}</span>
+              <div class="mobile-feedback__item-header">
+                <div class="mobile-feedback__item-user">
+                  <div class="mobile-feedback__avatar">{{ item.nickname.charAt(0).toUpperCase() }}</div>
+                  <div class="mobile-feedback__item-info">
+                    <span class="mobile-feedback__item-name">{{ item.nickname }}</span>
+                    <span class="mobile-feedback__item-time">{{ formatTime(item.created_at) }}</span>
                   </div>
                 </div>
-                <span class="pc-feedback__item-category">{{ getCategoryIcon(item.category) }}</span>
+                <span class="mobile-feedback__item-category">{{ getCategoryIcon(item.category) }}</span>
               </div>
-              <h3 class="pc-feedback__item-title">{{ item.title }}</h3>
-              <p class="pc-feedback__item-content">{{ item.content }}</p>
-              <div class="pc-feedback__item-footer">
-                <div class="pc-feedback__votes">
+              <h3 class="mobile-feedback__item-title">{{ item.title }}</h3>
+              <p class="mobile-feedback__item-content">{{ item.content }}</p>
+              <div class="mobile-feedback__item-footer">
+                <div class="mobile-feedback__votes">
                   <button 
-                    class="pc-feedback__vote-btn"
-                    :class="{ 'pc-feedback__vote-btn--active': item.userVote === 'up' }"
+                    class="mobile-feedback__vote-btn"
+                    :class="{ 'mobile-feedback__vote-btn--active': item.userVote === 'up' }"
                     @click="voteFeedback(item, 'up')"
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path d="M8 3l-4 4 1.41 1.41L8 6.83l2.59 2.58L12 7l-4-4z"/>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M10 17l-5-5 1.41-1.41L10 14.17l3.59-3.58L15 12l-5 5z"/>
                     </svg>
                     <span>{{ item.upvotes || 0 }}</span>
                   </button>
                   <button 
-                    class="pc-feedback__vote-btn"
-                    :class="{ 'pc-feedback__vote-btn--active': item.userVote === 'down' }"
+                    class="mobile-feedback__vote-btn"
+                    :class="{ 'mobile-feedback__vote-btn--active': item.userVote === 'down' }"
                     @click="voteFeedback(item, 'down')"
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path d="M8 13l4-4-1.41-1.41L8 10.17 5.41 7.58 4 9l4 4z"/>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M10 3l5 5-1.41 1.41L10 5.83l-3.59 3.58L5 8l5-5z"/>
                     </svg>
                     <span>{{ item.downvotes || 0 }}</span>
                   </button>
                 </div>
                 <button 
-                  class="pc-feedback__comment-btn"
+                  class="mobile-feedback__comment-btn"
                   @click="toggleComments(item)"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                   </svg>
                   <span>{{ item.commentsCount || 0 }}</span>
@@ -141,43 +141,43 @@
               </div>
 
               <!-- Comments Section -->
-              <div v-if="item.showComments" class="pc-feedback__comments">
-                <div v-if="isLoadingComments[item.id]" class="pc-feedback__comments-loading">
-                  <div class="pc-feedback__loading-dot" />
-                  <div class="pc-feedback__loading-dot" />
-                  <div class="pc-feedback__loading-dot" />
+              <div v-if="item.showComments" class="mobile-feedback__comments">
+                <div v-if="isLoadingComments[item.id]" class="mobile-feedback__comments-loading">
+                  <div class="mobile-feedback__loading-dot" />
+                  <div class="mobile-feedback__loading-dot" />
+                  <div class="mobile-feedback__loading-dot" />
                 </div>
-                <div v-else-if="(item.comments || []).length === 0" class="pc-feedback__comments-empty">
+                <div v-else-if="(item.comments || []).length === 0" class="mobile-feedback__comments-empty">
                   {{ t('fb.noComments') }}
                 </div>
-                <div v-else class="pc-feedback__comments-list">
+                <div v-else class="mobile-feedback__comments-list">
                   <div 
                     v-for="comment in item.comments" 
                     :key="comment.id"
-                    class="pc-feedback__comment"
+                    class="mobile-feedback__comment"
                   >
-                    <div class="pc-feedback__comment-header">
-                      <div class="pc-feedback__comment-avatar">{{ comment.nickname.charAt(0).toUpperCase() }}</div>
-                      <div class="pc-feedback__comment-info">
-                        <span class="pc-feedback__comment-name">{{ comment.nickname }}</span>
-                        <span class="pc-feedback__comment-time">{{ formatTime(comment.created_at) }}</span>
+                    <div class="mobile-feedback__comment-header">
+                      <div class="mobile-feedback__comment-avatar">{{ comment.nickname.charAt(0).toUpperCase() }}</div>
+                      <div class="mobile-feedback__comment-info">
+                        <span class="mobile-feedback__comment-name">{{ comment.nickname }}</span>
+                        <span class="mobile-feedback__comment-time">{{ formatTime(comment.created_at) }}</span>
                       </div>
                     </div>
-                    <p class="pc-feedback__comment-content">{{ comment.content }}</p>
+                    <p class="mobile-feedback__comment-content">{{ comment.content }}</p>
                   </div>
                 </div>
 
                 <!-- Comment Form -->
-                <div class="pc-feedback__comment-form">
+                <div class="mobile-feedback__comment-form">
                   <textarea
                     v-model="commentForms[item.id]"
-                    class="pc-feedback__comment-input"
+                    class="mobile-feedback__comment-input"
                     :placeholder="t('fb.addCommentPlaceholder')"
                     rows="2"
                     maxlength="500"
                   />
                   <button
-                    class="pc-feedback__comment-submit"
+                    class="mobile-feedback__comment-submit"
                     :disabled="!commentForms[item.id]?.trim() || isSubmittingComment[item.id]"
                     @click="submitComment(item.id)"
                   >
@@ -191,7 +191,7 @@
           <!-- Load More -->
           <button
             v-if="hasMore"
-            class="pc-feedback__load-more"
+            class="mobile-feedback__load-more"
             :disabled="isLoadingMore"
             @click="loadMore"
           >
@@ -200,12 +200,12 @@
         </div>
       </div>
     </div>
-  </PCWindow>
+  </MobileWindow>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import PCWindow from '../../components/PCWindow.vue'
+import MobileWindow from '../../components/MobileWindow.vue'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 import { useI18n } from '../../composables/useI18n'
@@ -256,7 +256,7 @@ const isLoading = ref(false)
 const isLoadingMore = ref(false)
 const hasMore = ref(false)
 const offset = ref(0)
-const limit = 20
+const limit = 10
 let userId = ''
 
 // Comments
@@ -450,35 +450,35 @@ function getCategoryIcon(category: string): string {
 
 <style scoped>
 /* ── Layout ─────────────────────────────────────────────────────────── */
-.pc-feedback {
+.mobile-feedback {
   display: flex;
   flex-direction: column;
   height: 100%;
   background: var(--gui-bg-base, #0A0A0A);
 }
 
-.pc-feedback__content {
+.mobile-feedback__content {
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--gui-border-subtle, #38383A) var(--gui-bg-surface, #2C2C2E);
 }
 
-.pc-feedback__content::-webkit-scrollbar {
-  width: 8px;
+.mobile-feedback__content::-webkit-scrollbar {
+  width: 6px;
 }
 
-.pc-feedback__content::-webkit-scrollbar-track {
+.mobile-feedback__content::-webkit-scrollbar-track {
   background: var(--gui-bg-surface, #2C2C2E);
 }
 
-.pc-feedback__content::-webkit-scrollbar-thumb {
+.mobile-feedback__content::-webkit-scrollbar-thumb {
   background-color: var(--gui-border-subtle, #38383A);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* ── Tabs ───────────────────────────────────────────────────────────── */
-.pc-feedback__tabs {
+.mobile-feedback__tabs {
   position: sticky;
   top: 0;
   z-index: 10;
@@ -489,107 +489,110 @@ function getCategoryIcon(category: string): string {
   -webkit-backdrop-filter: blur(20px);
 }
 
-.pc-feedback__tab {
+.mobile-feedback__tab {
   flex: 1;
-  padding: 14px 0;
+  padding: 16px 0;
   background: none;
   border: none;
   color: var(--gui-text-secondary, #8E8E93);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s ease;
   border-bottom: 2px solid transparent;
 }
 
-.pc-feedback__tab:hover {
+.mobile-feedback__tab:hover {
   color: var(--gui-text-primary, #FFFFFF);
 }
 
-.pc-feedback__tab--active {
+.mobile-feedback__tab--active {
   color: var(--gui-accent, #007AFF);
   border-bottom-color: var(--gui-accent, #007AFF);
 }
 
 /* ── Form ───────────────────────────────────────────────────────────── */
-.pc-feedback__form {
-  padding: 16px;
+.mobile-feedback__form {
+  padding: 20px;
 }
 
-.pc-feedback__form-group {
-  margin-bottom: 20px;
+.mobile-feedback__form-group {
+  margin-bottom: 24px;
 }
 
-.pc-feedback__label {
+.mobile-feedback__label {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--gui-text-primary, #FFFFFF);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.pc-feedback__input,
-.pc-feedback__textarea {
+.mobile-feedback__input,
+.mobile-feedback__textarea {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 14px;
+  border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
   background: var(--gui-bg-surface-hover, #3A3A3C);
   color: var(--gui-text-primary, #FFFFFF);
-  font-size: 14px;
+  font-size: 15px;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s ease;
 }
 
-.pc-feedback__input:focus,
-.pc-feedback__textarea:focus {
+.mobile-feedback__input:focus,
+.mobile-feedback__textarea:focus {
   border-color: var(--gui-accent, #007AFF);
 }
 
-.pc-feedback__textarea {
+.mobile-feedback__textarea {
   resize: none;
-  min-height: 120px;
+  min-height: 140px;
   font-family: inherit;
 }
 
-.pc-feedback__char-count {
-  font-size: 11px;
+.mobile-feedback__char-count {
+  font-size: 12px;
   color: var(--gui-text-tertiary, #636366);
   text-align: right;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 /* ── Categories ─────────────────────────────────────────────────────── */
-.pc-feedback__categories {
+.mobile-feedback__categories {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
-.pc-feedback__category {
-  padding: 8px 14px;
-  border-radius: 16px;
+.mobile-feedback__category {
+  padding: 10px 16px;
+  border-radius: 18px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
   background: var(--gui-bg-surface, #2C2C2E);
   color: var(--gui-text-secondary, #8E8E93);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
-.pc-feedback__category:hover {
+.mobile-feedback__category:hover {
   background: var(--gui-bg-surface-hover, #3A3A3C);
 }
 
-.pc-feedback__category--active {
+.mobile-feedback__category--active {
   background: var(--gui-accent, #007AFF);
   color: #FFFFFF;
   border-color: var(--gui-accent, #007AFF);
 }
 
 /* ── Submit Button ──────────────────────────────────────────────────── */
-.pc-feedback__submit-btn {
+.mobile-feedback__submit-btn {
   width: 100%;
   height: 48px;
   border-radius: 12px;
@@ -600,50 +603,51 @@ function getCategoryIcon(category: string): string {
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.1s ease;
+  min-height: 48px;
 }
 
-.pc-feedback__submit-btn:disabled {
+.mobile-feedback__submit-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pc-feedback__submit-btn:not(:disabled):hover {
+.mobile-feedback__submit-btn:not(:disabled):hover {
   opacity: 0.9;
 }
 
-.pc-feedback__submit-btn:not(:disabled):active {
+.mobile-feedback__submit-btn:not(:disabled):active {
   transform: scale(0.98);
 }
 
 /* ── Feedback List ──────────────────────────────────────────────────── */
-.pc-feedback__list {
-  padding: 16px;
+.mobile-feedback__list {
+  padding: 20px;
 }
 
-.pc-feedback__loading {
+.mobile-feedback__loading {
   display: flex;
   justify-content: center;
   gap: 6px;
   padding: 40px 0;
 }
 
-.pc-feedback__loading-dot {
+.mobile-feedback__loading-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--gui-accent, #007AFF);
-  animation: feedback-bounce 1.2s ease-in-out infinite;
+  animation: mobile-feedback-bounce 1.2s ease-in-out infinite;
 }
 
-.pc-feedback__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.pc-feedback__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.mobile-feedback__loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.mobile-feedback__loading-dot:nth-child(3) { animation-delay: 0.4s; }
 
-@keyframes feedback-bounce {
+@keyframes mobile-feedback-bounce {
   0%, 80%, 100% { transform: scale(0); }
   40% { transform: scale(1); }
 }
 
-.pc-feedback__empty {
+.mobile-feedback__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -654,95 +658,95 @@ function getCategoryIcon(category: string): string {
   text-align: center;
 }
 
-.pc-feedback__items {
+.mobile-feedback__items {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 /* ── Feedback Item ──────────────────────────────────────────────────── */
-.pc-feedback__item {
+.mobile-feedback__item {
   background: var(--gui-bg-surface, #2C2C2E);
-  border-radius: 14px;
-  padding: 14px;
+  border-radius: 16px;
+  padding: 16px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
-  animation: feedback-fade-in 0.3s ease;
+  animation: mobile-feedback-fade-in 0.3s ease;
   transition: box-shadow 0.2s ease;
 }
 
-.pc-feedback__item:hover {
+.mobile-feedback__item:hover {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-@keyframes feedback-fade-in {
+@keyframes mobile-feedback-fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.pc-feedback__item-header {
+.mobile-feedback__item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-.pc-feedback__item-user {
+.mobile-feedback__item-user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
-.pc-feedback__avatar {
-  width: 32px;
-  height: 32px;
+.mobile-feedback__avatar {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--gui-accent, #007AFF);
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   flex-shrink: 0;
 }
 
-.pc-feedback__item-info {
+.mobile-feedback__item-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.pc-feedback__item-name {
-  font-size: 13px;
+.mobile-feedback__item-name {
+  font-size: 14px;
   font-weight: 600;
   color: var(--gui-text-primary, #FFFFFF);
 }
 
-.pc-feedback__item-time {
-  font-size: 11px;
+.mobile-feedback__item-time {
+  font-size: 12px;
   color: var(--gui-text-tertiary, #636366);
 }
 
-.pc-feedback__item-category {
-  font-size: 18px;
+.mobile-feedback__item-category {
+  font-size: 20px;
 }
 
-.pc-feedback__item-title {
-  font-size: 15px;
+.mobile-feedback__item-title {
+  font-size: 16px;
   font-weight: 600;
   color: var(--gui-text-primary, #FFFFFF);
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
-.pc-feedback__item-content {
-  font-size: 14px;
+.mobile-feedback__item-content {
+  font-size: 15px;
   color: var(--gui-text-secondary, #8E8E93);
   line-height: 1.5;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   word-wrap: break-word;
 }
 
-.pc-feedback__item-footer {
+.mobile-feedback__item-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -750,104 +754,110 @@ function getCategoryIcon(category: string): string {
   border-top: 0.5px solid var(--gui-border-subtle, #38383A);
 }
 
-.pc-feedback__votes {
+.mobile-feedback__votes {
   display: flex;
-  gap: 12px;
+  gap: 16px;
 }
 
-.pc-feedback__vote-btn {
+.mobile-feedback__vote-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   background: none;
   border: none;
   color: var(--gui-text-secondary, #8E8E93);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
   transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 60px;
+  justify-content: center;
 }
 
-.pc-feedback__vote-btn:hover {
+.mobile-feedback__vote-btn:hover {
   background: var(--gui-bg-surface-hover, #3A3A3C);
   color: var(--gui-text-primary, #FFFFFF);
 }
 
-.pc-feedback__vote-btn--active {
+.mobile-feedback__vote-btn--active {
   color: var(--gui-accent, #007AFF);
   background: rgba(0, 122, 255, 0.1);
 }
 
-.pc-feedback__vote-btn:active {
+.mobile-feedback__vote-btn:active {
   transform: scale(0.95);
 }
 
-.pc-feedback__comment-btn {
+.mobile-feedback__comment-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   background: none;
   border: none;
   color: var(--gui-text-secondary, #8E8E93);
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
   transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 60px;
+  justify-content: center;
 }
 
-.pc-feedback__comment-btn:hover {
+.mobile-feedback__comment-btn:hover {
   background: var(--gui-bg-surface-hover, #3A3A3C);
   color: var(--gui-text-primary, #FFFFFF);
 }
 
-.pc-feedback__comment-btn:active {
+.mobile-feedback__comment-btn:active {
   transform: scale(0.95);
 }
 
 /* ── Comments ───────────────────────────────────────────────────────── */
-.pc-feedback__comments {
+.mobile-feedback__comments {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 0.5px solid var(--gui-border-subtle, #38383A);
 }
 
-.pc-feedback__comments-loading {
+.mobile-feedback__comments-loading {
   display: flex;
   justify-content: center;
   gap: 6px;
   padding: 20px 0;
 }
 
-.pc-feedback__comments-empty {
+.mobile-feedback__comments-empty {
   padding: 20px 0;
   color: var(--gui-text-tertiary, #636366);
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
 }
 
-.pc-feedback__comments-list {
+.mobile-feedback__comments-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-bottom: 16px;
 }
 
-.pc-feedback__comment {
+.mobile-feedback__comment {
   background: var(--gui-bg-surface-hover, #3A3A3C);
   border-radius: 12px;
   padding: 12px;
 }
 
-.pc-feedback__comment-header {
+.mobile-feedback__comment-header {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
 }
 
-.pc-feedback__comment-avatar {
+.mobile-feedback__comment-avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -861,24 +871,24 @@ function getCategoryIcon(category: string): string {
   flex-shrink: 0;
 }
 
-.pc-feedback__comment-info {
+.mobile-feedback__comment-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.pc-feedback__comment-name {
+.mobile-feedback__comment-name {
   font-size: 13px;
   font-weight: 600;
   color: var(--gui-text-primary, #FFFFFF);
 }
 
-.pc-feedback__comment-time {
+.mobile-feedback__comment-time {
   font-size: 11px;
   color: var(--gui-text-tertiary, #636366);
 }
 
-.pc-feedback__comment-content {
+.mobile-feedback__comment-content {
   font-size: 14px;
   color: var(--gui-text-secondary, #8E8E93);
   line-height: 1.4;
@@ -886,58 +896,58 @@ function getCategoryIcon(category: string): string {
   word-wrap: break-word;
 }
 
-.pc-feedback__comment-form {
+.mobile-feedback__comment-form {
   display: flex;
   gap: 10px;
   margin-top: 12px;
 }
 
-.pc-feedback__comment-input {
+.mobile-feedback__comment-input {
   flex: 1;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
   background: var(--gui-bg-surface, #2C2C2E);
   color: var(--gui-text-primary, #FFFFFF);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
   resize: none;
   font-family: inherit;
-  min-height: 40px;
+  min-height: 44px;
 }
 
-.pc-feedback__comment-input:focus {
+.mobile-feedback__comment-input:focus {
   border-color: var(--gui-accent, #007AFF);
 }
 
-.pc-feedback__comment-submit {
-  padding: 0 14px;
-  border-radius: 10px;
+.mobile-feedback__comment-submit {
+  padding: 0 16px;
+  border-radius: 12px;
   border: none;
   background: var(--gui-accent, #007AFF);
   color: #FFFFFF;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s ease;
-  min-height: 40px;
+  min-height: 44px;
   white-space: nowrap;
 }
 
-.pc-feedback__comment-submit:disabled {
+.mobile-feedback__comment-submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pc-feedback__comment-submit:not(:disabled):hover {
+.mobile-feedback__comment-submit:not(:disabled):hover {
   opacity: 0.9;
 }
 
 /* ── Load More ──────────────────────────────────────────────────────── */
-.pc-feedback__load-more {
+.mobile-feedback__load-more {
   width: 100%;
-  height: 44px;
-  margin-top: 16px;
+  height: 48px;
+  margin-top: 20px;
   border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383A);
   background: var(--gui-bg-surface, #2C2C2E);
@@ -946,14 +956,34 @@ function getCategoryIcon(category: string): string {
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s ease, background 0.2s ease;
+  min-height: 48px;
 }
 
-.pc-feedback__load-more:disabled {
+.mobile-feedback__load-more:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pc-feedback__load-more:not(:disabled):hover {
+.mobile-feedback__load-more:not(:disabled):hover {
   background: var(--gui-bg-surface-hover, #3A3A3C);
+}
+
+/* ── Responsive Adjustments ─────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .mobile-feedback__form {
+    padding: 16px;
+  }
+  
+  .mobile-feedback__list {
+    padding: 16px;
+  }
+  
+  .mobile-feedback__items {
+    gap: 16px;
+  }
+  
+  .mobile-feedback__item {
+    padding: 14px;
+  }
 }
 </style>

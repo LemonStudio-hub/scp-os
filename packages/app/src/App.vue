@@ -223,12 +223,12 @@ function handleLoginSuccess(): void {
 
     <!-- Main App (shown when user is logged in) -->
     <template v-else-if="isAuthReady && authStore.isLoggedIn">
-      <MobileApp :class="{ 'app-loaded': true }" key="main-app">
+      <MobileApp key="main-app" :class="{ 'app-loaded': true }">
         <!-- Desktop-only components (only mounted on desktop) -->
         <template v-if="!mobile.isMobile.value">
           <!-- Performance Dashboard -->
           <PerformanceDashboard
-            :isVisible="showPerformanceDashboard"
+            :is-visible="showPerformanceDashboard"
             @close="showPerformanceDashboard = false"
           />
 

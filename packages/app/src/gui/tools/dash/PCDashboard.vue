@@ -9,7 +9,7 @@
         </div>
         <div class="pc-dashboard__header-right">
           <span class="pc-dashboard__time">{{ currentTime }}</span>
-          <button class="pc-dashboard__refresh-btn" @click="refreshMetrics" :class="{ 'is-refreshing': isRefreshing }">
+          <button class="pc-dashboard__refresh-btn" :class="{ 'is-refreshing': isRefreshing }" @click="refreshMetrics">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 8a5 5 0 019.33-2.5M13 8a5 5 0 01-9.33 2.5"/>
               <path d="M15 4v3h-3M1 12v-3h3"/>
@@ -246,9 +246,9 @@
             <span class="pc-dashboard__network-speed-label">Speed Test</span>
             <button 
               class="pc-dashboard__network-speed-btn" 
-              @click="runSpeedTest" 
-              :class="{ 'is-testing': isSpeedTesting }"
+              :class="{ 'is-testing': isSpeedTesting }" 
               :disabled="isSpeedTesting"
+              @click="runSpeedTest"
             >
               <svg v-if="!isSpeedTesting" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 6c2-3 10-3 14 0"/>
@@ -291,6 +291,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import type { WindowInstance } from '../../types'
 import speedtest from '@cloudflare/speedtest'
+import logger from '../../../utils/logger'
 
 interface Props {
   windowInstance: WindowInstance
@@ -298,11 +299,11 @@ interface Props {
 
 defineProps<Props>()
 
-const emit = defineEmits<{
-  close: []
-}>()
+// const emit = defineEmits<{
+//   close: []
+// }>()
 
-emit // silence unused warning
+
 
 // State
 const memoryUsage = ref({ used: 0, limit: 0, percent: 0 })
@@ -551,7 +552,7 @@ async function runSpeedTest() {
       // Update latency in the main metrics
       latency.value = ping.value
       
-      console.log('[Dash] Speed test results:', {
+      logger.info('[Dash] Speed test results:', {
         download: downloadSpeed.value,
         upload: uploadSpeed.value,
         ping: ping.value
@@ -562,11 +563,11 @@ async function runSpeedTest() {
     
     // Handle errors
     test.onError = (error) => {
-      console.error('[Dash] Speed test error:', error)
+      logger.error('[Dash] Speed test error:', error)
       isSpeedTesting.value = false
     }
   } catch (error) {
-    console.error('[Dash] Speed test failed:', error)
+    logger.error('[Dash] Speed test failed:', error)
     isSpeedTesting.value = false
   }
 }

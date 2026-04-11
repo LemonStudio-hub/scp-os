@@ -133,6 +133,7 @@ import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { useWindowManagerStore } from '../../stores/windowManager'
 import type { WindowInstance, FileItem, ContextMenuItem } from '../../types'
+import logger from '../../../utils/logger'
 
 interface Props {
   windowInstance: WindowInstance
@@ -209,7 +210,7 @@ function onFileContextMenu(event: MouseEvent, fileName: string): void {
 }
 
 function onContextSelect(item: ContextMenuItem): void {
-  console.log('[FileManager] Context menu select:', item.label)
+  logger.info('[FileManager] Context menu select:', item.label)
 }
 
 function onClose(): void {

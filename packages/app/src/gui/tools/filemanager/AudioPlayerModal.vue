@@ -43,7 +43,7 @@
           <!-- File Info -->
           <div class="audio-player__info">
             <span class="audio-player__name">{{ fileName }}</span>
-            <span class="audio-player__size" v-if="fileSize">{{ fileSize }}</span>
+            <span v-if="fileSize" class="audio-player__size">{{ fileSize }}</span>
           </div>
         </div>
       </div>

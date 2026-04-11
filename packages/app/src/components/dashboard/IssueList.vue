@@ -1,5 +1,5 @@
 <template>
-  <div class="issues-section" v-if="issues.length > 0">
+  <div v-if="issues.length > 0" class="issues-section">
     <div class="section-header">
       <h3 class="section-title">
         <svg class="title-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -31,9 +31,9 @@
           </div>
           <button 
             class="issue-expand" 
-            @click="toggleIssue(issue.id)"
             :class="{ expanded: expandedIssues.has(issue.id) }"
             aria-label="Toggle issue details"
+            @click="toggleIssue(issue.id)"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
@@ -44,7 +44,7 @@
         <div class="issue-body" :class="{ expanded: expandedIssues.has(issue.id) }">
           <p class="issue-description">{{ issue.description }}</p>
           
-          <div class="issue-recommendation" v-if="issue.recommendation">
+          <div v-if="issue.recommendation" class="issue-recommendation">
             <div class="rec-header">
               <span class="rec-icon">→</span>
               <span class="rec-label">Recommendation</span>
@@ -52,7 +52,7 @@
             <p class="rec-text">{{ issue.recommendation }}</p>
           </div>
           
-          <div class="issue-actions" v-if="issue.component">
+          <div v-if="issue.component" class="issue-actions">
             <span class="component-badge">
               <span class="component-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
               {{ issue.component }}

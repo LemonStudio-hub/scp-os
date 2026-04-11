@@ -7,7 +7,7 @@ import type { Component } from 'vue'
 /**
  * Extension interface
  */
-export interface Extension<T = any> {
+export interface Extension<T = unknown> {
   /** Extension ID */
   id: string
   /** Extension name */
@@ -47,7 +47,7 @@ export interface ExtensionMetadata {
 /**
  * Extension point interface
  */
-export interface ExtensionPoint<T = any> {
+export interface ExtensionPoint<T = unknown> {
   /** Extension point ID */
   id: string
   /** Extension point name */
@@ -112,7 +112,7 @@ export type PluginStatus = typeof PluginStatus[keyof typeof PluginStatus]
  * Plugin configuration
  */
 export interface PluginConfig {
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /**
@@ -177,7 +177,7 @@ export interface CommandOption {
   /** Option is required */
   required?: boolean
   /** Default value */
-  default?: any
+  default?: unknown
 }
 
 /**
@@ -284,7 +284,7 @@ export interface DataSourceClient {
   /** Delete data */
   delete(key: string): Promise<void>
   /** Query data */
-  query<T>(query: any): Promise<T[]>
+  query<T>(query: unknown): Promise<T[]>
 }
 
 /**

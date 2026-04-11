@@ -116,7 +116,7 @@ export class CommandHistoryMemoryRepository
     const successful = entities.filter(e => e.success).length
     const failed = total - successful
 
-    const durations = entities.filter(e => e.duration !== undefined).map(e => e.duration!)
+    const durations = entities.filter(e => e.duration !== undefined).map(e => e.duration as number)
     const averageDuration =
       durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0
 
@@ -163,7 +163,7 @@ export class CommandHistoryMemoryRepository
    * Find with query options
    */
   async find(options: CommandHistoryQueryOptions): Promise<QueryResult<CommandHistoryEntity>> {
-    let filters: ((entity: CommandHistoryEntity) => boolean)[] = []
+    const filters: ((entity: CommandHistoryEntity) => boolean)[] = []
 
     if (options.filter) {
       filters.push(options.filter)
@@ -175,8 +175,8 @@ export class CommandHistoryMemoryRepository
 
     if (options.startDate || options.endDate) {
       filters.push(entity => {
-        if (options.startDate && entity.timestamp < options.startDate!) return false
-        if (options.endDate && entity.timestamp > options.endDate!) return false
+        if (options.startDate && entity.timestamp < options.startDate) return false
+        if (options.endDate && entity.timestamp > options.endDate) return false
         return true
       })
     }

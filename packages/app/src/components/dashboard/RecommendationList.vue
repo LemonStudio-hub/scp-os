@@ -1,5 +1,5 @@
 <template>
-  <div class="recommendations-section" v-if="recommendations.length > 0">
+  <div v-if="recommendations.length > 0" class="recommendations-section">
     <div class="section-header">
       <h3 class="section-title">
         <span class="title-icon">→</span>
@@ -44,14 +44,14 @@
           </span>
         </div>
         
-        <div class="rec-steps" v-if="showSteps">
+        <div v-if="showSteps" class="rec-steps">
           <div class="steps-header">
             <span class="steps-title">Implementation Steps</span>
             <button 
               class="steps-toggle" 
-              @click="toggleSteps(rec.id)"
               :class="{ expanded: expandedRecs.has(rec.id) }"
               aria-label="Toggle steps"
+              @click="toggleSteps(rec.id)"
             >
               {{ expandedRecs.has(rec.id) ? 'Hide' : 'Show' }}
             </button>
