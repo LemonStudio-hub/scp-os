@@ -20,7 +20,7 @@ import { ParagraphFilter } from './utils/paragraphFilter'
 import { logger } from './utils/logger'
 import { performanceMonitor } from './utils/performanceMonitor'
 import Defuddle from '@flicknote/defuddle'
-import { JSDOM } from 'jsdom'
+import { parseHTML } from 'linkedom'
 
 // 安全
 import { RateLimiter } from './security/rateLimiter'
@@ -233,22 +233,29 @@ class SCPScraper {
       // 先消毒 HTML（防止 XSS）
       const sanitizedHTML = this.htmlSanitizer.sanitize(html)
 
-      // 使用 Defuddle 提取主要内容
-      const cleanedHTML = this.extractMainContentWithDefuddle(sanitizedHTML)
+      // 构建 SCP 页面 URL（供 Defuddle 使用）
+      const branchUrl = branch === 'cn'
+        ? 'https://scp-wiki-cn.wikidot.com'
+        : 'https://scp-wiki.wikidot.com'
+      const pageUrl = `${branchUrl}/scp-${scpNumber}`
+
+      // 使用 Defuddle 清洗 HTML（移除广告、导航等无关元素，保留原始页面结构）
+      const cleanedHTML = this.cleanHTMLWithDefuddle(sanitizedHTML, pageUrl)
 
       // 根据分支使用不同的解析策略
       let data: SCPWikiData
       if (branch === 'en') {
-        // 英文站点也需要清理广告和无关内容
         const finalHTML = this.htmlCleaner.clean(cleanedHTML)
         data = await this.parseEnglishPage(finalHTML, scpNumber, branch)
       } else {
-        // 中文站点使用清理后的文本
         const finalHTML = this.htmlCleaner.clean(cleanedHTML)
         const text = this.htmlParser.extractText(finalHTML)
         const sections = this.sectionParser.parseSections(text)
         data = this.buildDataFromSections(sections, scpNumber, branch)
       }
+
+      // 使用 Defuddle 提取元数据增强数据
+      data = this.enrichWithDefuddleMetadata(data, sanitizedHTML, pageUrl)
 
       // 验证数据
       this.validateData(data)
@@ -262,26 +269,48 @@ class SCPScraper {
   }
 
   /**
-   * 使用 Defuddle 提取主要内容
+   * 使用 Defuddle 清洗 HTML
+   * 利用 Defuddle 的内容提取能力移除广告、导航栏等无关元素
+   * 将提取的主要内容包装在 #page-content 中，以便下游解析器正常工作
    */
-  private extractMainContentWithDefuddle(html: string): string {
+  private cleanHTMLWithDefuddle(html: string, url: string): string {
     try {
-      // 创建 JSDOM 实例
-      const dom = new JSDOM(html)
-      const doc = dom.window.document
-      
-      // 创建 Defuddle 实例
-      const defuddle = new Defuddle(doc)
-      
-      // 解析内容
+      const { document } = parseHTML(html)
+      const defuddle = new Defuddle(document, {
+        url,
+        removeExactSelectors: true,
+        removePartialSelectors: true,
+      })
       const result = defuddle.parse()
-      
-      // 返回提取的主要内容
-      return result.content || html
-    } catch (error) {
-      logger.error('Defuddle extraction failed', error as Error)
-      // 如果失败，返回原始 HTML
+
+      if (result.content && result.content.length > 100) {
+        return `<html><body><div id="page-content">${result.content}</div></body></html>`
+      }
+
       return html
+    } catch (error) {
+      logger.error('Defuddle cleaning failed, using original HTML', error as Error)
+      return html
+    }
+  }
+
+  /**
+   * 使用 Defuddle 提取元数据增强 SCP 数据
+   */
+  private enrichWithDefuddleMetadata(data: SCPWikiData, html: string, url: string): SCPWikiData {
+    try {
+      const { document } = parseHTML(html)
+      const defuddle = new Defuddle(document, { url })
+      const result = defuddle.parse()
+
+      return {
+        ...data,
+        name: result.title || data.name,
+        author: result.author || data.author,
+      }
+    } catch (error) {
+      logger.error('Defuddle metadata extraction failed', error as Error)
+      return data
     }
   }
 
@@ -1387,7 +1416,21 @@ export default {
           logger.error('Failed to register user', error as Error)
           return corsManager.createErrorResponse('Invalid request body', 400, context)
         }
-      } else if (path.startsWith('/api/user/') && path !== '/api/user/register') {
+      } else if (path === '/api/user/check-nickname') {
+        if (request.method !== 'GET') {
+          return corsManager.createErrorResponse('Method not allowed', 405, context)
+        }
+
+        const nicknameParam = url.searchParams.get('nickname')
+        const excludeUserId = url.searchParams.get('excludeUserId') || undefined
+
+        if (!nicknameParam) {
+          return corsManager.createErrorResponse('Missing nickname parameter', 400, context)
+        }
+
+        const result = await userAPI.checkNicknameAvailability(scraper['db'] as D1Database, nicknameParam, excludeUserId)
+        return corsManager.createResponse(result, result.success ? 200 : 500, context)
+      } else if (path.startsWith('/api/user/') && path !== '/api/user/register' && path !== '/api/user/check-nickname') {
         // 获取用户信息（根据 UUID）
         if (request.method !== 'GET') {
           return corsManager.createErrorResponse('Method not allowed', 405, context)

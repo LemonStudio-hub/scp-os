@@ -103,3 +103,36 @@ export async function getUserByUserId(
     }
   }
 }
+
+export async function checkNicknameAvailability(
+  db: D1Database,
+  nickname: string,
+  excludeUserId?: string
+): Promise<ChatApiResponse & { available?: boolean }> {
+  try {
+    if (!nickname) {
+      return { success: false, available: false, error: 'Missing nickname' }
+    }
+
+    let query = 'SELECT id FROM users WHERE nickname = ?'
+    const params: string[] = [nickname]
+
+    if (excludeUserId) {
+      query += ' AND user_id != ?'
+      params.push(excludeUserId)
+    }
+
+    const existing = await db.prepare(query).bind(...params).first<{ id: number }>()
+
+    return {
+      success: true,
+      available: !existing,
+    }
+  } catch (error) {
+    return {
+      success: false,
+      available: false,
+      error: `Database error: ${(error as Error).message}`
+    }
+  }
+}

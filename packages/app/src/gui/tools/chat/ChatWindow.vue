@@ -59,7 +59,7 @@
             <circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
             <path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
           </svg>
-          <span class="chat-app__nickname-text">{{ nickname || t('chat.setNickname') }}</span>
+          <span class="chat-app__nickname-text">{{ authStore.nickname || nickname || t('chat.setNickname') }}</span>
         </button>
       </div>
 
@@ -183,11 +183,19 @@
               class="chat-app__dialog-input"
               :placeholder="t('chat.nicknamePlaceholder')"
               maxlength="30"
+              @input="onNicknameInput"
               @keyup.enter="saveNickname"
             />
+            <div v-if="nicknameCheckStatus === 'taken'" class="chat-app__dialog-error">This nickname is already taken</div>
+            <div v-if="nicknameCheckStatus === 'checking'" class="chat-app__dialog-hint">Checking availability...</div>
+            <div v-if="nicknameCheckStatus === 'available'" class="chat-app__dialog-success">Nickname is available</div>
+            <div v-if="nicknameSaveError" class="chat-app__dialog-error">{{ nicknameSaveError }}</div>
             <div class="chat-app__dialog-actions">
-              <button class="chat-app__dialog-btn" @click="showNicknameDialog = false">{{ t('common.cancel') }}</button>
-              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" @click="saveNickname">{{ t('common.save') }}</button>
+              <button class="chat-app__dialog-btn" :disabled="savingNickname" @click="showNicknameDialog = false">{{ t('common.cancel') }}</button>
+              <button class="chat-app__dialog-btn chat-app__dialog-btn--primary" :disabled="!newNickname.trim() || savingNickname || nicknameCheckStatus === 'taken' || nicknameCheckStatus === 'checking'" @click="saveNickname">
+                <span v-if="!savingNickname">{{ t('common.save') }}</span>
+                <div v-else class="chat-app__spinner"></div>
+              </button>
             </div>
           </div>
         </div>
@@ -249,6 +257,7 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
+import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 
@@ -290,6 +299,7 @@ defineEmits<{
 const themeStore = useThemeStore()
 themeStore.init()
 
+const authStore = useAuthStore()
 const { t } = useI18n()
 
 const API_BASE = config.api.workerUrl
@@ -307,6 +317,10 @@ const sending = ref(false)
 const nickname = ref('')
 const rateLimitWarning = ref('')
 const rateLimited = ref(false)
+const nicknameCheckStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
+const nicknameSaveError = ref('')
+const savingNickname = ref(false)
+let nicknameCheckTimer: number | null = null
 let pollTimer: number | null = null
 let userId = ''
 
@@ -417,9 +431,13 @@ async function loadRooms() {
 
 async function loadNickname() {
   try {
-    const stored = await indexedDBService.loadSetting('chat_nickname')
-    if (stored) {
-      nickname.value = stored
+    if (authStore.nickname) {
+      nickname.value = authStore.nickname
+    } else {
+      const stored = await indexedDBService.loadSetting('chat_nickname')
+      if (stored) {
+        nickname.value = stored
+      }
     }
   } catch (error) {
     console.error('[Chat] Failed to load nickname:', error)
@@ -429,22 +447,52 @@ async function loadNickname() {
 async function saveNickname() {
   if (!newNickname.value.trim()) return
 
+  savingNickname.value = true
+  nicknameSaveError.value = ''
   try {
-    const response = await fetch(`${API_BASE}/chat/nickname`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, nickname: newNickname.value.trim() }),
-    })
-
-    const data = await response.json()
-    if (data.success) {
+    const result = await authStore.updateNickname(newNickname.value.trim())
+    if (result.success) {
       nickname.value = newNickname.value.trim()
-      await indexedDBService.saveSetting('chat_nickname', nickname.value)
       showNicknameDialog.value = false
+    } else {
+      nicknameSaveError.value = result.error || 'Failed to save nickname'
+      if (result.error === 'Nickname already taken') {
+        nicknameCheckStatus.value = 'taken'
+      }
     }
   } catch (error) {
     console.error('[Chat] Failed to save nickname:', error)
+    nicknameSaveError.value = 'Failed to save nickname'
+  } finally {
+    savingNickname.value = false
   }
+}
+
+async function checkNicknameAvailability() {
+  const trimmed = newNickname.value.trim()
+  if (!trimmed || trimmed === authStore.nickname) {
+    nicknameCheckStatus.value = 'idle'
+    return
+  }
+
+  nicknameCheckStatus.value = 'checking'
+  try {
+    const result = await authStore.checkNicknameAvailability(trimmed)
+    nicknameCheckStatus.value = result.available ? 'available' : 'taken'
+  } catch {
+    nicknameCheckStatus.value = 'idle'
+  }
+}
+
+function onNicknameInput() {
+  if (nicknameCheckTimer) {
+    clearTimeout(nicknameCheckTimer)
+  }
+  nicknameCheckStatus.value = 'idle'
+  nicknameSaveError.value = ''
+  nicknameCheckTimer = window.setTimeout(() => {
+    checkNicknameAvailability()
+  }, 500)
 }
 
 function closeCreateRoomDialog() {
@@ -1306,6 +1354,20 @@ function truncateMessage(message: string, maxLength: number = 20): string {
 
 .chat-app__dialog-error {
   color: var(--chat-error, #FF3B30);
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.chat-app__dialog-success {
+  color: #34C759;
+  font-size: 12px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.chat-app__dialog-hint {
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
   font-size: 12px;
   margin-bottom: 12px;
   text-align: center;

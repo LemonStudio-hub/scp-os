@@ -6,7 +6,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { indexedDBService } from '../utils/indexedDB'
+import { config } from '../config'
 import logger from '../utils/logger'
+
+const API_BASE = config.api.workerUrl
 
 export const useAuthStore = defineStore('auth', () => {
   // State
@@ -72,7 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Register/update user on remote API
       try {
-        const response = await fetch('/api/user/register', {
+        const response = await fetch(`${API_BASE}/api/user/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -139,17 +142,102 @@ export const useAuthStore = defineStore('auth', () => {
     return isLoggedIn.value
   }
 
+  async function checkNicknameAvailability(nicknameInput: string): Promise<{ available: boolean; error?: string }> {
+    const trimmed = nicknameInput.trim()
+    if (!trimmed) {
+      return { available: false, error: 'Nickname cannot be empty' }
+    }
+    if (trimmed.length > 30) {
+      return { available: false, error: 'Nickname too long (max 30 characters)' }
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/user/check-nickname?nickname=${encodeURIComponent(trimmed)}&excludeUserId=${encodeURIComponent(userId.value || '')}`)
+      const data = await response.json()
+      if (data.success && data.available) {
+        return { available: true }
+      }
+      return { available: false, error: data.error || 'Nickname already taken' }
+    } catch (error) {
+      logger.warn('[Auth] Failed to check nickname availability:', error)
+      return { available: true }
+    }
+  }
+
+  async function updateNickname(newNickname: string): Promise<{ success: boolean; error?: string }> {
+    const trimmed = newNickname.trim()
+    if (!trimmed) {
+      return { success: false, error: 'Nickname cannot be empty' }
+    }
+    if (trimmed.length > 30) {
+      return { success: false, error: 'Nickname too long (max 30 characters)' }
+    }
+
+    isLoading.value = true
+    try {
+      const availability = await checkNicknameAvailability(trimmed)
+      if (!availability.available) {
+        return { success: false, error: availability.error || 'Nickname already taken' }
+      }
+
+      await indexedDBService.saveNickname(trimmed)
+      nickname.value = trimmed
+
+      try {
+        const response = await fetch(`${API_BASE}/api/user/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: userId.value, nickname: trimmed }),
+        })
+
+        if (!response.ok) {
+          try {
+            const errorData = await response.json()
+            if (errorData.success === false && errorData.error === 'Nickname already taken') {
+              const oldNickname = await indexedDBService.getNickname()
+              nickname.value = oldNickname
+              return { success: false, error: 'Nickname already taken' }
+            }
+          } catch {
+            // ignore parse error
+          }
+          logger.warn('[Auth] Failed to update nickname on remote API, but local update succeeded')
+        } else {
+          try {
+            await fetch(`${API_BASE}/chat/nickname`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ user_id: userId.value, nickname: trimmed }),
+            })
+          } catch {
+            // ignore chat nickname update error
+          }
+        }
+      } catch (apiError) {
+        logger.warn('[Auth] Remote API unavailable, local update succeeded:', apiError)
+      }
+
+      logger.info('[Auth] Nickname updated successfully:', trimmed)
+      return { success: true }
+    } catch (error) {
+      logger.error('[Auth] Failed to update nickname:', error)
+      return { success: false, error: `Update failed: ${(error as Error).message}` }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
-    // State
     isLoggedIn,
     nickname,
     userId,
     isLoading,
 
-    // Actions
     initAuth,
     login,
     logout,
     checkLoginStatus,
+    updateNickname,
+    checkNicknameAvailability,
   }
 })

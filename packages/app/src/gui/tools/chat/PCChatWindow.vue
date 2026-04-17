@@ -97,6 +97,12 @@
 
       <!-- Input Bar -->
       <div class="pc-chat-app__input-bar">
+        <button class="pc-chat-app__nickname-btn" :title="authStore.nickname || t('chat.setNickname')" @click="openNicknameDialog">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
+            <path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </button>
         <input
           v-model="inputContent"
           type="text"
@@ -212,6 +218,35 @@
           </div>
         </div>
       </Transition>
+
+      <!-- Nickname Dialog -->
+      <Transition name="gui-ios-fade">
+        <div v-if="showNicknameDialog" class="pc-chat-app__dialog-overlay" @click.self="showNicknameDialog = false">
+          <div class="pc-chat-app__dialog">
+            <h3 class="pc-chat-app__dialog-title">{{ t('chat.setNickname') }}</h3>
+            <input
+              v-model="newNickname"
+              type="text"
+              class="pc-chat-app__dialog-input"
+              :placeholder="t('chat.nicknamePlaceholder')"
+              maxlength="30"
+              @input="onNicknameInput"
+              @keyup.enter="saveNickname"
+            />
+            <div v-if="nicknameCheckStatus === 'taken'" class="pc-chat-app__dialog-error">This nickname is already taken</div>
+            <div v-if="nicknameCheckStatus === 'checking'" class="pc-chat-app__dialog-hint">Checking availability...</div>
+            <div v-if="nicknameCheckStatus === 'available'" class="pc-chat-app__dialog-success">Nickname is available</div>
+            <div v-if="nicknameSaveError" class="pc-chat-app__dialog-error">{{ nicknameSaveError }}</div>
+            <div class="pc-chat-app__dialog-actions">
+              <button class="pc-chat-app__dialog-btn" :disabled="savingNickname" @click="showNicknameDialog = false">{{ t('common.cancel') }}</button>
+              <button class="pc-chat-app__dialog-btn pc-chat-app__dialog-btn--primary" :disabled="!newNickname.trim() || savingNickname || nicknameCheckStatus === 'taken' || nicknameCheckStatus === 'checking'" @click="saveNickname">
+                <div v-if="savingNickname" class="pc-chat-app__dialog-spinner" />
+                <span v-else>{{ t('common.save') }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
     </div>
   </PCWindow>
 </template>
@@ -284,6 +319,12 @@ const loadingRooms = ref(false)
 const creatingRoom = ref(false)
 const savingSettings = ref(false)
 const deletingRoom = ref(false)
+const showNicknameDialog = ref(false)
+const newNickname = ref('')
+const savingNickname = ref(false)
+const nicknameCheckStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
+const nicknameSaveError = ref('')
+let nicknameCheckTimer: number | null = null
 let pollTimer: number | null = null
 let userId = ''
 
@@ -627,8 +668,6 @@ async function deleteRoom() {
 
   deletingRoom.value = true
   try {
-    // In a real implementation, this would call an API to delete the room
-    // For now, we'll just remove it from the local state
     const roomIndex = rooms.findIndex(r => r.id === currentRoom.value?.id)
     if (roomIndex !== -1) {
       rooms.splice(roomIndex, 1)
@@ -644,6 +683,63 @@ async function deleteRoom() {
     alert('Failed to delete room. Please try again.')
   } finally {
     deletingRoom.value = false
+  }
+}
+
+function openNicknameDialog() {
+  newNickname.value = authStore.nickname || ''
+  nicknameCheckStatus.value = 'idle'
+  nicknameSaveError.value = ''
+  showNicknameDialog.value = true
+}
+
+async function checkNicknameAvailability() {
+  const trimmed = newNickname.value.trim()
+  if (!trimmed || trimmed === authStore.nickname) {
+    nicknameCheckStatus.value = 'idle'
+    return
+  }
+
+  nicknameCheckStatus.value = 'checking'
+  try {
+    const result = await authStore.checkNicknameAvailability(trimmed)
+    nicknameCheckStatus.value = result.available ? 'available' : 'taken'
+  } catch {
+    nicknameCheckStatus.value = 'idle'
+  }
+}
+
+function onNicknameInput() {
+  if (nicknameCheckTimer) {
+    clearTimeout(nicknameCheckTimer)
+  }
+  nicknameCheckStatus.value = 'idle'
+  nicknameSaveError.value = ''
+  nicknameCheckTimer = window.setTimeout(() => {
+    checkNicknameAvailability()
+  }, 500)
+}
+
+async function saveNickname() {
+  const trimmed = newNickname.value.trim()
+  if (!trimmed) return
+
+  savingNickname.value = true
+  nicknameSaveError.value = ''
+  try {
+    const result = await authStore.updateNickname(trimmed)
+    if (result.success) {
+      showNicknameDialog.value = false
+    } else {
+      nicknameSaveError.value = result.error || 'Failed to save nickname'
+      if (result.error === 'Nickname already taken') {
+        nicknameCheckStatus.value = 'taken'
+      }
+    }
+  } catch {
+    nicknameSaveError.value = 'Failed to save nickname'
+  } finally {
+    savingNickname.value = false
   }
 }
 </script>
@@ -973,6 +1069,29 @@ async function deleteRoom() {
   border-top: 0.5px solid var(--chat-border, var(--gui-border-subtle, #38383A));
 }
 
+.pc-chat-app__nickname-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--chat-surface-hover, var(--gui-bg-surface-hover, #3A3A3C));
+  color: var(--chat-text-secondary, var(--gui-text-secondary, #8E8E93));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 100ms ease;
+  flex-shrink: 0;
+}
+
+.pc-chat-app__nickname-btn:hover {
+  opacity: 0.8;
+}
+
+.pc-chat-app__nickname-btn:active {
+  transform: scale(0.95);
+}
+
 .pc-chat-app__input {
   flex: 1;
   height: 36px;
@@ -1166,6 +1285,27 @@ async function deleteRoom() {
   font-size: 14px;
   color: var(--chat-text-primary, var(--gui-text-primary, #FFFFFF));
   cursor: pointer;
+}
+
+.pc-chat-app__dialog-error {
+  color: var(--chat-error, #FF3B30);
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.pc-chat-app__dialog-success {
+  color: #34C759;
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.pc-chat-app__dialog-hint {
+  color: var(--chat-text-tertiary, var(--gui-text-tertiary, #636366));
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-align: center;
 }
 
 .pc-chat-app__dialog-actions {
