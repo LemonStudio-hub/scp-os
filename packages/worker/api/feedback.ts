@@ -305,7 +305,6 @@ export async function voteFeedback(
   input: VoteInput
 ): Promise<ChatApiResponse> {
   try {
-    // Check if feedback exists
     const feedback = await db.prepare(
       'SELECT id FROM feedbacks WHERE id = ? AND status = ?'
     ).bind(input.id, 'published').first<{ id: number }>()
@@ -314,29 +313,66 @@ export async function voteFeedback(
       return { success: false, error: 'Feedback not found' }
     }
 
-    // Check if user already voted
     const existingVote = await db.prepare(
       'SELECT id, vote FROM feedback_votes WHERE feedback_id = ? AND user_id = ?'
     ).bind(input.id, input.user_id).first<{ id: number; vote: 'up' | 'down' }>()
 
     if (existingVote) {
-      return { success: false, error: 'You have already voted on this feedback' }
+      if (existingVote.vote === input.vote) {
+        await db.exec('BEGIN TRANSACTION')
+        try {
+          await db.prepare(
+            'DELETE FROM feedback_votes WHERE id = ?'
+          ).bind(existingVote.id).run()
+
+          if (input.vote === 'up') {
+            await db.prepare(
+              'UPDATE feedbacks SET upvotes = MAX(0, upvotes - 1) WHERE id = ?'
+            ).bind(input.id).run()
+          } else {
+            await db.prepare(
+              'UPDATE feedbacks SET downvotes = MAX(0, downvotes - 1) WHERE id = ?'
+            ).bind(input.id).run()
+          }
+
+          await db.exec('COMMIT')
+          return { success: true, data: { id: input.id, vote: null, action: 'removed' } }
+        } catch (error) {
+          await db.exec('ROLLBACK')
+          throw error
+        }
+      } else {
+        await db.exec('BEGIN TRANSACTION')
+        try {
+          await db.prepare(
+            'UPDATE feedback_votes SET vote = ? WHERE id = ?'
+          ).bind(input.vote, existingVote.id).run()
+
+          if (input.vote === 'up') {
+            await db.prepare(
+              'UPDATE feedbacks SET upvotes = upvotes + 1, downvotes = MAX(0, downvotes - 1) WHERE id = ?'
+            ).bind(input.id).run()
+          } else {
+            await db.prepare(
+              'UPDATE feedbacks SET downvotes = downvotes + 1, upvotes = MAX(0, upvotes - 1) WHERE id = ?'
+            ).bind(input.id).run()
+          }
+
+          await db.exec('COMMIT')
+          return { success: true, data: { id: input.id, vote: input.vote, action: 'changed' } }
+        } catch (error) {
+          await db.exec('ROLLBACK')
+          throw error
+        }
+      }
     }
 
-    // Begin transaction
     await db.exec('BEGIN TRANSACTION')
-
     try {
-      // Insert vote
       await db.prepare(
         `INSERT INTO feedback_votes (feedback_id, user_id, vote) VALUES (?, ?, ?)`
-      ).bind(
-        input.id,
-        input.user_id,
-        input.vote
-      ).run()
+      ).bind(input.id, input.user_id, input.vote).run()
 
-      // Update vote counts
       if (input.vote === 'up') {
         await db.prepare(
           'UPDATE feedbacks SET upvotes = upvotes + 1 WHERE id = ?'
@@ -347,15 +383,9 @@ export async function voteFeedback(
         ).bind(input.id).run()
       }
 
-      // Commit transaction
       await db.exec('COMMIT')
-
-      return {
-        success: true,
-        data: { id: input.id, vote: input.vote }
-      }
+      return { success: true, data: { id: input.id, vote: input.vote, action: 'added' } }
     } catch (error) {
-      // Rollback transaction
       await db.exec('ROLLBACK')
       throw error
     }
