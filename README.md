@@ -939,7 +939,4 @@ SCP 基金会是一个协作创意写作项目。更多信息：
 
 **安全 • 收容 • 保护**
 
-*SCP Foundation Terminal System v0.1.0*
-*安全级别: 4*
-*状态: 运行中*
-*架构: 分层，支持平台*
+*SCP Foundation Terminal System*
