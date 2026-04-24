@@ -36,3 +36,6 @@ coverage
 
 # Tauri
 **/gen/schemas
+
+# Wrangler (Cloudflare Workers)
+.wrangler/
