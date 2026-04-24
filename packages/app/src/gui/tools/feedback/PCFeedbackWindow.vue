@@ -110,21 +110,25 @@
                 <div class="pc-feedback__votes">
                   <button 
                     class="pc-feedback__vote-btn"
-                    :class="{ 'pc-feedback__vote-btn--active': item.userVote === 'up' }"
+                    :class="{ 'pc-feedback__vote-btn--up': item.userVote === 'up' }"
+                    :disabled="isVoting[item.id]"
                     @click="voteFeedback(item, 'up')"
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path d="M8 3l-4 4 1.41 1.41L8 6.83l2.59 2.58L12 7l-4-4z"/>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M2 9h2.5V15H2V9z" fill="currentColor"/>
+                      <path d="M5.5 9l2.5-5.5V2a1 1 0 011-1h.5L11 4.5V7h3a1 1 0 011 1.1l-1.2 5.5a1 1 0 01-1 .9H5.5V9z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
                     </svg>
                     <span>{{ item.upvotes || 0 }}</span>
                   </button>
                   <button 
                     class="pc-feedback__vote-btn"
-                    :class="{ 'pc-feedback__vote-btn--active': item.userVote === 'down' }"
+                    :class="{ 'pc-feedback__vote-btn--down': item.userVote === 'down' }"
+                    :disabled="isVoting[item.id]"
                     @click="voteFeedback(item, 'down')"
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path d="M8 13l4-4-1.41-1.41L8 10.17 5.41 7.58 4 9l4 4z"/>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M2 7h2.5V1H2v6z" fill="currentColor"/>
+                      <path d="M5.5 7l2.5 5.5V14a1 1 0 001 1h.5L11 11.5V9h3a1 1 0 011-1.1l-1.2-5.5a1 1 0 00-1-.9H5.5V7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
                     </svg>
                     <span>{{ item.downvotes || 0 }}</span>
                   </button>
@@ -133,15 +137,15 @@
                   class="pc-feedback__comment-btn"
                   @click="toggleComments(item)"
                 >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round">
+                    <path d="M14 10a1.5 1.5 0 01-1.5 1.5H5L2 14V3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5V10z"/>
                   </svg>
                   <span>{{ item.commentsCount || 0 }}</span>
                 </button>
               </div>
 
               <!-- Comments Section -->
-              <div v-if="item.showComments" class="pc-feedback__comments">
+              <div v-if="isCommentsExpanded(item.id)" class="pc-feedback__comments">
                 <div v-if="isLoadingComments[item.id]" class="pc-feedback__comments-loading">
                   <div class="pc-feedback__loading-dot" />
                   <div class="pc-feedback__loading-dot" />
@@ -288,6 +292,8 @@ let userId = ''
 const commentForms = ref<Record<string, string>>({})
 const isSubmittingComment = ref<Record<string, boolean>>({})
 const isLoadingComments = ref<Record<string, boolean>>({})
+const isVoting = ref<Record<string, boolean>>({})
+const expandedComments = ref<Set<number>>(new Set())
 
 onMounted(async () => {
   userId = authStore.userId || await indexedDBService.getUserId()
@@ -385,6 +391,9 @@ async function loadMore() {
 }
 
 async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
+  if (isVoting.value[item.id]) return
+  isVoting.value[item.id] = true
+
   try {
     const response = await fetch(`${API_BASE}/feedback/vote`, {
       method: 'POST',
@@ -398,43 +407,58 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
 
     const data = await response.json()
     if (data.success) {
+      const idx = feedbacks.value.findIndex(f => f.id === item.id)
+      if (idx === -1) return
+
+      const feedback = feedbacks.value[idx]
       const action = data.data?.action
       if (action === 'removed') {
         if (voteType === 'up') {
-          item.upvotes = Math.max(0, (item.upvotes || 0) - 1)
+          feedback.upvotes = Math.max(0, (feedback.upvotes || 0) - 1)
         } else {
-          item.downvotes = Math.max(0, (item.downvotes || 0) - 1)
+          feedback.downvotes = Math.max(0, (feedback.downvotes || 0) - 1)
         }
-        item.userVote = null
+        feedback.userVote = null
       } else if (action === 'changed') {
         if (voteType === 'up') {
-          item.upvotes = (item.upvotes || 0) + 1
-          item.downvotes = Math.max(0, (item.downvotes || 0) - 1)
+          feedback.upvotes = (feedback.upvotes || 0) + 1
+          feedback.downvotes = Math.max(0, (feedback.downvotes || 0) - 1)
         } else {
-          item.downvotes = (item.downvotes || 0) + 1
-          item.upvotes = Math.max(0, (item.upvotes || 0) - 1)
+          feedback.downvotes = (feedback.downvotes || 0) + 1
+          feedback.upvotes = Math.max(0, (feedback.upvotes || 0) - 1)
         }
-        item.userVote = voteType
+        feedback.userVote = voteType
       } else {
         if (voteType === 'up') {
-          item.upvotes = (item.upvotes || 0) + 1
+          feedback.upvotes = (feedback.upvotes || 0) + 1
         } else {
-          item.downvotes = (item.downvotes || 0) + 1
+          feedback.downvotes = (feedback.downvotes || 0) + 1
         }
-        item.userVote = voteType
+        feedback.userVote = voteType
       }
     }
   } catch (error) {
     logger.error('[Feedback] Failed to vote:', error as Error)
+  } finally {
+    isVoting.value[item.id] = false
   }
 }
 
 async function toggleComments(item: FeedbackItem) {
-  item.showComments = !item.showComments
+  const isExpanded = expandedComments.value.has(item.id)
+  if (isExpanded) {
+    expandedComments.value.delete(item.id)
+  } else {
+    expandedComments.value.add(item.id)
+  }
 
-  if (item.showComments && item.comments.length === 0) {
+  if (!isExpanded && item.comments.length === 0) {
     await loadComments(item)
   }
+}
+
+function isCommentsExpanded(itemId: number): boolean {
+  return expandedComments.value.has(itemId)
 }
 
 async function loadComments(item: FeedbackItem) {
@@ -444,7 +468,10 @@ async function loadComments(item: FeedbackItem) {
     const data = await response.json()
 
     if (data.success) {
-      item.comments = (data.data as CommentItem[]) || []
+      const idx = feedbacks.value.findIndex(f => f.id === item.id)
+      if (idx !== -1) {
+        feedbacks.value[idx].comments = (data.data as CommentItem[]) || []
+      }
     }
   } catch (error) {
     logger.error('[Feedback] Failed to load comments:', error as Error)
@@ -472,8 +499,9 @@ async function submitComment(feedbackId: number) {
 
     const data = await response.json()
     if (data.success) {
-      const feedback = feedbacks.value.find(f => f.id === feedbackId)
-      if (feedback) {
+      const idx = feedbacks.value.findIndex(f => f.id === feedbackId)
+      if (idx !== -1) {
+        const feedback = feedbacks.value[idx]
         feedback.comments.push(data.data as CommentItem)
         feedback.commentsCount = (feedback.commentsCount || 0) + 1
         commentForms.value[feedbackId] = ''
@@ -828,9 +856,14 @@ function getCategoryIcon(category: string): string {
   color: var(--gui-text-primary, #FFFFFF);
 }
 
-.pc-feedback__vote-btn--active {
-  color: var(--gui-accent, #007AFF);
-  background: rgba(0, 122, 255, 0.1);
+.pc-feedback__vote-btn--up {
+  color: #34C759;
+  background: rgba(52, 199, 89, 0.1);
+}
+
+.pc-feedback__vote-btn--down {
+  color: #FF3B30;
+  background: rgba(255, 59, 48, 0.1);
 }
 
 .pc-feedback__vote-btn:active {

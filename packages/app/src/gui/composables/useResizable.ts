@@ -5,7 +5,7 @@
  * Does NOT directly manipulate DOM - instead calls callbacks for the parent to update state.
  */
 
-import { ref, type Ref } from 'vue'
+import { ref, onUnmounted, type Ref } from 'vue'
 import type { ResizeDirection } from '../types'
 
 export interface ResizeState {
@@ -163,6 +163,10 @@ export function useResizable(
     resizeState.value.currentX = x
     resizeState.value.currentY = y
   }
+
+  onUnmounted(() => {
+    stop()
+  })
 
   return {
     resizeState,

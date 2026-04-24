@@ -34,15 +34,14 @@ export class CORSManager {
     if (!origin) return false
 
     for (const allowed of this.config.cors.allowedOrigins) {
-      // 支持通配符
       if (allowed.includes('*')) {
-        const pattern = allowed.replace(/\*/g, '.*')
+        const escaped = allowed.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+        const pattern = escaped.replace(/\*/g, '.*')
         const regex = new RegExp(`^${pattern}$`)
         if (regex.test(origin)) {
           return true
         }
       }
-      // 精确匹配
       else if (origin === allowed) {
         return true
       }

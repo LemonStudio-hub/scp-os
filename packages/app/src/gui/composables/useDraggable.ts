@@ -5,7 +5,7 @@
  * Returns reactive state and a cleanup function.
  */
 
-import { ref, type Ref } from 'vue'
+import { ref, onUnmounted, type Ref } from 'vue'
 
 export interface DragState {
   isDragging: boolean
@@ -155,6 +155,10 @@ export function useDraggable(
     dragState.value.initialX = bounded.x
     dragState.value.initialY = bounded.y
   }
+
+  onUnmounted(() => {
+    stop()
+  })
 
   return {
     dragState,

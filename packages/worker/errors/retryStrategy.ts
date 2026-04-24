@@ -3,8 +3,7 @@
  * 智能的重试逻辑，支持指数退避
  */
 
-import type { ScraperError } from './scraperError'
-import { ScraperErrorType } from './scraperError'
+import { ScraperError, ScraperErrorType } from './scraperError'
 
 export class RetryStrategy {
   private static readonly RETRYABLE_ERRORS = [
@@ -16,12 +15,17 @@ export class RetryStrategy {
   /**
    * 判断是否应该重试
    */
-  shouldRetry(error: ScraperError, attempt: number, maxAttempts: number): boolean {
-    return (
-      RetryStrategy.RETRYABLE_ERRORS.includes(error.type) &&
-      error.retryable &&
-      attempt < maxAttempts
-    )
+  shouldRetry(error: ScraperError | Error, attempt: number, maxAttempts: number): boolean {
+    if (attempt >= maxAttempts) return false
+
+    if (error instanceof ScraperError) {
+      return (
+        RetryStrategy.RETRYABLE_ERRORS.includes(error.type) &&
+        error.retryable
+      )
+    }
+
+    return true
   }
 
   /**
@@ -52,7 +56,7 @@ export class RetryStrategy {
         lastError = error instanceof Error ? error : new Error(String(error))
 
         // 检查是否应该重试
-        if (attempt < maxAttempts - 1 && this.shouldRetry(error as ScraperError, attempt, maxAttempts)) {
+        if (attempt < maxAttempts - 1 && this.shouldRetry(lastError, attempt, maxAttempts)) {
           const delay = this.getRetryDelay(attempt, baseDelay)
           console.warn(`Attempt ${attempt + 1} failed, retrying in ${delay}ms...`, (error as ScraperError).message)
           await this.delay(delay)

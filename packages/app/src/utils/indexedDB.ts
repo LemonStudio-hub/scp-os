@@ -298,6 +298,12 @@ class IndexedDBService {
         
         request.onsuccess = () => {
           const keys = request.result
+          
+          if (keys.length === 0) {
+            checkComplete()
+            return
+          }
+
           let keyCount = 0
           
           keys.forEach((key) => {

@@ -15,8 +15,19 @@ import logger from '../../utils/logger'
 const { getNextZIndex, bringToFront, setFocusedWindow, getFocusedWindowId } = useZIndex()
 
 export const useWindowManagerStore = defineStore('windowManager', () => {
-  // Single source of truth - reactive Map
   const windows = ref<Map<string, WindowInstance>>(new Map())
+
+  function updateWindow(id: string, instance: WindowInstance): void {
+    const newMap = new Map(windows.value)
+    newMap.set(id, instance)
+    windows.value = newMap
+  }
+
+  function deleteWindow(id: string): void {
+    const newMap = new Map(windows.value)
+    newMap.delete(id)
+    windows.value = newMap
+  }
 
   // Computed: ordered by insertion order (Map preserves insertion order)
   const openWindows = computed(() => {
@@ -73,7 +84,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       lastFocusedAt: Date.now(),
     }
 
-    windows.value.set(config.id, windowInstance)
+    updateWindow(config.id, windowInstance)
     setFocusedWindow(config.id)
 
     // Persist to IndexedDB
@@ -86,7 +97,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     const win = windows.value.get(windowId)
     if (!win) return false
 
-    windows.value.delete(windowId)
+    deleteWindow(windowId)
 
     // Delete persisted state
     deleteWindowState(windowId)
@@ -109,19 +120,22 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
     const newZIndex = bringToFront(windowId)
 
-    windows.value.set(windowId, {
+    updateWindow(windowId, {
       ...win,
       zIndex: newZIndex,
       focused: true,
       lastFocusedAt: Date.now(),
     })
 
-    // Update all other windows to not be focused
+    const updates: Array<[string, WindowInstance]> = []
     windows.value.forEach((w, id) => {
       if (id !== windowId && w.focused) {
-        windows.value.set(id, { ...w, focused: false })
+        updates.push([id, { ...w, focused: false }])
       }
     })
+    for (const [id, instance] of updates) {
+      updateWindow(id, instance)
+    }
 
     return true
   }
@@ -130,7 +144,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     const win = windows.value.get(windowId)
     if (!win || win.config.minimizable === false) return false
 
-    windows.value.set(windowId, {
+    updateWindow(windowId, {
       ...win,
       minimized: true,
       state: 'minimized',
@@ -154,7 +168,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
     const state: WindowState = win.maximized ? 'maximized' : 'normal'
 
-    windows.value.set(windowId, {
+    updateWindow(windowId, {
       ...win,
       minimized: false,
       state,
@@ -170,7 +184,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
     const isCurrentlyMaximized = win.maximized
 
-    windows.value.set(windowId, {
+    updateWindow(windowId, {
       ...win,
       maximized: !isCurrentlyMaximized,
       state: isCurrentlyMaximized ? 'normal' : 'maximized',
@@ -183,7 +197,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     const win = windows.value.get(windowId)
     if (!win) return false
 
-    windows.value.set(windowId, {
+    updateWindow(windowId, {
       ...win,
       position: { x: dimensions.x, y: dimensions.y },
       size: { width: dimensions.width, height: dimensions.height },
@@ -196,7 +210,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     const win = windows.value.get(windowId)
     if (!win) return false
 
-    windows.value.set(windowId, {
+    updateWindow(windowId, {
       ...win,
       position: { x, y },
     })
@@ -221,16 +235,16 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     try {
       await indexedDBService.saveGUIWindowState(windowInstance)
     } catch (error) {
-        logger.error('[WindowManager] Failed to save window state:', error)
-      }
+      logger.error('[WindowManager] Failed to save window state:', error)
+    }
   }
 
   async function deleteWindowState(windowId: string): Promise<void> {
     try {
       await indexedDBService.deleteGUIWindowState(windowId)
     } catch (error) {
-        logger.error('[WindowManager] Failed to delete window state:', error)
-      }
+      logger.error('[WindowManager] Failed to delete window state:', error)
+    }
   }
 
   async function loadWindowStates(): Promise<void> {
@@ -238,7 +252,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       const savedWindows = await indexedDBService.loadGUIWindowStates()
       if (savedWindows && savedWindows.length > 0) {
         for (const savedWindow of savedWindows) {
-          windows.value.set(savedWindow.config.id, savedWindow)
+          updateWindow(savedWindow.config.id, savedWindow)
         }
         logger.info(`[WindowManager] Restored ${savedWindows.length} windows from IndexedDB`)
       }

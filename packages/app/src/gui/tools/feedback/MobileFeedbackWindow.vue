@@ -110,21 +110,25 @@
                 <div class="mobile-feedback__votes">
                   <button 
                     class="mobile-feedback__vote-btn"
-                    :class="{ 'mobile-feedback__vote-btn--active': item.userVote === 'up' }"
+                    :class="{ 'mobile-feedback__vote-btn--up': item.userVote === 'up' }"
+                    :disabled="isVoting[item.id]"
                     @click="voteFeedback(item, 'up')"
                   >
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path d="M10 17l-5-5 1.41-1.41L10 14.17l3.59-3.58L15 12l-5 5z"/>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2.5 11h3v7.5h-3V11z" fill="currentColor"/>
+                      <path d="M6.5 11l3-6.5V2.5a1.2 1.2 0 011.2-1.2h.6l2 4V8h3.5a1.2 1.2 0 011.2 1.3l-1.4 6.5a1.2 1.2 0 01-1.2 1H6.5V11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
                     </svg>
                     <span>{{ item.upvotes || 0 }}</span>
                   </button>
                   <button 
                     class="mobile-feedback__vote-btn"
-                    :class="{ 'mobile-feedback__vote-btn--active': item.userVote === 'down' }"
+                    :class="{ 'mobile-feedback__vote-btn--down': item.userVote === 'down' }"
+                    :disabled="isVoting[item.id]"
                     @click="voteFeedback(item, 'down')"
                   >
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                      <path d="M10 3l5 5-1.41 1.41L10 5.83l-3.59 3.58L5 8l5-5z"/>
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M2.5 9h3V1.5h-3V9z" fill="currentColor"/>
+                      <path d="M6.5 9l3 6.5v2a1.2 1.2 0 001.2 1.2h.6l2-4V12h3.5a1.2 1.2 0 001.2-1.3l-1.4-6.5a1.2 1.2 0 00-1.2-1H6.5V9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
                     </svg>
                     <span>{{ item.downvotes || 0 }}</span>
                   </button>
@@ -133,15 +137,15 @@
                   class="mobile-feedback__comment-btn"
                   @click="toggleComments(item)"
                 >
-                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round">
+                    <path d="M17.5 12.5a2 2 0 01-2 2H6L2.5 17.5V4.5a2 2 0 012-2h11a2 2 0 012 2v8z"/>
                   </svg>
                   <span>{{ item.commentsCount || 0 }}</span>
                 </button>
               </div>
 
               <!-- Comments Section -->
-              <div v-if="item.showComments" class="mobile-feedback__comments">
+              <div v-if="isCommentsExpanded(item.id)" class="mobile-feedback__comments">
                 <div v-if="isLoadingComments[item.id]" class="mobile-feedback__comments-loading">
                   <div class="mobile-feedback__loading-dot" />
                   <div class="mobile-feedback__loading-dot" />
@@ -288,6 +292,8 @@ let userId = ''
 const commentForms = ref<Record<string, string>>({})
 const isSubmittingComment = ref<Record<string, boolean>>({})
 const isLoadingComments = ref<Record<string, boolean>>({})
+const isVoting = ref<Record<string, boolean>>({})
+const expandedComments = ref<Set<number>>(new Set())
 
 onMounted(async () => {
   userId = authStore.userId || await indexedDBService.getUserId()
@@ -385,6 +391,9 @@ async function loadMore() {
 }
 
 async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
+  if (isVoting.value[item.id]) return
+  isVoting.value[item.id] = true
+
   try {
     const response = await fetch(`${API_BASE}/feedback/vote`, {
       method: 'POST',
@@ -398,43 +407,58 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
 
     const data = await response.json()
     if (data.success) {
+      const idx = feedbacks.value.findIndex(f => f.id === item.id)
+      if (idx === -1) return
+
+      const feedback = feedbacks.value[idx]
       const action = data.data?.action
       if (action === 'removed') {
         if (voteType === 'up') {
-          item.upvotes = Math.max(0, (item.upvotes || 0) - 1)
+          feedback.upvotes = Math.max(0, (feedback.upvotes || 0) - 1)
         } else {
-          item.downvotes = Math.max(0, (item.downvotes || 0) - 1)
+          feedback.downvotes = Math.max(0, (feedback.downvotes || 0) - 1)
         }
-        item.userVote = null
+        feedback.userVote = null
       } else if (action === 'changed') {
         if (voteType === 'up') {
-          item.upvotes = (item.upvotes || 0) + 1
-          item.downvotes = Math.max(0, (item.downvotes || 0) - 1)
+          feedback.upvotes = (feedback.upvotes || 0) + 1
+          feedback.downvotes = Math.max(0, (feedback.downvotes || 0) - 1)
         } else {
-          item.downvotes = (item.downvotes || 0) + 1
-          item.upvotes = Math.max(0, (item.upvotes || 0) - 1)
+          feedback.downvotes = (feedback.downvotes || 0) + 1
+          feedback.upvotes = Math.max(0, (feedback.upvotes || 0) - 1)
         }
-        item.userVote = voteType
+        feedback.userVote = voteType
       } else {
         if (voteType === 'up') {
-          item.upvotes = (item.upvotes || 0) + 1
+          feedback.upvotes = (feedback.upvotes || 0) + 1
         } else {
-          item.downvotes = (item.downvotes || 0) + 1
+          feedback.downvotes = (feedback.downvotes || 0) + 1
         }
-        item.userVote = voteType
+        feedback.userVote = voteType
       }
     }
   } catch (error) {
     logger.error('[Feedback] Failed to vote:', error as Error)
+  } finally {
+    isVoting.value[item.id] = false
   }
 }
 
 async function toggleComments(item: FeedbackItem) {
-  item.showComments = !item.showComments
+  const isExpanded = expandedComments.value.has(item.id)
+  if (isExpanded) {
+    expandedComments.value.delete(item.id)
+  } else {
+    expandedComments.value.add(item.id)
+  }
 
-  if (item.showComments && item.comments.length === 0) {
+  if (!isExpanded && item.comments.length === 0) {
     await loadComments(item)
   }
+}
+
+function isCommentsExpanded(itemId: number): boolean {
+  return expandedComments.value.has(itemId)
 }
 
 async function loadComments(item: FeedbackItem) {
@@ -444,7 +468,10 @@ async function loadComments(item: FeedbackItem) {
     const data = await response.json()
 
     if (data.success) {
-      item.comments = (data.data as CommentItem[]) || []
+      const idx = feedbacks.value.findIndex(f => f.id === item.id)
+      if (idx !== -1) {
+        feedbacks.value[idx].comments = (data.data as CommentItem[]) || []
+      }
     }
   } catch (error) {
     logger.error('[Feedback] Failed to load comments:', error as Error)
@@ -472,8 +499,9 @@ async function submitComment(feedbackId: number) {
 
     const data = await response.json()
     if (data.success) {
-      const feedback = feedbacks.value.find(f => f.id === feedbackId)
-      if (feedback) {
+      const idx = feedbacks.value.findIndex(f => f.id === feedbackId)
+      if (idx !== -1) {
+        const feedback = feedbacks.value[idx]
         feedback.comments.push(data.data as CommentItem)
         feedback.commentsCount = (feedback.commentsCount || 0) + 1
         commentForms.value[feedbackId] = ''
@@ -835,9 +863,14 @@ function getCategoryIcon(category: string): string {
   color: var(--gui-text-primary, #FFFFFF);
 }
 
-.mobile-feedback__vote-btn--active {
-  color: var(--gui-accent, #007AFF);
-  background: rgba(0, 122, 255, 0.1);
+.mobile-feedback__vote-btn--up {
+  color: #34C759;
+  background: rgba(52, 199, 89, 0.1);
+}
+
+.mobile-feedback__vote-btn--down {
+  color: #FF3B30;
+  background: rgba(255, 59, 48, 0.1);
 }
 
 .mobile-feedback__vote-btn:active {

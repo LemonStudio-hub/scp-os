@@ -8,23 +8,25 @@ import { getConfig } from '../shared/config'
 export class RateLimiter {
   private config = getConfig()
   private cache: Map<string, number[]> = new Map()
+  private lastCleanup = Date.now()
+  private static readonly CLEANUP_INTERVAL = 60000
 
-  /**
-   * 检查是否超过速率限制
-   */
   async checkLimit(identifier: string): Promise<boolean> {
     const now = Date.now()
+
+    if (now - this.lastCleanup > RateLimiter.CLEANUP_INTERVAL) {
+      this.cleanup()
+      this.lastCleanup = now
+    }
+
     const requests = this.cache.get(identifier) || []
 
-    // 清理过期请求
     const validRequests = requests.filter(t => now - t < this.config.rateLimit.windowMs)
 
-    // 检查是否超过限制
     if (validRequests.length >= this.config.rateLimit.maxRequests) {
       return false
     }
 
-    // 添加当前请求
     validRequests.push(now)
     this.cache.set(identifier, validRequests)
 

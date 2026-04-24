@@ -45,9 +45,10 @@ class SCPScraper {
 
   constructor(private kv?: KVNamespace, private db?: D1Database) {}
 
-  /**
-   * 爬取指定 SCP 的详细信息
-   */
+  getDatabase(): D1Database | undefined {
+    return this.db
+  }
+
   async scrapeSCP(scpNumber: string, branch: string = 'en'): Promise<ScraperResult> {
     const endTimer = performanceMonitor.startTimer('scrapeSCP')
     const cacheKey = `scp-${branch}-${scpNumber}` // 缓存键包含分部信息
@@ -111,10 +112,12 @@ class SCPScraper {
     }
   }
 
-  /**
-   * 获取 URL 内容（不带HTML验证）
-   */
   private async fetchURLWithoutValidation(url: string): Promise<string> {
+    return this.fetchURL(url, { validate: false })
+  }
+
+  private async fetchURL(url: string, options: { validate?: boolean } = {}): Promise<string> {
+    const { validate = true } = options
     return this.retryStrategy.executeWithRetry(async () => {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
@@ -137,7 +140,16 @@ class SCPScraper {
           throw ScraperError.networkError(`HTTP ${response.status}: ${response.statusText}`, response.status)
         }
 
-        return await response.text()
+        const html = await response.text()
+
+        if (validate) {
+          const validation = this.htmlParser.validateHTML(html)
+          if (!validation.valid) {
+            throw ScraperError.validationError(validation.reason || 'Invalid HTML')
+          }
+        }
+
+        return html
       } catch (error) {
         clearTimeout(timeoutId)
 
@@ -167,97 +179,36 @@ class SCPScraper {
    * 获取 HTML
    */
   private async fetchHTML(scpNumber: string, branch: string = 'en'): Promise<string> {
-    // 根据分部选择 URL
-    const branchUrl = branch === 'cn' 
-      ? 'https://scp-wiki-cn.wikidot.com' 
+    const branchUrl = branch === 'cn'
+      ? 'https://scp-wiki-cn.wikidot.com'
       : 'https://scp-wiki.wikidot.com'
-    
+
     const url = `${branchUrl}/scp-${scpNumber}`
     return this.fetchURL(url)
   }
 
-  /**
-   * 获取 URL 内容（带重试）
-   */
-  private async fetchURL(url: string): Promise<string> {
-    return this.retryStrategy.executeWithRetry(async () => {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), this.config.timeout)
-
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': this.config.userAgent,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-            'Cache-Control': 'no-cache',
-          },
-          signal: controller.signal,
-          redirect: 'follow',
-        })
-
-        clearTimeout(timeoutId)
-
-        if (!response.ok) {
-          throw ScraperError.networkError(`HTTP ${response.status}: ${response.statusText}`, response.status)
-        }
-
-        const html = await response.text()
-
-        // 验证 HTML
-        const validation = this.htmlParser.validateHTML(html)
-        if (!validation.valid) {
-          throw ScraperError.validationError(validation.reason || 'Invalid HTML')
-        }
-
-        return html
-      } catch (error) {
-        clearTimeout(timeoutId)
-
-        if (error instanceof Error && error.name === 'AbortError') {
-          throw ScraperError.timeoutError()
-        }
-
-        throw error
-      }
-    }, this.config.retryAttempts, this.config.retryDelay)
-  }
-
-  /**
-   * 解析 HTML
-   */
   private async parseHTML(html: string, scpNumber: string, branch: string = 'en'): Promise<SCPWikiData> {
     const parseTimer = performanceMonitor.startTimer('parseHTML')
 
     try {
-      // 先消毒 HTML（防止 XSS）
       const sanitizedHTML = this.htmlSanitizer.sanitize(html)
 
-      // 构建 SCP 页面 URL（供 Defuddle 使用）
       const branchUrl = branch === 'cn'
         ? 'https://scp-wiki-cn.wikidot.com'
         : 'https://scp-wiki.wikidot.com'
       const pageUrl = `${branchUrl}/scp-${scpNumber}`
 
-      // 使用 Defuddle 清洗 HTML（移除广告、导航等无关元素，保留原始页面结构）
-      const cleanedHTML = this.cleanHTMLWithDefuddle(sanitizedHTML, pageUrl)
+      let data: SCPWikiData | null = null
 
-      // 根据分支使用不同的解析策略
-      let data: SCPWikiData
-      if (branch === 'en') {
-        const finalHTML = this.htmlCleaner.clean(cleanedHTML)
-        data = await this.parseEnglishPage(finalHTML, scpNumber, branch)
-      } else {
-        const finalHTML = this.htmlCleaner.clean(cleanedHTML)
-        const text = this.htmlParser.extractText(finalHTML)
-        const sections = this.sectionParser.parseSections(text)
-        data = this.buildDataFromSections(sections, scpNumber, branch)
+      try {
+        data = await this.parseWithOriginalFlow(sanitizedHTML, scpNumber, branch)
+      } catch (primaryError) {
+        logger.warn('Original parsing failed, trying Defuddle fallback', { error: (primaryError as Error).message })
+        data = await this.parseWithDefuddleFallback(sanitizedHTML, scpNumber, branch, pageUrl)
       }
 
-      // 使用 Defuddle 提取元数据增强数据
       data = this.enrichWithDefuddleMetadata(data, sanitizedHTML, pageUrl)
 
-      // 验证数据
       this.validateData(data)
 
       parseTimer()
@@ -268,12 +219,18 @@ class SCPScraper {
     }
   }
 
-  /**
-   * 使用 Defuddle 清洗 HTML
-   * 利用 Defuddle 的内容提取能力移除广告、导航栏等无关元素
-   * 将提取的主要内容包装在 #page-content 中，以便下游解析器正常工作
-   */
-  private cleanHTMLWithDefuddle(html: string, url: string): string {
+  private async parseWithOriginalFlow(html: string, scpNumber: string, branch: string): Promise<SCPWikiData> {
+    if (branch === 'en') {
+      return await this.parseEnglishPage(html, scpNumber, branch)
+    } else {
+      const cleanedHTML = this.htmlCleaner.clean(html)
+      const text = this.htmlParser.extractText(cleanedHTML)
+      const sections = this.sectionParser.parseSections(text)
+      return this.buildDataFromSections(sections, scpNumber, branch)
+    }
+  }
+
+  private async parseWithDefuddleFallback(html: string, scpNumber: string, branch: string, url: string): Promise<SCPWikiData> {
     try {
       const { document } = parseHTML(html)
       const defuddle = new Defuddle(document, {
@@ -284,13 +241,19 @@ class SCPScraper {
       const result = defuddle.parse()
 
       if (result.content && result.content.length > 100) {
-        return `<html><body><div id="page-content">${result.content}</div></body></html>`
+        const wrappedHTML = `<html><body><div id="page-content">${result.content}</div></body></html>`
+        if (branch === 'en') {
+          return await this.parseEnglishPage(wrappedHTML, scpNumber, branch)
+        } else {
+          const text = this.htmlParser.extractText(wrappedHTML)
+          const sections = this.sectionParser.parseSections(text)
+          return this.buildDataFromSections(sections, scpNumber, branch)
+        }
       }
 
-      return html
-    } catch (error) {
-      logger.error('Defuddle cleaning failed, using original HTML', error as Error)
-      return html
+      throw new Error('Defuddle extraction produced no usable content')
+    } catch (defuddleError) {
+      throw new Error(`Both original and Defuddle parsing failed: ${(defuddleError as Error).message}`)
     }
   }
 
@@ -692,53 +655,6 @@ class SCPScraper {
     }
   }
 
-  /**
-   * 发送聊天消息到 D1 数据库
-   */
-  async sendChatMessage(userId: string, username: string, content: string): Promise<ChatApiResponse> {
-    if (!this.db) {
-      return { success: false, error: 'Database not available' }
-    }
-
-    try {
-      // 内容长度限制
-      if (content.length > 1000) {
-        return { success: false, error: 'Message too long (max 1000 characters)' }
-      }
-
-      // 插入消息到数据库
-      const result = await this.db.prepare(
-        'INSERT INTO chat_messages (user_id, username, content) VALUES (?, ?, ?)'
-      ).bind(userId, username, content).run()
-
-      if (result.success) {
-        // 获取刚插入的消息
-        const message = await this.db.prepare(
-          'SELECT * FROM chat_messages WHERE id = ?'
-        ).bind(result.meta?.last_row_id).first<ChatMessage>()
-
-        return {
-          success: true,
-          data: message,
-        }
-      } else {
-        return { success: false, error: 'Failed to send message' }
-      }
-    } catch (error) {
-      logger.error('Failed to send chat message', error as Error)
-      return {
-        success: false,
-        error: `Database error: ${(error as Error).message}`
-      }
-    }
-  }
-
-
-
-  /**
-   * 定时任务：广播新消息
-   * 每 10 分钟运行一次，查询未广播的消息并标记
-   */
   async broadcastNewMessages(): Promise<{ success: boolean; count?: number; error?: string }> {
     if (!this.db) {
       return { success: false, error: 'Database not available' }
@@ -1031,7 +947,7 @@ class SCPScraper {
       let query = 'SELECT * FROM chat_messages WHERE 1=1'
       const params: any[] = []
 
-      if (roomId) {
+      if (roomId !== undefined && roomId !== null) {
         query += ' AND room_id = ?'
         params.push(roomId)
       }
@@ -1125,6 +1041,12 @@ class SCPScraper {
 /**
  * Worker 入口点
  */
+function safeParseInt(value: string | null, defaultValue: number): number {
+  if (!value) return defaultValue
+  const parsed = parseInt(value, 10)
+  return Number.isNaN(parsed) ? defaultValue : parsed
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const corsManager = new CORSManager()
@@ -1183,9 +1105,8 @@ export default {
           return corsManager.createErrorResponse('Missing keyword parameter', 400, context)
         }
 
-        const clearanceLevel = url.searchParams.get('clearance_level')
-          ? parseInt(url.searchParams.get('clearance_level')!)
-          : undefined
+        const clearanceLevelParam = url.searchParams.get('clearance_level')
+        const clearanceLevel = clearanceLevelParam ? safeParseInt(clearanceLevelParam, 0) : undefined
 
         logger.info('Searching SCP', { keyword, branch, clearanceLevel, ip })
 
@@ -1225,9 +1146,10 @@ export default {
         }
       } else if (path === '/chat/messages') {
         // 获取聊天消息（支持房间过滤）
-        const limit = parseInt(url.searchParams.get('limit') || '50')
+        const limit = safeParseInt(url.searchParams.get('limit'), 50)
         const after = url.searchParams.get('after') || undefined
-        const roomId = url.searchParams.get('room_id') ? parseInt(url.searchParams.get('room_id')!) : undefined
+        const roomIdParam = url.searchParams.get('room_id')
+        const roomId = roomIdParam ? safeParseInt(roomIdParam, 0) : undefined
 
         const result = await scraper.getChatMessages(limit, after, roomId)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
@@ -1289,7 +1211,7 @@ export default {
             return corsManager.createErrorResponse('Missing required fields', 400, context)
           }
 
-          const result = await feedbackAPI.submitFeedback(scraper['db'] as D1Database, {
+          const result = await feedbackAPI.submitFeedback(scraper.getDatabase()!, {
             user_id, nickname, title, content, category
           })
           return corsManager.createResponse(result, result.success ? 201 : 500, context)
@@ -1299,12 +1221,12 @@ export default {
         }
       } else if (path === '/feedback/list') {
         // 获取反馈列表
-        const limit = parseInt(url.searchParams.get('limit') || '50')
-        const offset = parseInt(url.searchParams.get('offset') || '0')
+        const limit = safeParseInt(url.searchParams.get('limit'), 50)
+        const offset = safeParseInt(url.searchParams.get('offset'), 0)
         const category = url.searchParams.get('category') || undefined
 
         const result = await feedbackAPI.getFeedbackList(
-          scraper['db'] as D1Database, limit, offset, category
+          scraper.getDatabase()!, limit, offset, category
         )
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/feedback/like') {
@@ -1321,7 +1243,7 @@ export default {
             return corsManager.createErrorResponse('Missing feedback id', 400, context)
           }
 
-          const result = await feedbackAPI.likeFeedback(scraper['db'] as D1Database, id)
+          const result = await feedbackAPI.likeFeedback(scraper.getDatabase()!, id)
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
         } catch (error) {
           logger.error('Failed to like feedback', error as Error)
@@ -1329,7 +1251,7 @@ export default {
         }
       } else if (path === '/feedback/categories') {
         // 获取反馈分类统计
-        const result = await feedbackAPI.getFeedbackCategories(scraper['db'] as D1Database)
+        const result = await feedbackAPI.getFeedbackCategories(scraper.getDatabase()!)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/feedback/comment') {
         // 提交反馈评论
@@ -1345,7 +1267,7 @@ export default {
             return corsManager.createErrorResponse('Missing required fields', 400, context)
           }
 
-          const result = await feedbackAPI.submitComment(scraper['db'] as D1Database, {
+          const result = await feedbackAPI.submitComment(scraper.getDatabase()!, {
             feedback_id, user_id, nickname, content
           })
           return corsManager.createResponse(result, result.success ? 201 : 500, context)
@@ -1355,13 +1277,13 @@ export default {
         }
       } else if (path === '/feedback/comments') {
         // 获取反馈评论
-        const feedbackId = parseInt(url.searchParams.get('feedback_id') || '0')
+        const feedbackId = safeParseInt(url.searchParams.get('feedback_id'), 0)
 
         if (!feedbackId) {
           return corsManager.createErrorResponse('Missing feedback_id parameter', 400, context)
         }
 
-        const result = await feedbackAPI.getComments(scraper['db'] as D1Database, feedbackId)
+        const result = await feedbackAPI.getComments(scraper.getDatabase()!, feedbackId)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/feedback/vote') {
         // 投票反馈
@@ -1377,7 +1299,7 @@ export default {
             return corsManager.createErrorResponse('Missing or invalid required fields', 400, context)
           }
 
-          const result = await feedbackAPI.voteFeedback(scraper['db'] as D1Database, {
+          const result = await feedbackAPI.voteFeedback(scraper.getDatabase()!, {
             id, user_id, vote
           })
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
@@ -1387,13 +1309,13 @@ export default {
         }
       } else if (path === '/feedback/list-with-votes') {
         // 获取反馈列表（带用户投票状态）
-        const limit = parseInt(url.searchParams.get('limit') || '50')
-        const offset = parseInt(url.searchParams.get('offset') || '0')
+        const limit = safeParseInt(url.searchParams.get('limit'), 50)
+        const offset = safeParseInt(url.searchParams.get('offset'), 0)
         const category = url.searchParams.get('category') || undefined
         const userId = url.searchParams.get('user_id') || undefined
 
         const result = await feedbackAPI.getFeedbackListWithVotes(
-          scraper['db'] as D1Database, limit, offset, category, userId
+          scraper.getDatabase()!, limit, offset, category, userId
         )
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path === '/api/user/register') {
@@ -1410,7 +1332,7 @@ export default {
             return corsManager.createErrorResponse('Missing userId or nickname', 400, context)
           }
 
-          const result = await userAPI.registerUser(scraper['db'] as D1Database, { userId, nickname })
+          const result = await userAPI.registerUser(scraper.getDatabase()!, { userId, nickname })
           return corsManager.createResponse(result, result.success ? 200 : 500, context)
         } catch (error) {
           logger.error('Failed to register user', error as Error)
@@ -1428,7 +1350,7 @@ export default {
           return corsManager.createErrorResponse('Missing nickname parameter', 400, context)
         }
 
-        const result = await userAPI.checkNicknameAvailability(scraper['db'] as D1Database, nicknameParam, excludeUserId)
+        const result = await userAPI.checkNicknameAvailability(scraper.getDatabase()!, nicknameParam, excludeUserId)
         return corsManager.createResponse(result, result.success ? 200 : 500, context)
       } else if (path.startsWith('/api/user/') && path !== '/api/user/register' && path !== '/api/user/check-nickname') {
         // 获取用户信息（根据 UUID）
@@ -1441,7 +1363,7 @@ export default {
           return corsManager.createErrorResponse('Missing userId', 400, context)
         }
 
-        const result = await userAPI.getUserByUserId(scraper['db'] as D1Database, userId)
+        const result = await userAPI.getUserByUserId(scraper.getDatabase()!, userId)
         return corsManager.createResponse(result, result.success ? 200 : 404, context)
       } else if (path === '/chat/broadcast') {
         // 定时任务：广播新消息
@@ -1453,11 +1375,10 @@ export default {
         const result = await scraper.getRawHTML(scpNumber)
         return corsManager.createResponse(result, 200, context)
       } else if (path === '/list') {
-        const limit = parseInt(url.searchParams.get('limit') || '100')
-        const offset = parseInt(url.searchParams.get('offset') || '0')
-        const clearanceLevel = url.searchParams.get('clearance_level')
-          ? parseInt(url.searchParams.get('clearance_level')!)
-          : undefined
+        const limit = safeParseInt(url.searchParams.get('limit'), 100)
+        const offset = safeParseInt(url.searchParams.get('offset'), 0)
+        const clearanceLevelParam = url.searchParams.get('clearance_level')
+        const clearanceLevel = clearanceLevelParam ? safeParseInt(clearanceLevelParam, 0) : undefined
 
         logger.info('Listing SCPs', { limit, offset, clearanceLevel, ip })
         const result = await scraper.listSCPs(limit, offset, clearanceLevel)
@@ -1492,7 +1413,7 @@ export default {
         } else if (request.method === 'GET') {
           // 获取最近的性能指标
           try {
-            const limit = parseInt(url.searchParams.get('limit') || '10')
+            const limit = safeParseInt(url.searchParams.get('limit'), 10)
             const metrics: any[] = []
             
             // 列出所有性能指标键

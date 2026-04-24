@@ -2,45 +2,41 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getResponsiveFontSize } from '../utils/terminal'
 
-/**
- * Terminal state management
- */
 export const useTerminalStore = defineStore('terminal', () => {
   const isReady = ref(false)
   const fontSize = ref(getResponsiveFontSize())
   const isMobile = ref(false)
+  let resizeHandler: (() => void) | null = null
 
-  /**
-   * Initialize terminal
-   */
   function initialize() {
     updateFontSize()
     checkMobile()
     isReady.value = true
   }
 
-  /**
-   * Update font size based on screen width
-   */
   function updateFontSize() {
     fontSize.value = getResponsiveFontSize()
   }
 
-  /**
-   * Check if device is mobile
-   */
   function checkMobile() {
     isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
   }
 
-  /**
-   * Setup resize listener
-   */
   function setupResizeListener() {
-    window.addEventListener('resize', () => {
+    if (resizeHandler) return
+
+    resizeHandler = () => {
       updateFontSize()
       checkMobile()
-    })
+    }
+    window.addEventListener('resize', resizeHandler)
+  }
+
+  function cleanupResizeListener() {
+    if (resizeHandler) {
+      window.removeEventListener('resize', resizeHandler)
+      resizeHandler = null
+    }
   }
 
   return {
@@ -51,5 +47,6 @@ export const useTerminalStore = defineStore('terminal', () => {
     updateFontSize,
     checkMobile,
     setupResizeListener,
+    cleanupResizeListener,
   }
 })

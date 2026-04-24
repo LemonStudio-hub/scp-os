@@ -85,7 +85,7 @@ describe('WindowManager Store', () => {
 
   it('should maximize and un-maximize a window', () => {
     const store = useWindowManagerStore()
-    store.openWindow(createWindowConfig())
+    store.openWindow(createWindowConfig({ isFullscreen: false }))
 
     store.maximizeWindow('test-window')
     const win = store.openWindows.find(w => w.config.id === 'test-window')

@@ -63,19 +63,16 @@ export class PerformanceMonitor {
       return null
     }
 
-    return Math.min(...values)
+    return values.reduce((min, val) => val < min ? val : min, values[0])
   }
 
-  /**
-   * 获取操作的最大时间
-   */
   getMaxTime(operation: string): number | null {
     const values = this.metrics.get(operation)
     if (!values || values.length === 0) {
       return null
     }
 
-    return Math.max(...values)
+    return values.reduce((max, val) => val > max ? val : max, values[0])
   }
 
   /**

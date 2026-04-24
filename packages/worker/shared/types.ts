@@ -131,6 +131,7 @@ export interface ChatMessage {
   user_id: string
   username: string
   content: string
+  room_id: number
   created_at: string
   is_broadcast: number
   broadcast_count: number
