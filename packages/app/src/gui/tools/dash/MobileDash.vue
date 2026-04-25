@@ -1,526 +1,394 @@
 <template>
-  <MobileWindow
-    :visible="visible"
-    :title="t('app.dash')"
-    :show-back="true"
-    @close="$emit('close')"
-  >
-    <div class="mobile-dash">
-      <!-- Dashboard Content -->
-      <div class="mobile-dash__content">
-        
-        <!-- Header with Status -->
-        <div class="mobile-dash__header">
-          <div class="mobile-dash__header-left">
-            <div class="mobile-dash__status-dot" :class="statusDotClass" />
-            <span class="mobile-dash__status-text">{{ statusText }}</span>
-          </div>
-          <div class="mobile-dash__header-right">
-            <span class="mobile-dash__time">{{ currentTime }}</span>
-            <button class="mobile-dash__refresh-btn" :class="{ 'is-refreshing': isRefreshing }" @click="refreshMetrics">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3.5 9a5.5 5.5 0 0110.37-3.5M14.5 9a5.5 5.5 0 01-10.37 3.5"/>
-                <path d="M16 5v3h-3M2 13v-3h3"/>
-              </svg>
-            </button>
-          </div>
-        </div>
+  <MobileWindow title="Dashboard" @close="onClose">
+    <div class="mdash">
+      <div class="mdash__bg">
+        <div class="mdash__bg-orb mdash__bg-orb--1" />
+        <div class="mdash__bg-orb mdash__bg-orb--2" />
+      </div>
 
-        <!-- Performance Score Ring -->
-        <div class="mobile-dash__score-section">
-          <div class="mobile-dash__score-ring">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--gui-bg-surface-hover, #3A3A3C)" stroke-width="8"/>
-              <circle 
-                cx="60" 
-                cy="60" 
-                r="52" 
-                fill="none" 
-                :stroke="scoreColor"
-                stroke-width="8"
-                stroke-linecap="round"
-                :stroke-dasharray="327"
-                :stroke-dashoffset="327 - (327 * performanceScore / 100)"
+      <div class="mdash__content">
+        <header class="mdash__header">
+          <div class="mdash__status">
+            <span class="mdash__status-dot" :class="`mdash__status-dot--${statusLevel}`" />
+            <span class="mdash__status-text">{{ statusLabel }}</span>
+          </div>
+          <button class="mdash__refresh-btn" :class="{ 'mdash__refresh-btn--spin': isRefreshing }" @click="refreshMetrics">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 8a5 5 0 019.33-2.5M13 8a5 5 0 01-9.33 2.5"/>
+              <path d="M15 4v3h-3M1 12v-3h3"/>
+            </svg>
+          </button>
+        </header>
+
+        <section class="mdash__hero">
+          <div class="mdash__score-wrap">
+            <svg class="mdash__score-svg" viewBox="0 0 120 120">
+              <defs>
+                <filter id="mScoreGlow">
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8" />
+              <circle
+                cx="60" cy="60" r="50" fill="none"
+                :stroke="scoreColor" stroke-width="8" stroke-linecap="round"
+                :stroke-dasharray="314.2"
+                :stroke-dashoffset="314.2 - (314.2 * performanceScore / 100)"
                 transform="rotate(-90 60 60)"
-                class="mobile-dash__score-ring-progress"
+                class="mdash__score-arc"
+                filter="url(#mScoreGlow)"
               />
             </svg>
-            <div class="mobile-dash__score-center">
-              <div class="mobile-dash__score-value" :style="{ color: scoreColor }">{{ performanceScore }}</div>
-              <div class="mobile-dash__score-label">{{ t('dash.score') }}</div>
+            <div class="mdash__score-inner">
+              <span class="mdash__score-num" :style="{ color: scoreColor }">{{ performanceScore }}</span>
+              <span class="mdash__score-lbl">SCORE</span>
             </div>
           </div>
-          <div class="mobile-dash__score-text">{{ scoreText }}</div>
-        </div>
+        </section>
 
-        <!-- Summary Cards -->
-        <div class="mobile-dash__cards">
-          <!-- Memory Card -->
-          <div class="mobile-dash__card mobile-dash__card--memory">
-            <div class="mobile-dash__card-icon">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="7" width="16" height="10" rx="2"/>
-                <path d="M7 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                <line x1="6" y1="11" x2="6" y2="13"/>
-                <line x1="10" y1="11" x2="10" y2="13"/>
-                <line x1="14" y1="11" x2="14" y2="13"/>
+        <section class="mdash__rings">
+          <div class="mdash__ring-item">
+            <div class="mdash__ring" :style="{ '--ring-pct': memoryUsage.percent, '--ring-color': memoryColor }" />
+            <div class="mdash__ring-info">
+              <span class="mdash__ring-val">{{ memoryUsage.percent }}%</span>
+              <span class="mdash__ring-lbl">Memory</span>
+            </div>
+          </div>
+          <div class="mdash__ring-item">
+            <div class="mdash__ring" :style="{ '--ring-pct': cpuUsage, '--ring-color': cpuColor }" />
+            <div class="mdash__ring-info">
+              <span class="mdash__ring-val">{{ cpuUsage }}%</span>
+              <span class="mdash__ring-lbl">CPU</span>
+            </div>
+          </div>
+          <div class="mdash__ring-item">
+            <div class="mdash__ring" :style="{ '--ring-pct': Math.min(100, (fps / 60) * 100), '--ring-color': fps >= 50 ? '#34C759' : fps >= 30 ? '#FF9500' : '#FF3B30' }" />
+            <div class="mdash__ring-info">
+              <span class="mdash__ring-val">{{ fps }}</span>
+              <span class="mdash__ring-lbl">FPS</span>
+            </div>
+          </div>
+          <div class="mdash__ring-item">
+            <div class="mdash__ring" :style="{ '--ring-pct': Math.min(100, (latency / 200) * 100), '--ring-color': latencyColor }" />
+            <div class="mdash__ring-info">
+              <span class="mdash__ring-val">{{ latency }}ms</span>
+              <span class="mdash__ring-lbl">Ping</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="mdash__chart-section">
+          <div class="mdash__chart-card">
+            <div class="mdash__chart-head">
+              <span class="mdash__chart-dot" :style="{ background: memoryColor }" />
+              <span>Memory</span>
+              <span class="mdash__chart-badge">{{ memoryUsage.used }}/{{ memoryUsage.limit }}MB</span>
+            </div>
+            <div class="mdash__chart-body">
+              <svg :viewBox="`0 0 ${chartW} ${chartH}`" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="mMemGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" :stop-color="memoryColor" stop-opacity="0.3" />
+                    <stop offset="100%" :stop-color="memoryColor" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <path :d="memAreaPath" fill="url(#mMemGrad)" />
+                <path :d="memLinePath" fill="none" :stroke="memoryColor" stroke-width="2" stroke-linejoin="round" />
               </svg>
             </div>
-            <div class="mobile-dash__card-content">
-              <div class="mobile-dash__card-label">{{ t('dash.memory') }}</div>
-              <div class="mobile-dash__card-value">{{ memoryUsage.used }} MB</div>
-              <div class="mobile-dash__card-bar">
-                <div
-                  class="mobile-dash__card-bar-fill"
-                  :style="{ width: `${memoryUsage.percent}%`, background: memoryBarGradient }"
-                />
-              </div>
-              <div class="mobile-dash__card-footer">
-                <span>{{ memoryUsage.percent }}%</span>
-                <span>/ {{ memoryUsage.limit }} MB</span>
-              </div>
-            </div>
           </div>
-
-          <!-- CPU Card -->
-          <div class="mobile-dash__card mobile-dash__card--cpu">
-            <div class="mobile-dash__card-icon">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="5" y="5" width="12" height="12" rx="2"/>
-                <line x1="9" y1="1" x2="9" y2="5"/>
-                <line x1="13" y1="1" x2="13" y2="5"/>
-                <line x1="9" y1="17" x2="9" y2="21"/>
-                <line x1="13" y1="17" x2="13" y2="21"/>
-                <line x1="1" y1="9" x2="5" y2="9"/>
-                <line x1="1" y1="13" x2="5" y2="13"/>
-                <line x1="17" y1="9" x2="21" y2="9"/>
-                <line x1="17" y1="13" x2="21" y2="13"/>
+          <div class="mdash__chart-card">
+            <div class="mdash__chart-head">
+              <span class="mdash__chart-dot" :style="{ background: cpuColor }" />
+              <span>CPU</span>
+              <span class="mdash__chart-badge">{{ cpuCores }} cores</span>
+            </div>
+            <div class="mdash__chart-body">
+              <svg :viewBox="`0 0 ${chartW} ${chartH}`" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="mCpuGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" :stop-color="cpuColor" stop-opacity="0.3" />
+                    <stop offset="100%" :stop-color="cpuColor" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <path :d="cpuAreaPath" fill="url(#mCpuGrad)" />
+                <path :d="cpuLinePath" fill="none" :stroke="cpuColor" stroke-width="2" stroke-linejoin="round" />
               </svg>
             </div>
-            <div class="mobile-dash__card-content">
-              <div class="mobile-dash__card-label">{{ t('dash.cpu') }}</div>
-              <div class="mobile-dash__card-value">{{ cpuUsage }}%</div>
-              <div class="mobile-dash__card-bar">
-                <div
-                  class="mobile-dash__card-bar-fill"
-                  :style="{ width: `${cpuUsage}%`, background: cpuBarGradient }"
-                />
-              </div>
-              <div class="mobile-dash__card-footer">
-                <span>{{ cpuCores }} {{ t('dash.cores') }}</span>
-                <span>{{ cpuThreads }} {{ t('dash.threads') }}</span>
-              </div>
-            </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Detailed Metrics -->
-        <div class="mobile-dash__section">
-          <div class="mobile-dash__section-header">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 10v4a1 1 0 01-1 1H3a1 1 0 01-1-1v-4M6 4V2a1 1 0 011-1h2a1 1 0 011 1v2"/>
-              <circle cx="8" cy="9" r="2"/>
+        <section class="mdash__metrics">
+          <div v-for="(m, i) in metricItems" :key="m.label" class="mdash__metric" :style="{ '--i': i }">
+            <span class="mdash__metric-label">{{ m.label }}</span>
+            <span class="mdash__metric-value">{{ m.value }}</span>
+          </div>
+        </section>
+
+        <section class="mdash__network">
+          <div class="mdash__network-head">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 6c2-3 10-3 14 0"/><path d="M3 9c1.5-2 7.5-2 10 0"/><circle cx="8" cy="14" r="1" fill="currentColor"/>
             </svg>
-            <span>{{ t('dash.systemMetrics') }}</span>
+            <span>Network</span>
+            <span class="mdash__network-badge" :class="networkStatusClass">{{ networkStatus }}</span>
           </div>
-          <div class="mobile-dash__metrics-grid">
-            <div class="mobile-dash__metric-item">
-              <div class="mobile-dash__metric-icon">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="9" cy="9" r="7"/>
-                  <path d="M9 5v4l3 3"/>
-                </svg>
-              </div>
-              <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">{{ t('dash.jsHeap') }}</div>
-                <div class="mobile-dash__metric-value">{{ jsHeap }}</div>
-              </div>
+          <div class="mdash__network-grid">
+            <div class="mdash__network-item">
+              <span class="mdash__network-key">Type</span>
+              <span class="mdash__network-val">{{ connectionType }}</span>
             </div>
-            <div class="mobile-dash__metric-item">
-              <div class="mobile-dash__metric-icon">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="2" y="2" width="6" height="6" rx="1"/>
-                  <rect x="10" y="2" width="6" height="6" rx="1"/>
-                  <rect x="2" y="10" width="6" height="6" rx="1"/>
-                  <rect x="10" y="10" width="6" height="6" rx="1"/>
-                </svg>
-              </div>
-              <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">{{ t('dash.domNodes') }}</div>
-                <div class="mobile-dash__metric-value">{{ domNodes }}</div>
-              </div>
+            <div class="mdash__network-item">
+              <span class="mdash__network-key">Latency</span>
+              <span class="mdash__network-val">{{ latency }}ms</span>
             </div>
-            <div class="mobile-dash__metric-item">
-              <div class="mobile-dash__metric-icon">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="9" cy="9" r="7"/>
-                  <path d="M9 5v4"/>
-                  <circle cx="9" cy="12" r="0.5" fill="currentColor"/>
-                </svg>
-              </div>
-              <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">{{ t('dash.resources') }}</div>
-                <div class="mobile-dash__metric-value">{{ resources }}</div>
-              </div>
+            <div class="mdash__network-item">
+              <span class="mdash__network-key">Page Load</span>
+              <span class="mdash__network-val">{{ pageLoadTime }}ms</span>
             </div>
-            <div class="mobile-dash__metric-item">
-              <div class="mobile-dash__metric-icon">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M2 14l4-4 3 3 7-7"/>
-                  <path d="M12 6h4v4"/>
-                </svg>
-              </div>
-              <div class="mobile-dash__metric-content">
-                <div class="mobile-dash__metric-label">{{ t('dash.eventListeners') }}</div>
-                <div class="mobile-dash__metric-value">{{ jsListeners }}</div>
-              </div>
+            <div class="mdash__network-item">
+              <span class="mdash__network-key">Storage</span>
+              <span class="mdash__network-val">{{ storageFormatted }}</span>
             </div>
           </div>
-        </div>
-
-        <!-- Network Status -->
-        <div class="mobile-dash__section">
-          <div class="mobile-dash__section-header">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 6c2-3 10-3 14 0"/>
-              <path d="M3 9c1.5-2 7.5-2 10 0"/>
-              <path d="M5.5 12c1-1 3.5-1 5 0"/>
-              <circle cx="8" cy="15" r="1" fill="currentColor"/>
+          <button
+            class="mdash__speed-btn"
+            :class="{ 'mdash__speed-btn--testing': isSpeedTesting }"
+            :disabled="isSpeedTesting"
+            @click="runSpeedTest"
+          >
+            <div v-if="isSpeedTesting" class="mdash__speed-spinner" />
+            <svg v-else width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 6c2-3 10-3 14 0"/><path d="M3 9c1.5-2 7.5-2 10 0"/><circle cx="8" cy="14" r="1" fill="currentColor"/>
             </svg>
-            <span>{{ t('dash.network') }}</span>
+            <span>{{ isSpeedTesting ? 'Testing...' : 'Speed Test' }}</span>
+          </button>
+          <div v-if="downloadSpeed > 0 || uploadSpeed > 0" class="mdash__speed-results">
+            <div class="mdash__speed-item">
+              <span class="mdash__speed-item-lbl">DL</span>
+              <span class="mdash__speed-item-val">{{ downloadSpeed }}<small>Mbps</small></span>
+            </div>
+            <div class="mdash__speed-item">
+              <span class="mdash__speed-item-lbl">UL</span>
+              <span class="mdash__speed-item-val">{{ uploadSpeed }}<small>Mbps</small></span>
+            </div>
+            <div class="mdash__speed-item">
+              <span class="mdash__speed-item-lbl">Ping</span>
+              <span class="mdash__speed-item-val">{{ ping }}<small>ms</small></span>
+            </div>
           </div>
-          <div class="mobile-dash__network-card">
-            <div class="mobile-dash__network-row">
-              <span class="mobile-dash__network-label">{{ t('dash.connection') }}</span>
-              <span class="mobile-dash__network-value" :class="networkStatusClass">{{ networkStatus }}</span>
-            </div>
-            <div class="mobile-dash__network-row">
-              <span class="mobile-dash__network-label">{{ t('dash.latency') }}</span>
-              <span class="mobile-dash__network-value">{{ latency }}ms</span>
-            </div>
-            <div class="mobile-dash__network-row">
-              <span class="mobile-dash__network-label">{{ t('dash.type') }}</span>
-              <span class="mobile-dash__network-value">{{ connectionType }}</span>
-            </div>
-          </div>
-        </div>
+        </section>
 
-        <!-- Last Updated -->
-        <div class="mobile-dash__footer">
-          <span class="mobile-dash__footer-text">{{ t('dash.lastUpdated') }}: {{ lastUpdated }}</span>
-          <span class="mobile-dash__footer-dot" :class="{ 'mobile-dash__footer-dot--live': isAutoRefresh }" />
-          <span class="mobile-dash__footer-text">{{ isAutoRefresh ? t('dash.autoRefreshOn') : t('dash.autoRefreshOff') }}</span>
-        </div>
+        <footer class="mdash__footer">
+          <span class="mdash__footer-pulse" :class="{ 'mdash__footer-pulse--live': isAutoRefresh }" />
+          <span class="mdash__footer-text">Updated {{ lastUpdated }}</span>
+        </footer>
       </div>
     </div>
   </MobileWindow>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
-import { useI18n } from '../../composables/useI18n'
+import { useDashboardData } from '../../composables/useDashboardData'
+import Speedtest from '@cloudflare/speedtest'
 
-interface Props {
-  visible: boolean
+const {
+  memoryUsage, cpuUsage, cpuCores, jsHeap, domNodes, resources,
+  jsListeners, latency, networkStatus, connectionType, lastUpdated,
+  isRefreshing, isAutoRefresh, fps, pageLoadTime, storageUsed,
+  memoryHistory, cpuHistory,
+  performanceScore, statusLevel, scoreColor, memoryColor, cpuColor, latencyColor,
+  networkStatusClass, refreshMetrics, generateSvgPath, generateSvgAreaPath, formatBytes,
+} = useDashboardData(4000)
+
+const isSpeedTesting = ref(false)
+const downloadSpeed = ref(0)
+const uploadSpeed = ref(0)
+const ping = ref(0)
+
+const statusLabel = computed(() => {
+  if (statusLevel.value === 'good') return 'Nominal'
+  if (statusLevel.value === 'warn') return 'Attention'
+  return 'Degraded'
+})
+
+const chartW = 300
+const chartH = 70
+
+const memLinePath = computed(() => generateSvgPath(memoryHistory.value, chartW, chartH))
+const memAreaPath = computed(() => generateSvgAreaPath(memoryHistory.value, chartW, chartH))
+const cpuLinePath = computed(() => generateSvgPath(cpuHistory.value, chartW, chartH))
+const cpuAreaPath = computed(() => generateSvgAreaPath(cpuHistory.value, chartW, chartH))
+
+const storageFormatted = computed(() => formatBytes(storageUsed.value))
+
+const metricItems = computed(() => [
+  { label: 'JS Heap', value: jsHeap.value },
+  { label: 'DOM Nodes', value: domNodes.value },
+  { label: 'Resources', value: resources.value },
+  { label: 'Listeners', value: jsListeners.value },
+])
+
+function onClose(): void {}
+
+async function runSpeedTest() {
+  if (isSpeedTesting.value) return
+  isSpeedTesting.value = true
+  try {
+    const test = new Speedtest({ autoStart: true })
+    test.onFinish = (results) => {
+      const summary = results.getSummary()
+      downloadSpeed.value = Math.round(summary.download || 0)
+      uploadSpeed.value = Math.round(summary.upload || 0)
+      ping.value = Math.round(summary.latency || 0)
+      latency.value = ping.value
+      isSpeedTesting.value = false
+    }
+    test.onError = () => {
+      isSpeedTesting.value = false
+    }
+  } catch {
+    isSpeedTesting.value = false
+  }
 }
-
-defineProps<Props>()
-defineEmits<{
-  close: []
-}>()
-
-const { t } = useI18n()
-
-// State
-const memoryUsage = ref({ used: 0, limit: 0, percent: 0 })
-const performanceScore = ref(0)
-const cpuUsage = ref(0)
-const cpuCores = ref(navigator.hardwareConcurrency || 4)
-const cpuThreads = ref((navigator.hardwareConcurrency || 4) * 2)
-const jsHeap = ref('—')
-const domNodes = ref('—')
-const resources = ref('—')
-const jsListeners = ref('—')
-const latency = ref(0)
-const networkStatus = ref('—')
-const connectionType = ref('—')
-const currentTime = ref('')
-const lastUpdated = ref('—')
-const isRefreshing = ref(false)
-const isAutoRefresh = ref(true)
-
-// Status
-const statusDotClass = computed(() => {
-  if (performanceScore.value >= 80) return 'mobile-dash__status-dot--good'
-  if (performanceScore.value >= 50) return 'mobile-dash__status-dot--warn'
-  return 'mobile-dash__status-dot--bad'
-})
-
-const statusText = computed(() => {
-  if (performanceScore.value >= 80) return t('dash.allHealthy')
-  if (performanceScore.value >= 50) return t('dash.attentionNeeded')
-  return t('dash.degraded')
-})
-
-const scoreColor = computed(() => {
-  const s = performanceScore.value
-  if (s >= 80) return '#34C759'
-  if (s >= 50) return '#FF9500'
-  return '#FF3B30'
-})
-
-const scoreText = computed(() => {
-  const s = performanceScore.value
-  if (s >= 80) return t('dash.optimal')
-  if (s >= 50) return t('dash.needsAttention')
-  return t('dash.critical')
-})
-
-const memoryBarGradient = computed(() => {
-  const p = memoryUsage.value.percent
-  if (p < 50) return 'linear-gradient(90deg, #34C759, #30D158)'
-  if (p < 80) return 'linear-gradient(90deg, #FF9500, #FF9F0A)'
-  return 'linear-gradient(90deg, #FF3B30, #FF453A)'
-})
-
-const cpuBarGradient = computed(() => {
-  const p = cpuUsage.value
-  if (p < 50) return 'linear-gradient(90deg, #5AC8FA, #64D2FF)'
-  if (p < 80) return 'linear-gradient(90deg, #FF9500, #FF9F0A)'
-  return 'linear-gradient(90deg, #FF3B30, #FF453A)'
-})
-
-const networkStatusClass = computed(() => {
-  if (networkStatus.value === t('dash.online')) return 'mobile-dash__network-status--online'
-  if (networkStatus.value === t('dash.slow')) return 'mobile-dash__network-status--slow'
-  return 'mobile-dash__network-status--offline'
-})
-
-function updateTime() {
-  const now = new Date()
-  currentTime.value = now.toLocaleTimeString(undefined, {
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  })
-}
-
-async function refreshMetrics() {
-  isRefreshing.value = true
-  
-  // Simulate refresh delay
-  await new Promise(r => setTimeout(r, 300))
-
-  const mem = (window.performance as any)?.memory
-
-  if (mem) {
-    const usedMB = Math.round(mem.usedJSHeapSize / 1024 / 1024)
-    const limitMB = Math.round(mem.jsHeapSizeLimit / 1024 / 1024)
-    const pct = Math.round((usedMB / limitMB) * 100)
-
-    memoryUsage.value = { used: usedMB, limit: limitMB, percent: pct }
-    jsHeap.value = `${usedMB} / ${limitMB} MB`
-  } else {
-    memoryUsage.value = { used: 0, limit: 0, percent: 0 }
-    jsHeap.value = t('common.n/a')
-  }
-
-  // DOM metrics
-  const allNodes = document.querySelectorAll('*')
-  domNodes.value = allNodes.length.toString()
-
-  // Resources
-  const perfEntries = performance.getEntriesByType('resource')
-  resources.value = perfEntries.length.toString()
-
-  // CPU estimation
-  const start = performance.now()
-  let iterations = 0
-  while (performance.now() - start < 50) {
-    iterations++
-  }
-  cpuUsage.value = Math.min(100, Math.round((iterations / 1000) * 100))
-
-  // Latency estimation
-  latency.value = Math.floor(Math.random() * 30 + 5)
-
-  // Network status
-  networkStatus.value = navigator.onLine ? (latency.value > 100 ? t('dash.slow') : t('dash.online')) : t('dash.offline')
-  const conn = (navigator as any).connection
-  connectionType.value = conn?.effectiveType?.toUpperCase() || t('dash.unknown')
-
-  // Calculate performance score
-  let score = 100
-  if (memoryUsage.value.percent > 70) score -= 15
-  if (memoryUsage.value.percent > 90) score -= 20
-  if (cpuUsage.value > 70) score -= 15
-  if (parseInt(domNodes.value) > 2000) score -= 10
-  if (parseInt(domNodes.value) > 4000) score -= 15
-  if (perfEntries.length > 100) score -= 5
-  if (latency.value > 100) score -= 10
-
-  performanceScore.value = Math.max(0, Math.min(100, score))
-
-  // JS event listeners approximation
-  jsListeners.value = '~' + Math.floor(parseInt(domNodes.value) * 0.3)
-
-  // Update timestamps
-  const now = new Date()
-  lastUpdated.value = now.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  })
-
-  isRefreshing.value = false
-}
-
-let refreshInterval: number | null = null
-let timeInterval: number | null = null
-
-onMounted(() => {
-  updateTime()
-  refreshMetrics()
-  timeInterval = window.setInterval(updateTime, 1000)
-  refreshInterval = window.setInterval(refreshMetrics, 10000)
-})
-
-onUnmounted(() => {
-  if (refreshInterval !== null) {
-    clearInterval(refreshInterval)
-    refreshInterval = null
-  }
-  if (timeInterval !== null) {
-    clearInterval(timeInterval)
-    timeInterval = null
-  }
-})
 </script>
 
 <style scoped>
-/* ── Layout ─────────────────────────────────────────────────────────── */
-.mobile-dash {
+.mdash {
+  position: relative;
+  min-height: 100%;
+  background: #08080C;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  color: #fff;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mdash__bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.mdash__bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.1;
+  animation: mOrbFloat 10s ease-in-out infinite alternate;
+}
+
+.mdash__bg-orb--1 {
+  width: 200px;
+  height: 200px;
+  background: var(--gui-accent, #007AFF);
+  top: -60px;
+  right: -40px;
+}
+
+.mdash__bg-orb--2 {
+  width: 160px;
+  height: 160px;
+  background: #5856D6;
+  bottom: -40px;
+  left: -30px;
+  animation-delay: -5s;
+}
+
+@keyframes mOrbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(10px, 20px) scale(1.08); }
+}
+
+.mdash__content {
+  position: relative;
+  z-index: 1;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  background: var(--gui-bg-base, #0A0A0A);
+  gap: 14px;
 }
 
-.mobile-dash__content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.mobile-dash__content::-webkit-scrollbar {
-  display: none;
-}
-
-/* ── Header ─────────────────────────────────────────────────────────── */
-.mobile-dash__header {
+.mdash__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
 }
 
-.mobile-dash__header-left {
+.mdash__status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.mobile-dash__status-dot {
-  width: 8px;
-  height: 8px;
+.mdash__status-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--gui-text-tertiary, #636366);
+  transition: all 0.3s ease;
 }
 
-.mobile-dash__status-dot--good {
-  background: #34C759;
-  box-shadow: 0 0 8px rgba(52, 199, 89, 0.4);
+.mdash__status-dot--good { background: #34C759; box-shadow: 0 0 8px rgba(52,199,89,0.5); }
+.mdash__status-dot--warn { background: #FF9500; box-shadow: 0 0 8px rgba(255,149,0,0.5); }
+.mdash__status-dot--bad { background: #FF3B30; box-shadow: 0 0 8px rgba(255,59,48,0.5); }
+
+.mdash__status-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
 }
 
-.mobile-dash__status-dot--warn {
-  background: #FF9500;
-  box-shadow: 0 0 8px rgba(255, 149, 0, 0.4);
-}
-
-.mobile-dash__status-dot--bad {
-  background: #FF3B30;
-  box-shadow: 0 0 8px rgba(255, 59, 48, 0.4);
-}
-
-.mobile-dash__status-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gui-text-primary, #FFFFFF);
-}
-
-.mobile-dash__header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.mobile-dash__time {
-  font-size: 13px;
-  font-family: 'SF Mono', 'JetBrains Mono', monospace;
-  color: var(--gui-text-secondary, #8E8E93);
-}
-
-.mobile-dash__refresh-btn {
+.mdash__refresh-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
   cursor: pointer;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.mobile-dash__refresh-btn:active {
-  transform: scale(0.92);
-}
+.mdash__refresh-btn:active { background: rgba(255,255,255,0.12); transform: scale(0.92); }
+.mdash__refresh-btn--spin { animation: mSpin 0.8s linear infinite; }
+@keyframes mSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-.mobile-dash__refresh-btn.is-refreshing {
-  animation: dash-spin 1s linear infinite;
-}
-
-@keyframes dash-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* ── Score Section ──────────────────────────────────────────────────── */
-.mobile-dash__score-section {
+.mdash__hero {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  animation: mFadeIn 0.4s ease both;
 }
 
-.mobile-dash__score-ring {
+.mdash__score-wrap {
   position: relative;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
 }
 
-.mobile-dash__score-ring-progress {
-  transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+.mdash__score-svg {
+  width: 100%;
+  height: 100%;
 }
 
-.mobile-dash__score-center {
+.mdash__score-arc {
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
+}
+
+.mdash__score-inner {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -528,251 +396,329 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.mobile-dash__score-value {
-  font-size: 32px;
-  font-weight: 700;
+.mdash__score-num {
+  font-size: 26px;
+  font-weight: 800;
   line-height: 1;
 }
 
-.mobile-dash__score-label {
+.mdash__score-lbl {
+  display: block;
+  font-size: 8px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.15em;
+  margin-top: 2px;
+}
+
+.mdash__rings {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.mdash__ring-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  animation: mFadeIn 0.4s ease both;
+  transition: all 0.2s ease;
+}
+
+.mdash__ring-item:active {
+  transform: scale(0.96);
+  background: rgba(255,255,255,0.06);
+}
+
+.mdash__ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--ring-color) calc(var(--ring-pct) * 3.6deg),
+    rgba(255,255,255,0.06) 0deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+}
+
+.mdash__ring::after {
+  content: '';
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #0D0D12;
+}
+
+.mdash__ring-info {
+  text-align: center;
+}
+
+.mdash__ring-val {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  color: #fff;
+}
+
+.mdash__ring-lbl {
+  display: block;
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 1px;
+}
+
+.mdash__chart-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mdash__chart-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 12px;
+  backdrop-filter: blur(10px);
+  animation: mFadeIn 0.4s ease both;
+}
+
+.mdash__chart-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
-  color: var(--gui-text-tertiary, #636366);
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 8px;
+}
+
+.mdash__chart-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mdash__chart-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.25);
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+}
+
+.mdash__chart-body {
+  width: 100%;
+  height: 60px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mdash__chart-body svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mdash__metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.mdash__metric {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  animation: mFadeIn 0.4s ease both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+.mdash__metric-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+}
+
+.mdash__metric-value {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  color: rgba(255,255,255,0.9);
+}
+
+.mdash__network {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 14px;
+  backdrop-filter: blur(10px);
+}
+
+.mdash__network-head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 10px;
+}
+
+.mdash__network-badge {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.mobile-dash__score-text {
-  font-size: 13px;
-  color: var(--gui-text-secondary, #8E8E93);
-  margin-top: 8px;
-}
+.status-online { color: #34C759; }
+.status-slow { color: #FF9500; }
+.status-offline { color: #FF3B30; }
 
-/* ── Cards ──────────────────────────────────────────────────────────── */
-.mobile-dash__cards {
+.mdash__network-badge.status-online { background: rgba(52,199,89,0.12); color: #34C759; }
+.mdash__network-badge.status-slow { background: rgba(255,149,0,0.12); color: #FF9500; }
+.mdash__network-badge.status-offline { background: rgba(255,59,48,0.12); color: #FF3B30; }
+
+.mdash__network-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.mobile-dash__card {
-  background: var(--gui-bg-surface, #2C2C2E);
-  border-radius: 14px;
-  padding: 14px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  animation: dash-fade-in 0.3s ease;
-}
-
-.mobile-dash__card-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #FFFFFF;
-}
-
-.mobile-dash__card--memory .mobile-dash__card-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.mobile-dash__card--cpu .mobile-dash__card-icon {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.mobile-dash__card-content {
-  flex: 1;
-}
-
-.mobile-dash__card-label {
-  font-size: 11px;
-  color: var(--gui-text-secondary, #8E8E93);
-  margin-bottom: 4px;
-}
-
-.mobile-dash__card-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--gui-text-primary, #FFFFFF);
-  margin-bottom: 8px;
-}
-
-.mobile-dash__card-bar {
-  height: 4px;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.mobile-dash__card-bar-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.4s ease, background 0.3s ease;
-}
-
-.mobile-dash__card-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--gui-text-tertiary, #636366);
-}
-
-/* ── Section ────────────────────────────────────────────────────────── */
-.mobile-dash__section {
-  margin-bottom: 20px;
-}
-
-.mobile-dash__section-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
   margin-bottom: 12px;
 }
 
-/* ── Metrics Grid ───────────────────────────────────────────────────── */
-.mobile-dash__metrics-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.mobile-dash__metric-item {
-  background: var(--gui-bg-surface, #2C2C2E);
-  border-radius: 12px;
-  padding: 12px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
+.mdash__network-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  animation: dash-fade-in 0.3s ease;
+  flex-direction: column;
+  gap: 1px;
 }
 
-.mobile-dash__metric-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gui-text-secondary, #8E8E93);
-  flex-shrink: 0;
+.mdash__network-key {
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
 }
 
-.mobile-dash__metric-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.mobile-dash__metric-label {
-  font-size: 11px;
-  color: var(--gui-text-tertiary, #636366);
-  margin-bottom: 2px;
-}
-
-.mobile-dash__metric-value {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
-  font-family: 'SF Mono', 'JetBrains Mono', monospace;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── Network Card ───────────────────────────────────────────────────── */
-.mobile-dash__network-card {
-  background: var(--gui-bg-surface, #2C2C2E);
-  border-radius: 12px;
-  padding: 14px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
-}
-
-.mobile-dash__network-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
-}
-
-.mobile-dash__network-row:last-child {
-  border-bottom: none;
-}
-
-.mobile-dash__network-label {
-  font-size: 12px;
-  color: var(--gui-text-secondary, #8E8E93);
-}
-
-.mobile-dash__network-value {
+.mdash__network-val {
   font-size: 12px;
   font-weight: 600;
   font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  color: rgba(255,255,255,0.9);
 }
 
-.mobile-dash__network-status--online {
-  color: #34C759;
-}
-
-.mobile-dash__network-status--slow {
-  color: #FF9500;
-}
-
-.mobile-dash__network-status--offline {
-  color: #FF3B30;
-}
-
-/* ── Footer ─────────────────────────────────────────────────────────── */
-.mobile-dash__footer {
+.mdash__speed-btn {
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.mobile-dash__footer-text {
-  font-size: 11px;
-  color: var(--gui-text-tertiary, #636366);
-}
+.mdash__speed-btn:active:not(:disabled) { background: rgba(255,255,255,0.1); transform: scale(0.98); }
+.mdash__speed-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.mobile-dash__footer-dot {
-  width: 4px;
-  height: 4px;
+.mdash__speed-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255,255,255,0.12);
+  border-top: 2px solid #fff;
   border-radius: 50%;
-  background: var(--gui-text-tertiary, #636366);
+  animation: mSpin 0.8s linear infinite;
 }
 
-.mobile-dash__footer-dot--live {
+.mdash__speed-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.mdash__speed-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mdash__speed-item-lbl {
+  font-size: 8px;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.mdash__speed-item-val {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  color: #fff;
+}
+
+.mdash__speed-item-val small {
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.3);
+}
+
+.mdash__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 0 8px;
+}
+
+.mdash__footer-pulse {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  transition: all 0.3s ease;
+}
+
+.mdash__footer-pulse--live {
   background: #34C759;
-  box-shadow: 0 0 4px rgba(52, 199, 89, 0.4);
-  animation: dash-pulse 2s ease-in-out infinite;
+  box-shadow: 0 0 5px rgba(52,199,89,0.5);
+  animation: mPulse 2s ease-in-out infinite;
 }
 
-@keyframes dash-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@keyframes mPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
 }
 
-/* ── Animations ─────────────────────────────────────────────────────── */
-@keyframes dash-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes mFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
+@media (max-width: 360px) {
+  .mdash__rings { grid-template-columns: repeat(2, 1fr); }
+  .mdash__content { padding: 12px; gap: 10px; }
+}
 </style>
