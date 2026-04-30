@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Pre-commit hook to prevent large files from being committed
+# Maximum file size: 500KB
+MAX_SIZE=$((500 * 1024))
+LARGE_FILES=""
+
+while IFS= read -r file; do
+    if [ -f "$file" ]; then
+        SIZE=$(wc -c < "$file" 2>/dev/null || echo 0)
+        if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+            SIZE_KB=$((SIZE / 1024))
+            LARGE_FILES="$LARGE_FILES\n$file ($SIZE_KB KB)"
+        fi
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -n "$LARGE_FILES" ]; then
+    echo "ERROR: The following files exceed the maximum allowed size (500KB):"
+    echo -e "$LARGE_FILES"
+    echo ""
+    echo "Please consider using git-lfs for large files or remove these files from the commit."
+    exit 1
+fi
+
+exit 0

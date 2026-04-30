@@ -7,10 +7,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
 *.local
+.build
+.cache
 
 # Editor directories and files
 .vscode/*
@@ -22,10 +25,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.bak
+*.backup
 
 # Coverage
 coverage
 **/coverage
+.nyc_output
 
 # Rust/Tauri
 **/target
@@ -33,9 +39,83 @@ coverage
 *.rlib
 *.so
 *.pdb
+*.dll
+*.exe
+*.dylib
 
 # Tauri
 **/gen/schemas
+src-tauri/target
+src-tauri/.deps
+tauri.conf.json.bak
 
 # Wrangler (Cloudflare Workers)
 .wrangler/
+*.wrangler/
+wrangler.toml.bak
+
+# Environment files
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# TypeScript
+*.tsbuildinfo
+.tscache/
+
+# OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Testing
+test-results/
+junit.xml
+reports/
+
+# Performance
+.profiler/
+*.cpuprofile
+*.heapsnapshot
+
+# Misc
+.trae/
+.vercel/
+.now/
+.netlify/
+
+# Large file patterns
+*.zip
+*.tar
+*.gz
+*.7z
+*.rar
+*.exe
+*.dll
+*.deb
+*.rpm
+*.dmg
+*.iso
+*.apk
+*.ipa
+*.jar
+*.war
+*.ear
+*.class
+*.o
+*.obj
+*.lib
+*.a
+*.so
+*.dylib
+*.pdb
+*.map
+*.min.js.map
+*.css.map
