@@ -35,10 +35,6 @@ zone_name = "scpos.site"
 name = "CHAT_ROOM_DO"
 class_name = "ChatRoomDO"
 
-[[durable_objects.routes]]
-pattern = "api.scpos.site/chat/ws"
-class_name = "ChatRoomDO"
-
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["ChatRoomDO"]

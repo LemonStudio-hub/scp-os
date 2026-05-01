@@ -423,7 +423,7 @@ async function createRoom() {
   if (!newRoomName.value.trim()) return
   creatingRoom.value = true
   try {
-    const response = await fetch(`${API_BASE}/chat/rooms`, {
+    const response = await authStore.authFetch(`${API_BASE}/chat/rooms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -125,6 +125,12 @@ export const SCRAPER_CONFIG = {
       /图像为.*创作/,
     ],
   },
+
+  // JWT 认证配置
+  jwt: {
+    secret: 'scp-os-default-secret-change-in-production',
+    expiresIn: '7d',
+  } as const,
 } as const
 
 export type ScraperConfig = typeof SCRAPER_CONFIG

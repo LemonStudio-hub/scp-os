@@ -83,7 +83,7 @@ function buildFeedbackQuery(
 export async function submitFeedback(
   db: D1Database,
   input: FeedbackInput
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<Feedback | null>> {
   try {
     if (!input.title || input.title.length > 100) {
       return { success: false, error: 'Title must be 1-100 characters' }
@@ -127,7 +127,7 @@ export async function getFeedbackList(
   limit: number = 50,
   offset: number = 0,
   category?: string
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<Feedback[]>> {
   try {
     const { query, params } = buildFeedbackQuery(
       'SELECT * FROM feedbacks WHERE status = ?',
@@ -165,7 +165,7 @@ export async function getFeedbackList(
 export async function likeFeedback(
   db: D1Database,
   feedbackId: number
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<{ id: number; likes: number }>> {
   try {
     const feedback = await db.prepare(
       'SELECT id, likes FROM feedbacks WHERE id = ?'
@@ -193,7 +193,7 @@ export async function likeFeedback(
 
 export async function getFeedbackCategories(
   db: D1Database
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<{ category: string; count: number }[]>> {
   try {
     const categories = await db.prepare(
       `SELECT category, COUNT(*) as count FROM feedbacks WHERE status = 'published' GROUP BY category ORDER BY count DESC`
@@ -214,7 +214,7 @@ export async function getFeedbackCategories(
 export async function submitComment(
   db: D1Database,
   input: CommentInput
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<Comment | undefined>> {
   try {
     if (!input.content || input.content.length > 500) {
       return { success: false, error: 'Comment must be 1-500 characters' }
@@ -250,7 +250,7 @@ export async function submitComment(
       'SELECT * FROM feedback_comments WHERE id = ?'
     ).bind(insertResult.meta?.last_row_id).first<Comment>()
 
-    return { success: true, data: comment }
+    return { success: true, data: comment ?? undefined }
   } catch (error) {
     return {
       success: false,
@@ -262,7 +262,7 @@ export async function submitComment(
 export async function getComments(
   db: D1Database,
   feedbackId: number
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<Comment[]>> {
   try {
     const feedback = await db.prepare(
       'SELECT id FROM feedbacks WHERE id = ? AND status = ?'
@@ -291,7 +291,7 @@ export async function getComments(
 export async function voteFeedback(
   db: D1Database,
   input: VoteInput
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<{ id: number; vote: string | null; action: string }>> {
   try {
     const feedback = await db.prepare(
       'SELECT id FROM feedbacks WHERE id = ? AND status = ?'
@@ -360,7 +360,7 @@ export async function getFeedbackListWithVotes(
   offset: number = 0,
   category?: string,
   userId?: string
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<Feedback[]>> {
   try {
     const { query, params } = buildFeedbackQuery(
       'SELECT * FROM feedbacks WHERE status = ?',

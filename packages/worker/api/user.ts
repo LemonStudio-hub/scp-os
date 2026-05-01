@@ -24,7 +24,7 @@ export interface UserRegisterInput {
 export async function registerUser(
   db: D1Database,
   input: UserRegisterInput
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<User | undefined>> {
   try {
     // Validate input
     if (!input.userId || !input.nickname) {
@@ -66,7 +66,7 @@ export async function registerUser(
       'SELECT * FROM users WHERE user_id = ?'
     ).bind(input.userId).first<User>()
 
-    return { success: true, data: user }
+    return { success: true, data: user ?? undefined }
   } catch (error) {
     return {
       success: false,
@@ -81,7 +81,7 @@ export async function registerUser(
 export async function getUserByUserId(
   db: D1Database,
   userId: string
-): Promise<ChatApiResponse> {
+): Promise<ChatApiResponse<User | undefined>> {
   try {
     if (!userId) {
       return { success: false, error: 'Missing userId' }
@@ -108,7 +108,7 @@ export async function checkNicknameAvailability(
   db: D1Database,
   nickname: string,
   excludeUserId?: string
-): Promise<ChatApiResponse & { available?: boolean }> {
+): Promise<ChatApiResponse<{ id: number } | undefined> & { available?: boolean }> {
   try {
     if (!nickname) {
       return { success: false, available: false, error: 'Missing nickname' }

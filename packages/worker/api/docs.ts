@@ -1,5 +1,28 @@
 import type { Env, SCPItem, SCPTale, SCPGOI, SCPHub, DocsContentResponse } from '../shared/types'
 
+function normalizeObjectClass(cls: string | null | undefined): string {
+  if (!cls) return 'Unknown'
+  const lower = cls.toLowerCase()
+  const map: Record<string, string> = {
+    safe: 'Safe',
+    euclid: 'Euclid',
+    keter: 'Keter',
+    thaumiel: 'Thaumiel',
+    neutralized: 'Neutralized',
+    apollyon: 'Apollyon',
+    unknown: 'Unknown',
+  }
+  return map[lower] || cls.charAt(0).toUpperCase() + cls.slice(1).toLowerCase()
+}
+
+function normalizeItem(item: any): any {
+  if (!item) return item
+  return {
+    ...item,
+    object_class: normalizeObjectClass(item.object_class),
+  }
+}
+
 export async function handleDocsItems(
   request: Request,
   env: Env
@@ -21,7 +44,7 @@ export async function handleDocsItems(
     }
 
     if (objectClass) {
-      whereParts.push('object_class = ?')
+      whereParts.push('UPPER(object_class) = UPPER(?)')
       params.push(objectClass)
     }
 
@@ -45,7 +68,7 @@ export async function handleDocsItems(
 
     return Response.json({
       success: true,
-      data: result.results || [],
+      data: (result.results || []).map(normalizeItem),
       total,
       limit,
       offset,
@@ -77,7 +100,7 @@ export async function handleDocsItem(
 
     return Response.json({
       success: true,
-      data: item,
+      data: normalizeItem(item),
     })
   } catch (error) {
     return Response.json({

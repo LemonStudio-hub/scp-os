@@ -5,6 +5,7 @@ interface WebSocketConnection {
   userId: string
   username: string
   roomId: number
+  connectionId: string
 }
 
 interface RateLimitEntry {
@@ -25,12 +26,19 @@ export class ChatRoomDO {
   private static readonly RATE_LIMIT = 10
   private static readonly RATE_LIMIT_WINDOW = 60000
 
-  constructor(private state: DurableObjectState, private env: { SCP_DB: D1Database }) {}
+  constructor(private state: DurableObjectState, private env: { SCP_DB: D1Database }) {
+    this.state.getWebSockets().forEach(ws => {
+      const tags = ws.deserializeAttachment() as { userId: string; username: string; roomId: number; connectionId: string } | null
+      if (tags) {
+        this.connections.set(tags.connectionId, { ws, ...tags })
+      }
+    })
+  }
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url)
 
-    if (url.pathname === '/ws') {
+    if (url.pathname === '/chat/ws' || url.pathname === '/ws') {
       if (request.headers.get('Upgrade') !== 'websocket') {
         return new Response('Expected WebSocket upgrade', { status: 426 })
       }
@@ -44,48 +52,47 @@ export class ChatRoomDO {
       }
 
       const webSocketPair = new WebSocketPair()
-      await this.handleWebSocket(webSocketPair[1], userId, username, roomId)
+      const [client, server] = [webSocketPair[0], webSocketPair[1]]
+
+      const connectionId = `${userId}-${Date.now()}`
+
+      this.connections.set(connectionId, { ws: server, userId, username, roomId, connectionId })
+
+      server.serializeAttachment({ userId, username, roomId, connectionId })
+
+      this.state.acceptWebSocket(server)
+
+      await this.loadMessages(roomId)
+      await this.sendHistory(server, roomId)
+      await this.broadcastUserJoined(userId, username, roomId)
 
       return new Response(null, {
         status: 101,
-        webSocket: webSocketPair[0],
+        webSocket: client,
       })
     }
 
     return new Response('Not found', { status: 404 })
   }
 
-  private async handleWebSocket(ws: WebSocket, userId: string, username: string, roomId: number): Promise<void> {
-    const connectionId = `${userId}-${Date.now()}`
+  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
+    const tags = ws.deserializeAttachment() as { userId: string; username: string; roomId: number; connectionId: string } | null
+    if (!tags) return
 
-    this.connections.set(connectionId, { ws, userId, username, roomId })
+    try {
+      const msg: IncomingMessage = JSON.parse(typeof message === 'string' ? message : new TextDecoder().decode(message))
+      await this.handleIncomingMessage(msg, tags.userId, tags.username, tags.roomId)
+    } catch {
+      console.error('[ChatRoomDO] Failed to parse message')
+    }
+  }
 
-    await this.state.blockConcurrencyWhile(async () => {
-      await this.loadMessages(roomId)
-    })
+  async webSocketClose(ws: WebSocket, code: number, reason: string): Promise<void> {
+    const tags = ws.deserializeAttachment() as { userId: string; username: string; roomId: number; connectionId: string } | null
+    if (!tags) return
 
-    await this.sendHistory(ws, userId, roomId)
-
-    await this.broadcastUserJoined(userId, username, roomId)
-
-    ws.addEventListener('message', async (event: MessageEvent) => {
-      try {
-        const message: IncomingMessage = JSON.parse(event.data as string)
-        await this.handleIncomingMessage(message, userId, username, roomId)
-      } catch {
-        console.error('[ChatRoomDO] Failed to parse message')
-      }
-    })
-
-    ws.addEventListener('close', () => {
-      this.connections.delete(connectionId)
-      this.broadcastUserLeft(userId, username, roomId)
-    })
-
-    ws.addEventListener('error', () => {
-      this.connections.delete(connectionId)
-      this.broadcastUserLeft(userId, username, roomId)
-    })
+    this.connections.delete(tags.connectionId)
+    await this.broadcastUserLeft(tags.userId, tags.username, tags.roomId)
   }
 
   private async loadMessages(roomId: number): Promise<void> {
@@ -100,7 +107,7 @@ export class ChatRoomDO {
     }
   }
 
-  private async sendHistory(ws: WebSocket, _userId: string, roomId: number): Promise<void> {
+  private async sendHistory(ws: WebSocket, roomId: number): Promise<void> {
     const roomMessages = this.messages.filter(m => m.room_id === roomId)
     const users = this.getOnlineUsers(roomId)
 
@@ -301,6 +308,7 @@ export class ChatRoomDO {
     for (const [, conn] of this.connections) {
       if (conn.userId === userId) {
         conn.username = newUsername
+        conn.ws.serializeAttachment({ ...conn.ws.deserializeAttachment(), username: newUsername })
       }
     }
 
