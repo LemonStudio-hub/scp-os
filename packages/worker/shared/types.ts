@@ -111,6 +111,7 @@ export interface ParsedSections {
 export interface Env {
   SCP_CACHE: KVNamespace
   SCP_DB: D1Database
+  SCP_READER_DB: D1Database
   CHAT_ROOM_DO: DurableObjectNamespace
 }
 
@@ -249,4 +250,52 @@ export interface D1StatRow {
 export interface D1ClearanceRow {
   clearance_level: number
   count: number
+}
+
+export interface SCPItem {
+  scp_number: string
+  title: string
+  object_class: string | null
+  series: string | null
+  rating: number
+  tags: string
+  creator: string | null
+  created_at: string | null
+  clearance_level: number
+  has_content: number
+  content_file: string | null
+}
+
+export interface SCPTale {
+  link: string
+  title: string
+  year: number | null
+  rating: number
+  tags: string
+  creator: string | null
+  created_at: string | null
+  content_file: string | null
+}
+
+export interface SCPGOI {
+  link: string
+  title: string
+  rating: number
+  tags: string
+  creator: string | null
+  created_at: string | null
+}
+
+export interface SCPHub {
+  link: string
+  title: string
+  references_json: string
+  tags: string
+}
+
+export interface DocsContentResponse {
+  scp_number: string
+  content: string
+  cached: boolean
+  source: string
 }

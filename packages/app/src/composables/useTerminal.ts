@@ -307,7 +307,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
 
-    terminal.writeln(`${ANSICode.yellow}SCP Foundation Terminal System${ANSICode.reset}`)
+    terminal.writeln(`${ANSICode.yellow}SCP Foundation Operating System${ANSICode.reset}`)
     terminal.writeln('')
     terminal.writeln(`${ANSICode.cyan}Type 'start' to boot the system${ANSICode.reset}`)
     terminal.writeln('')

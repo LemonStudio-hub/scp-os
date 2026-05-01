@@ -22,7 +22,7 @@ export const config = {
   },
   app: {
     version: import.meta.env.VITE_APP_VERSION || '0.1.0',
-    name: import.meta.env.VITE_APP_NAME || 'SCP Foundation Terminal',
+    name: import.meta.env.VITE_APP_NAME || 'SCP-OS',
     fastBoot: import.meta.env.VITE_FAST_BOOT === 'true' || false,
   },
 } as const

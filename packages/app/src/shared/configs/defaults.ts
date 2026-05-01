@@ -29,7 +29,7 @@ export const defaultConfig = {
 
   // Application Configuration
   'app.version': '3.0.2',
-  'app.name': 'SCP Foundation Terminal',
+  'app.name': 'SCP-OS',
   'app.fast-boot': true,
   'app.debug': false,
 

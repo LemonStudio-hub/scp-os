@@ -5,7 +5,7 @@
 <h1 align="center">SCP-OS</h1>
 
 <p align="center">
-  <strong>SCP 基金会模拟操作系统终端</strong>
+  <strong>SCP 基金会主题 Web 操作系统</strong>
 </p>
 
 <p align="center">
@@ -35,11 +35,12 @@
 
 ## 📖 项目简介
 
-SCP-OS 是一个以 **SCP 基金会**为主题的模拟操作系统，将 SCP 维基的内容以沉浸式终端体验呈现。用户可以通过命令行界面查询 SCP 对象信息、浏览收容程序、管理虚拟文件系统，并享受桌面/移动双端适配的完整 GUI 体验。
+SCP-OS 是一个以 **SCP 基金会**为主题的 Web 操作系统，在浏览器中提供完整的桌面环境体验。系统内置命令行终端、文件管理器、代码编辑器、实时聊天、性能仪表盘等 7+ 款应用，并支持桌面/移动双端无缝适配。
 
 ### 核心价值
 
-- **沉浸式体验**：模拟基金会终端界面，提供真实的命令行交互
+- **Web OS 体验**：类 Windows 桌面 + 类 iOS 移动主屏，完整的窗口管理和应用生态
+- **沉浸式设计**：SCP 基金会世界观贯穿始终，终端、文件系统、UI 组件的统一视觉风格
 - **数据集成**：实时爬取 SCP 维基数据，支持中英文分部
 - **双端适配**：桌面端与移动端无缝切换，响应式设计
 - **可扩展性**：插件系统、工具注册表、依赖注入容器
@@ -59,9 +60,9 @@ SCP-OS 采用 **Monorepo** 架构，包含三个核心包：
 
 ## ✨ 功能特性
 
-### 🖥️ 模拟操作系统
+### 🖥️ 桌面操作系统
 
-- **终端模拟器**：支持 40+ 条命令，包含文件系统操作、SCP 查询、系统管理等
+- **命令行终端**：支持 40+ 条命令，包含文件系统操作、SCP 查询、系统管理等
 - **虚拟文件系统**：Linux 风格目录结构，支持权限检查、文件 CRUD、搜索与 grep
 - **窗口管理器**：可拖拽、可调整大小、可最小化/最大化/关闭的窗口系统
 - **多标签页**：终端多标签管理，支持创建/切换/关闭/锁定/重命名
@@ -151,7 +152,7 @@ SCP-OS 采用 **Monorepo** 架构，包含三个核心包：
    | `VITE_TERMINAL_SCROLLBACK` | 终端回滚行数 | `1000` |
    | `VITE_TERMINAL_TAB_STOP_WIDTH` | Tab 宽度 | `4` |
    | `VITE_APP_VERSION` | 应用版本 | `0.1.0` |
-   | `VITE_APP_NAME` | 应用名称 | `SCP Foundation Terminal` |
+   | `VITE_APP_NAME` | 应用名称 | `SCP-OS` |
 
 ---
 
@@ -378,7 +379,7 @@ scp-os/
 
 | 工具 | 桌面组件 | 移动组件 | 说明 |
 |------|---------|---------|------|
-| 🖥️ Terminal | TerminalPanel | MobileTerminal | 终端模拟器 |
+| 🖥️ Terminal | TerminalPanel | MobileTerminal | 命令行终端 |
 | 📁 FileManager | FileManagerWindow | MobileFileManager | 文件管理器（含图片/音频/视频/文本预览） |
 | 📝 Editor | EditorWindow | MobileEditor | 代码编辑器（CodeMirror，多语言高亮） |
 | ⚙️ Settings | SettingsWindow | MobileSettings | 系统设置 |

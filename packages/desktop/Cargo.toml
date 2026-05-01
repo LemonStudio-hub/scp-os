@@ -1,7 +1,7 @@
 [package]
 name = "scp-os-desktop"
 version = "0.2.0"
-description = "SCP Foundation Terminal Desktop Application"
+description = "SCP Foundation Web OS Desktop Client"
 authors = ["SCP-OS Team"]
 license = "MIT"
 repository = "https://github.com/LemonStudio-hub/scp-os"

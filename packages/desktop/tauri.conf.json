@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicklasxyz/tauri-plugin-schema/main/schema/v2/tauri.conf.json",
-  "productName": "SCP Foundation Terminal",
+  "productName": "SCP-OS",
   "version": "0.2.0",
   "identifier": "online.scpos.terminal",
   "build": {
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "SCP Foundation Terminal",
+        "title": "SCP-OS",
         "width": 1200,
         "height": 800,
         "resizable": true,

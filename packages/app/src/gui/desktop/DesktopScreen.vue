@@ -69,6 +69,14 @@ class="desktop-screen__icon-bg" :class="`desktop-screen__icon-bg--${app.id}`"
                 <line x1="9" y1="13" x2="13" y2="13"/>
               </svg>
             </template>
+            <template v-else-if="app.id === 'docs'">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+                <line x1="9" y1="7" x2="15" y2="7"/>
+                <line x1="9" y1="11" x2="15" y2="11"/>
+              </svg>
+            </template>
           </div>
           <span class="desktop-screen__icon-label">{{ app.label }}</span>
         </div>
@@ -134,7 +142,8 @@ const apps: DesktopApp[] = [
   { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)', x: 310, y: 50 },
   { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)', x: 50, y: 180 },
   { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)', x: 180, y: 180 },
-  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)', x: 310, y: 180 },
+  { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)', x: 310, y: 180 },
+  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)', x: 50, y: 310 },
 ]
 
 const taskbarItems: PCTaskbarItem[] = [

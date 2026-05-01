@@ -193,19 +193,19 @@ function displayWelcomeMessage(): void {
   term.writeln('\x1b[32m ___/ / /___/ ____/ \x1b[0m')
   term.writeln('\x1b[32m/____/\\____/_/      \x1b[0m')
   term.writeln('\x1b[32m                    \x1b[0m')
-  term.writeln('\x1b[32m   Foundation Terminal System\x1b[0m')
+  term.writeln('\x1b[32m   Foundation Operating System\x1b[0m')
   term.writeln('')
 
   if (isMobile) {
     // Mobile: shorter box to fit narrow terminals (~40 cols)
     term.writeln('\x1b[32m╔══════════════════════════════════╗\x1b[0m')
-    term.writeln('\x1b[32m║\x1b[0m   \x1b[1;32mSCP Foundation Terminal\x1b[0m      \x1b[32m║\x1b[0m')
+    term.writeln('\x1b[32m║\x1b[0m   \x1b[1;32mSCP Foundation OS\x1b[0m        \x1b[32m║\x1b[0m')
     term.writeln('\x1b[32m║\x1b[0m     \x1b[33mSecure. Contain. Protect.\x1b[0m      \x1b[32m║\x1b[0m')
     term.writeln('\x1b[32m╚══════════════════════════════════╝\x1b[0m')
   } else {
     // Desktop: full width box
     term.writeln('\x1b[32m╔══════════════════════════════════════════════════════════╗\x1b[0m')
-    term.writeln('\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Terminal System\x1b[0m            \x1b[32m║\x1b[0m')
+    term.writeln('\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Operating System\x1b[0m         \x1b[32m║\x1b[0m')
     term.writeln('\x1b[32m║\x1b[0m              \x1b[33mSecure. Contain. Protect.\x1b[0m              \x1b[32m║\x1b[0m')
     term.writeln('\x1b[32m╚══════════════════════════════════════════════════════════╝\x1b[0m')
   }
