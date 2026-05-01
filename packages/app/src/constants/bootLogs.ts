@@ -13,7 +13,7 @@ export const BOOT_LOGS_CONFIG = {
     const isNarrow = isNarrowTerminal()
     const borderChar = '█'
     const border = createBorderLine(borderChar)
-    const title = `SCP Foundation - Site-19 Terminal System v${config.app.version}`
+    const title = `SCP Foundation - Site-19 Operating System v${config.app.version}`
     const status = 'System Status: ONLINE'
 
     const titleLine = isNarrow
@@ -54,7 +54,7 @@ export const BOOT_LOGS_CONFIG = {
     ' ___/ / /___/ ____/ ',
     '/____/\\____/_/      ',
     '                    ',
-    '   Foundation Terminal System',
+    '   Foundation Web OS',
     `${ANSICode.reset}`,
     '',
     `${ANSICode.green}[    0.000000] Linux version 6.17.0-PRoot-SCP (scpos@site19) (gcc version 14.2.1)${ANSICode.reset}`,
@@ -122,10 +122,10 @@ export const BOOT_LOGS_CONFIG = {
     `${ANSICode.green}[    0.006600] systemd[1]: Reached target Multi-User System.${ANSICode.reset}`,
     `${ANSICode.green}[    0.006700] systemd[1]: Reached target Graphical Interface.${ANSICode.reset}`,
     `${ANSICode.yellow}[    0.006800] SCP-System: Starting terminal interface...${ANSICode.reset}`,
-    `${ANSICode.green}[    0.006900] SCP-System: Terminal interface ready.${ANSICode.reset}`,
+    `${ANSICode.green}[    0.006900] SCP-System: Operating System ready.${ANSICode.reset}`,
     '',
     `${ANSICode.green}[    0.007000] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
-    `${ANSICode.green}[    0.007100] █     SCP Foundation - Site-19 Terminal System v${config.app.version}     █${ANSICode.reset}`,
+    `${ANSICode.green}[    0.007100] █     SCP Foundation - Site-19 Operating System v${config.app.version}     █${ANSICode.reset}`,
     `${ANSICode.green}[    0.007200] ████████████████████████████████████████████████████████████████${ANSICode.reset}`,
     `${ANSICode.green}[    0.007300] █                                                          █${ANSICode.reset}`,
     `${ANSICode.green}[    0.007400] █  System Status: ONLINE                                    █${ANSICode.reset}`,
@@ -162,7 +162,7 @@ export const SHUTDOWN_LOGS_CONFIG = {
    */
   fastMode: [
     `${ANSICode.yellow}[  0.000000] Initiating system shutdown...${ANSICode.reset}`,
-    `${ANSICode.green}[  0.000100] Stopping SCP Foundation Terminal System...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000100] Stopping SCP Foundation Operating System...${ANSICode.reset}`,
     `${ANSICode.green}[  0.000200] Stopping Command Handler Service...${ANSICode.reset}`,
     `${ANSICode.green}[  0.000300] Stopping Terminal Emulator...${ANSICode.reset}`,
     `${ANSICode.green}[  0.000400] Stopping IndexedDB Service...${ANSICode.reset}`,
@@ -181,8 +181,8 @@ export const SHUTDOWN_LOGS_CONFIG = {
     `${ANSICode.green}[  0.000200] [  OK  ] Stopped target Paths.${ANSICode.reset}`,
     `${ANSICode.white}[  0.000300] Stopping Network Service...${ANSICode.reset}`,
     `${ANSICode.green}[  0.000400] [  OK  ] Stopped Network Service.${ANSICode.reset}`,
-    `${ANSICode.white}[  0.000500] Stopping SCP Foundation Terminal System...${ANSICode.reset}`,
-    `${ANSICode.green}[  0.000600] [  OK  ] Stopped SCP Foundation Terminal System.${ANSICode.reset}`,
+    `${ANSICode.white}[  0.000500] Stopping SCP Foundation Operating System...${ANSICode.reset}`,
+    `${ANSICode.green}[  0.000600] [  OK  ] Stopped SCP Foundation Operating System.${ANSICode.reset}`,
     `${ANSICode.white}[  0.000700] Stopping Command Handler Service...${ANSICode.reset}`,
     `${ANSICode.green}[  0.000800] [  OK  ] Stopped Command Handler Service.${ANSICode.reset}`,
     `${ANSICode.white}[  0.000900] Stopping Terminal Emulator...${ANSICode.reset}`,

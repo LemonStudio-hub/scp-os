@@ -1,6 +1,6 @@
 {
   "identifier": "default",
-  "description": "Default capabilities for SCP Foundation Terminal",
+  "description": "Default capabilities for SCP-OS",
   "local": true,
   "windows": ["main"],
   "permissions": [

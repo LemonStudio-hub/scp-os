@@ -34,6 +34,10 @@ import PCDashboard from '../tools/dash/PCDashboard.vue'
 import MobileFeedback from '../tools/feedback/MobileFeedback.vue'
 import PCFeedbackWindow from '../tools/feedback/PCFeedbackWindow.vue'
 
+// Docs tools
+import PCDocsWindow from '../tools/docs/PCDocsWindow.vue'
+import MobileDocs from '../tools/docs/MobileDocs.vue'
+
 // i18n — resolved at runtime via the composable
 // Labels are functions that call t() when evaluated (in openTool / getToolLabel)
 function lbl(key: string): () => string {
@@ -158,5 +162,21 @@ export function registerAllTools(): void {
     },
     desktopComponent: PCFeedbackWindow,
     mobileComponent: MobileFeedback,
+  })
+
+  // Docs (both mobile and desktop - SCP Document Reader)
+  ToolRegistry.register({
+    id: 'docs',
+    label: lbl('app.docs'),
+    icon: 'docs',
+    windowConfig: {
+      width: 800,
+      height: 600,
+      minWidth: 500,
+      minHeight: 400,
+      resizable: true,
+    },
+    desktopComponent: PCDocsWindow,
+    mobileComponent: MobileDocs,
   })
 }

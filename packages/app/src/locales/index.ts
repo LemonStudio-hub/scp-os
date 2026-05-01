@@ -54,6 +54,7 @@ export const en = {
   'app.chat': 'Chat',
   'app.dash': 'Dash',
   'app.feedback': 'Feedback',
+  'app.docs': 'Docs Reader',
 
   // ── Home Screen ─────────────────────────────────────────────────────
   'home.apps.terminal': 'Terminal',
@@ -62,6 +63,7 @@ export const en = {
   'home.apps.dash': 'Dash',
   'home.apps.feedback': 'Feedback',
   'home.apps.settings': 'Settings',
+  'home.apps.docs': 'Docs',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': 'Settings',
@@ -210,6 +212,32 @@ export const en = {
   'dash.autoRefreshOn': 'Auto-refresh ON',
   'dash.autoRefreshOff': 'Auto-refresh OFF',
 
+  // ── Docs ────────────────────────────────────────────────────────────
+  'docs.title': 'Docs Reader',
+  'docs.search': 'Search',
+  'docs.searchPlaceholder': 'Search documents...',
+  'docs.series': 'Series',
+  'docs.class': 'Class',
+  'docs.scpDocuments': 'SCP Documents',
+  'docs.allDocuments': 'All Documents',
+  'docs.noResults': 'No documents found',
+  'docs.loading': 'Loading documents...',
+  'docs.classSafe': 'Safe',
+  'docs.classEuclid': 'Euclid',
+  'docs.classKeter': 'Keter',
+  'docs.classThaumiel': 'Thaumiel',
+  'docs.classNeutralized': 'Neutralized',
+  'docs.classApollyon': 'Apollyon',
+  'docs.seriesI': 'Series I',
+  'docs.seriesII': 'Series II',
+  'docs.seriesIII': 'Series III',
+  'docs.seriesIV': 'Series IV',
+  'docs.seriesV': 'Series V',
+  'docs.seriesVI': 'Series VI',
+  'docs.seriesVII': 'Series VII',
+  'docs.seriesVIII': 'Series VIII',
+  'docs.seriesIX': 'Series IX',
+
   // ── PC Desktop ──────────────────────────────────────────────────────
   'pc.start': 'Start',
   'pc.newTextFile': 'New Text File',
@@ -300,6 +328,7 @@ export const zhCN: Record<string, string> = {
   'app.chat': '聊天',
   'app.dash': '仪表盘',
   'app.feedback': '反馈',
+  'app.docs': '文档阅读器',
 
   // ── Home Screen ─────────────────────────────────────────────────────
   'home.apps.terminal': '终端',
@@ -308,6 +337,7 @@ export const zhCN: Record<string, string> = {
   'home.apps.dash': '仪表盘',
   'home.apps.feedback': '反馈',
   'home.apps.settings': '设置',
+  'home.apps.docs': '文档',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': '设置',
@@ -455,6 +485,32 @@ export const zhCN: Record<string, string> = {
   'dash.lastUpdated': '最后更新：',
   'dash.autoRefreshOn': '自动刷新 已开启',
   'dash.autoRefreshOff': '自动刷新 已关闭',
+
+  // ── Docs ────────────────────────────────────────────────────────────
+  'docs.title': '文档阅读器',
+  'docs.search': '搜索',
+  'docs.searchPlaceholder': '搜索文档...',
+  'docs.series': '系列',
+  'docs.class': '等级',
+  'docs.scpDocuments': 'SCP 文档',
+  'docs.allDocuments': '全部文档',
+  'docs.noResults': '未找到文档',
+  'docs.loading': '加载文档中...',
+  'docs.classSafe': 'Safe（安全）',
+  'docs.classEuclid': 'Euclid（欧几里得）',
+  'docs.classKeter': 'Keter（奇特）',
+  'docs.classThaumiel': 'Thaumiel（奇米尔）',
+  'docs.classNeutralized': 'Neutralized（无效化）',
+  'docs.classApollyon': 'Apollyon（亚玻伦）',
+  'docs.seriesI': '系列 I',
+  'docs.seriesII': '系列 II',
+  'docs.seriesIII': '系列 III',
+  'docs.seriesIV': '系列 IV',
+  'docs.seriesV': '系列 V',
+  'docs.seriesVI': '系列 VI',
+  'docs.seriesVII': '系列 VII',
+  'docs.seriesVIII': '系列 VIII',
+  'docs.seriesIX': '系列 IX',
 
   // ── PC Desktop ──────────────────────────────────────────────────────
   'pc.start': '开始',

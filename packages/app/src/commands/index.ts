@@ -436,7 +436,7 @@ export const commandHandlers: CommandMap = {
       borderedTitle("System Version"),
       border(),
       '',
-      '  SCP Foundation Terminal System',
+      '  SCP Foundation Operating System',
       '  Version: 3.0.2',
       '  Security Level: 4',
       '  Last Updated: 2026-04-01',
@@ -455,16 +455,17 @@ export const commandHandlers: CommandMap = {
       borderedTitle("About SCP-OS"),
       border(),
       '',
-      '  SCP Foundation Terminal System',
+      '  SCP-OS - SCP Foundation Operating System',
       '  Security Level: 4',
       '  Access: Authorized Personnel',
       '',
       '  System Features:',
+      '    - Command Line Terminal (40+ commands)',
+      '    - File Manager & Code Editor',
+      '    - Real-time Chat & Feedback',
       '    - SCP Database Query',
-      '    - Containment Protocol Viewing',
-      '    - Site Status Monitoring',
-      '    - Emergency Response',
-      '    - Secure Communication Channel',
+      '    - Performance Dashboard',
+      '    - Desktop Environment with Window Manager',
       '',
       '  Security Features:',
       '    - AES-256 Encrypted Communication',
@@ -600,7 +601,7 @@ export const commandHandlers: CommandMap = {
   logout: (_args, _write, writeln) => {
     writeln(`${ANSICode.yellow}Logging out securely...${ANSICode.reset}`)
     writeln(`${ANSICode.green}Session terminated.${ANSICode.reset}`)
-    writeln('Thank you for using the SCP Foundation Terminal System.')
+    writeln('Thank you for using the SCP Foundation Operating System.')
     writeln('')
     writeln(`${ANSICode.green}Secure. Contain. Protect.${ANSICode.reset}`)
     writeln('')

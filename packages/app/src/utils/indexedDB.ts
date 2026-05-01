@@ -6,14 +6,38 @@
 import { v4 as uuidv4 } from 'uuid'
 import logger from './logger'
 
+export interface SCPContentRecord {
+  scpNumber: string
+  content: string
+  rawHtml: string
+  cachedAt: number
+  wordCount: number
+}
+
+export interface ReadingProgressRecord {
+  scpNumber: string
+  scrollPosition: number
+  lastReadAt: number
+  readingTime: number
+}
+
+export interface FavoriteRecord {
+  scpNumber: string
+  addedAt: number
+  title: string
+}
+
 const DB_NAME = 'scp-terminal-db'
-const DB_VERSION = 4
+const DB_VERSION = 5
 const STORES = {
   TABS: 'tabs',
   TERMINAL_STATES: 'terminal_states',
   FILESYSTEM: 'filesystem',
   GUI_WINDOWS: 'gui_windows',
-  USER_SETTINGS: 'user_settings'
+  USER_SETTINGS: 'user_settings',
+  SCP_CONTENT: 'scp_content',
+  READING_PROGRESS: 'reading_progress',
+  SCP_FAVORITES: 'scp_favorites'
 }
 
 class IndexedDBService {
@@ -77,6 +101,27 @@ class IndexedDBService {
           const userStore = db.createObjectStore(STORES.USER_SETTINGS, { keyPath: 'key' })
           userStore.createIndex('updatedAt', 'updatedAt', { unique: false })
           logger.info('[IndexedDB] Created user settings store')
+        }
+
+        // Create SCP content store
+        if (!db.objectStoreNames.contains(STORES.SCP_CONTENT)) {
+          const scpContentStore = db.createObjectStore(STORES.SCP_CONTENT, { keyPath: 'scpNumber' })
+          scpContentStore.createIndex('cachedAt', 'cachedAt', { unique: false })
+          logger.info('[IndexedDB] Created SCP content store')
+        }
+
+        // Create reading progress store
+        if (!db.objectStoreNames.contains(STORES.READING_PROGRESS)) {
+          const readingProgressStore = db.createObjectStore(STORES.READING_PROGRESS, { keyPath: 'scpNumber' })
+          readingProgressStore.createIndex('lastReadAt', 'lastReadAt', { unique: false })
+          logger.info('[IndexedDB] Created reading progress store')
+        }
+
+        // Create SCP favorites store
+        if (!db.objectStoreNames.contains(STORES.SCP_FAVORITES)) {
+          const favoritesStore = db.createObjectStore(STORES.SCP_FAVORITES, { keyPath: 'scpNumber' })
+          favoritesStore.createIndex('addedAt', 'addedAt', { unique: false })
+          logger.info('[IndexedDB] Created SCP favorites store')
         }
       }
     })
@@ -559,6 +604,195 @@ class IndexedDBService {
       logger.error('[IndexedDB] Failed to clear user data:', error)
       throw error
     }
+  }
+
+  // ==================== SCP Content Cache ====================
+
+  /**
+   * 保存 SCP 内容缓存
+   */
+  async saveSCPContent(data: { scpNumber: string; content: string; rawHtml: string; wordCount: number }): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.SCP_CONTENT], 'readwrite')
+      const store = transaction.objectStore(STORES.SCP_CONTENT)
+
+      const record: SCPContentRecord = {
+        scpNumber: data.scpNumber,
+        content: data.content,
+        rawHtml: data.rawHtml,
+        cachedAt: Date.now(),
+        wordCount: data.wordCount
+      }
+
+      const request = store.put(record)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 获取 SCP 内容缓存
+   */
+  async getSCPContent(scpNumber: string): Promise<SCPContentRecord | null> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.SCP_CONTENT], 'readonly')
+      const store = transaction.objectStore(STORES.SCP_CONTENT)
+
+      const request = store.get(scpNumber)
+
+      request.onsuccess = () => {
+        resolve(request.result || null)
+      }
+
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 检查 SCP 内容是否已缓存
+   */
+  async isSCPCached(scpNumber: string): Promise<boolean> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.SCP_CONTENT], 'readonly')
+      const store = transaction.objectStore(STORES.SCP_CONTENT)
+
+      const request = store.get(scpNumber)
+
+      request.onsuccess = () => {
+        resolve(!!request.result)
+      }
+
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 清除所有 SCP 内容缓存
+   */
+  async clearSCPContentCache(): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.SCP_CONTENT], 'readwrite')
+      const store = transaction.objectStore(STORES.SCP_CONTENT)
+
+      const request = store.clear()
+
+      request.onsuccess = () => {
+        logger.info('[IndexedDB] SCP content cache cleared')
+        resolve()
+      }
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  // ==================== Reading Progress ====================
+
+  /**
+   * 保存阅读进度
+   */
+  async saveReadingProgress(data: { scpNumber: string; scrollPosition: number; readingTime: number }): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.READING_PROGRESS], 'readwrite')
+      const store = transaction.objectStore(STORES.READING_PROGRESS)
+
+      const getExisting = store.get(data.scpNumber)
+
+      getExisting.onsuccess = () => {
+        const existing = getExisting.result as ReadingProgressRecord | undefined
+        const record: ReadingProgressRecord = {
+          scpNumber: data.scpNumber,
+          scrollPosition: data.scrollPosition,
+          lastReadAt: Date.now(),
+          readingTime: (existing?.readingTime || 0) + data.readingTime
+        }
+
+        const request = store.put(record)
+        request.onsuccess = () => resolve()
+        request.onerror = () => reject(request.error)
+      }
+
+      getExisting.onerror = () => reject(getExisting.error)
+    })
+  }
+
+  /**
+   * 获取阅读进度
+   */
+  async getReadingProgress(scpNumber: string): Promise<ReadingProgressRecord | null> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.READING_PROGRESS], 'readonly')
+      const store = transaction.objectStore(STORES.READING_PROGRESS)
+
+      const request = store.get(scpNumber)
+
+      request.onsuccess = () => {
+        resolve(request.result || null)
+      }
+
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  // ==================== SCP Favorites ====================
+
+  /**
+   * 添加收藏
+   */
+  async saveFavorite(data: { scpNumber: string; title: string }): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.SCP_FAVORITES], 'readwrite')
+      const store = transaction.objectStore(STORES.SCP_FAVORITES)
+
+      const record: FavoriteRecord = {
+        scpNumber: data.scpNumber,
+        addedAt: Date.now(),
+        title: data.title
+      }
+
+      const request = store.put(record)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 获取所有收藏
+   */
+  async getFavorites(): Promise<FavoriteRecord[]> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.SCP_FAVORITES], 'readonly')
+      const store = transaction.objectStore(STORES.SCP_FAVORITES)
+
+      const request = store.getAll()
+
+      request.onsuccess = () => {
+        resolve(request.result || [])
+      }
+
+      request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * 移除收藏
+   */
+  async removeFavorite(scpNumber: string): Promise<void> {
+    const db = this.getDB()
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORES.SCP_FAVORITES], 'readwrite')
+      const store = transaction.objectStore(STORES.SCP_FAVORITES)
+
+      const request = store.delete(scpNumber)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
   }
 }
 

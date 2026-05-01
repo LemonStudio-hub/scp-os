@@ -150,7 +150,7 @@ VITE_TERMINAL_TAB_STOP_WIDTH=4
 VITE_APP_VERSION=0.1.0
 
 # 应用名称
-VITE_APP_NAME=SCP Foundation Terminal
+VITE_APP_NAME=SCP-OS
 
 # 快速启动模式（跳过启动动画）
 VITE_FAST_BOOT=false
@@ -270,13 +270,13 @@ Tauri 配置位于 `packages/desktop/tauri.conf.json`。
 
 ```json
 {
-  "productName": "SCP Foundation Terminal",
+  "productName": "SCP-OS",
   "version": "0.2.0",
   "identifier": "online.scpos.terminal",
   "app": {
     "windows": [
       {
-        "title": "SCP Foundation Terminal",
+        "title": "SCP-OS",
         "width": 1200,
         "height": 800,
         "minWidth": 800,

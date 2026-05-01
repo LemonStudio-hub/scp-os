@@ -39,7 +39,7 @@ export const DEFAULT_DEV_CONFIG: DeploymentConfiguration = {
   },
   strategy: 'manual',
   envVars: {
-    VITE_APP_NAME: 'SCP Foundation Terminal (Dev)',
+    VITE_APP_NAME: 'SCP-OS (Dev)',
     VITE_APP_VERSION: '0.0.0-dev'
   },
   secrets: {},
@@ -101,7 +101,7 @@ export const DEFAULT_STAGING_CONFIG: DeploymentConfiguration = {
     commitMessagePattern: 'chore(release): v{version}'
   },
   envVars: {
-    VITE_APP_NAME: 'SCP Foundation Terminal (Staging)',
+    VITE_APP_NAME: 'SCP-OS (Staging)',
     VITE_APP_VERSION: '0.0.0-staging'
   },
   secrets: {},
@@ -174,7 +174,7 @@ export const DEFAULT_PROD_CONFIG: DeploymentConfiguration = {
     commitMessagePattern: 'chore(release): v{version}'
   },
   envVars: {
-    VITE_APP_NAME: 'SCP Foundation Terminal',
+    VITE_APP_NAME: 'SCP-OS',
     VITE_APP_VERSION: '0.0.0'
   },
   secrets: {},

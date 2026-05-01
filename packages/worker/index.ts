@@ -7,6 +7,7 @@ import { getConfig } from './shared/config'
 import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput, ObjectClass, ChatSendMessageBody, CreateChatRoomBody, SetNicknameBody, SubmitFeedbackBody, LikeFeedbackBody, SubmitCommentBody, VoteFeedbackBody, RegisterUserBody, PerformanceMetricsBody, D1StatRow, D1ClearanceRow } from './shared/types'
 import * as feedbackAPI from './api/feedback'
 import * as userAPI from './api/user'
+import * as docsAPI from './api/docs'
 
 // 解析器
 import { HTMLParser } from './parsers/htmlParser'
@@ -1445,6 +1446,29 @@ export default {
         } else {
           return corsManager.createErrorResponse('Method not allowed', 405, context)
         }
+      } else if (path === '/docs/items') {
+        const result = await docsAPI.handleDocsItems(request, env)
+        return corsManager.createResponse(await result.json(), result.status, context)
+      } else if (path.startsWith('/docs/item/')) {
+        const scpNumber = path.replace('/docs/item/', '')
+        if (!scpNumber) {
+          return corsManager.createErrorResponse('Missing SCP number', 400, context)
+        }
+        const result = await docsAPI.handleDocsItem(request, env, scpNumber)
+        return corsManager.createResponse(await result.json(), result.status, context)
+      } else if (path.startsWith('/docs/content/')) {
+        const scpNumber = path.replace('/docs/content/', '')
+        if (!scpNumber) {
+          return corsManager.createErrorResponse('Missing SCP number', 400, context)
+        }
+        const result = await docsAPI.handleDocsContent(request, env, scpNumber)
+        return corsManager.createResponse(await result.json(), result.status, context)
+      } else if (path === '/docs/tales') {
+        const result = await docsAPI.handleDocsTales(request, env)
+        return corsManager.createResponse(await result.json(), result.status, context)
+      } else if (path === '/docs/hubs') {
+        const result = await docsAPI.handleDocsHubs(request, env)
+        return corsManager.createResponse(await result.json(), result.status, context)
       } else if (path === '/') {
         return corsManager.createResponse(
           {
@@ -1463,6 +1487,11 @@ export default {
               '/chat/rooms': '获取/创建聊天室 (GET/POST)',
               '/chat/nickname': '设置用户昵称 (POST)',
               '/chat/broadcast': '广播新消息 (定时任务)',
+              '/docs/items': '查询 SCP 条目列表 (series/class/search/limit/offset)',
+              '/docs/item/{scpNumber}': '获取单个条目元数据',
+              '/docs/content/{scpNumber}': '获取条目完整内容 (KV优先, GitHub Raw回退)',
+              '/docs/tales': '查询故事列表 (year/search/limit/offset)',
+              '/docs/hubs': '获取 Hub 列表',
             },
             features: {
               modular: true,

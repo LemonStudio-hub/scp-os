@@ -14,6 +14,12 @@ database_name = "scp-database"
 database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
 migrations_dir = "migrations"
 
+[[d1_databases]]
+binding = "SCP_READER_DB"
+database_name = "scp-reader-db"
+database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
+migrations_dir = "migrations"
+
 # KV 命名空间（用于缓存）
 [[kv_namespaces]]
 binding = "SCP_CACHE"
@@ -32,6 +38,10 @@ class_name = "ChatRoomDO"
 [[durable_objects.routes]]
 pattern = "api.scpos.site/chat/ws"
 class_name = "ChatRoomDO"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ChatRoomDO"]
 
 # 定时任务：每 10 分钟广播聊天消息
 [triggers]
