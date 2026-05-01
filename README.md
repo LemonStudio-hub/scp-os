@@ -15,9 +15,9 @@
   <a href="https://vuejs.org/"><img src="https://img.shields.io/badge/Vue-3.5-4FC08D" alt="Vue"></a>
   <a href="https://tauri.app/"><img src="https://img.shields.io/badge/Tauri-2.10-FFC131" alt="Tauri"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue" alt="License"></a>
-  <a href="https://github.com/your-username/scp-os/stargazers"><img src="https://img.shields.io/github/stars/your-username/scp-os" alt="Stars"></a>
-  <a href="https://github.com/your-username/scp-os/issues"><img src="https://img.shields.io/github/issues/your-username/scp-os" alt="Issues"></a>
-  <a href="https://github.com/your-username/scp-os/pulls"><img src="https://img.shields.io/github/issues-pr/your-username/scp-os" alt="Pull Requests"></a>
+  <a href="https://github.com/LemonStudio-hub/scp-os/stargazers"><img src="https://img.shields.io/github/stars/LemonStudio-hub/scp-os" alt="Stars"></a>
+  <a href="https://github.com/LemonStudio-hub/scp-os/issues"><img src="https://img.shields.io/github/issues/LemonStudio-hub/scp-os" alt="Issues"></a>
+  <a href="https://github.com/LemonStudio-hub/scp-os/pulls"><img src="https://img.shields.io/github/issues-pr/LemonStudio-hub/scp-os" alt="Pull Requests"></a>
 </p>
 
 <p align="center">
@@ -122,7 +122,7 @@ SCP-OS 采用 **Monorepo** 架构，包含三个核心包：
 1. **克隆项目**
 
    ```bash
-   git clone https://github.com/your-username/scp-os.git
+   git clone https://github.com/LemonStudio-hub/scp-os.git
    cd scp-os
    ```
 
@@ -451,4 +451,4 @@ scp-os/
 - [Vue.js](https://vuejs.org/) - 前端框架
 - [Tauri](https://tauri.app/) - 桌面应用框架
 - [Cloudflare Workers](https://workers.cloudflare.com/) - 后端服务
-- [所有贡献者](https://github.com/your-username/scp-os/graphs/contributors) - 感谢你们的努力！
+- [所有贡献者](https://github.com/LemonStudio-hub/scp-os/graphs/contributors) - 感谢你们的努力！
