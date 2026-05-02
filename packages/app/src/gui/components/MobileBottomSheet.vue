@@ -14,6 +14,7 @@
           <!-- Handle bar -->
           <div
             class="flex justify-center py-2 pb-1 cursor-grab -webkit-tap-highlight-color-transparent"
+            style="touch-action: none;"
             @touchstart="onTouchStart"
             @touchmove="onTouchMove"
             @touchend="onTouchEnd"

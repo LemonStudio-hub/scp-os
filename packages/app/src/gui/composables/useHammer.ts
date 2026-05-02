@@ -87,7 +87,7 @@ export function useHammer(
     if (directions.includes('pan')) {
       const pan = new Hammer.Pan({
         threshold: 0,
-        pointers: 0,
+        pointers: 1,
       })
       mc.add(pan)
 

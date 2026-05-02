@@ -9,7 +9,7 @@
 
         <div v-if="store.error && !store.isDownloading" class="alert alert-error mb-4">
           <div class="flex items-start gap-2">
-            <span class="text-red-400 flex-shrink-0 mt-0.5">&#x26A0;</span>
+            <span class="text-red-400 shrink-0 mt-0.5">&#x26A0;</span>
             <div>
               <p class="text-sm text-red-300">{{ store.error }}</p>
               <button class="text-xs text-red-400 hover:text-red-300 mt-1 underline" @click="store.clearError()">关闭</button>
@@ -167,7 +167,7 @@
                   </div>
                 </div>
                 <button
-                  class="text-gray-500 hover:text-red-400 flex-shrink-0 p-1 rounded hover:bg-red-400/10 transition-colors"
+                  class="text-gray-500 hover:text-red-400 shrink-0 p-1 rounded hover:bg-red-400/10 transition-colors"
                   title="删除记录"
                   @click="store.deleteHistoryItem(item.id)"
                 >

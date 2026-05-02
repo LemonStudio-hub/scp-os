@@ -315,8 +315,6 @@ async function submitFeedback() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
         title: form.title.trim(),
         content: form.content.trim(),
         category: form.category,
@@ -400,7 +398,6 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: item.id,
-        user_id: userId,
         vote: voteType
       }),
     })
@@ -491,8 +488,6 @@ async function submitComment(feedbackId: number) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         feedback_id: feedbackId,
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
         content: content
       }),
     })

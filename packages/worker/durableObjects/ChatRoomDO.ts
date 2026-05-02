@@ -371,6 +371,15 @@ export class ChatRoomDO {
       }
 
       case 'heartbeat': {
+        for (const [, conn] of this.connections) {
+          if (conn.userId === userId) {
+            try {
+              conn.ws.send(JSON.stringify({ type: 'heartbeat', data: { ts: Date.now() } }))
+            } catch {
+              // ignore send errors
+            }
+          }
+        }
         break
       }
 

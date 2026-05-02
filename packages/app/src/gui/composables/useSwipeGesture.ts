@@ -1,10 +1,4 @@
-/**
- * Swipe Gesture Composable
- * Detects swipe direction and distance for iOS-style gestures.
- * Used for swipe-to-dismiss, swipe navigation, etc.
- */
-
-import { ref, type Ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount, type Ref } from 'vue'
 
 export interface SwipeState {
   isSwiping: boolean
@@ -24,7 +18,7 @@ export interface SwipeThresholds {
 }
 
 export function useSwipeGesture(
-  _elementRef: Ref<HTMLElement | undefined>,
+  elementRef: Ref<HTMLElement | undefined>,
   thresholds: SwipeThresholds = { minDistance: 50, maxTime: 500, direction: 'both' }
 ) {
   const swipe = ref<SwipeState>({
@@ -40,78 +34,73 @@ export function useSwipeGesture(
 
   let startTime = 0
 
-  const on = {
-    onTouchStart(e: TouchEvent) {
-      const touch = e.touches[0]
-      if (!touch) return
+  function onTouchStart(e: TouchEvent) {
+    const touch = e.touches[0]
+    if (!touch) return
 
-      swipe.value = {
-        isSwiping: true,
-        startX: touch.clientX,
-        startY: touch.clientY,
-        currentX: touch.clientX,
-        currentY: touch.clientY,
-        deltaX: 0,
-        deltaY: 0,
-        velocity: 0,
-      }
-      startTime = Date.now()
-    },
-
-    onTouchMove(e: TouchEvent) {
-      if (!swipe.value.isSwiping) return
-
-      const touch = e.touches[0]
-      if (!touch) return
-
-      swipe.value.currentX = touch.clientX
-      swipe.value.currentY = touch.clientY
-      swipe.value.deltaX = touch.clientX - swipe.value.startX
-      swipe.value.deltaY = touch.clientY - swipe.value.startY
-
-      const elapsed = Date.now() - startTime
-      swipe.value.velocity = elapsed > 0 ? Math.sqrt(
-        swipe.value.deltaX ** 2 + swipe.value.deltaY ** 2
-      ) / elapsed : 0
-    },
-
-    onTouchEnd() {
-      if (!swipe.value.isSwiping) return
-
-      const elapsed = Date.now() - startTime
-      const { deltaX, deltaY, minDistance, maxTime, direction } = {
-        ...swipe.value,
-        ...thresholds,
-      }
-
-      const absX = Math.abs(deltaX)
-      const absY = Math.abs(deltaY)
-
-      // Check if swipe meets thresholds
-      const meetsDistance = direction === 'horizontal'
-        ? absX >= minDistance
-        : direction === 'vertical'
-          ? absY >= minDistance
-          : (absX >= minDistance || absY >= minDistance)
-
-      const meetsTime = elapsed <= maxTime
-
-      if (meetsDistance && meetsTime) {
-        // Determine dominant direction
-        if (direction !== 'vertical' && absX > absY) {
-          if (deltaX > 0) onSwipeRight?.()
-          else onSwipeLeft?.()
-        } else if (direction !== 'horizontal' && absY > absX) {
-          if (deltaY > 0) onSwipeDown?.()
-          else onSwipeUp?.()
-        }
-      }
-
-      swipe.value.isSwiping = false
-    },
+    swipe.value = {
+      isSwiping: true,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
+      deltaX: 0,
+      deltaY: 0,
+      velocity: 0,
+    }
+    startTime = Date.now()
   }
 
-  // Callbacks to be set by consumer
+  function onTouchMove(e: TouchEvent) {
+    if (!swipe.value.isSwiping) return
+
+    const touch = e.touches[0]
+    if (!touch) return
+
+    swipe.value.currentX = touch.clientX
+    swipe.value.currentY = touch.clientY
+    swipe.value.deltaX = touch.clientX - swipe.value.startX
+    swipe.value.deltaY = touch.clientY - swipe.value.startY
+
+    const elapsed = Date.now() - startTime
+    swipe.value.velocity = elapsed > 0 ? Math.sqrt(
+      swipe.value.deltaX ** 2 + swipe.value.deltaY ** 2
+    ) / elapsed : 0
+  }
+
+  function onTouchEnd() {
+    if (!swipe.value.isSwiping) return
+
+    const elapsed = Date.now() - startTime
+    const { deltaX, deltaY, minDistance, maxTime, direction } = {
+      ...swipe.value,
+      ...thresholds,
+    }
+
+    const absX = Math.abs(deltaX)
+    const absY = Math.abs(deltaY)
+
+    const meetsDistance = direction === 'horizontal'
+      ? absX >= minDistance
+      : direction === 'vertical'
+        ? absY >= minDistance
+        : (absX >= minDistance || absY >= minDistance)
+
+    const meetsTime = elapsed <= maxTime
+
+    if (meetsDistance && meetsTime) {
+      if (direction !== 'vertical' && absX > absY) {
+        if (deltaX > 0) onSwipeRight?.()
+        else onSwipeLeft?.()
+      } else if (direction !== 'horizontal' && absY > absX) {
+        if (deltaY > 0) onSwipeDown?.()
+        else onSwipeUp?.()
+      }
+    }
+
+    swipe.value.isSwiping = false
+  }
+
   let onSwipeUp: (() => void) | undefined
   let onSwipeDown: (() => void) | undefined
   let onSwipeLeft: (() => void) | undefined
@@ -129,9 +118,24 @@ export function useSwipeGesture(
     onSwipeRight = callbacks.onSwipeRight
   }
 
+  onMounted(() => {
+    const el = elementRef.value
+    if (!el) return
+    el.addEventListener('touchstart', onTouchStart, { passive: false })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    el.addEventListener('touchend', onTouchEnd)
+  })
+
+  onBeforeUnmount(() => {
+    const el = elementRef.value
+    if (!el) return
+    el.removeEventListener('touchstart', onTouchStart)
+    el.removeEventListener('touchmove', onTouchMove)
+    el.removeEventListener('touchend', onTouchEnd)
+  })
+
   return {
     swipe,
-    on,
     setCallbacks,
   }
 }

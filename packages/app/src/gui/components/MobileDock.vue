@@ -11,12 +11,12 @@
             { 'bg-[rgba(142,142,147,0.15)]': activeTools.includes(item.tool) },
           ]"
           :disabled="item.disabled"
-          :title="item.label"
+          :title="t(item.label)"
           @click="onTap(item)"
           @touchstart="onTap(item)"
         >
           <GUIIcon :name="item.iconName" :size="24" class="transition-transform duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-[1.15]" />
-          <span class="text-[11px] font-medium text-[#8E8E93] whitespace-nowrap tracking-wide">{{ item.label }}</span>
+          <span class="text-[11px] font-medium text-[#8E8E93] whitespace-nowrap tracking-wide">{{ t(item.label) }}</span>
           <span v-if="item.badge && item.badge > 0" class="absolute bottom-[2px] w-[16px] h-[16px] px-[5px] bg-[#FF3B30] rounded-full text-[10px] font-bold text-white leading-none">{{ item.badge }}</span>
           <span v-if="activeTools.includes(item.tool)" class="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-[#8E8E93] rounded-full animate-ios-pulse" />
         </button>
@@ -26,9 +26,12 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '../composables/useI18n'
 import type { ToolType } from '../types'
 import type { IconName } from '../icons'
 import GUIIcon from './ui/GUIIcon.vue'
+
+const { t } = useI18n()
 
 export interface MobileDockItem {
   id: string
@@ -50,9 +53,9 @@ interface Props {
 // a Temporal Dead Zone error at runtime.
 withDefaults(defineProps<Props>(), {
   items: () => [
-    { id: 'terminal', tool: 'terminal' as ToolType, label: 'Terminal', iconName: 'terminal' as IconName },
-    { id: 'files', tool: 'filemanager' as ToolType, label: 'Files', iconName: 'folder' as IconName },
-    { id: 'editor', tool: 'editor' as ToolType, label: 'Editor', iconName: 'edit' as IconName },
+    { id: 'terminal', tool: 'terminal' as ToolType, label: 'app.terminal', iconName: 'terminal' as IconName },
+    { id: 'files', tool: 'filemanager' as ToolType, label: 'app.files', iconName: 'folder' as IconName },
+    { id: 'editor', tool: 'editor' as ToolType, label: 'app.editor', iconName: 'edit' as IconName },
   ],
   activeTools: () => [],
 })

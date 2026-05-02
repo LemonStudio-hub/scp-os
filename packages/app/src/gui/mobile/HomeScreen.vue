@@ -166,7 +166,7 @@ const iconGradientStyle = computed(() => ({
   background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
 }))
 
-const { setup: setupGestures } = useHammer(homeRef, {
+useHammer(homeRef, {
   swipeThreshold: 60,
   swipeVelocity: 0.4,
   directions: ['swipe', 'tap'],
@@ -191,7 +191,6 @@ function onAppTap(app: HomeApp): void {
 onMounted(async () => {
   updateTime()
   setInterval(updateTime, 10000)
-  setupGestures()
 
   // Load custom wallpaper (non-blocking)
   try {
@@ -229,6 +228,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   background: var(--home-bg, #000000);
+  touch-action: manipulation;
 }
 
 .home-screen__status-bar {

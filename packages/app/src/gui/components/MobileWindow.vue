@@ -112,6 +112,7 @@ setCallbacks({
   flex-direction: column;
   overflow: hidden;
   will-change: transform, opacity;
+  touch-action: pan-y;
 }
 
 .mobile-window__title {

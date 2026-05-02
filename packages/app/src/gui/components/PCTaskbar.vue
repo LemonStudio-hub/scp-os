@@ -21,7 +21,7 @@
             { 'pc-taskbar__app-btn--active': activeTools.includes(item.tool) },
           ]"
           :disabled="item.disabled"
-          :title="item.label"
+          :title="t(item.label)"
           @click="onClick(item)"
         >
           <GUIIcon :name="item.iconName" :size="20" />
@@ -77,9 +77,9 @@ interface Props {
 // a Temporal Dead Zone error at runtime.
 withDefaults(defineProps<Props>(), {
   items: () => [
-    { id: 'terminal', tool: 'terminal' as ToolType, label: 'Terminal', iconName: 'terminal' as IconName },
-    { id: 'files', tool: 'filemanager' as ToolType, label: 'Files', iconName: 'folder' as IconName },
-    { id: 'editor', tool: 'editor' as ToolType, label: 'Editor', iconName: 'edit' as IconName },
+    { id: 'terminal', tool: 'terminal' as ToolType, label: 'app.terminal', iconName: 'terminal' as IconName },
+    { id: 'files', tool: 'filemanager' as ToolType, label: 'app.files', iconName: 'folder' as IconName },
+    { id: 'editor', tool: 'editor' as ToolType, label: 'app.editor', iconName: 'edit' as IconName },
   ],
   activeTools: () => [],
 })

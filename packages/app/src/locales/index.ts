@@ -172,6 +172,8 @@ export const en = {
   'fb.timeJustNow': 'Just now',
   'fb.timeMinAgo': '{n}m ago',
   'fb.timeHourAgo': '{n}h ago',
+  'fb.noComments': 'No comments yet',
+  'fb.addCommentPlaceholder': 'Add a comment...',
 
   // ── Chat ────────────────────────────────────────────────────────────
   'chat.title': 'Chat',
@@ -448,6 +450,8 @@ export const zhCN: Record<string, string> = {
   'fb.timeJustNow': '刚刚',
   'fb.timeMinAgo': '{n} 分钟前',
   'fb.timeHourAgo': '{n} 小时前',
+  'fb.noComments': '暂无评论',
+  'fb.addCommentPlaceholder': '添加评论...',
 
   // ── Chat ────────────────────────────────────────────────────────────
   'chat.title': '聊天',

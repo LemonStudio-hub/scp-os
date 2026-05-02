@@ -168,20 +168,20 @@ export async function likeFeedback(
 ): Promise<ChatApiResponse<{ id: number; likes: number }>> {
   try {
     const feedback = await db.prepare(
-      'SELECT id, likes FROM feedbacks WHERE id = ?'
-    ).bind(feedbackId).first<{ id: number; likes: number }>()
+      'SELECT id, upvotes FROM feedbacks WHERE id = ?'
+    ).bind(feedbackId).first<{ id: number; upvotes: number }>()
 
     if (!feedback) {
       return { success: false, error: 'Feedback not found' }
     }
 
     await db.prepare(
-      'UPDATE feedbacks SET likes = likes + 1 WHERE id = ?'
+      'UPDATE feedbacks SET upvotes = upvotes + 1 WHERE id = ?'
     ).bind(feedbackId).run()
 
     return {
       success: true,
-      data: { id: feedbackId, likes: feedback.likes + 1 }
+      data: { id: feedbackId, likes: feedback.upvotes + 1 }
     }
   } catch (error) {
     return {

@@ -309,12 +309,10 @@ async function submitFeedback() {
 
   isSubmitting.value = true
   try {
-    const response = await fetch(`${API_BASE}/feedback/submit`, {
+    const response = await authStore.authFetch(`${API_BASE}/feedback/submit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
         title: form.title.trim(),
         content: form.content.trim(),
         category: form.category,
@@ -397,12 +395,11 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
   isVoting.value[item.id] = true
 
   try {
-    const response = await fetch(`${API_BASE}/feedback/vote`, {
+    const response = await authStore.authFetch(`${API_BASE}/feedback/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: item.id,
-        user_id: userId,
         vote: voteType
       }),
     })
@@ -488,13 +485,11 @@ async function submitComment(feedbackId: number) {
 
   isSubmittingComment.value[feedbackId] = true
   try {
-    const response = await fetch(`${API_BASE}/feedback/comment`, {
+    const response = await authStore.authFetch(`${API_BASE}/feedback/comment`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         feedback_id: feedbackId,
-        user_id: userId,
-        nickname: authStore.nickname || undefined,
         content: content
       }),
     })

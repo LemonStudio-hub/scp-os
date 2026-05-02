@@ -24,7 +24,7 @@ export interface WSUser {
 export type WSConnectionState = 'connecting' | 'connected' | 'disconnected' | 'reconnecting'
 
 interface WSIncomingMessage {
-  type: 'auth' | 'message' | 'history' | 'users' | 'heartbeat' | 'error' | 'room_info' | 'user_joined' | 'user_left'
+  type: 'auth' | 'chat_message' | 'message' | 'history' | 'users' | 'heartbeat' | 'error' | 'room_info' | 'user_joined' | 'user_left'
   data?: any
 }
 
@@ -168,7 +168,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
 
     try {
       ws.send(JSON.stringify({
-        type: 'message',
+        type: 'chat_message',
         data: { content: content.trim() },
       }))
       return true
@@ -199,6 +199,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
       case 'auth':
         break
 
+      case 'chat_message':
       case 'message':
         onMessage?.(msg.data as WSChatMessage)
         break

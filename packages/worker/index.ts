@@ -1136,6 +1136,52 @@ export default {
         const id = env.CHAT_ROOM_DO.idFromName(`room-${roomId}`)
         const stub = env.CHAT_ROOM_DO.get(id)
         return stub.fetch(authRequest)
+      } else if (path === '/image-proxy') {
+        const imageUrl = url.searchParams.get('url')
+        if (!imageUrl) {
+          return corsManager.createErrorResponse(validationError('Missing url parameter', { field: 'url' }), 400, context)
+        }
+
+        try {
+          const allowedHosts = [
+            'scp-wiki.wdfiles.com',
+            'scp-wiki-cn.wdfiles.com',
+            'wikidot.com',
+            'scpfoundation.ru',
+            'scp-wiki.wikidot.com',
+            'scp-wiki-cn.wikidot.com',
+          ]
+          const parsedUrl = new URL(imageUrl)
+          if (!allowedHosts.some(host => parsedUrl.hostname.endsWith(host))) {
+            return corsManager.createErrorResponse(validationError('Image host not allowed', { host: parsedUrl.hostname }), 403, context)
+          }
+
+          const imageResponse = await fetch(imageUrl, {
+            headers: {
+              'User-Agent': 'SCP-OS/1.0',
+              'Referer': parsedUrl.origin + '/',
+            },
+          })
+
+          if (!imageResponse.ok) {
+            return corsManager.createErrorResponse({ success: false, error: 'Failed to fetch image' }, imageResponse.status, context)
+          }
+
+          const contentType = imageResponse.headers.get('Content-Type') || 'image/png'
+          const body = await imageResponse.arrayBuffer()
+
+          return new Response(body, {
+            status: 200,
+            headers: {
+              'Content-Type': contentType,
+              'Cache-Control': 'public, max-age=86400',
+              'Access-Control-Allow-Origin': '*',
+            },
+          })
+        } catch (error) {
+          logger.error('Image proxy failed', { imageUrl, error: String(error) })
+          return corsManager.createErrorResponse({ success: false, error: 'Image proxy failed' }, 502, context)
+        }
       } else if (path === '/scrape') {
         const scpNumber = url.searchParams.get('number')
         const branch = url.searchParams.get('branch') || 'en' // 默认英文分部
@@ -1265,14 +1311,14 @@ export default {
 
         try {
           const body = await request.json() as SubmitFeedbackBody
-          const { nickname, title, content, category } = body
+          const { title, content, category } = body
 
           if (!title || !content) {
             return corsManager.createErrorResponse(validationError('Missing required fields'), 400, context)
           }
 
           const result = await feedbackAPI.submitFeedback(scraper.requireDB(), {
-            user_id: authenticatedUserId!, nickname, title, content, category
+            user_id: authenticatedUserId!, title, content, category
           })
           return corsManager.createResponse(result, result.success ? 201 : 500, context)
         } catch (error) {
@@ -1321,14 +1367,14 @@ export default {
 
         try {
           const body = await request.json() as SubmitCommentBody
-          const { feedback_id, nickname, content } = body
+          const { feedback_id, content } = body
 
           if (!feedback_id || !content) {
             return corsManager.createErrorResponse(validationError('Missing required fields'), 400, context)
           }
 
           const result = await feedbackAPI.submitComment(scraper.requireDB(), {
-            feedback_id, user_id: authenticatedUserId!, nickname, content
+            feedback_id, user_id: authenticatedUserId!, content
           })
           return corsManager.createResponse(result, result.success ? 201 : 500, context)
         } catch (error) {
