@@ -2,9 +2,9 @@
   <MobileWindow
     :visible="visible"
     :title="view === 'list' ? 'SCP Docs' : (reader.currentArticle.value?.scpNumber || '')"
-    :show-back="view === 'detail'"
+    :show-back="true"
     @close="$emit('close')"
-    @back="onBack"
+    @back="view === 'detail' ? onBack() : $emit('close')"
   >
     <div class="mobile-docs" :class="`mobile-docs--${reader.readerTheme.value}`">
 

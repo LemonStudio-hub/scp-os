@@ -33,6 +33,7 @@ export interface WindowConfig {
   minimizable?: boolean
   maximizable?: boolean
   isFullscreen?: boolean
+  data?: Record<string, any>
 }
 
 export interface WindowInstance {

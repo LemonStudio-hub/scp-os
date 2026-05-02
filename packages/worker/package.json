@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --env production",
+    "deploy:dev": "wrangler deploy --env development",
     "tail": "wrangler tail",
     "test": "vitest run",
     "test:watch": "vitest",

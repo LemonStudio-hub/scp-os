@@ -12,6 +12,14 @@
         :border="true"
         @back="onBack"
       >
+        <template #left>
+          <button v-if="showBack" class="mobile-nav-bar__btn" @click="onBack">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M14 4L7 11L14 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span v-if="backLabel" class="mobile-nav-bar__btn-label">{{ backLabel }}</span>
+          </button>
+        </template>
         <span class="mobile-window__title">{{ title }}</span>
         <template #right>
           <slot name="nav-right" />

@@ -1,11 +1,47 @@
 <template>
   <SCPWindow :window-instance="windowInstance" @close="onClose">
     <div class="text-editor">
-      <!-- Menu Bar -->
-      <div class="text-editor__menu">
-        <div class="text-editor__menu-item" @click.exact="editorStore.openNewFile">File</div>
-        <div class="text-editor__menu-item" @click.exact="saveActive">Save</div>
-        <div class="text-editor__menu-item" @click.exact="saveAll">Save All</div>
+      <!-- Toolbar -->
+      <div class="text-editor__toolbar">
+        <div class="text-editor__toolbar-left">
+          <button class="text-editor__tool-btn" :title="'New File (Ctrl+N)'" @click="editorStore.openNewFile">
+            <GUIIcon name="file" :size="14" />
+            <span>New</span>
+          </button>
+          <button class="text-editor__tool-btn" :title="'Save (Ctrl+S)'" @click="saveActive">
+            <GUIIcon name="save" :size="14" />
+            <span>Save</span>
+          </button>
+          <button class="text-editor__tool-btn" :title="'Save All'" @click="saveAll">
+            <GUIIcon name="save" :size="14" />
+            <span>All</span>
+          </button>
+          <div class="text-editor__toolbar-divider" />
+          <button class="text-editor__tool-btn" :class="{ 'text-editor__tool-btn--active': showFindReplace }" :title="'Find & Replace (Ctrl+F)'" @click="toggleFindReplace">
+            <GUIIcon name="search" :size="14" />
+            <span>Find</span>
+          </button>
+          <button class="text-editor__tool-btn" :title="'Go to Line (Ctrl+G)'" @click="openGoToLine">
+            <GUIIcon name="arrow-right" :size="14" />
+            <span>Go</span>
+          </button>
+          <div class="text-editor__toolbar-divider" />
+          <button class="text-editor__tool-btn" :class="{ 'text-editor__tool-btn--active': editorStore.wordWrap }" :title="'Toggle Word Wrap (Alt+Z)'" @click="toggleWordWrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"/><path d="M3 12h15a3 3 0 110 6h-4"/><polyline points="14 15 11 18 14 21"/><path d="M3 18h7"/>
+            </svg>
+            <span>Wrap</span>
+          </button>
+        </div>
+        <div class="text-editor__toolbar-right">
+          <button class="text-editor__tool-btn text-editor__tool-btn--icon" :title="'Zoom Out (Ctrl+-)'" @click="zoomOut">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <span class="text-editor__font-size-label">{{ editorStore.fontSize }}px</span>
+          <button class="text-editor__tool-btn text-editor__tool-btn--icon" :title="'Zoom In (Ctrl++)'" @click="zoomIn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Tab Bar -->
@@ -21,63 +57,101 @@
       <div ref="editorContainerRef" class="text-editor__area">
         <template v-if="editorStore.openFiles.length === 0">
           <div class="text-editor__empty">
-            <GUIIcon name="empty-doc" :size="48" class="text-editor__empty-icon" />
-            <p>No files open</p>
-            <p class="text-editor__empty-hint">Click "File" to create a new file</p>
+            <div class="text-editor__empty-logo">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/>
+              </svg>
+            </div>
+            <p class="text-editor__empty-title">Text Editor</p>
+            <p class="text-editor__empty-desc">Create a new file or open one from the File Manager</p>
+            <div class="text-editor__empty-shortcuts">
+              <div class="text-editor__shortcut" @click="editorStore.openNewFile">
+                <kbd>Ctrl</kbd><kbd>N</kbd>
+                <span>New File</span>
+              </div>
+              <div class="text-editor__shortcut" @click="toggleFindReplace">
+                <kbd>Ctrl</kbd><kbd>F</kbd>
+                <span>Find & Replace</span>
+              </div>
+              <div class="text-editor__shortcut" @click="saveActive">
+                <kbd>Ctrl</kbd><kbd>S</kbd>
+                <span>Save File</span>
+              </div>
+              <div class="text-editor__shortcut" @click="openGoToLine">
+                <kbd>Ctrl</kbd><kbd>G</kbd>
+                <span>Go to Line</span>
+              </div>
+            </div>
           </div>
         </template>
         <template v-else>
           <!-- CodeMirror container -->
           <div ref="codemirrorRef" class="text-editor__codemirror" />
-          <!-- Status overlay for find/replace -->
-          <div v-if="showFindReplace" class="text-editor__find-replace">
-            <div class="text-editor__find-row">
-              <svg class="text-editor__find-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="7" cy="7" r="4.5"/>
-                <path d="M10.5 10.5L14 14"/>
-              </svg>
-              <input
-                ref="findInputRef"
-                v-model="findText"
-                class="text-editor__find-input"
-                placeholder="Find"
-                @input="performFind"
-                @keydown.enter="findNext"
-                @keydown.escape="closeFindReplace"
-              />
-              <button class="text-editor__find-btn" :aria-label="'Find previous'" @click="findPrev">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M13 10L8 5L3 10"/>
+          <!-- Find/Replace Panel -->
+          <Transition name="find-slide">
+            <div v-if="showFindReplace" class="text-editor__find-replace">
+              <div class="text-editor__find-row">
+                <svg class="text-editor__find-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/>
                 </svg>
-              </button>
-              <button class="text-editor__find-btn" :aria-label="'Find next'" @click="findNext">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M3 6L8 11L13 6"/>
+                <input
+                  ref="findInputRef"
+                  v-model="findText"
+                  class="text-editor__find-input"
+                  placeholder="Find..."
+                  @input="performFind"
+                  @keydown.enter="findNext"
+                  @keydown.escape="closeFindReplace"
+                />
+                <button class="text-editor__find-btn" title="Previous (Shift+Enter)" @click="findPrev">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 10L8 5L3 10"/></svg>
+                </button>
+                <button class="text-editor__find-btn" title="Next (Enter)" @click="findNext">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6L8 11L13 6"/></svg>
+                </button>
+                <span v-if="findCount > 0" class="text-editor__find-count">{{ findCurrentIndex }}/{{ findCount }}</span>
+                <span v-else-if="findText && findCount === 0" class="text-editor__find-count text-editor__find-count--none">No results</span>
+              </div>
+              <div class="text-editor__find-row">
+                <svg class="text-editor__find-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M3 4h10M3 8h10M3 12h10"/>
                 </svg>
+                <input
+                  v-model="replaceText"
+                  class="text-editor__find-input"
+                  placeholder="Replace..."
+                  @keydown.enter.exact="replaceCurrent"
+                  @keydown.ctrl.enter="replaceAll"
+                  @keydown.escape="closeFindReplace"
+                />
+                <button class="text-editor__find-btn" @click="replaceCurrent">Replace</button>
+                <button class="text-editor__find-btn" @click="replaceAll">All</button>
+              </div>
+              <button class="text-editor__find-close" @click="closeFindReplace">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l10 10M12 2L2 12"/></svg>
               </button>
-              <span v-if="findCount > 0" class="text-editor__find-count">{{ findCurrentIndex }}/{{ findCount }}</span>
             </div>
-            <div class="text-editor__find-row">
-              <svg class="text-editor__find-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M3 4h10M3 8h10M3 12h10"/>
-              </svg>
+          </Transition>
+          <!-- Go to Line Panel -->
+          <Transition name="find-slide">
+            <div v-if="showGoToLine" class="text-editor__goto-line">
+              <span class="text-editor__goto-label">Line:</span>
               <input
-                v-model="replaceText"
-                class="text-editor__find-input"
-                placeholder="Replace"
-                @keydown.enter.exact="replaceCurrent"
-                @keydown.ctrl.enter="replaceAll"
-                @keydown.escape="closeFindReplace"
+                ref="gotoInputRef"
+                v-model="gotoLineText"
+                class="text-editor__goto-input"
+                type="number"
+                min="1"
+                :placeholder="`1-${totalLines}`"
+                @keydown.enter="goToLine"
+                @keydown.escape="closeGoToLine"
               />
-              <button class="text-editor__find-btn" @click="replaceCurrent">Replace</button>
-              <button class="text-editor__find-btn" @click="replaceAll">All</button>
+              <button class="text-editor__find-btn" @click="goToLine">Go</button>
+              <button class="text-editor__find-close" @click="closeGoToLine">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l10 10M12 2L2 12"/></svg>
+              </button>
             </div>
-            <button class="text-editor__find-close" @click="closeFindReplace">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M2 2l10 10M12 2L2 12"/>
-              </svg>
-            </button>
-          </div>
+          </Transition>
         </template>
       </div>
 
@@ -96,7 +170,7 @@ import { EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightSp
 import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search'
-import { bracketMatching, foldGutter, foldKeymap, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
+import { bracketMatching, foldGutter, foldKeymap, syntaxHighlighting, defaultHighlightStyle, indentOnInput } from '@codemirror/language'
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
 import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
@@ -105,6 +179,11 @@ import { css } from '@codemirror/lang-css'
 import { json } from '@codemirror/lang-json'
 import { markdown } from '@codemirror/lang-markdown'
 import { sql } from '@codemirror/lang-sql'
+import { cpp } from '@codemirror/lang-cpp'
+import { java } from '@codemirror/lang-java'
+import { rust } from '@codemirror/lang-rust'
+import { php } from '@codemirror/lang-php'
+import { xml } from '@codemirror/lang-xml'
 import SCPWindow from '../../components/SCPWindow.vue'
 import SCPTabs from '../../components/ui/SCPTabs.vue'
 import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
@@ -117,25 +196,33 @@ interface Props {
   windowInstance: WindowInstance
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const editorStore = useTextEditorStore()
 const codemirrorRef = ref<HTMLElement>()
 const findInputRef = ref<HTMLInputElement>()
+const gotoInputRef = ref<HTMLInputElement>()
 
-// CodeMirror instances
 let editorView: EditorView | null = null
 const stateCompartment = new Compartment()
 const languageCompartment = new Compartment()
 const themeCompartment = new Compartment()
 const fontSizeCompartment = new Compartment()
+const wrapCompartment = new Compartment()
 
-// Find/Replace state
 const showFindReplace = ref(false)
 const findText = ref('')
 const replaceText = ref('')
 const findCount = ref(0)
 const findCurrentIndex = ref(0)
+
+const showGoToLine = ref(false)
+const gotoLineText = ref('')
+
+const totalLines = computed(() => {
+  if (!editorView) return 1
+  return editorView.state.doc.lines
+})
 
 const editorTabs = computed(() => {
   return editorStore.openFiles.map(f => ({
@@ -149,14 +236,21 @@ const statusLeftItems = computed(() => {
   const items: string[] = []
   const file = editorStore.activeFile
   if (file) {
-    items.push(file.language)
-    // Line/col from CodeMirror
+    items.push(file.language.toUpperCase())
     if (editorView) {
       const state = editorView.state
       const pos = state.selection.main.head
       const line = state.doc.lineAt(pos)
       const col = pos - line.from + 1
       items.push(`Ln ${line.number}, Col ${col}`)
+      const charCount = state.doc.length
+      const lineCount = state.doc.lines
+      const selectedLen = state.selection.main.to - state.selection.main.from
+      if (selectedLen > 0) {
+        items.push(`(${selectedLen} selected)`)
+      }
+      items.push(`${lineCount} lines`)
+      items.push(`${charCount} chars`)
     } else {
       items.push('Ln 1, Col 1')
     }
@@ -167,15 +261,14 @@ const statusLeftItems = computed(() => {
 const statusRightItems = computed(() => {
   const items: string[] = []
   if (editorStore.hasUnsavedChanges) {
-    items.push('● Unsaved')
+    items.push('● Modified')
   }
+  items.push(`Tab: ${editorStore.tabSize}`)
+  items.push(editorStore.wordWrap ? 'Wrap: On' : 'Wrap: Off')
   items.push('UTF-8')
   return items
 })
 
-/**
- * Detect language from file extension
- */
 function detectLanguage(fileName: string): any {
   const ext = fileName.split('.').pop()?.toLowerCase()
   const languageMap: Record<string, any> = {
@@ -183,6 +276,8 @@ function detectLanguage(fileName: string): any {
     jsx: javascript({ jsx: true, typescript: false }),
     ts: javascript({ jsx: true, typescript: true }),
     tsx: javascript({ jsx: true, typescript: true }),
+    mjs: javascript({ jsx: false, typescript: false }),
+    cjs: javascript({ jsx: false, typescript: false }),
     py: python(),
     html: html(),
     htm: html(),
@@ -191,15 +286,20 @@ function detectLanguage(fileName: string): any {
     json: json(),
     md: markdown(),
     sql: sql(),
-    sh: undefined, // Shell not supported in CodeMirror 6
-    bash: undefined,
+    c: cpp(),
+    cpp: cpp(),
+    cc: cpp(),
+    h: cpp(),
+    hpp: cpp(),
+    java: java(),
+    rs: rust(),
+    php: php(),
+    xml: xml(),
+    svg: xml(),
   }
   return languageMap[ext || ''] || undefined
 }
 
-/**
- * Create CodeMirror theme
- */
 function createTheme(): any {
   return EditorView.theme({
     '&': {
@@ -213,65 +313,108 @@ function createTheme(): any {
       outline: 'none',
     },
     '.cm-content': {
-      padding: '16px',
-      lineHeight: '1.7',
+      padding: '8px 16px',
+      lineHeight: '1.65',
       letterSpacing: '0.01em',
-      caretColor: 'var(--gui-accent, #8E8E93)',
+      caretColor: 'var(--gui-accent, #e94560)',
     },
     '.cm-cursor': {
-      borderLeftColor: 'var(--gui-accent, #8E8E93)',
+      borderLeftColor: 'var(--gui-accent, #e94560)',
+      borderLeftWidth: '2px',
+    },
+    '.cm-activeLine': {
+      backgroundColor: 'rgba(255, 255, 255, 0.03)',
     },
     '.cm-activeLineGutter': {
-      backgroundColor: 'var(--gui-bg-surface, #2C2C2E)',
+      backgroundColor: 'rgba(255, 255, 255, 0.04)',
     },
     '.cm-gutters': {
       backgroundColor: 'var(--gui-editor-bg, #0a0a0a)',
-      borderRight: '1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06))',
-      color: 'var(--gui-text-tertiary, #6a6a6a)',
+      borderRight: '1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04))',
+      color: 'var(--gui-text-tertiary, #4a4a4a)',
+      paddingLeft: '4px',
     },
     '.cm-lineNumbers .cm-gutterElement': {
-      padding: '0 8px 0 12px',
-      minWidth: '40px',
+      padding: '0 8px 0 8px',
+      minWidth: '36px',
+      fontSize: '0.85em',
+    },
+    '.cm-foldGutter .cm-gutterElement': {
+      cursor: 'pointer',
+      color: 'var(--gui-text-tertiary, #4a4a4a)',
+      transition: 'color 0.15s ease',
+    },
+    '.cm-foldGutter .cm-gutterElement:hover': {
+      color: 'var(--gui-text-primary, #f0f0f0)',
     },
     '.cm-selectionBackground': {
-      background: 'rgba(142, 142, 147, 0.25) !important',
+      background: 'rgba(233, 69, 96, 0.2) !important',
+    },
+    '&.cm-focused .cm-selectionBackground': {
+      background: 'rgba(233, 69, 96, 0.25) !important',
     },
     '.cm-selectionMatch': {
-      background: 'rgba(142, 142, 147, 0.15)',
+      background: 'rgba(233, 69, 96, 0.12)',
+    },
+    '.cm-searchMatch': {
+      background: 'rgba(255, 200, 50, 0.2)',
+      outline: '1px solid rgba(255, 200, 50, 0.4)',
+    },
+    '.cm-searchMatch.cm-searchMatch-selected': {
+      background: 'rgba(255, 200, 50, 0.35)',
     },
     '.cm-matchingBracket': {
-      backgroundColor: 'rgba(142, 142, 147, 0.3)',
-      outline: '1px solid var(--gui-accent, #8E8E93)',
+      backgroundColor: 'rgba(233, 69, 96, 0.25)',
+      outline: '1px solid var(--gui-accent, #e94560)',
+      color: '#fff !important',
+    },
+    '.cm-nonmatchingBracket': {
+      backgroundColor: 'rgba(255, 50, 50, 0.25)',
+      outline: '1px solid #ff3232',
     },
     '.cm-scroller': {
       overflow: 'auto',
       scrollbarWidth: 'thin',
-      scrollbarColor: 'rgba(255, 255, 255, 0.1) transparent',
+      scrollbarColor: 'rgba(255, 255, 255, 0.08) transparent',
     },
     '.cm-scroller::-webkit-scrollbar': {
-      width: '8px',
-      height: '8px',
+      width: '6px',
+      height: '6px',
     },
     '.cm-scroller::-webkit-scrollbar-track': {
       background: 'transparent',
     },
     '.cm-scroller::-webkit-scrollbar-thumb': {
-      background: 'rgba(255, 255, 255, 0.08)',
-      borderRadius: '6px',
+      background: 'rgba(255, 255, 255, 0.06)',
+      borderRadius: '3px',
+    },
+    '.cm-scroller::-webkit-scrollbar-thumb:hover': {
+      background: 'rgba(255, 255, 255, 0.12)',
     },
     '.cm-panels': {
-      display: 'none', // Hide default search panel, we use custom UI
+      display: 'none',
+    },
+    '.cm-tooltip': {
+      background: 'var(--gui-bg-surface, #1a1a1a)',
+      border: '1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08))',
+      borderRadius: '6px',
+      boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+    },
+    '.cm-tooltip-autocomplete': {
+      '& > ul > li': {
+        padding: '4px 8px',
+      },
+      '& > ul > li[aria-selected]': {
+        background: 'rgba(233, 69, 96, 0.15)',
+        color: '#fff',
+      },
     },
   })
 }
 
-/**
- * Initialize CodeMirror editor
- */
 function initEditor(): void {
   if (!codemirrorRef.value) return
 
-  // Destroy existing editor
   if (editorView) {
     editorView.destroy()
     editorView = null
@@ -280,10 +423,8 @@ function initEditor(): void {
   const file = editorStore.activeFile
   if (!file) return
 
-  // Detect language
   const langExtension = detectLanguage(file.name)
 
-  // Create extensions
   const extensions = [
     lineNumbers(),
     highlightActiveLineGutter(),
@@ -292,6 +433,7 @@ function initEditor(): void {
     foldGutter(),
     bracketMatching(),
     closeBrackets(),
+    indentOnInput(),
     syntaxHighlighting(defaultHighlightStyle),
     highlightSelectionMatches(),
     keymap.of([
@@ -302,12 +444,13 @@ function initEditor(): void {
       ...searchKeymap,
       indentWithTab,
     ]),
-    stateCompartment.of([]), // For syncing document
+    stateCompartment.of([]),
     languageCompartment.of(langExtension ? [langExtension] : []),
     themeCompartment.of(createTheme()),
     fontSizeCompartment.of(EditorView.theme({
       '&': { fontSize: `${editorStore.fontSize}px` },
     })),
+    wrapCompartment.of(editorStore.wordWrap ? [EditorView.lineWrapping] : []),
     EditorView.updateListener.of((update: ViewUpdate) => {
       if (update.docChanged) {
         const newContent = update.state.doc.toString()
@@ -330,9 +473,6 @@ function initEditor(): void {
   })
 }
 
-/**
- * Update editor language when file changes
- */
 function updateLanguage(): void {
   if (!editorView) return
   const file = editorStore.activeFile
@@ -344,9 +484,6 @@ function updateLanguage(): void {
   })
 }
 
-/**
- * Update editor font size
- */
 function updateFontSize(): void {
   if (!editorView) return
   editorView.dispatch({
@@ -356,36 +493,45 @@ function updateFontSize(): void {
   })
 }
 
-/**
- * Save active file
- */
+function toggleWordWrap(): void {
+  editorStore.wordWrap = !editorStore.wordWrap
+  if (!editorView) return
+  editorView.dispatch({
+    effects: wrapCompartment.reconfigure(editorStore.wordWrap ? [EditorView.lineWrapping] : []),
+  })
+}
+
+function zoomIn(): void {
+  editorStore.fontSize = Math.min(editorStore.fontSize + 1, 32)
+}
+
+function zoomOut(): void {
+  editorStore.fontSize = Math.max(editorStore.fontSize - 1, 10)
+}
+
 function saveActive(): void {
   if (editorStore.activeFileId) {
     editorStore.saveFile(editorStore.activeFileId)
   }
 }
 
-/**
- * Save all open files
- */
 function saveAll(): void {
   editorStore.saveAll()
 }
 
-/**
- * Close a file
- */
 function onCloseFile(fileId: string): void {
+  const file = editorStore.openFiles.find(f => f.id === fileId)
+  if (file?.dirty) {
+    if (!confirm(`"${file.name}" has unsaved changes. Close anyway?`)) {
+      return
+    }
+  }
   editorStore.closeFile(fileId)
-  // Re-init editor if needed
   if (editorStore.openFiles.length > 0) {
     nextTick(() => initEditor())
   }
 }
 
-/**
- * Handle window close
- */
 function onClose(): void {
   if (editorView) {
     editorView.destroy()
@@ -393,9 +539,14 @@ function onClose(): void {
   }
 }
 
-/**
- * Open find/replace panel
- */
+function toggleFindReplace(): void {
+  if (showFindReplace.value) {
+    closeFindReplace()
+  } else {
+    openFindReplace()
+  }
+}
+
 function openFindReplace(): void {
   showFindReplace.value = true
   findCount.value = 0
@@ -405,18 +556,14 @@ function openFindReplace(): void {
   })
 }
 
-/**
- * Close find/replace panel
- */
 function closeFindReplace(): void {
   showFindReplace.value = false
   findText.value = ''
   replaceText.value = ''
+  findCount.value = 0
+  findCurrentIndex.value = 0
 }
 
-/**
- * Perform find operation
- */
 function performFind(): void {
   if (!editorView || !findText.value) {
     findCount.value = 0
@@ -432,7 +579,6 @@ function performFind(): void {
   findCount.value = matches ? matches.length : 0
   findCurrentIndex.value = findCount.value > 0 ? 1 : 0
 
-  // Find first occurrence
   if (matches && matches.length > 0) {
     const firstMatch = doc.indexOf(text)
     if (firstMatch !== -1) {
@@ -444,9 +590,6 @@ function performFind(): void {
   }
 }
 
-/**
- * Find next occurrence
- */
 function findNext(): void {
   if (!editorView || !findText.value || findCount.value === 0) return
 
@@ -462,7 +605,6 @@ function findNext(): void {
       effects: EditorView.scrollIntoView(nextPos, { y: 'center' }),
     })
   } else {
-    // Wrap around
     const wrapPos = doc.indexOf(text)
     if (wrapPos !== -1) {
       findCurrentIndex.value = 1
@@ -474,9 +616,6 @@ function findNext(): void {
   }
 }
 
-/**
- * Find previous occurrence
- */
 function findPrev(): void {
   if (!editorView || !findText.value || findCount.value === 0) return
 
@@ -492,7 +631,6 @@ function findPrev(): void {
       effects: EditorView.scrollIntoView(prevPos, { y: 'center' }),
     })
   } else {
-    // Wrap around to end
     const wrapPos = doc.lastIndexOf(text)
     if (wrapPos !== -1) {
       findCurrentIndex.value = findCount.value
@@ -504,9 +642,6 @@ function findPrev(): void {
   }
 }
 
-/**
- * Replace current match
- */
 function replaceCurrent(): void {
   if (!editorView || !findText.value || findCount.value === 0) return
 
@@ -527,9 +662,6 @@ function replaceCurrent(): void {
   }
 }
 
-/**
- * Replace all matches
- */
 function replaceAll(): void {
   if (!editorView || !findText.value || findCount.value === 0) return
 
@@ -553,7 +685,33 @@ function replaceAll(): void {
   findCurrentIndex.value = 0
 }
 
-// Watch for file changes
+function openGoToLine(): void {
+  showGoToLine.value = true
+  gotoLineText.value = ''
+  nextTick(() => {
+    gotoInputRef.value?.focus()
+  })
+}
+
+function closeGoToLine(): void {
+  showGoToLine.value = false
+  gotoLineText.value = ''
+}
+
+function goToLine(): void {
+  if (!editorView) return
+  const lineNum = parseInt(gotoLineText.value, 10)
+  if (isNaN(lineNum) || lineNum < 1) return
+
+  const line = editorView.state.doc.line(Math.min(lineNum, editorView.state.doc.lines))
+  editorView.dispatch({
+    selection: { anchor: line.from },
+    effects: EditorView.scrollIntoView(line.from, { y: 'center' }),
+  })
+  closeGoToLine()
+  editorView.focus()
+}
+
 watch(() => editorStore.activeFileId, () => {
   if (editorStore.openFiles.length > 0) {
     nextTick(() => initEditor())
@@ -561,24 +719,31 @@ watch(() => editorStore.activeFileId, () => {
   }
 })
 
-// Watch for font size changes
 watch(() => editorStore.fontSize, () => {
   updateFontSize()
 })
 
-// Set context and register shortcuts
 onMounted(() => {
   setContext('editor')
+
+  if (props.windowInstance?.config?.data?.filePath) {
+    const filePath = props.windowInstance.config.data.filePath
+    editorStore.openFile(filePath)
+  }
+
+  if (editorStore.openFiles.length === 0) {
+    editorStore.openNewFile()
+  }
+
   nextTick(() => initEditor())
 
-  // Register editor-specific shortcuts
   registerShortcut({
     id: 'editor-find',
     keys: 'Ctrl+F',
     description: '打开查找/替换',
     category: 'editor',
     context: 'editor',
-    handler: () => openFindReplace(),
+    handler: () => toggleFindReplace(),
   })
 
   registerShortcut({
@@ -588,6 +753,42 @@ onMounted(() => {
     category: 'editor',
     context: 'editor',
     handler: () => saveActive(),
+  })
+
+  registerShortcut({
+    id: 'editor-goto-line',
+    keys: 'Ctrl+G',
+    description: '跳转到行',
+    category: 'editor',
+    context: 'editor',
+    handler: () => openGoToLine(),
+  })
+
+  registerShortcut({
+    id: 'editor-word-wrap',
+    keys: 'Alt+Z',
+    description: '切换自动换行',
+    category: 'editor',
+    context: 'editor',
+    handler: () => toggleWordWrap(),
+  })
+
+  registerShortcut({
+    id: 'editor-zoom-in',
+    keys: 'Ctrl+=',
+    description: '放大字体',
+    category: 'editor',
+    context: 'editor',
+    handler: () => zoomIn(),
+  })
+
+  registerShortcut({
+    id: 'editor-zoom-out',
+    keys: 'Ctrl+-',
+    description: '缩小字体',
+    category: 'editor',
+    context: 'editor',
+    handler: () => zoomOut(),
   })
 })
 
@@ -600,7 +801,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ── Layout ─────────────────────────────────────────────────────────── */
 .text-editor {
   display: flex;
   flex-direction: column;
@@ -609,31 +809,76 @@ onUnmounted(() => {
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
 }
 
-.text-editor__menu {
+/* ── Toolbar ─────────────────────────────────────────────────────────── */
+.text-editor__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--gui-spacing-xxs, 2px) var(--gui-spacing-sm, 8px);
+  background: var(--gui-bg-surface, #0c0c0c);
+  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  gap: var(--gui-spacing-xs, 4px);
+}
+
+.text-editor__toolbar-left,
+.text-editor__toolbar-right {
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-xxs, 2px);
-  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #0c0c0c);
-  border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
-.text-editor__menu-item {
-  padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
-  font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-text-secondary, #a8a8a8);
-  cursor: pointer;
+.text-editor__toolbar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+  margin: 0 var(--gui-spacing-xxs, 2px);
+}
+
+.text-editor__tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
   border-radius: var(--gui-radius-sm, 6px);
-  transition: all var(--gui-transition-fast, 120ms ease);
+  color: var(--gui-text-secondary, #a8a8a8);
+  font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
 }
 
-.text-editor__menu-item:hover {
+.text-editor__tool-btn:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #f0f0f0);
 }
 
+.text-editor__tool-btn--active {
+  background: rgba(233, 69, 96, 0.12);
+  color: var(--gui-accent, #e94560);
+}
+
+.text-editor__tool-btn--active:hover {
+  background: rgba(233, 69, 96, 0.18);
+  color: var(--gui-accent, #e94560);
+}
+
+.text-editor__tool-btn--icon {
+  padding: 4px 6px;
+}
+
+.text-editor__font-size-label {
+  font-size: 10px;
+  color: var(--gui-text-tertiary, #6a6a6a);
+  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  min-width: 32px;
+  text-align: center;
+}
+
+/* ── Editor Area ─────────────────────────────────────────────────────── */
 .text-editor__area {
   flex: 1;
   overflow: hidden;
@@ -641,7 +886,6 @@ onUnmounted(() => {
   min-height: 0;
 }
 
-/* ── CodeMirror Container ──────────────────────────────────────────── */
 .text-editor__codemirror {
   width: 100%;
   height: 100%;
@@ -656,39 +900,27 @@ onUnmounted(() => {
   overflow: auto;
 }
 
-/* ── Find/Replace Panel ────────────────────────────────────────────── */
+/* ── Find/Replace Panel ──────────────────────────────────────────────── */
 .text-editor__find-replace {
   position: absolute;
   top: 8px;
   right: 16px;
   z-index: 100;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #1a1a1c);
   border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
-  border-radius: var(--gui-radius-md, 8px);
-  padding: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  min-width: 350px;
+  border-radius: var(--gui-radius-lg, 12px);
+  padding: 12px 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  min-width: 340px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  animation: findSlideIn 0.2s ease-out;
-}
-
-@keyframes findSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .text-editor__find-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .text-editor__find-icon {
@@ -701,16 +933,16 @@ onUnmounted(() => {
   background: var(--gui-bg-base, #0A0A0A);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
-  padding: 6px 10px;
+  padding: 5px 8px;
   color: var(--gui-text-primary, #f0f0f0);
-  font-size: var(--gui-font-sm, 12px);
+  font-size: var(--gui-font-xs, 11px);
   font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.15s ease;
 }
 
 .text-editor__find-input:focus {
-  border-color: var(--gui-accent, #8E8E93);
+  border-color: var(--gui-accent, #e94560);
 }
 
 .text-editor__find-input::placeholder {
@@ -721,11 +953,11 @@ onUnmounted(() => {
   background: var(--gui-bg-surface-hover, #3A3A3C);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
-  padding: 4px 10px;
+  padding: 4px 8px;
   color: var(--gui-text-secondary, #a8a8a8);
-  font-size: var(--gui-font-xs, 11px);
+  font-size: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -740,8 +972,8 @@ onUnmounted(() => {
 
 .text-editor__find-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   background: none;
   border: none;
   color: var(--gui-text-tertiary, #6a6a6a);
@@ -751,7 +983,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: var(--gui-radius-xs, 4px);
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .text-editor__find-close:hover {
@@ -760,34 +992,158 @@ onUnmounted(() => {
 }
 
 .text-editor__find-count {
-  font-size: var(--gui-font-xs, 11px);
+  font-size: 10px;
   color: var(--gui-text-secondary, #a8a8a8);
   font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
   min-width: 40px;
   text-align: right;
 }
 
-/* ── Empty State ────────────────────────────────────────────────────── */
+.text-editor__find-count--none {
+  color: var(--gui-text-disabled, #444444);
+}
+
+/* ── Go to Line ──────────────────────────────────────────────────────── */
+.text-editor__goto-line {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: var(--gui-bg-surface, #1a1a1c);
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+  padding: 8px 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.text-editor__goto-label {
+  font-size: var(--gui-font-xs, 11px);
+  color: var(--gui-text-secondary, #a8a8a8);
+  font-weight: var(--gui-font-weight-medium, 500);
+}
+
+.text-editor__goto-input {
+  width: 80px;
+  background: var(--gui-bg-base, #0A0A0A);
+  border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
+  border-radius: var(--gui-radius-sm, 6px);
+  padding: 5px 8px;
+  color: var(--gui-text-primary, #f0f0f0);
+  font-size: var(--gui-font-xs, 11px);
+  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.text-editor__goto-input:focus {
+  border-color: var(--gui-accent, #e94560);
+}
+
+/* ── Empty State ─────────────────────────────────────────────────────── */
 .text-editor__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--gui-text-tertiary, #6a6a6a);
-  font-size: var(--gui-font-sm, 12px);
-  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  gap: var(--gui-spacing-sm, 8px);
+  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.text-editor__empty-icon {
-  font-size: 48px;
-  margin-bottom: var(--gui-spacing-base, 16px);
-  opacity: 0.5;
+.text-editor__empty-logo {
+  color: var(--gui-text-tertiary, #4a4a4a);
+  margin-bottom: var(--gui-spacing-sm, 8px);
+  opacity: 0.6;
 }
 
-.text-editor__empty-hint {
+.text-editor__empty-title {
+  font-size: var(--gui-font-lg, 18px);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  color: var(--gui-text-secondary, #a8a8a8);
+  letter-spacing: -0.01em;
+}
+
+.text-editor__empty-desc {
   font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-text-disabled, #444444);
-  margin-top: var(--gui-spacing-xs, 4px);
+  color: var(--gui-text-tertiary, #6a6a6a);
+  margin-bottom: var(--gui-spacing-lg, 20px);
+}
+
+.text-editor__empty-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gui-spacing-sm, 8px);
+}
+
+.text-editor__shortcut {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--gui-bg-surface, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
+  border-radius: var(--gui-radius-sm, 6px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.text-editor__shortcut:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
+}
+
+.text-editor__shortcut kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 4px;
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 3px;
+  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-size: 9px;
+  color: var(--gui-text-secondary, #a8a8a8);
+  line-height: 1;
+}
+
+.text-editor__shortcut span {
+  font-size: var(--gui-font-xs, 11px);
+  color: var(--gui-text-tertiary, #6a6a6a);
+}
+
+/* ── Transitions ─────────────────────────────────────────────────────── */
+.find-slide-enter-active {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.find-slide-leave-active {
+  transition: all 0.15s ease;
+}
+
+.find-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.find-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

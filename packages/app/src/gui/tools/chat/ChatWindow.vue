@@ -2,9 +2,9 @@
   <MobileWindow
     :visible="visible"
     :title="view === 'rooms' ? t('chat.title') : currentRoom?.name || ''"
-    :show-back="view === 'chat'"
+    :show-back="true"
     @close="$emit('close')"
-    @back="view = 'rooms'"
+    @back="view === 'rooms' ? $emit('close') : view = 'rooms'"
   >
     <div class="mobile-chat" :style="chatThemeStyles">
 

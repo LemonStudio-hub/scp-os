@@ -31,6 +31,8 @@ export const SCRAPER_CONFIG = {
       'https://scpos.pages.dev',
       'https://*.scpos.pages.dev',
       'https://scpos.woodcat.online',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
       'https://*.github.io',
       'http://localhost:*',
       'http://127.0.0.1:*',
@@ -127,11 +129,11 @@ export const SCRAPER_CONFIG = {
   },
 
   // JWT 认证配置
-  // 生产环境必须通过 JWT_SECRET 环境变量/secret 覆盖此默认值
+  // 生产环境必须通过 JWT_SECRET 环境变量/secret 进行配置
   // Worker 端：wrangler secret put JWT_SECRET
-  // 此默认值仅用于本地开发，客户端与 Worker 端必须保持一致
+  // 本地开发：创建 .dev.vars 文件，设置 JWT_SECRET=<你的开发密钥>
+  // 注意：不存在默认密钥，缺少 JWT_SECRET 将导致认证功能不可用
   jwt: {
-    secret: 'scp-os-default-secret-change-in-production',
     expiresIn: '7d',
   } as const,
 } as const

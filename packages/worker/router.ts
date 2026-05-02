@@ -19,6 +19,10 @@ export class Router {
     this.routes.set(`POST:${path}`, handler)
   }
 
+  delete(path: string, handler: RouteHandler): void {
+    this.routes.set(`DELETE:${path}`, handler)
+  }
+
   resolve(method: string, pathname: string): { handler: RouteHandler; params: Record<string, string> } | null {
     const exactKey = `${method}:${pathname}`
     const exactHandler = this.routes.get(exactKey)

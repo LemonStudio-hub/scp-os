@@ -33,7 +33,15 @@ SCP-OS 是一个以 SCP 基金会为主题的 Web 操作系统，在浏览器中
 
 ### 需要网络连接吗？
 
-大部分功能可以离线使用（终端命令、虚拟文件系统、本地设置等）。SCP 数据查询和聊天功能需要网络连接。
+大部分功能可以离线使用（终端命令、虚拟文件系统、本地设置等）。SCP 数据查询、聊天功能和 Docs 阅读器需要网络连接。Docs 阅读器支持离线阅读——已缓存的文章内容存储在 IndexedDB 中，断网后仍可阅读。
+
+### Docs 阅读器需要付费吗？
+
+不需要。Docs 阅读器使用 Cloudflare 免费额度构建：D1 数据库（500MB 免费存储）、KV 缓存（1GB 免费存储）、Worker（每日 10 万次免费请求）。正常使用完全免费。
+
+### Docs 内容多久更新一次？
+
+目前 Docs 使用 KV 预加载脚本每日分批写入（每日 900 条），预计 8-10 天可将全部 9526+ 条目写入 KV。GitHub Raw 作为回退源始终可用。
 
 ---
 
@@ -205,11 +213,11 @@ search 雕像
 # 检查数据库是否存在
 wrangler d1 list
 
-# 重新执行迁移
-wrangler d1 execute scp-database --file=migrations/0001_init.sql
-
 # 查看数据库信息
-wrangler d1 info scp-database
+wrangler d1 info scp-reader-db
+
+# 重新执行迁移
+wrangler d1 execute scp-reader-db --file=migrations/0009_scp_reader_tables.sql --remote
 ```
 
 ### Worker 部署失败？

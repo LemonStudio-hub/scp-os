@@ -1,4 +1,3 @@
-import { getConfig } from '../shared/config'
 import type { RequestContext } from '../shared/types'
 
 function base64UrlEncode(buffer: ArrayBuffer | Uint8Array): string {
@@ -148,8 +147,14 @@ export async function requireAuth(
   }
 
   const token = authHeader.slice(7)
-  const config = getConfig()
-  const secret = env.JWT_SECRET || config.jwt.secret
+  const secret = env.JWT_SECRET
+  if (!secret) {
+    return corsManager.createErrorResponse(
+      'JWT_SECRET not configured on server',
+      500,
+      buildRequestContext(request)
+    )
+  }
 
   const result = await verifyToken(token, secret)
   if (!result) {

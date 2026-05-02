@@ -1,18 +1,8 @@
 <template>
-  <div class="mobile-proxy">
-    <div class="mobile-proxy__header">
-      <div class="mobile-proxy__header-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-        </svg>
-      </div>
-      <h2 class="mobile-proxy__header-title">{{ t('app.proxy') }}</h2>
-      <div v-if="store.isDownloading" class="mobile-proxy__header-speed">
-        {{ formatSpeed(store.currentSpeed) }}
-      </div>
-    </div>
+  <MobileWindow :visible="visible" :title="t('app.proxy')" :show-back="true" @close="$emit('close')">
+    <div class="mobile-proxy" :style="store.isDownloading ? `--dl-speed-color: ${speedColor}` : {}">
 
-    <div class="mobile-proxy__body">
+      <div class="mobile-proxy__body">
       <div v-if="store.error && !store.isDownloading" class="mobile-proxy__alert mobile-proxy__alert--error">
         <span>{{ store.error }}</span>
         <button @click="store.clearError()">&times;</button>
@@ -157,13 +147,14 @@
         </div>
       </div>
     </div>
-  </div>
+  </MobileWindow>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watchEffect, onMounted } from 'vue'
 import { useDownload } from '../../../composables/useDownload'
 import { useI18n } from '../../composables/useI18n'
+import MobileWindow from '../../components/MobileWindow.vue'
 
 const { t } = useI18n()
 const {
@@ -182,6 +173,21 @@ const {
   formatETA,
   calcETA,
 } = useDownload()
+
+interface Props {
+  visible: boolean
+}
+
+defineProps<Props>()
+defineEmits<{ close: [] }>()
+
+const speedColor = computed(() => {
+  const speed = store.currentSpeed
+  if (speed < 100) return '#8b949e'
+  if (speed < 500) return '#58a6ff'
+  if (speed < 2000) return '#3fb950'
+  return '#f85149'
+})
 
 const history = computed(() => store.history)
 
@@ -255,34 +261,6 @@ onMounted(() => {
 
 <style scoped>
 .mobile-proxy {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: #0d1117;
-  color: #c9d1d9;
-  font-size: 14px;
-}
-
-.mobile-proxy__header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, #161b22, #1a2233);
-  border-bottom: 1px solid #21262d;
-}
-
-.mobile-proxy__header-icon { color: #58a6ff; }
-.mobile-proxy__header-title { font-size: 16px; font-weight: 600; margin: 0; }
-.mobile-proxy__header-speed {
-  margin-left: auto;
-  font-size: 12px;
-  color: #3fb950;
-  font-family: 'SF Mono', monospace;
-  font-weight: 500;
-}
-
-.mobile-proxy__body { flex: 1; overflow-y: auto; padding: 16px; }
 
 .mobile-proxy__alert {
   display: flex;

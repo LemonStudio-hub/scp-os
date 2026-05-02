@@ -1,4 +1,5 @@
 import type { ChatApiResponse } from '../shared/types'
+import { encodeHtmlEntities } from '../utils/htmlSanitizer'
 
 export interface Feedback {
   id: number
@@ -99,9 +100,9 @@ export async function submitFeedback(
       `INSERT INTO feedbacks (user_id, nickname, title, content, category) VALUES (?, ?, ?, ?, ?)`
     ).bind(
       input.user_id,
-      input.nickname || 'Anonymous',
-      input.title,
-      input.content,
+      encodeHtmlEntities(input.nickname || 'Anonymous'),
+      encodeHtmlEntities(input.title),
+      encodeHtmlEntities(input.content),
       category
     ).run()
 
@@ -234,8 +235,8 @@ export async function submitComment(
       ).bind(
         input.feedback_id,
         input.user_id,
-        input.nickname || 'Anonymous',
-        input.content
+        encodeHtmlEntities(input.nickname || 'Anonymous'),
+        encodeHtmlEntities(input.content)
       ),
       db.prepare(
         'UPDATE feedbacks SET commentsCount = commentsCount + 1 WHERE id = ?'

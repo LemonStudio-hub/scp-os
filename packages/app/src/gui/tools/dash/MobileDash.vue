@@ -1,5 +1,5 @@
 <template>
-  <MobileWindow title="Dashboard" @close="onClose">
+  <MobileWindow title="Dashboard" :show-back="true" @close="onClose">
     <div class="mdash">
       <div class="mdash__bg">
         <div class="mdash__bg-orb mdash__bg-orb--1" />

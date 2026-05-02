@@ -1,4 +1,5 @@
 import type { ChatMessage, WSUser } from '../shared/types'
+import { encodeHtmlEntities } from '../utils/htmlSanitizer'
 
 interface WebSocketConnection {
   ws: WebSocket
@@ -441,20 +442,22 @@ export class ChatRoomDO {
     roomId: number,
   ): Promise<void> {
     const now = new Date().toISOString()
+    const safeUsername = encodeHtmlEntities(username)
+    const safeContent = encodeHtmlEntities(content)
     let message: ChatMessage
 
     try {
       const result = await this.env.SCP_DB.prepare(
         'INSERT INTO chat_messages (user_id, username, content, room_id) VALUES (?, ?, ?, ?)',
       )
-        .bind(userId, username, content, roomId)
+        .bind(userId, safeUsername, safeContent, roomId)
         .run()
 
       message = {
         id: (result.meta?.last_row_id as number) || Date.now(),
         user_id: userId,
-        username,
-        content,
+        username: safeUsername,
+        content: safeContent,
         room_id: roomId,
         created_at: now,
         is_broadcast: 0,
@@ -465,8 +468,8 @@ export class ChatRoomDO {
       message = {
         id: Date.now(),
         user_id: userId,
-        username,
-        content,
+        username: safeUsername,
+        content: safeContent,
         room_id: roomId,
         created_at: now,
         is_broadcast: 0,
@@ -539,17 +542,18 @@ export class ChatRoomDO {
   }
 
   private async updateUsername(userId: string, newUsername: string): Promise<void> {
+    const safeUsername = encodeHtmlEntities(newUsername)
     let roomId = 1
     for (const [, conn] of this.connections) {
       if (conn.userId === userId) {
-        conn.username = newUsername
+        conn.username = safeUsername
         roomId = conn.roomId
         try {
           const current = conn.ws.deserializeAttachment()
           conn.ws.serializeAttachment({
             ...(current || {}),
             userId: conn.userId,
-            username: newUsername,
+            username: safeUsername,
             roomId: conn.roomId,
             connectionId: conn.connectionId,
           })
@@ -563,7 +567,7 @@ export class ChatRoomDO {
       await this.env.SCP_DB.prepare(
         'INSERT OR REPLACE INTO user_settings (key, value, updatedAt) VALUES (?, ?, ?)',
       )
-        .bind(`nickname_${userId}`, newUsername, new Date().toISOString())
+        .bind(`nickname_${userId}`, safeUsername, new Date().toISOString())
         .run()
     } catch (error) {
       console.error('[ChatRoomDO] Failed to save nickname to DB:', error)

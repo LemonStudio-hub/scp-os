@@ -49,6 +49,20 @@ export class CORSManager {
     if (!origin) return false
 
     for (const allowed of this.config.cors.allowedOrigins) {
+      // 直接匹配
+      if (allowed === origin) {
+        return true
+      }
+
+      // 支持 * 通配符端口 (例如 http://localhost:*)
+      if (allowed.includes(':*')) {
+        const base = allowed.replace(':*', '')
+        if (origin.startsWith(base) && (origin.length === base.length || origin.charAt(base.length) === ':')) {
+          return true
+        }
+      }
+
+      // 支持通配符子域名 (例如 https://*.scpos.pages.dev)
       if (allowed.includes('*')) {
         let regex = this.originRegexCache.get(allowed)
         if (!regex) {
@@ -68,9 +82,6 @@ export class CORSManager {
         if (regex.test(origin)) {
           return true
         }
-      }
-      else if (origin === allowed) {
-        return true
       }
     }
 

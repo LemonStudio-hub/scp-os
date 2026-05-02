@@ -2,6 +2,24 @@
 
 ## [0.3.0](https://github.com/LemonStudio-hub/scp-os/compare/v0.2.0...v0.3.0) (2026-05-02)
 
+### Docs 阅读器（新功能）
+
+**SCP 离线阅读器**是 0.3.0 的核心新功能，提供完整的离线优先阅读体验：
+
+- **D1 索引数据库**：9526+ SCP 条目、6487 故事、711 GOI、126 Hub，基于 Cloudflare D1（SQLite）构建，FTS5 全文搜索
+- **多级缓存架构**：Cloudflare KV（服务端，<50ms）→ IndexedDB（客户端，离线）→ GitHub Raw（回退）
+- **双端阅读器**：桌面端左列表右内容布局（PCDocsWindow）、移动端卡片+全屏阅读+手势操作（MobileDocs）
+- **Worker Docs API**：5 个端点（/docs/items、/docs/item/:number、/docs/content/:number、/docs/tales、/docs/hubs）
+- **IndexedDB 持久化**：SCP_CONTENT / READING_PROGRESS / SCP_FAVORITES 三个存储
+
+**相关文件**：
+- `packages/worker/api/docs.ts` — Docs API 实现
+- `packages/worker/scripts/migrate-scp-data.ts` — D1 数据迁移脚本
+- `packages/worker/scripts/preload-kv-content.ts` — KV 内容预加载脚本
+- `packages/app/src/gui/tools/docs/PCDocsWindow.vue` — 桌面端阅读器
+- `packages/app/src/gui/tools/docs/MobileDocs.vue` — 移动端阅读器
+- `packages/app/src/gui/composables/useDocsReader.ts` — 阅读器 Composable
+
 
 ### Features
 

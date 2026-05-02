@@ -1,49 +1,26 @@
-/**
- * Tool Registration — Registers all GUI tools with the ToolRegistry.
- * Each tool is self-contained and only exposes what the registry needs.
- */
-
 import { ToolRegistry } from '../registry/ToolRegistry'
 import { useI18n } from '../composables/useI18n'
+import { defineAsyncComponent, h } from 'vue'
 
-// Terminal tools
-import TerminalPanel from '../tools/terminal/TerminalPanel.vue'
-import MobileTerminal from '../tools/terminal/MobileTerminal.vue'
+const AsyncTerminalPanel = defineAsyncComponent(() => import('../tools/terminal/TerminalPanel.vue'))
+const AsyncMobileTerminal = defineAsyncComponent(() => import('../tools/terminal/MobileTerminal.vue'))
+const AsyncFileManagerWindow = defineAsyncComponent(() => import('../tools/filemanager/FileManagerWindow.vue'))
+const AsyncMobileFileManager = defineAsyncComponent(() => import('../tools/filemanager/MobileFileManager.vue'))
+const AsyncEditorWindow = defineAsyncComponent(() => import('../tools/editor/EditorWindow.vue'))
+const AsyncMobileEditor = defineAsyncComponent(() => import('../tools/editor/MobileEditor.vue'))
+const AsyncSettingsWindow = defineAsyncComponent(() => import('../tools/settings/SettingsWindow.vue'))
+const AsyncMobileSettings = defineAsyncComponent(() => import('../tools/settings/MobileSettings.vue'))
+const AsyncChatWindow = defineAsyncComponent(() => import('../tools/chat/ChatWindow.vue'))
+const AsyncPCChatWindow = defineAsyncComponent(() => import('../tools/chat/PCChatWindow.vue'))
+const AsyncMobileDash = defineAsyncComponent(() => import('../tools/dash/MobileDash.vue'))
+const AsyncPCDashboard = defineAsyncComponent(() => import('../tools/dash/PCDashboard.vue'))
+const AsyncMobileFeedback = defineAsyncComponent(() => import('../tools/feedback/MobileFeedback.vue'))
+const AsyncPCFeedbackWindow = defineAsyncComponent(() => import('../tools/feedback/PCFeedbackWindow.vue'))
+const AsyncPCDocsWindow = defineAsyncComponent(() => import('../tools/docs/PCDocsWindow.vue'))
+const AsyncMobileDocs = defineAsyncComponent(() => import('../tools/docs/MobileDocs.vue'))
+const AsyncPCProxyWindow = defineAsyncComponent(() => import('../tools/proxy/PCProxyWindow.vue'))
+const AsyncMobileProxy = defineAsyncComponent(() => import('../tools/proxy/MobileProxy.vue'))
 
-// File manager tools
-import FileManagerWindow from '../tools/filemanager/FileManagerWindow.vue'
-import MobileFileManager from '../tools/filemanager/MobileFileManager.vue'
-
-// Editor tools
-import EditorWindow from '../tools/editor/EditorWindow.vue'
-import MobileEditor from '../tools/editor/MobileEditor.vue'
-
-// Settings tools
-import SettingsWindow from '../tools/settings/SettingsWindow.vue'
-import MobileSettings from '../tools/settings/MobileSettings.vue'
-
-// Chat tools
-import ChatWindow from '../tools/chat/ChatWindow.vue'
-import PCChatWindow from '../tools/chat/PCChatWindow.vue'
-
-// Dash tools
-import MobileDash from '../tools/dash/MobileDash.vue'
-import PCDashboard from '../tools/dash/PCDashboard.vue'
-
-// Feedback tools
-import MobileFeedback from '../tools/feedback/MobileFeedback.vue'
-import PCFeedbackWindow from '../tools/feedback/PCFeedbackWindow.vue'
-
-// Docs tools
-import PCDocsWindow from '../tools/docs/PCDocsWindow.vue'
-import MobileDocs from '../tools/docs/MobileDocs.vue'
-
-// Proxy tools
-import PCProxyWindow from '../tools/proxy/PCProxyWindow.vue'
-import MobileProxy from '../tools/proxy/MobileProxy.vue'
-
-// i18n — resolved at runtime via the composable
-// Labels are functions that call t() when evaluated (in openTool / getToolLabel)
 function lbl(key: string): () => string {
   return () => {
     const { t } = useI18n()
@@ -51,152 +28,89 @@ function lbl(key: string): () => string {
   }
 }
 
-/**
- * Register all tools with the ToolRegistry.
- * Call this once during app initialization.
- */
 export function registerAllTools(): void {
-  // Terminal
   ToolRegistry.register({
     id: 'terminal',
     label: lbl('app.terminal'),
     icon: 'terminal',
-    windowConfig: {
-      width: 650,
-      height: 380,
-      minWidth: 320,
-      minHeight: 200,
-      resizable: true,
-    },
-    desktopComponent: TerminalPanel,
-    mobileComponent: MobileTerminal,
+    windowConfig: { width: 650, height: 380, minWidth: 320, minHeight: 200, resizable: true },
+    desktopComponent: AsyncTerminalPanel,
+    mobileComponent: AsyncMobileTerminal,
   })
 
-  // File Manager
   ToolRegistry.register({
     id: 'filemanager',
     label: lbl('app.fileManager'),
     icon: 'folder',
-    windowConfig: {
-      width: 750,
-      height: 480,
-      minWidth: 320,
-      minHeight: 240,
-      resizable: true,
-    },
-    desktopComponent: FileManagerWindow,
-    mobileComponent: MobileFileManager,
+    windowConfig: { width: 750, height: 480, minWidth: 320, minHeight: 240, resizable: true },
+    desktopComponent: AsyncFileManagerWindow,
+    mobileComponent: AsyncMobileFileManager,
   })
 
-  // Text Editor
   ToolRegistry.register({
     id: 'editor',
     label: lbl('app.editor'),
     icon: 'edit',
-    windowConfig: {
-      width: 700,
-      height: 500,
-      minWidth: 320,
-      minHeight: 240,
-      resizable: true,
-    },
-    desktopComponent: EditorWindow,
-    mobileComponent: MobileEditor,
+    windowConfig: { width: 700, height: 500, minWidth: 320, minHeight: 240, resizable: true },
+    desktopComponent: AsyncEditorWindow,
+    mobileComponent: AsyncMobileEditor,
   })
 
-  // Settings (now with desktop support)
   ToolRegistry.register({
     id: 'settings',
     label: lbl('app.settings'),
     icon: 'settings',
-    windowConfig: {
-      width: 800,
-      height: 550,
-      minWidth: 600,
-      minHeight: 400,
-      resizable: true,
-    },
-    desktopComponent: SettingsWindow,
-    mobileComponent: MobileSettings,
+    windowConfig: { width: 800, height: 550, minWidth: 600, minHeight: 400, resizable: true },
+    desktopComponent: AsyncSettingsWindow,
+    mobileComponent: AsyncMobileSettings,
   })
 
-  // Chat (both mobile and desktop)
   ToolRegistry.register({
     id: 'chat',
     label: lbl('app.chat'),
     icon: 'chat',
-    windowConfig: {
-      width: 400,
-      height: 600,
-      minWidth: 300,
-      minHeight: 400,
-      resizable: true,
-    },
-    desktopComponent: PCChatWindow,
-    mobileComponent: ChatWindow,
+    windowConfig: { width: 400, height: 600, minWidth: 300, minHeight: 400, resizable: true },
+    desktopComponent: AsyncPCChatWindow,
+    mobileComponent: AsyncChatWindow,
   })
 
-  // Dash (both mobile and desktop)
   ToolRegistry.register({
     id: 'dash',
     label: lbl('app.dash'),
     icon: 'dash',
-    windowConfig: {
-      width: 700,
-      height: 550,
-      minWidth: 500,
-      minHeight: 400,
-      resizable: true,
-    },
-    desktopComponent: PCDashboard,
-    mobileComponent: MobileDash,
+    windowConfig: { width: 700, height: 550, minWidth: 500, minHeight: 400, resizable: true },
+    desktopComponent: AsyncPCDashboard,
+    mobileComponent: AsyncMobileDash,
   })
 
-  // Feedback (both mobile and desktop - Public Feedback Board)
   ToolRegistry.register({
     id: 'feedback',
     label: lbl('app.feedback'),
     icon: 'feedback',
-    windowConfig: {
-      width: 400,
-      height: 600,
-      minWidth: 300,
-      minHeight: 450,
-      resizable: true,
-    },
-    desktopComponent: PCFeedbackWindow,
-    mobileComponent: MobileFeedback,
+    windowConfig: { width: 400, height: 600, minWidth: 300, minHeight: 450, resizable: true },
+    desktopComponent: AsyncPCFeedbackWindow,
+    mobileComponent: AsyncMobileFeedback,
   })
 
-  // Docs (both mobile and desktop - SCP Document Reader)
   ToolRegistry.register({
     id: 'docs',
     label: lbl('app.docs'),
     icon: 'docs',
-    windowConfig: {
-      width: 800,
-      height: 600,
-      minWidth: 500,
-      minHeight: 400,
-      resizable: true,
-    },
-    desktopComponent: PCDocsWindow,
-    mobileComponent: MobileDocs,
+    windowConfig: { width: 800, height: 600, minWidth: 500, minHeight: 400, resizable: true },
+    desktopComponent: AsyncPCDocsWindow,
+    mobileComponent: AsyncMobileDocs,
   })
 
-  // Proxy (both mobile and desktop - Download Proxy)
   ToolRegistry.register({
     id: 'proxy',
     label: lbl('app.proxy'),
     icon: 'proxy',
-    windowConfig: {
-      width: 700,
-      height: 550,
-      minWidth: 420,
-      minHeight: 380,
-      resizable: true,
+    windowConfig: { width: 700, height: 550, minWidth: 420, minHeight: 380, resizable: true },
+    desktopComponent: AsyncPCProxyWindow,
+    mobileComponent: {
+      render() {
+        return h(AsyncMobileProxy, { visible: true, onClose: () => {} })
+      },
     },
-    desktopComponent: PCProxyWindow,
-    mobileComponent: MobileProxy,
   })
 }

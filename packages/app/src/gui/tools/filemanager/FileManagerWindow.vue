@@ -198,6 +198,7 @@ function openInEditor(file: FileItem): void {
     iconName: 'edit',
     width: 700,
     height: 450,
+    data: { filePath: file.path }
   })
 }
 

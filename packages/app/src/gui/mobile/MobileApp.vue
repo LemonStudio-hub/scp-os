@@ -12,6 +12,7 @@
       <component
         :is="activeToolModule.mobileComponent"
         :visible="true"
+        :data="activeToolData"
         @close="closeActiveTool"
       />
     </template>
@@ -55,6 +56,12 @@ const activeTool = computed<ToolType | null>(() => {
 const activeToolModule = computed(() => {
   if (!activeTool.value) return null
   return ToolRegistry.get(activeTool.value) || null
+})
+
+const activeToolData = computed(() => {
+  if (!activeTool.value) return undefined
+  const topWindow = wmStore.openWindows[wmStore.openWindows.length - 1]
+  return topWindow?.config.data
 })
 
 function onHomeLaunch(app: HomeApp | DesktopApp): void {

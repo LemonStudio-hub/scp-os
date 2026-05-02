@@ -22,6 +22,11 @@ async function createHmacSignature(data: string, secret: string): Promise<Uint8A
 }
 
 export async function generateToken(userId: string): Promise<string> {
+  const secret = config.jwtSecret
+  if (!secret) {
+    throw new Error('JWT_SECRET is not configured. Set VITE_JWT_SECRET in your environment.')
+  }
+
   const encoder = new TextEncoder()
   const now = Math.floor(Date.now() / 1000)
   const expiresIn = 7 * 24 * 60 * 60
@@ -33,7 +38,7 @@ export async function generateToken(userId: string): Promise<string> {
   const payloadEncoded = base64UrlEncode(encoder.encode(JSON.stringify(payload)))
 
   const data = `${headerEncoded}.${payloadEncoded}`
-  const sig = await createHmacSignature(data, config.jwtSecret)
+  const sig = await createHmacSignature(data, secret)
   const sigEncoded = base64UrlEncode(sig)
 
   return `${data}.${sigEncoded}`

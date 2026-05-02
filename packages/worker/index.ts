@@ -1,14 +1,10 @@
-/**
+﻿/**
  * SCP Scraper Worker
  * 重构版本 - 使用模块化架构
  */
 
 import { getConfig } from './shared/config'
 import type { Env, ScraperResult, SCPWikiData, RequestContext, ChatMessage, ChatApiResponse, ChatRoom, ChatRoomInput, ObjectClass, ChatSendMessageBody, CreateChatRoomBody, SetNicknameBody, SubmitFeedbackBody, LikeFeedbackBody, SubmitCommentBody, VoteFeedbackBody, RegisterUserBody, PerformanceMetricsBody, D1StatRow, D1ClearanceRow } from './shared/types'
-import * as feedbackAPI from './api/feedback'
-import * as userAPI from './api/user'
-import * as docsAPI from './api/docs'
-
 // 解析器
 import { HTMLParser } from './parsers/htmlParser'
 import { SectionParser } from './parsers/sectionParser'
@@ -25,7 +21,7 @@ import { parseHTML } from 'linkedom'
 import * as cheerio from 'cheerio'
 
 // 安全
-import { RateLimiter } from './security/rateLimiter'
+import { RateLimiter, KVRateLimiter } from './security/rateLimiter'
 import { CORSManager } from './security/cors'
 import { requireAuth } from './security/auth'
 
@@ -39,16 +35,16 @@ import { validationError, notFoundError, rateLimitedError, unauthorizedError, in
 // Durable Objects
 import { ChatRoomDO } from './durableObjects/ChatRoomDO'
 
-// 下载代理
-import { DownloadProxy } from './download/downloadProxy'
-import type { DownloadRequest } from './download/types'
+// 路由
+import { Router } from './router'
+import { registerRoutes } from './routes'
 
 export { ChatRoomDO }
 
 /**
  * SCP Scraper 类
  */
-class SCPScraper {
+export class SCPScraper {
   private config = getConfig()
   private htmlParser = new HTMLParser()
   private sectionParser = new SectionParser()
@@ -313,7 +309,7 @@ class SCPScraper {
 
     // 获取所有段落和块级元素（包括嵌套的）
     const elements: string[] = []
-    $content.find('p, div, blockquote, h1, h2, h3, h4, h5, h6').each((_: number, el: cheerio.Element) => {
+    $content.find('p, div, blockquote, h1, h2, h3, h4, h5, h6').each((_: number, el) => {
       // 只处理最内层的元素，避免重复
       const $el = $(el)
       if ($el.children('p, div, blockquote, h1, h2, h3, h4, h5, h6').length === 0) {
@@ -1059,632 +1055,75 @@ class SCPScraper {
   }
 }
 
-/**
- * Worker 入口点
- */
-function safeParseInt(value: string | null, defaultValue: number): number {
-  if (!value) return defaultValue
-  const parsed = parseInt(value, 10)
-  return Number.isNaN(parsed) ? defaultValue : parsed
-}
-
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const corsManager = new CORSManager()
-    const rateLimiter = new RateLimiter()
-    const config = getConfig()
-
-    // 构建请求上下文
-    const context: RequestContext = {
-      ip: request.headers.get('CF-Connecting-IP') || 'unknown',
-      origin: request.headers.get('Origin') || request.headers.get('Referer') || '',
-      userAgent: request.headers.get('User-Agent') || '',
-      timestamp: Date.now(),
-    }
-
-    // 处理 CORS 预检请求
+    const rateLimiter = env.SCP_CACHE ? new KVRateLimiter(env.SCP_CACHE) : new RateLimiter()
     if (request.method === 'OPTIONS') {
-      return corsManager.handlePreflight(context)
+      const pc: RequestContext = {
+        ip: request.headers.get('CF-Connecting-IP') || 'unknown',
+        origin: request.headers.get('Origin') || request.headers.get('Referer') || '',
+        userAgent: request.headers.get('User-Agent') || '',
+        timestamp: Date.now(),
+      }
+      return corsManager.handlePreflight(pc)
     }
-
     try {
       const url = new URL(request.url)
       const path = url.pathname
-
-      // 速率限制
-      const ip = context.ip
-      if (!await rateLimiter.checkLimit(ip)) {
-        logger.warn('Rate limit exceeded', { ip })
-        return corsManager.createErrorResponse(rateLimitedError('Rate limit exceeded'), 429, context)
-      }
-
-      const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
-
-      // POST 请求 JWT 认证
-      const authRequiredPaths = [
-        '/feedback/submit', '/feedback/vote', '/feedback/comment',
-        '/feedback/like',
-        '/chat/rooms', '/chat/nickname', '/chat/send',
-        '/chat/broadcast',
-        '/api/user/register',
-        '/performance'
-      ]
-      let authenticatedUserId: string | undefined
-      if (request.method === 'POST' && authRequiredPaths.includes(path)) {
-        const authResult = await requireAuth(request, env, corsManager)
-        if (authResult instanceof Response) {
-          return authResult
-        }
-        authenticatedUserId = authResult.userId
-      }
       if (path === '/chat/ws' && request.headers.get('Upgrade') === 'websocket') {
-        const authResult = await requireAuth(request, env, corsManager)
-        if (authResult instanceof Response) {
-          return authResult
-        }
-        authenticatedUserId = authResult.userId
+        const chatRoomId = env.CHAT_ROOM_DO.idFromName('global')
+        const chatRoomStub = env.CHAT_ROOM_DO.get(chatRoomId)
+        return chatRoomStub.fetch(request)
       }
-
-      // 路由处理
-      if (path === '/chat/ws' && request.headers.get('Upgrade') === 'websocket' && authenticatedUserId) {
-        const roomId = url.searchParams.get('room_id') || '1'
-        const username = url.searchParams.get('username') || 'User'
-        const newUrl = new URL(request.url)
-        newUrl.searchParams.set('user_id', authenticatedUserId)
-        newUrl.searchParams.set('username', username)
-        const authRequest = new Request(newUrl.toString(), request)
-        const id = env.CHAT_ROOM_DO.idFromName(`room-${roomId}`)
-        const stub = env.CHAT_ROOM_DO.get(id)
-        return stub.fetch(authRequest)
-      } else if (path === '/image-proxy') {
-        const imageUrl = url.searchParams.get('url')
-        if (!imageUrl) {
-          return corsManager.createErrorResponse(validationError('Missing url parameter', { field: 'url' }), 400, context)
-        }
-
-        try {
-          const allowedHosts = [
-            'scp-wiki.wdfiles.com',
-            'scp-wiki-cn.wdfiles.com',
-            'wikidot.com',
-            'scpfoundation.ru',
-            'scp-wiki.wikidot.com',
-            'scp-wiki-cn.wikidot.com',
-          ]
-          const parsedUrl = new URL(imageUrl)
-          if (!allowedHosts.some(host => parsedUrl.hostname.endsWith(host))) {
-            return corsManager.createErrorResponse(validationError('Image host not allowed', { host: parsedUrl.hostname }), 403, context)
-          }
-
-          const imageResponse = await fetch(imageUrl, {
-            headers: {
-              'User-Agent': 'SCP-OS/1.0',
-              'Referer': parsedUrl.origin + '/',
-            },
-          })
-
-          if (!imageResponse.ok) {
-            return corsManager.createErrorResponse({ success: false, error: 'Failed to fetch image' }, imageResponse.status, context)
-          }
-
-          const contentType = imageResponse.headers.get('Content-Type') || 'image/png'
-          const body = await imageResponse.arrayBuffer()
-
-          return new Response(body, {
-            status: 200,
-            headers: {
-              'Content-Type': contentType,
-              'Cache-Control': 'public, max-age=86400',
-              'Access-Control-Allow-Origin': '*',
-            },
-          })
-        } catch (error) {
-          logger.error('Image proxy failed', { imageUrl, error: String(error) })
-          return corsManager.createErrorResponse({ success: false, error: 'Image proxy failed' }, 502, context)
-        }
-      } else if (path === '/scrape') {
-        const scpNumber = url.searchParams.get('number')
-        const branch = url.searchParams.get('branch') || 'en' // 默认英文分部
-        
-        if (!scpNumber) {
-          return corsManager.createErrorResponse(validationError('Missing number parameter', { field: 'number' }), 400, context)
-        }
-
-        logger.info('Scraping SCP', { scpNumber, branch, ip })
-        const result = await scraper.scrapeSCP(scpNumber, branch)
-
-        if (result.success) {
-          logger.info('Scrape successful', { scpNumber, cached: result.cached })
-        } else {
-          logger.warn('Scrape failed', { scpNumber, error: result.error })
-        }
-
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/search') {
-        const keyword = url.searchParams.get('keyword')
-        const branch = url.searchParams.get('branch') || 'en' // 默认英文分部
-
-        if (!keyword) {
-          return corsManager.createErrorResponse(validationError('Missing keyword parameter', { field: 'keyword' }), 400, context)
-        }
-
-        const clearanceLevelParam = url.searchParams.get('clearance_level')
-        const clearanceLevel = clearanceLevelParam ? safeParseInt(clearanceLevelParam, 0) : undefined
-
-        logger.info('Searching SCP', { keyword, branch, clearanceLevel, ip })
-
-        // 如果有 clearance_level，使用数据库搜索
-        if (clearanceLevel !== undefined) {
-          const result = await scraper.searchInDatabase(keyword, clearanceLevel)
-          return corsManager.createResponse(result, result.success ? 200 : 500, context)
-        }
-
-        // 否则使用网页搜索
-        const result = await scraper.searchSCP(keyword, branch)
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/chat/send') {
-        // 发送聊天消息（带频率限制）
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-
-        try {
-          const body = await request.json() as ChatSendMessageBody
-
-          if (!body.content) {
-            return corsManager.createErrorResponse(validationError('Missing content'), 400, context)
-          }
-
-          const result = await scraper.sendChatMessageWithRateLimit(
-            authenticatedUserId!,
-            undefined,
-            body.content,
-            body.room_id || 1
-          )
-          return corsManager.createResponse(result, result.success ? 200 : 429, context)
-        } catch (error) {
-          logger.error('Failed to parse chat message', error as Error)
-          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-        }
-      } else if (path === '/chat/messages') {
-        // 获取聊天消息（支持房间过滤）
-        const limit = safeParseInt(url.searchParams.get('limit'), 50)
-        const after = url.searchParams.get('after') || undefined
-        const roomIdParam = url.searchParams.get('room_id')
-        const roomId = roomIdParam ? safeParseInt(roomIdParam, 0) : undefined
-
-        if (roomId !== undefined && roomId <= 0) {
-          return corsManager.createResponse({ success: true, data: [], count: 0 }, 200, context)
-        }
-
-        const result = await scraper.getChatMessages(limit, after, roomId)
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/chat/rooms') {
-        // 获取所有聊天室
-        if (request.method === 'GET') {
-          const result = await scraper.getChatRooms()
-          return corsManager.createResponse(result, result.success ? 200 : 500, context)
-        } else if (request.method === 'POST') {
-          // 创建聊天室
-          try {
-            const body = await request.json() as CreateChatRoomBody
-            const { name, description, is_public } = body
-
-            if (!name) {
-              return corsManager.createErrorResponse(validationError('Missing name'), 400, context)
-            }
-
-            const result = await scraper.createChatRoom({ name, description, created_by: authenticatedUserId!, is_public })
-            return corsManager.createResponse(result, result.success ? 201 : 500, context)
-          } catch (error) {
-            logger.error('Failed to parse room creation', error as Error)
-            return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-          }
-        } else {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-      } else if (path === '/chat/nickname') {
-        // 设置用户昵称
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-
-        try {
-          const body = await request.json() as SetNicknameBody
-          const { nickname } = body
-
-          if (!nickname) {
-            return corsManager.createErrorResponse(validationError('Missing nickname'), 400, context)
-          }
-
-          const result = await scraper.setUserNickname(authenticatedUserId!, nickname)
-          return corsManager.createResponse(result, result.success ? 200 : 500, context)
-        } catch (error) {
-          logger.error('Failed to parse nickname', error as Error)
-          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-        }
-      } else if (path === '/feedback/submit') {
-        // 提交反馈
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-
-        try {
-          const body = await request.json() as SubmitFeedbackBody
-          const { title, content, category } = body
-
-          if (!title || !content) {
-            return corsManager.createErrorResponse(validationError('Missing required fields'), 400, context)
-          }
-
-          const result = await feedbackAPI.submitFeedback(scraper.requireDB(), {
-            user_id: authenticatedUserId!, title, content, category
-          })
-          return corsManager.createResponse(result, result.success ? 201 : 500, context)
-        } catch (error) {
-          logger.error('Failed to submit feedback', error as Error)
-          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-        }
-      } else if (path === '/feedback/list') {
-        // 获取反馈列表
-        const limit = safeParseInt(url.searchParams.get('limit'), 50)
-        const offset = safeParseInt(url.searchParams.get('offset'), 0)
-        const category = url.searchParams.get('category') || undefined
-
-        const result = await feedbackAPI.getFeedbackList(
-          scraper.requireDB(), limit, offset, category
-        )
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/feedback/like') {
-        // 点赞反馈
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-
-        try {
-          const body = await request.json() as LikeFeedbackBody
-          const { id } = body
-
-          if (!id) {
-            return corsManager.createErrorResponse(validationError('Missing feedback id'), 400, context)
-          }
-
-          const result = await feedbackAPI.likeFeedback(scraper.requireDB(), id)
-          return corsManager.createResponse(result, result.success ? 200 : 500, context)
-        } catch (error) {
-          logger.error('Failed to like feedback', error as Error)
-          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-        }
-      } else if (path === '/feedback/categories') {
-        // 获取反馈分类统计
-        const result = await feedbackAPI.getFeedbackCategories(scraper.requireDB())
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/feedback/comment') {
-        // 提交反馈评论
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-
-        try {
-          const body = await request.json() as SubmitCommentBody
-          const { feedback_id, content } = body
-
-          if (!feedback_id || !content) {
-            return corsManager.createErrorResponse(validationError('Missing required fields'), 400, context)
-          }
-
-          const result = await feedbackAPI.submitComment(scraper.requireDB(), {
-            feedback_id, user_id: authenticatedUserId!, content
-          })
-          return corsManager.createResponse(result, result.success ? 201 : 500, context)
-        } catch (error) {
-          logger.error('Failed to submit comment', error as Error)
-          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-        }
-      } else if (path === '/feedback/comments') {
-        // 获取反馈评论
-        const feedbackId = safeParseInt(url.searchParams.get('feedback_id'), 0)
-
-        if (!feedbackId) {
-          return corsManager.createErrorResponse(validationError('Missing feedback_id parameter'), 400, context)
-        }
-
-        const result = await feedbackAPI.getComments(scraper.requireDB(), feedbackId, safeParseInt(url.searchParams.get('limit'), 50), safeParseInt(url.searchParams.get('offset'), 0))
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/feedback/vote') {
-        // 投票反馈
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-
-        try {
-          const body = await request.json() as VoteFeedbackBody
-          const { id, vote } = body
-
-          if (!id || !vote || (vote !== 'up' && vote !== 'down')) {
-            return corsManager.createErrorResponse(validationError('Missing or invalid required fields'), 400, context)
-          }
-
-          const result = await feedbackAPI.voteFeedback(scraper.requireDB(), {
-            id, user_id: authenticatedUserId!, vote
-          })
-          return corsManager.createResponse(result, result.success ? 200 : 500, context)
-        } catch (error) {
-          logger.error('Failed to vote on feedback', error as Error)
-          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-        }
-      } else if (path === '/feedback/list-with-votes') {
-        // 获取反馈列表（带用户投票状态）
-        const limit = safeParseInt(url.searchParams.get('limit'), 50)
-        const offset = safeParseInt(url.searchParams.get('offset'), 0)
-        const category = url.searchParams.get('category') || undefined
-        const userId = url.searchParams.get('user_id') || undefined
-
-        const result = await feedbackAPI.getFeedbackListWithVotes(
-          scraper.requireDB(), limit, offset, category, userId
-        )
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/api/user/register') {
-        // 注册/更新用户信息
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse('Method not allowed', 405, context)
-        }
-
-        try {
-          const body = await request.json() as RegisterUserBody
-          const { nickname } = body
-
-          if (!nickname) {
-            return corsManager.createErrorResponse(validationError('Missing nickname'), 400, context)
-          }
-
-          const result = await userAPI.registerUser(scraper.requireDB(), { userId: authenticatedUserId!, nickname })
-          return corsManager.createResponse(result, result.success ? 200 : 500, context)
-        } catch (error) {
-          logger.error('Failed to register user', error as Error)
-          return corsManager.createErrorResponse('Invalid request body', 400, context)
-        }
-      } else if (path === '/api/user/check-nickname') {
-        if (request.method !== 'GET') {
-          return corsManager.createErrorResponse('Method not allowed', 405, context)
-        }
-
-        const nicknameParam = url.searchParams.get('nickname')
-        const excludeUserId = url.searchParams.get('excludeUserId') || undefined
-
-        if (!nicknameParam) {
-          return corsManager.createErrorResponse('Missing nickname parameter', 400, context)
-        }
-
-        const result = await userAPI.checkNicknameAvailability(scraper.requireDB(), nicknameParam, excludeUserId)
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path.startsWith('/api/user/') && path !== '/api/user/register' && path !== '/api/user/check-nickname') {
-        // 获取用户信息（根据 UUID）
-        if (request.method !== 'GET') {
-          return corsManager.createErrorResponse('Method not allowed', 405, context)
-        }
-
-        const userId = path.replace('/api/user/', '')
-        if (!userId) {
-          return corsManager.createErrorResponse('Missing userId', 400, context)
-        }
-
-        const result = await userAPI.getUserByUserId(scraper.requireDB(), userId)
-        return corsManager.createResponse(result, result.success ? 200 : 404, context)
-      } else if (path === '/chat/broadcast') {
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-        const result = await scraper.broadcastNewMessages()
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/debug') {
-        const scpNumber = url.searchParams.get('number') || '173'
-        logger.info('Debug mode', { scpNumber, ip })
-        const result = await scraper.getRawHTML(scpNumber)
-        return corsManager.createResponse(result, 200, context)
-      } else if (path === '/list') {
-        const limit = safeParseInt(url.searchParams.get('limit'), 100)
-        const offset = safeParseInt(url.searchParams.get('offset'), 0)
-        const clearanceLevelParam = url.searchParams.get('clearance_level')
-        const clearanceLevel = clearanceLevelParam ? safeParseInt(clearanceLevelParam, 0) : undefined
-
-        logger.info('Listing SCPs', { limit, offset, clearanceLevel, ip })
-        const result = await scraper.listSCPs(limit, offset, clearanceLevel)
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/stats') {
-        logger.info('Getting stats', { ip })
-        const result = await scraper.getStats()
-        return corsManager.createResponse(result, result.success ? 200 : 500, context)
-      } else if (path === '/performance') {
-        // 性能监控API端点
-        if (request.method === 'POST') {
-          // 接收性能指标数据
-          try {
-            const body = await request.json() as PerformanceMetricsBody
-            logger.info('Received performance metrics', { ip, metrics: body })
-            
-            // 存储性能指标到KV
-            const metricKey = `perf-${Date.now()}`
-            await env.SCP_CACHE?.put(metricKey, JSON.stringify(body), {
-              expirationTtl: 3600, // 1小时过期
-            })
-            
-            return corsManager.createResponse({
-              success: true,
-              message: 'Performance metrics received',
-              timestamp: Date.now()
-            }, 200, context)
-          } catch (error) {
-            logger.error('Failed to parse performance metrics', error as Error)
-            return corsManager.createErrorResponse('Invalid request body', 400, context)
-          }
-        } else if (request.method === 'GET') {
-          // 获取最近的性能指标
-          try {
-            const limit = safeParseInt(url.searchParams.get('limit'), 10)
-            const metrics: any[] = []
-            
-            // 列出所有性能指标键
-            const list = await env.SCP_CACHE?.list({ prefix: 'perf-', limit })
-            
-            if (list && list.keys.length > 0) {
-              // 获取所有指标数据
-              for (const key of list.keys) {
-                const value = await env.SCP_CACHE?.get(key.name, 'text')
-                if (value) {
-                  metrics.push(JSON.parse(value))
-                }
-              }
-            }
-            
-            return corsManager.createResponse({
-              success: true,
-              metrics: metrics.reverse(), // 最新的在前
-              count: metrics.length
-            }, 200, context)
-          } catch (error) {
-            logger.error('Failed to retrieve performance metrics', error as Error)
-            return corsManager.createErrorResponse('Failed to retrieve metrics', 500, context)
-          }
-        } else {
-          return corsManager.createErrorResponse('Method not allowed', 405, context)
-        }
-      } else if (path === '/docs/items') {
-        const result = await docsAPI.handleDocsItems(request, env)
-        return corsManager.createResponse(await result.json(), result.status, context)
-      } else if (path.startsWith('/docs/item/')) {
-        const scpNumber = path.replace('/docs/item/', '')
-        if (!scpNumber) {
-          return corsManager.createErrorResponse('Missing SCP number', 400, context)
-        }
-        const result = await docsAPI.handleDocsItem(request, env, scpNumber)
-        return corsManager.createResponse(await result.json(), result.status, context)
-      } else if (path.startsWith('/docs/content/')) {
-        const scpNumber = path.replace('/docs/content/', '')
-        if (!scpNumber) {
-          return corsManager.createErrorResponse('Missing SCP number', 400, context)
-        }
-        const result = await docsAPI.handleDocsContent(request, env, scpNumber)
-        return corsManager.createResponse(await result.json(), result.status, context)
-      } else if (path === '/docs/tales') {
-        const result = await docsAPI.handleDocsTales(request, env)
-        return corsManager.createResponse(await result.json(), result.status, context)
-      } else if (path === '/docs/hubs') {
-        const result = await docsAPI.handleDocsHubs(request, env)
-        return corsManager.createResponse(await result.json(), result.status, context)
-      } else if (path === '/download/init') {
-        if (request.method !== 'POST') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-        try {
-          const body = await request.json() as DownloadRequest
-          const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-          return downloadProxy.handleInit(body, context.origin)
-        } catch {
-          return corsManager.createErrorResponse(validationError('Invalid request body'), 400, context)
-        }
-      } else if (path === '/download/stream') {
-        if (request.method !== 'GET') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-        const downloadId = url.searchParams.get('id')
-        const downloadUrl = url.searchParams.get('url')
-        const rateLimitStr = url.searchParams.get('rateLimit')
-        if (!downloadId || !downloadUrl) {
-          return corsManager.createErrorResponse(validationError('Missing id or url parameter'), 400, context)
-        }
-        const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-        return downloadProxy.handleStream(
-          downloadId,
-          decodeURIComponent(downloadUrl),
-          parseInt(rateLimitStr || '0', 10) || 0,
-          context.origin,
-        )
-      } else if (path === '/download/progress') {
-        if (request.method !== 'GET') {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-        const downloadId = url.searchParams.get('id')
-        if (!downloadId) {
-          return corsManager.createErrorResponse(validationError('Missing id parameter'), 400, context)
-        }
-        const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-        return downloadProxy.handleProgress(downloadId, context.origin)
-      } else if (path === '/download/history') {
-        if (request.method === 'GET') {
-          const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-          return downloadProxy.handleHistory(
-            url.searchParams.get('limit'),
-            url.searchParams.get('offset'),
-            context.origin,
-          )
-        } else if (request.method === 'DELETE') {
-          const downloadId = url.searchParams.get('id')
-          if (!downloadId) {
-            return corsManager.createErrorResponse(validationError('Missing id parameter'), 400, context)
-          }
-          const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-          return downloadProxy.handleDeleteHistory(downloadId, context.origin)
-        } else {
-          return corsManager.createErrorResponse(validationError('Method not allowed'), 405, context)
-        }
-      } else if (path === '/') {
-        return corsManager.createResponse(
-          {
-            name: 'SCP Scraper Worker',
-            version: '2.0.0',
-            status: 'online',
-            endpoints: {
-              '/scrape?number={number}': '爬取指定SCP的信息',
-              '/search?keyword={keyword}&clearance_level={level}': '搜索SCP（使用数据库，可选按权限等级筛选）',
-              '/list?limit={limit}&offset={offset}&clearance_level={level}': '列出SCP编号（默认100条，可选按权限等级筛选）',
-              '/stats': '获取数据库统计信息',
-              '/debug?number={number}': '调试：返回原始HTML',
-              '/performance': '性能监控API (POST: 提交指标, GET: 获取指标)',
-              '/chat/send': '发送聊天消息 (POST, 带频率限制)',
-              '/chat/messages': '获取聊天消息 (GET, 支持房间过滤)',
-              '/chat/rooms': '获取/创建聊天室 (GET/POST)',
-              '/chat/nickname': '设置用户昵称 (POST)',
-              '/chat/broadcast': '广播新消息 (定时任务)',
-              '/docs/items': '查询 SCP 条目列表 (series/class/search/limit/offset)',
-              '/docs/item/{scpNumber}': '获取单个条目元数据',
-              '/docs/content/{scpNumber}': '获取条目完整内容 (KV优先, GitHub Raw回退)',
-              '/docs/tales': '查询故事列表 (year/search/limit/offset)',
-              '/docs/hubs': '获取 Hub 列表',
-              '/download/init': '初始化下载 (POST, body: {url, filename?, rateLimit?})',
-              '/download/stream?id={id}&url={url}': '流式下载 (GET, SSE stream)',
-              '/download/progress?id={id}': '查询下载进度 (GET)',
-              '/download/history?limit={n}&offset={n}': '下载历史记录 (GET/DELETE)',
-            },
-            features: {
-              modular: true,
-              caching: `${config.cacheDuration / 1000 / 60} minutes`,
-              retry: `${config.retryAttempts} attempts`,
-              rateLimit: `${config.rateLimit.maxRequests} requests / ${config.rateLimit.windowMs / 1000}s`,
-              database: 'D1 database enabled with tags and clearance_level filtering',
-              performance: 'Performance monitoring with metrics collection',
-              downloadProxy: 'Streaming download proxy with rate control',
-            },
-          },
-          200,
-          context
-        )
-      } else {
-        return corsManager.createErrorResponse('Not found', 404, context)
+      const router = new Router()
+      const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
+      const authResult = await requireAuth(request, env, corsManager)
+      let authenticatedUserId: string | undefined
+      if (typeof authResult === 'string') {
+        authenticatedUserId = authResult
       }
+      registerRoutes(router, {
+        scraper,
+        env,
+        corsManager,
+        rateLimiter,
+        authenticatedUserId,
+      })
+      const context: RequestContext = {
+        ip: request.headers.get('CF-Connecting-IP') || 'unknown',
+        origin: request.headers.get('Origin') || request.headers.get('Referer') || '',
+        userAgent: request.headers.get('User-Agent') || '',
+        timestamp: Date.now(),
+      }
+      if (request.method !== 'GET' && request.method !== 'OPTIONS') {
+        const identifier = authenticatedUserId || context.ip
+        const isAllowed = await rateLimiter.checkLimit(identifier)
+        if (!isAllowed) {
+          return corsManager.createErrorResponse(rateLimitedError('Rate limit exceeded'), 429, context)
+        }
+      }
+      const resolved = router.resolve(request.method, path)
+      if (resolved) {
+        return resolved.handler(request, env, context, resolved.params, url)
+      }
+      return corsManager.createErrorResponse('Not found', 404, context)
     } catch (error) {
-      logger.error('Worker error', error as Error, { context })
-      return corsManager.createErrorResponse('Internal server error', 500, context)
+      logger.error('Worker error', error as Error)
+      const ctx: RequestContext = {
+        ip: request.headers.get('CF-Connecting-IP') || 'unknown',
+        origin: request.headers.get('Origin') || request.headers.get('Referer') || '',
+        userAgent: request.headers.get('User-Agent') || '',
+        timestamp: Date.now(),
+      }
+      return new CORSManager().createErrorResponse('Internal server error', 500, ctx)
     }
   },
 
-  /**
-   * 定时任务入口点
-   * 每 10 分钟运行一次，用于广播新消息
-   */
   async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
     const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
     const result = await scraper.broadcastNewMessages()
     logger.info('[Scheduled] Broadcast result:', result)
   },
 }
+

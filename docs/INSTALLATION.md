@@ -177,29 +177,30 @@ Worker 配置位于 `packages/worker/wrangler.toml`。
 ### 关键配置项
 
 ```toml
-name = "scp-scraper-worker"
+name = "scp-os-worker"
 main = "index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# D1 数据库绑定
+# D1 数据库绑定（根级别，所有环境共享）
 [[d1_databases]]
 binding = "SCP_DB"
 database_name = "scp-database"
-database_id = "<your-database-id>"
+database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
 migrations_dir = "migrations"
 
-# KV 命名空间（缓存）
+[[d1_databases]]
+binding = "SCP_READER_DB"
+database_name = "scp-reader-db"
+database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
+migrations_dir = "migrations"
+
+# KV 命名空间（内容缓存）
 [[kv_namespaces]]
 binding = "SCP_CACHE"
-id = "<your-kv-namespace-id>"
+id = "40f0d23a05e14f7484232bc1960e217f"
 
-# 路由配置
-[[routes]]
-pattern = "api.scpos.site/*"
-zone_name = "scpos.site"
-
-# 定时任务
+# 定时任务：每 10 分钟广播聊天消息
 [triggers]
 crons = ["*/10 * * * *"]
 ```
@@ -209,18 +210,17 @@ crons = ["*/10 * * * *"]
 ```bash
 cd packages/worker
 
-# 创建数据库
-wrangler d1 create scp-database
+# 查看数据库列表
+wrangler d1 list
 
-# 执行迁移
-wrangler d1 execute scp-database --file=migrations/0001_init.sql
-wrangler d1 execute scp-database --file=migrations/0002_fill_data.sql
-wrangler d1 execute scp-database --file=migrations/0003_quick_fill.sql
-wrangler d1 execute scp-database --file=migrations/0004_chat_messages.sql
-wrangler d1 execute scp-database --file=migrations/0005_chat_rooms.sql
-wrangler d1 execute scp-database --file=migrations/0006_feedbacks.sql
-wrangler d1 execute scp-database --file=migrations/0007_users.sql
-wrangler d1 execute scp-database --file=migrations/0008_feedback_votes_comments.sql
+# 执行主数据库迁移（聊天、反馈、用户）
+wrangler d1 execute scp-database --file=migrations/0001_init.sql --remote
+
+# 执行 SCP 索引数据库迁移（9 张表：scp_items、scp_tales、scp_goi、scp_hubs、scp_search FTS5）
+wrangler d1 execute scp-reader-db --file=migrations/0009_scp_reader_tables.sql --remote
+
+# 迁移脚本位置：packages/worker/scripts/migrate-scp-data.ts
+# 使用方式：npx tsx scripts/migrate-scp-data.ts
 ```
 
 ### 创建 KV 命名空间
@@ -249,15 +249,24 @@ pnpm deploy
 
 ### 数据填充
 
+Docs 索引数据通过 `migrate-scp-data.ts` 脚本导入（需配置 `SCP_DATA_REPO_PATH` 环境变量指向 scp-api 仓库）：
+
 ```bash
-# 快速填充（推荐）
-wrangler d1 execute scp-database --file=migrations/0003_quick_fill.sql
+# 设置数据仓库路径（在 .env 中配置）
+SCP_DATA_REPO_PATH=d:/backup/scp-api/scp-api-main/docs/data/scp
 
-# 批量填充（需要较长时间）
-npx tsx scripts/bulkFillDatabase.ts
+# 运行迁移脚本（将 JSON 转换为 SQL 并导入 D1）
+npx tsx scripts/migrate-scp-data.ts
+```
 
-# 爬取所有 SCP 数据
-npx tsx scripts/scrapeAllScps.ts
+KV 内容缓存通过 `preload-kv-content.ts` 脚本预加载（每日 900 条限速）：
+
+```bash
+# 运行 KV 预加载（遵守免费版每日 1000 次写入限制）
+npx tsx scripts/preload-kv-content.ts
+
+# 查看进度
+cat scripts/.kv-preload-progress.json
 ```
 
 ---

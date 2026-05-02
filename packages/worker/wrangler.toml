@@ -3,32 +3,9 @@ main = "index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Worker 配置
 [vars]
 API_DOMAIN = "api.scpos.site"
-
-# D1 数据库绑定
-[[d1_databases]]
-binding = "SCP_DB"
-database_name = "scp-database"
-database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
-migrations_dir = "migrations"
-
-[[d1_databases]]
-binding = "SCP_READER_DB"
-database_name = "scp-reader-db"
-database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
-migrations_dir = "migrations"
-
-# KV 命名空间（用于缓存）
-[[kv_namespaces]]
-binding = "SCP_CACHE"
-id = "40f0d23a05e14f7484232bc1960e217f"
-
-# 路由配置 - 部署后在 Cloudflare 控制台配置
-# [[routes]]
-# pattern = "api.scpos.site/*"
-# zone_name = "scpos.site"
+ENVIRONMENT = "production"
 
 # Durable Objects 配置
 [[durable_objects.bindings]]
@@ -41,16 +18,44 @@ new_sqlite_classes = ["ChatRoomDO"]
 
 # 定时任务：每 10 分钟广播聊天消息
 [triggers]
-crons = ["*/10 * * * *"]  # 每 10 分钟运行一次
+crons = ["*/10 * * * *"]
 
-# 环境变量（开发环境 - 本地测试使用）
+# D1 数据库
+[[d1_databases]]
+binding = "SCP_DB"
+database_name = "scp-database"
+database_id = "77dff909-beb0-4870-bb52-90e810b2e5c1"
+migrations_dir = "migrations"
+
+[[d1_databases]]
+binding = "SCP_READER_DB"
+database_name = "scp-reader-db"
+database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
+migrations_dir = "migrations"
+
+# KV 缓存
+[[kv_namespaces]]
+binding = "SCP_CACHE"
+id = "40f0d23a05e14f7484232bc1960e217f"
+
+# ─── 开发环境（本地测试） ────────────────────────────
+# 启动方式：wrangler dev --env development
+# 本地 D1：wrangler d1 execute scp-reader-db-dev --local --file=migrations/0009_scp_reader_tables.sql
 [env.development]
 vars = { ENVIRONMENT = "development" }
-# 使用独立数据库实例避免影响生产数据：
-# wrangler dev --env development
 
-# 环境变量（生产环境）
-[env.production]
-vars = { ENVIRONMENT = "production" }
-# 生产环境通过 wrangler secret 管理敏感配置：
-# wrangler secret put JWT_SECRET --env production
+[[env.development.d1_databases]]
+binding = "SCP_DB"
+database_name = "scp-database-dev"
+database_id = "local-dev-scp-db"
+migrations_dir = "migrations"
+
+[[env.development.d1_databases]]
+binding = "SCP_READER_DB"
+database_name = "scp-reader-db-dev"
+database_id = "local-dev-scp-reader-db"
+migrations_dir = "migrations"
+
+[[env.development.kv_namespaces]]
+binding = "SCP_CACHE"
+id = "local-dev-cache"

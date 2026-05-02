@@ -4,6 +4,7 @@
  */
 
 import type { ChatApiResponse } from '../shared/types'
+import { encodeHtmlEntities } from '../utils/htmlSanitizer'
 
 export interface User {
   id: number
@@ -35,6 +36,8 @@ export async function registerUser(
       return { success: false, error: 'Nickname too long (max 30 characters)' }
     }
 
+    const safeNickname = encodeHtmlEntities(input.nickname)
+
     // Check if user exists
     const existingUser = await db.prepare(
       'SELECT id FROM users WHERE user_id = ?'
@@ -43,7 +46,7 @@ export async function registerUser(
     // Check if nickname is already used by another user
     const existingNicknameUser = await db.prepare(
       'SELECT id FROM users WHERE nickname = ? AND user_id != ?'
-    ).bind(input.nickname, input.userId).first<{ id: number }>()
+    ).bind(safeNickname, input.userId).first<{ id: number }>()
 
     if (existingNicknameUser) {
       return { success: false, error: 'Nickname already taken' }
@@ -53,12 +56,12 @@ export async function registerUser(
       // Update existing user
       await db.prepare(
         `UPDATE users SET nickname = ?, last_active_at = CURRENT_TIMESTAMP WHERE user_id = ?`
-      ).bind(input.nickname, input.userId).run()
+      ).bind(safeNickname, input.userId).run()
     } else {
       // Insert new user
       await db.prepare(
         `INSERT INTO users (user_id, nickname, created_at, last_active_at) VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
-      ).bind(input.userId, input.nickname).run()
+      ).bind(input.userId, safeNickname).run()
     }
 
     // Return the updated/created user

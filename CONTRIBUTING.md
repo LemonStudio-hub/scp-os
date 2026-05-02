@@ -373,6 +373,7 @@ Closes #123
 |------|------|---------|
 | `src/domain/` | 领域模型 | 添加实体、值对象、仓库接口 |
 | `src/gui/tools/` | GUI 工具 | 添加新工具组件 |
+| `src/gui/tools/docs/` | Docs 阅读器 | PCP CDocsWindow.vue + MobileDocs.vue |
 | `src/gui/registry/` | 工具注册 | 注册新工具 |
 | `src/gui/composables/` | 组合式函数 | 添加可复用逻辑 |
 | `src/gui/stores/` | GUI Store | 添加窗口管理相关状态 |
@@ -409,7 +410,7 @@ import MobileMyTool from '../tools/mytool/MobileMyTool.vue'
 registerTool({
   id: 'mytool',
   label: (t) => t('tools.mytool'),
-  icon: '🔧',
+  icon: iconMyTool(),  // icons.ts 中的 SVG 函数
   windowConfig: {
     width: 700,
     height: 500,
@@ -420,10 +421,10 @@ registerTool({
   desktopComponent: PCMyTool,
   mobileComponent: MobileMyTool,
   onOpen: () => {
-    console.log('MyTool opened')
+    logger.info('MyTool opened')
   },
   onClose: () => {
-    console.log('MyTool closed')
+    logger.info('MyTool closed')
   },
 })
 ```

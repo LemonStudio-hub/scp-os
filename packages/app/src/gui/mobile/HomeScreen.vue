@@ -102,6 +102,12 @@ class="home-screen__app-icon" :class="`home-screen__app-icon--${app.id}`"
               <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
             </svg>
           </template>
+          <template v-else-if="app.id === 'editor'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/>
+            </svg>
+          </template>
         </div>
         <span class="home-screen__app-label">{{ app.label }}</span>
       </button>
@@ -137,6 +143,7 @@ const apps = computed<HomeApp[]>(() => [
   { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)' },
   { id: 'proxy', label: t('home.apps.proxy'), tool: 'proxy', color: 'var(--gui-accent)' },
   { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)' },
+  { id: 'editor', label: t('home.apps.editor'), tool: 'editor', color: 'var(--gui-accent)' },
 ])
 
 const emit = defineEmits<{

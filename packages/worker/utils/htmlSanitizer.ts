@@ -90,3 +90,15 @@ export class HTMLSanitizer {
 }
 
 export const htmlSanitizer = new HTMLSanitizer()
+
+const ENTITY_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+
+export function encodeHtmlEntities(text: string): string {
+  return text.replace(/[&<>"']/g, (ch) => ENTITY_MAP[ch] || ch)
+}

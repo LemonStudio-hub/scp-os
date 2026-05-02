@@ -113,7 +113,8 @@ export function openTool(toolId: ToolType, openWindow: (config: {
   width: number
   height: number
   isFullscreen?: boolean
-}) => void): void {
+  data?: Record<string, any>
+}) => void, data?: Record<string, any>): void {
   const tool = ToolRegistry.get(toolId)
   if (!tool) {
     console.warn(`[ToolRegistry] Tool "${toolId}" is not registered`)
@@ -133,6 +134,7 @@ export function openTool(toolId: ToolType, openWindow: (config: {
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
     isFullscreen: true, // Default to fullscreen on PC
+    data,
   })
 }
 

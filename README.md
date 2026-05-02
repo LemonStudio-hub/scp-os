@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  一个功能完整的浏览器内桌面环境，采用 SCP 基金会主题。内置命令行终端、文件管理器、代码编辑器、实时聊天、性能仪表盘、反馈系统、<strong>SCP 离线阅读器（Docs）</strong> 等多款应用，支持桌面与移动端自适应适配。基于 Cloudflare Workers 无服务器架构，提供全球边缘加速。
+</p>
+
+<p align="center">
   <a href="#安装"><img src="https://img.shields.io/badge/Node.js-%3E%3D18.0.0-green" alt="Node.js"></a>
   <a href="#安装"><img src="https://img.shields.io/badge/pnpm-%3E%3D8.0.0-F69220" alt="pnpm"></a>
   <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9-3178C6" alt="TypeScript"></a>
@@ -104,6 +108,19 @@ SCP-OS 采用 **Monorepo** 架构，包含三个核心包：
 - **速率限制**：API 请求频率限制与聊天消息频率限制并行
 - **HTML 清洗**：服务端 HTML 消毒，有效防护 XSS 攻击
 - **本地优先**：IndexedDB 持久化存储，即使离线也能正常使用
+
+### 🔐 认证系统
+- JWT 令牌管理，自动登录状态保持
+- 全局昵称系统，与聊天深度集成
+
+### 📖 SCP 离线阅读器（Docs）
+- **D1 索引**：9526+ SCP 条目、6487 篇故事、711 GOI 条目、126 Hub，支持全文本搜索
+- **多级缓存**：KV（服务端，<50ms）→ IndexedDB（客户端，离线可读）→ GitHub Raw（回退）
+- **双端阅读器**：桌面端左列表右内容布局，移动端卡片+全屏阅读+手势操作
+- **离线优先**：已缓存内容无需网络，离线状态自动降级并指示
+- **个性化**：阅读进度记忆、字体/行间距/暗色主题、收藏功能
+
+### ⚡ 性能监控
 
 ---
 
@@ -423,6 +440,13 @@ scp-os/
 - **测试**：Vitest 4 + @vue/test-utils
 - **代码质量**：ESLint 9 + Prettier 3 + vue-tsc
 - **CI/CD**：GitHub Actions（测试 + 构建 + 安全扫描 + Tauri 构建）
+
+### Cloudflare Resources
+
+- **Workers**: `scp-os-worker` (生产环境 + 根环境)
+  - D1: `SCP_DB` (主数据库), `SCP_READER_DB` (SCP 索引数据库, 9526+ 条目)
+  - KV: `SCP_CACHE` (内容缓存)
+  - DO: `ChatRoomDO` (聊天室状态)
 
 ---
 

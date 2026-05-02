@@ -2,6 +2,7 @@
   <MobileWindow
     :visible="visible"
     :title="t('fb.title')"
+    :show-back="true"
     @close="$emit('close')"
   >
     <div class="mobile-feedback">

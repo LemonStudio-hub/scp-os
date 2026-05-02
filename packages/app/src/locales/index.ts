@@ -66,6 +66,7 @@ export const en = {
   'home.apps.settings': 'Settings',
   'home.apps.docs': 'Docs',
   'home.apps.proxy': 'Proxy',
+  'home.apps.editor': 'Editor',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': 'Settings',
@@ -344,6 +345,7 @@ export const zhCN: Record<string, string> = {
   'home.apps.settings': '设置',
   'home.apps.docs': '文档',
   'home.apps.proxy': '代理',
+  'home.apps.editor': '编辑器',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': '设置',
