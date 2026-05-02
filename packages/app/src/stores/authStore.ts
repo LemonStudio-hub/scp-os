@@ -5,8 +5,9 @@
 
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { indexedDBService } from '../utils/indexedDB'
+import indexedDBService from '../utils/indexedDB'
 import { config } from '../config'
+import { authenticatedFetch } from '../utils/authFetch'
 import logger from '../utils/logger'
 
 const API_BASE = config.api.workerUrl
@@ -75,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       // Register/update user on remote API
       try {
-        const response = await fetch(`${API_BASE}/api/user/register`, {
+        const response = await authenticatedFetch(`${API_BASE}/api/user/register`, currentUserId, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -184,7 +185,7 @@ export const useAuthStore = defineStore('auth', () => {
       nickname.value = trimmed
 
       try {
-        const response = await fetch(`${API_BASE}/api/user/register`, {
+        const response = await authenticatedFetch(`${API_BASE}/api/user/register`, userId.value!, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: userId.value, nickname: trimmed }),
@@ -204,7 +205,7 @@ export const useAuthStore = defineStore('auth', () => {
           logger.warn('[Auth] Failed to update nickname on remote API, but local update succeeded')
         } else {
           try {
-            await fetch(`${API_BASE}/chat/nickname`, {
+            await authenticatedFetch(`${API_BASE}/chat/nickname`, userId.value!, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ user_id: userId.value, nickname: trimmed }),
@@ -227,6 +228,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * 执行需要认证的 POST 请求
+   */
+  async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    return authenticatedFetch(url, userId.value!, options)
+  }
+
   return {
     isLoggedIn,
     nickname,
@@ -239,5 +247,6 @@ export const useAuthStore = defineStore('auth', () => {
     checkLoginStatus,
     updateNickname,
     checkNicknameAvailability,
+    authFetch,
   }
 })

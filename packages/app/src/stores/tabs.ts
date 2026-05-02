@@ -263,9 +263,6 @@ export const useTabsStore = defineStore('tabs', () => {
     saveTabs()
   }, { deep: true })
 
-  // Initialize (async)
-  initialize()
-
   return {
     // State
     tabs,

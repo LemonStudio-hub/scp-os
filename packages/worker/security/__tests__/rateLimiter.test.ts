@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { RateLimiter } from '../rateLimiter'
 
 describe('RateLimiter', () => {
-  let rateLimiter: RateLimiter
+  let rateLimiter: InstanceType<typeof RateLimiter>
 
   beforeEach(() => {
     rateLimiter = new RateLimiter()

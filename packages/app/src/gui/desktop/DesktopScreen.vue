@@ -77,6 +77,11 @@ class="desktop-screen__icon-bg" :class="`desktop-screen__icon-bg--${app.id}`"
                 <line x1="9" y1="11" x2="15" y2="11"/>
               </svg>
             </template>
+            <template v-else-if="app.id === 'proxy'">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+              </svg>
+            </template>
           </div>
           <span class="desktop-screen__icon-label">{{ app.label }}</span>
         </div>
@@ -143,6 +148,7 @@ const apps: DesktopApp[] = [
   { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)', x: 50, y: 180 },
   { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)', x: 180, y: 180 },
   { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)', x: 310, y: 180 },
+  { id: 'proxy', label: t('home.apps.proxy'), tool: 'proxy', color: 'var(--gui-accent)', x: 180, y: 310 },
   { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)', x: 50, y: 310 },
 ]
 

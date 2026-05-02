@@ -14,6 +14,7 @@ import { useThemeStore } from './gui/stores/themeStore'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
+import logger from './utils/logger'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
@@ -53,30 +54,24 @@ onMounted(async () => {
   loadingProgress.value = 30
   registerAllTools()
 
-  // Step 4: Initialize tabs store with IndexedDB
+  // Step 4 & 5: Initialize tabs store and load saved GUI windows in parallel
   loadingStep.value = 'loading.steps.data'
   loadingProgress.value = 50
-  await tabsStore.initialize()
-  loadingProgress.value = 70
-
-  // Step 5: Load saved GUI windows
-  loadingStep.value = 'loading.steps.windows'
-  await wmStore.loadWindowStates()
+  await Promise.all([
+    tabsStore.initialize(),
+    wmStore.loadWindowStates()
+  ])
   loadingProgress.value = 90
 
-  // Brief delay for visual smoothness
-  await new Promise(resolve => setTimeout(resolve, 200))
+  // Loading complete — show app immediately
   loadingProgress.value = 100
   loadingStep.value = 'loading.steps.ready'
-
-  // Final delay before showing app
-  await new Promise(resolve => setTimeout(resolve, 300))
   isAppReady.value = true
 
-  // Step 6: Initialize authentication state
-  loadingStep.value = 'loading.steps.auth'
-  await authStore.initAuth()
-  isAuthReady.value = true
+  // Auth initialization in background (non-blocking)
+  authStore.initAuth().then(() => {
+    isAuthReady.value = true
+  })
 
   // Register global keyboard shortcuts
   setContext('global')
@@ -101,8 +96,8 @@ onMounted(async () => {
               height: config.height,
             })
           })
-        }).catch(() => {
-          // Silently handle import errors
+        }).catch((err) => {
+          logger.warn('[App] Failed to import ToolRegistry:', err)
         })
       }
     },
@@ -131,9 +126,13 @@ onMounted(async () => {
     category: 'global',
     handler: () => {
       if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {})
+        document.documentElement.requestFullscreen().catch((err) => {
+          logger.warn('[App] Failed to request fullscreen:', err)
+        })
       } else {
-        document.exitFullscreen().catch(() => {})
+        document.exitFullscreen().catch((err) => {
+          logger.warn('[App] Failed to exit fullscreen:', err)
+        })
       }
     },
   })
@@ -169,15 +168,13 @@ onUnmounted(() => {
  * Called when user completes login from LoginScreen or PCLoginScreen
  */
 function handleLoginSuccess(): void {
-  // The authStore.isLoggedIn is already set to true by the login action
-  // This function can be extended for additional post-login logic
-  console.log('[App] User logged in successfully, transitioning to main interface')
+  logger.info('[App] User logged in successfully, transitioning to main interface')
 }
 </script>
 
 <template>
   <!-- App Loading Overlay -->
-  <div v-if="!isAppReady || !isAuthReady" class="app-loading-overlay">
+  <div v-if="!isAppReady" class="app-loading-overlay">
     <div class="app-loading-content">
       <!-- SCP Logo Animation -->
       <div class="app-loading-logo">
@@ -221,8 +218,8 @@ function handleLoginSuccess(): void {
       />
     </template>
 
-    <!-- Main App (shown when user is logged in) -->
-    <template v-else-if="isAuthReady && authStore.isLoggedIn">
+    <!-- Main App (shown when app is ready; auth checks run in background) -->
+    <template v-else>
       <MobileApp key="main-app" :class="{ 'app-loaded': true }">
         <!-- Desktop-only components (only mounted on desktop) -->
         <template v-if="!mobile.isMobile.value">

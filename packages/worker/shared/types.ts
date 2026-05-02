@@ -1,4 +1,4 @@
-/**
+﻿﻿﻿/**
  * 统一类型定义
  * 前端和 Worker 共享此类型定义
  */
@@ -113,6 +113,7 @@ export interface Env {
   SCP_DB: D1Database
   SCP_READER_DB: D1Database
   CHAT_ROOM_DO: DurableObjectNamespace
+  JWT_SECRET?: string
 }
 
 /**
@@ -151,9 +152,9 @@ export interface ChatMessageInput {
 /**
  * 聊天 API 响应
  */
-export interface ChatApiResponse {
+export interface ChatApiResponse<T = unknown> {
   success: boolean
-  data?: ChatMessage | ChatMessage[] | ChatRoom | ChatRoom[] | any
+  data?: T
   error?: string
   count?: number
 }
@@ -298,4 +299,10 @@ export interface DocsContentResponse {
   content: string
   cached: boolean
   source: string
+}
+
+export interface ApiError {
+  code: string
+  message: string
+  details?: unknown
 }

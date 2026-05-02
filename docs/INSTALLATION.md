@@ -1,6 +1,6 @@
 # 安装与配置指南
 
-本文档详细说明 SCP-OS 项目的安装、配置和部署流程。
+本文档详细说明 SCP-OS 项目的环境搭建、配置与部署流程。
 
 ---
 
@@ -67,7 +67,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/your-username/scp-os.git
+git clone https://github.com/LemonStudio-hub/scp-os.git
 cd scp-os
 ```
 
@@ -77,7 +77,7 @@ cd scp-os
 pnpm install
 ```
 
-项目使用 pnpm workspace 管理 Monorepo，此命令会自动安装所有子包的依赖。
+项目使用 pnpm workspace 管理 Monorepo，此命令会自动安装所有子包的依赖项。
 
 ### 3. 配置环境变量
 
@@ -296,8 +296,8 @@ Tauri 配置位于 `packages/desktop/tauri.conf.json`。
 Tauri 桌面端启用了严格的内容安全策略：
 
 - `default-src 'self'` — 仅允许加载同源资源
-- `connect-src 'self' https://api.scpos.site` — 仅允许连接 API 服务器
-- 禁止 `frame-src`、`object-src` 嵌入外部内容
+- `connect-src 'self' https://api.scpos.site` — 仅允许连接指定的 API 服务器
+- 禁止通过 `frame-src`、`object-src` 嵌入外部内容
 
 如需连接其他 API，需修改 `csp.connect-src` 配置。
 

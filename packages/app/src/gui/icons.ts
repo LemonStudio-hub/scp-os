@@ -143,6 +143,10 @@ export function iconDocs(p: IconProps = {}) {
   return `<svg ${attrSize(p)} ${attrBase()}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>`
 }
 
+export function iconProxy(p: IconProps = {}) {
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`
+}
+
 // Additional PC GUI icons
 export function iconEye(p: IconProps = {}) {
   return `<svg ${attrSize(p)} ${attrBase()}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
@@ -249,7 +253,7 @@ export const iconNames = [
   'grid', 'list', 'search', 'save', 'chevron-right', 'chevron-left',
   'x', 'minus', 'maximize', 'minimize', 'folder-open', 'arrow-up',
   'arrow-down', 'arrow-left', 'arrow-right', 'home', 'settings',
-  'empty-folder', 'empty-doc', 'chat', 'dash', 'feedback', 'docs',
+  'empty-folder', 'empty-doc', 'chat', 'dash', 'feedback', 'docs', 'proxy',
   'eye', 'sort', 'play', 'pin', 'info', 'battery', 'wifi', 'menu', 'file-text',
   'message-square', 'bar-chart-2', 'message-circle', 'image', 'palette', 'moon', 'refresh-cw', 'power',
 ] as const
@@ -265,7 +269,7 @@ const iconFnMap: Record<string, (p?: IconProps) => string> = {
   'folder-open': iconFolderOpen, 'arrow-up': iconArrowUp, 'arrow-down': iconArrowDown,
   'arrow-left': iconArrowLeft, 'arrow-right': iconArrowRight,
   'home': iconHome, 'settings': iconSettings,
-  'empty-folder': iconEmptyFolder, 'empty-doc': iconEmptyDoc, 'chat': iconChat, 'dash': iconDash, 'feedback': iconFeedback, 'docs': iconDocs,
+  'empty-folder': iconEmptyFolder, 'empty-doc': iconEmptyDoc, 'chat': iconChat, 'dash': iconDash, 'feedback': iconFeedback, 'docs': iconDocs, 'proxy': iconProxy,
   'eye': iconEye, 'sort': iconSort, 'play': iconPlay, 'pin': iconPin, 'info': iconInfo,
   'battery': iconBattery, 'wifi': iconWifi, 'menu': iconMenu, 'file-text': iconFileText,
   'message-square': iconMessageSquare, 'bar-chart-2': iconBarChart2, 'message-circle': iconMessageCircle,

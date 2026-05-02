@@ -8,6 +8,7 @@ import type { ICommandHistoryRepository } from '../domain/repositories'
 import { CommandHistoryEntity } from '../domain/entities'
 import { getGlobalContainer } from '../core/container'
 import { getGlobalEventBus } from '../platform/events/event-bus'
+import logger from '../utils/logger'
 
 /**
  * Command History Composable
@@ -152,11 +153,11 @@ export function useCommandHistory() {
 
   // Listen to events
   const handleHistoryAdded = (event: any) => {
-    console.log('[useCommandHistory] Command added to history:', event.command)
+    logger.debug('[useCommandHistory] Command added to history:', event.command)
   }
 
   const handleHistoryCleared = () => {
-    console.log('[useCommandHistory] History cleared')
+    logger.debug('[useCommandHistory] History cleared')
   }
 
   // Lifecycle hooks

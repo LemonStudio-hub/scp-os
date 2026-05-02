@@ -1,4 +1,4 @@
-import { indexedDBService } from './indexedDB'
+import indexedDBService from './indexedDB'
 
 // 文件系统节点类型
 export type FileSystemNodeType = 'file' | 'directory'

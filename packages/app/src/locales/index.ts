@@ -55,6 +55,7 @@ export const en = {
   'app.dash': 'Dash',
   'app.feedback': 'Feedback',
   'app.docs': 'Docs Reader',
+  'app.proxy': 'Download Proxy',
 
   // ── Home Screen ─────────────────────────────────────────────────────
   'home.apps.terminal': 'Terminal',
@@ -64,6 +65,7 @@ export const en = {
   'home.apps.feedback': 'Feedback',
   'home.apps.settings': 'Settings',
   'home.apps.docs': 'Docs',
+  'home.apps.proxy': 'Proxy',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': 'Settings',
@@ -329,6 +331,7 @@ export const zhCN: Record<string, string> = {
   'app.dash': '仪表盘',
   'app.feedback': '反馈',
   'app.docs': '文档阅读器',
+  'app.proxy': '下载代理',
 
   // ── Home Screen ─────────────────────────────────────────────────────
   'home.apps.terminal': '终端',
@@ -338,6 +341,7 @@ export const zhCN: Record<string, string> = {
   'home.apps.feedback': '反馈',
   'home.apps.settings': '设置',
   'home.apps.docs': '文档',
+  'home.apps.proxy': '代理',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': '设置',

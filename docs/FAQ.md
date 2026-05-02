@@ -19,11 +19,11 @@
 
 ### SCP-OS 是什么？
 
-SCP-OS 是一个以 SCP 基金会为主题的 Web 操作系统。它在浏览器中提供完整的桌面环境，内置命令行终端、文件管理器、代码编辑器、实时聊天、性能仪表盘、反馈系统等多款应用，并支持桌面/移动双端适配。
+SCP-OS 是一个以 SCP 基金会为主题的 Web 操作系统，在浏览器中提供完整的桌面环境。内置命令行终端、文件管理器、代码编辑器、实时聊天、性能仪表盘、反馈系统等多款应用，同时支持桌面与移动端自适应适配。
 
 ### SCP-OS 是官方产品吗？
 
-不是。SCP-OS 是一个社区驱动的开源项目，仅供教育和娱乐目的使用。SCP 基金会内容的使用遵循 [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) 许可协议。
+不是。SCP-OS 是一个社区驱动的开源项目，仅供教育和娱乐目的使用。SCP 基金会相关内容的使用遵循 [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) 许可协议。
 
 ### 支持哪些平台？
 
@@ -296,6 +296,6 @@ pnpm test:coverage
 
 如果你的问题未在此列表中找到答案，可以：
 
-1. 搜索 [GitHub Issues](https://github.com/your-username/scp-os/issues)
+1. 搜索 [GitHub Issues](https://github.com/LemonStudio-hub/scp-os/issues)
 2. 提交新的 Issue
 3. 在聊天系统中与其他用户交流

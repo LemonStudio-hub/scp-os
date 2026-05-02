@@ -1,4 +1,5 @@
 <template>
+  <!-- eslint-disable-next-line vue/no-v-html -- icons are hardcoded static SVGs -->
   <span
     class="gui-icon"
     :class="className"

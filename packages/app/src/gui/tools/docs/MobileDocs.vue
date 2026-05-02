@@ -78,6 +78,16 @@
             <div class="mobile-docs__loading-dot" />
           </div>
 
+          <!-- Error -->
+          <div v-else-if="reader.error.value" class="mobile-docs__cards-empty mobile-docs__cards-error">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 10v8M16 22v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p>{{ reader.error.value }}</p>
+            <button class="mobile-docs__retry-btn" @click="reader.fetchArticles(1)">Retry</button>
+          </div>
+
           <!-- Empty -->
           <div v-else-if="reader.filteredArticles.value.length === 0" class="mobile-docs__cards-empty">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -166,7 +176,7 @@
           </div>
 
           <!-- Article Content -->
-          <div v-else-if="reader.currentArticle.value" class="mobile-docs__article" v-html="reader.currentArticle.value.content" />
+          <div v-else-if="reader.currentArticle.value" class="mobile-docs__article" v-html="sanitizedContent" />
         </div>
 
         <!-- Bottom Navigation Bar -->
@@ -272,7 +282,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import DOMPurify from 'dompurify'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useDocsReader, type TOCItem } from '../../composables/useDocsReader'
 
@@ -284,6 +295,15 @@ defineProps<Props>()
 defineEmits<{ close: [] }>()
 
 const reader = useDocsReader()
+
+const sanitizedContent = computed(() => {
+  const content = reader.currentArticle.value?.content
+  if (!content) return ''
+  return DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
+  })
+})
 
 const view = ref<'list' | 'detail'>('list')
 const detailContentRef = ref<HTMLElement>()
@@ -666,6 +686,18 @@ onBeforeUnmount(() => {
 .mobile-docs__cards-empty p {
   font-size: 15px;
   margin: 0;
+}
+
+.mobile-docs__cards-error {
+  color: #FF3B30;
+}
+
+.mobile-docs__cards-error p {
+  font-size: 14px;
+  margin: 0;
+  max-width: 280px;
+  text-align: center;
+  word-break: break-word;
 }
 
 .mobile-docs__load-more {

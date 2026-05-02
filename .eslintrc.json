@@ -1,0 +1,53 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": ["@typescript-eslint", "vue"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:vue/vue3-recommended"
+  ],
+  "rules": {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "no-console": "warn",
+    "no-debugger": "warn",
+    "prefer-const": "warn",
+    "no-var": "error",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/no-non-null-assertion": "warn",
+    "vue/multi-word-component-names": "off",
+    "vue/no-v-html": "warn",
+    "vue/require-default-prop": "warn",
+    "vue/component-name-in-template-casing": ["warn", "PascalCase"],
+    "vue/html-self-closing": ["warn", {
+      "html": {
+        "void": "always",
+        "normal": "always",
+        "component": "always"
+      }
+    }]
+  },
+  "overrides": [
+    {
+      "files": ["*.vue"],
+      "parser": "vue-eslint-parser",
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser"
+      }
+    }
+  ]
+}

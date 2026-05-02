@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   content TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   is_broadcast INTEGER DEFAULT 0,
-  broadcast_count INTEGER DEFAULT 0
+  broadcast_count INTEGER DEFAULT 0,
+  room_id INTEGER DEFAULT 1
 );
 
 -- 用户 ID 索引（加速查询特定用户的消息）
@@ -20,3 +21,6 @@ CREATE INDEX IF NOT EXISTS idx_chat_is_broadcast ON chat_messages(is_broadcast);
 
 -- 复合索引（加速定时广播查询）
 CREATE INDEX IF NOT EXISTS idx_chat_broadcast_query ON chat_messages(is_broadcast, created_at);
+
+-- 聊天室 ID 索引（加速按聊天室查询消息）
+CREATE INDEX IF NOT EXISTS idx_chat_room_id ON chat_messages(room_id);

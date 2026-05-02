@@ -1,5 +1,5 @@
 {
-  "name": "scp-scraper-worker",
+  "name": "scp-os-worker",
   "version": "1.0.0",
   "description": "SCP Foundation scraper deployed on Cloudflare Workers",
   "main": "index.ts",

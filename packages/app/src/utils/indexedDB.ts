@@ -662,7 +662,7 @@ class IndexedDBService {
       const request = store.get(scpNumber)
 
       request.onsuccess = () => {
-        resolve(!!request.result)
+        resolve(Boolean(request.result))
       }
 
       request.onerror = () => reject(request.error)

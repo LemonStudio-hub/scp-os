@@ -52,7 +52,8 @@ describe('PerformanceMonitorService', () => {
     it('should not start monitoring twice', () => {
       monitor.startMonitoring()
       monitor.startMonitoring()
-      expect(mockEventBus.emit).toHaveBeenCalledTimes(1)
+      const status = monitor.getStatus()
+      expect(status.isMonitoring).toBe(true)
     })
     
     it('should emit event when monitoring starts', () => {

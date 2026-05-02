@@ -38,6 +38,10 @@ import PCFeedbackWindow from '../tools/feedback/PCFeedbackWindow.vue'
 import PCDocsWindow from '../tools/docs/PCDocsWindow.vue'
 import MobileDocs from '../tools/docs/MobileDocs.vue'
 
+// Proxy tools
+import PCProxyWindow from '../tools/proxy/PCProxyWindow.vue'
+import MobileProxy from '../tools/proxy/MobileProxy.vue'
+
 // i18n — resolved at runtime via the composable
 // Labels are functions that call t() when evaluated (in openTool / getToolLabel)
 function lbl(key: string): () => string {
@@ -178,5 +182,21 @@ export function registerAllTools(): void {
     },
     desktopComponent: PCDocsWindow,
     mobileComponent: MobileDocs,
+  })
+
+  // Proxy (both mobile and desktop - Download Proxy)
+  ToolRegistry.register({
+    id: 'proxy',
+    label: lbl('app.proxy'),
+    icon: 'proxy',
+    windowConfig: {
+      width: 700,
+      height: 550,
+      minWidth: 420,
+      minHeight: 380,
+      resizable: true,
+    },
+    desktopComponent: PCProxyWindow,
+    mobileComponent: MobileProxy,
   })
 }

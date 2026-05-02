@@ -17,6 +17,6 @@
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": ["index.ts", "shared/**/*", "errors/**/*", "security/**/*", "parsers/**/*", "utils/**/*", "api/**/*"],
+  "include": ["index.ts", "shared/**/*", "errors/**/*", "security/**/*", "parsers/**/*", "utils/**/*", "api/**/*", "download/**/*", "durableObjects/**/*", "scripts/**/*", "benchmarks/**/*", "migrations/**/*"],
   "exclude": ["node_modules"]
 }

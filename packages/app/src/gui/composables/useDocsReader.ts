@@ -43,6 +43,7 @@ export type ReaderTheme = 'dark' | 'light'
 const API_BASE = config.api.workerUrl
 const PAGE_SIZE = 30
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+const TIMEOUT_MS = 20000
 
 const OBJECT_CLASS_COLORS: Record<SCPObjectClass, string> = {
   Safe: '#34C759',
@@ -75,6 +76,19 @@ const CLASS_OPTIONS: { label: string; value: SCPObjectClass }[] = [
   { label: 'Neutralized', value: 'Neutralized' },
   { label: 'Unknown', value: 'Unknown' },
 ]
+
+// ── HTTP Helper ──────────────────────────────────────────────────────
+
+async function fetchWithTimeout(url: string, timeoutMs: number = TIMEOUT_MS): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const res = await fetch(url, { signal: controller.signal })
+    return res
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
 
 // ── HTML Sanitization ────────────────────────────────────────────────
 
@@ -225,7 +239,8 @@ export function useDocsReader() {
 
   async function fetchArticles(page: number = 1, append: boolean = false): Promise<void> {
     if (!isOnline.value && page === 1 && !append) {
-      // Try loading from cache when offline
+      error.value = 'You are offline. Connect to the internet to load articles.'
+      loading.value = false
       return
     }
 
@@ -237,9 +252,10 @@ export function useDocsReader() {
     error.value = null
 
     try {
+      const offset = (page - 1) * PAGE_SIZE
       const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(PAGE_SIZE),
+        limit: String(PAGE_SIZE),
+        offset: String(offset),
       })
 
       if (selectedSeries.value !== null) {
@@ -252,12 +268,10 @@ export function useDocsReader() {
         params.set('search', searchQuery.value.trim())
       }
 
-      const response = await fetch(`${API_BASE}/scp/articles?${params.toString()}`, {
-        signal: AbortSignal.timeout(config.api.timeout),
-      })
+      const response = await fetchWithTimeout(`${API_BASE}/docs/items?${params.toString()}`)
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
 
       const data = await response.json()
@@ -266,7 +280,7 @@ export function useDocsReader() {
         const newArticles: SCPArticle[] = data.data.map((item: any) => ({
           scpNumber: item.scp_number || item.scpNumber || '',
           title: item.title || '',
-          objectClass: item.object_class || item.objectClass || 'Unknown',
+          objectClass: (item.object_class || item.objectClass || 'Unknown') as SCPObjectClass,
           series: item.series || 1,
           rating: item.rating || 0,
           url: item.url || '',
@@ -279,7 +293,7 @@ export function useDocsReader() {
         }
 
         currentPage.value = page
-        hasMore.value = newArticles.length >= PAGE_SIZE
+        hasMore.value = (data.total && data.offset + newArticles.length < data.total) || newArticles.length >= PAGE_SIZE
       } else {
         if (!append) {
           articles.value = []
@@ -304,18 +318,20 @@ export function useDocsReader() {
     cacheStatus.value = 'loading'
 
     try {
-      // Check cache first
       const cached = await indexedDBService.getSCPContent(scpNumber)
       if (cached && (Date.now() - cached.cachedAt < CACHE_TTL)) {
         const sanitizedContent = await sanitizeHtml(cached.rawHtml)
         const toc = extractTOC(sanitizedContent)
+
+        const listMeta = articles.value.find(a => a.scpNumber === scpNumber)
+
         currentArticle.value = {
           scpNumber: cached.scpNumber,
-          title: '',
-          objectClass: 'Unknown',
-          series: 1,
-          rating: 0,
-          url: '',
+          title: listMeta?.title || '',
+          objectClass: listMeta?.objectClass || 'Unknown',
+          series: listMeta?.series || 1,
+          rating: listMeta?.rating || 0,
+          url: listMeta?.url || '',
           content: sanitizedContent,
           rawHtml: cached.rawHtml,
           wordCount: cached.wordCount,
@@ -323,7 +339,6 @@ export function useDocsReader() {
         }
         cacheStatus.value = 'cached'
 
-        // Try to update from network in background
         if (isOnline.value) {
           fetchArticleFromNetwork(scpNumber, true).catch(() => {})
         }
@@ -343,53 +358,64 @@ export function useDocsReader() {
     if (!isOnline.value) return
 
     try {
-      const response = await fetch(`${API_BASE}/scp/articles/${encodeURIComponent(scpNumber)}`, {
-        signal: AbortSignal.timeout(config.api.timeout),
-      })
+      const [contentResponse, metaResponse] = await Promise.allSettled([
+        fetchWithTimeout(`${API_BASE}/docs/content/${encodeURIComponent(scpNumber)}`),
+        fetchWithTimeout(`${API_BASE}/docs/item/${encodeURIComponent(scpNumber)}`),
+      ])
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+      let contentData: any = null
+      if (contentResponse.status === 'fulfilled' && contentResponse.value.ok) {
+        contentData = await contentResponse.value.json()
       }
 
-      const data = await response.json()
-
-      if (data.success && data.data) {
-        const item = data.data
-        const rawHtml = item.raw_html || item.rawHtml || item.content || ''
-        const sanitizedContent = await sanitizeHtml(rawHtml)
-        const toc = extractTOC(sanitizedContent)
-        const wordCount = rawHtml.replace(/<[^>]*>/g, '').length
-
-        // Save to cache
-        await indexedDBService.saveSCPContent({
-          scpNumber,
-          content: sanitizedContent,
-          rawHtml,
-          wordCount,
-        })
-
-        const detail: SCPArticleDetail = {
-          scpNumber,
-          title: item.title || '',
-          objectClass: item.object_class || item.objectClass || 'Unknown',
-          series: item.series || 1,
-          rating: item.rating || 0,
-          url: item.url || '',
-          content: sanitizedContent,
-          rawHtml,
-          wordCount,
-          toc,
-        }
-
-        if (!background) {
-          currentArticle.value = detail
-        } else if (currentArticle.value?.scpNumber === scpNumber) {
-          // Update current article with fresh data from network
-          currentArticle.value = detail
-        }
-
-        cacheStatus.value = 'cached'
+      let metaData: any = null
+      if (metaResponse.status === 'fulfilled' && metaResponse.value.ok) {
+        metaData = await metaResponse.value.json()
       }
+
+      if (!contentData || !contentData.success || !contentData.data) {
+        throw new Error('Content API returned no data')
+      }
+
+      const contentItem = contentData.data
+      const rawHtml: string = contentItem.content || ''
+      if (!rawHtml || rawHtml.length < 100) {
+        throw new Error('Retrieved content is empty or too short')
+      }
+
+      const sanitizedContent = await sanitizeHtml(rawHtml)
+      const toc = extractTOC(sanitizedContent)
+      const wordCount = rawHtml.replace(/<[^>]*>/g, '').length
+
+      const savedEntry = {
+        scpNumber,
+        content: sanitizedContent,
+        rawHtml,
+        wordCount,
+      }
+      await indexedDBService.saveSCPContent(savedEntry)
+
+      const metaItem = metaData?.success ? metaData.data : null
+      const detail: SCPArticleDetail = {
+        scpNumber,
+        title: metaItem?.title || '',
+        objectClass: (metaItem?.object_class || metaItem?.objectClass || 'Unknown') as SCPObjectClass,
+        series: metaItem?.series || 1,
+        rating: metaItem?.rating || 0,
+        url: metaItem?.url || '',
+        content: sanitizedContent,
+        rawHtml,
+        wordCount,
+        toc,
+      }
+
+      if (!background) {
+        currentArticle.value = detail
+      } else if (currentArticle.value?.scpNumber === scpNumber) {
+        currentArticle.value = detail
+      }
+
+      cacheStatus.value = 'cached'
     } catch (err) {
       if (!background) {
         throw err

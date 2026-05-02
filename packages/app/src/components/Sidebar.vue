@@ -97,6 +97,7 @@ import { ref, computed, nextTick } from 'vue'
 import { useTabsStore } from '../stores/tabs'
 import type { Tab } from '../stores/tabs'
 import indexedDBService from '../utils/indexedDB'
+import logger from '../utils/logger'
 
 const tabsStore = useTabsStore()
 
@@ -145,7 +146,7 @@ const handleCloseTab = async (tabId: string) => {
     try {
       await indexedDBService.deleteTerminalState(tabId)
     } catch (error) {
-      console.error('[Sidebar] Failed to delete terminal state:', error)
+      logger.error('[Sidebar] Failed to delete terminal state:', error)
     }
   }
 }
@@ -182,7 +183,7 @@ const handleCleanup = () => {
   const afterCount = tabs.value.length
   
   if (beforeCount !== afterCount) {
-    console.log(`[Sidebar] Cleaned up ${beforeCount - afterCount} old tabs`)
+    logger.info(`[Sidebar] Cleaned up ${beforeCount - afterCount} old tabs`)
   }
 }
 </script>

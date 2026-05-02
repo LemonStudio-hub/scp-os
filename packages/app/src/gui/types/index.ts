@@ -2,7 +2,7 @@
  * GUI Window Management Types
  */
 
-export type ToolType = 'filemanager' | 'editor' | 'terminal' | 'settings' | 'chat' | 'dash' | 'feedback' | 'docs'
+export type ToolType = 'filemanager' | 'editor' | 'terminal' | 'settings' | 'chat' | 'dash' | 'feedback' | 'docs' | 'proxy'
 
 export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen'
 

@@ -8,6 +8,7 @@ import type { ITabRepository } from '../domain/repositories'
 import { TabEntity } from '../domain/entities'
 import type { TabType } from '../domain/entities'
 import { getGlobalContainer } from '../core/container'
+import logger from '../utils/logger'
 import { getGlobalEventBus } from '../platform/events/event-bus'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -182,15 +183,15 @@ export function useTabsRefactored() {
 
   // Listen to events
   const handleTabCreated = (event: any) => {
-    console.log('[useTabs] Tab created:', event.tab)
+    logger.debug('[useTabs] Tab created:', event.tab)
   }
 
   const handleTabClosed = (event: any) => {
-    console.log('[useTabs] Tab closed:', event.tabId)
+    logger.debug('[useTabs] Tab closed:', event.tabId)
   }
 
   const handleTabChanged = (event: any) => {
-    console.log('[useTabs] Active tab changed:', event.tabId)
+    logger.debug('[useTabs] Active tab changed:', event.tabId)
   }
 
   // Lifecycle hooks

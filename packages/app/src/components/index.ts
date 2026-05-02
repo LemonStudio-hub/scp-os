@@ -3,3 +3,4 @@
  */
 
 export { default as AppLayout } from './layout/AppLayout.vue'
+export * from './download'

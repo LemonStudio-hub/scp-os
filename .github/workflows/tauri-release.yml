@@ -1,0 +1,180 @@
+name: Tauri Build & Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v0.2.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tauri-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check-desktop:
+    name: Verify Desktop Package
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check required files
+        id: check
+        run: |
+          READY=true
+          for f in \
+            "packages/desktop/Cargo.toml" \
+            "packages/desktop/tauri.conf.json" \
+            "packages/desktop/src/main.rs" \
+            "packages/desktop/src/lib.rs" \
+            "packages/desktop/build.rs"; do
+            if [ ! -s "$f" ]; then
+              echo "::warning::Required file missing or empty: $f"
+              READY=false
+            fi
+          done
+          echo "ready=$READY" >> "$GITHUB_OUTPUT"
+          if [ "$READY" = "false" ]; then
+            echo "::error::Desktop package is not ready for build"
+            exit 1
+          fi
+
+  build:
+    name: Build ${{ matrix.platform.label }}
+    needs: check-desktop
+    if: needs.check-desktop.outputs.ready == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - label: Linux-x64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: ''
+          - label: macOS-ARM
+            os: macos-latest
+            target: aarch64-apple-darwin
+            args: '--target aarch64-apple-darwin'
+          - label: macOS-Intel
+            os: macos-latest
+            target: x86_64-apple-darwin
+            args: '--target x86_64-apple-darwin'
+          - label: Windows-x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            args: ''
+
+    runs-on: ${{ matrix.platform.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+
+      - name: Cache Rust artifacts
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: 'packages/desktop -> target'
+          key: ${{ matrix.platform.target }}
+
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Determine release tag
+        id: release-info
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Building release for tag: $TAG"
+
+      - name: Build Tauri application
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          projectPath: packages/desktop
+          tauriScript: pnpm --filter @scp-os/desktop tauri
+          tagName: ${{ steps.release-info.outputs.tag }}
+          releaseName: 'SCP-OS ${{ steps.release-info.outputs.tag }}'
+          releaseBody: |
+            ## SCP Foundation Terminal ${{ steps.release-info.outputs.tag }}
+
+            ### 🖥️ Desktop Application
+
+            Cross-platform desktop client built with Tauri v2.
+
+            ### 📦 Installation
+
+            - **Linux (Debian/Ubuntu)**: Download the `.deb` file → `sudo dpkg -i *.deb`
+            - **Linux (AppImage)**: Download the `.AppImage` file → `chmod +x && ./SCP-OS.AppImage`
+            - **macOS (Apple Silicon)**: Download the `.dmg` file for M1/M2/M3
+            - **macOS (Intel)**: Download the `.dmg` file for Intel Macs
+            - **Windows**: Download the `.msi` or `.exe` installer
+
+            ### 🔐 Verification
+
+            All builds are produced by GitHub Actions from source code in this repository.
+          releaseDraft: false
+          prerelease: false
+          args: ${{ matrix.platform.args }}
+          retryAttempts: 2
+
+  notify-failure:
+    name: Notify Build Failure
+    if: failure() && needs.check-desktop.outputs.ready == 'true'
+    needs: [check-desktop, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report failure
+        run: |
+          echo "::error::Tauri build failed for one or more platforms. Check the build logs for details."
+          echo "Failed platforms may have partial artifacts uploaded to the release."

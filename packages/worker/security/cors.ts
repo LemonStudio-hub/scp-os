@@ -3,11 +3,26 @@
  * 严格的跨域资源共享控制
  */
 
-import type { RequestContext } from '../shared/types'
+import type { RequestContext, ApiError } from '../shared/types'
 import { getConfig } from '../shared/config'
 
 export class CORSManager {
   private config = getConfig()
+  private originRegexCache: Map<string, RegExp> = new Map()
+
+  constructor() {
+    this.precompilePatterns()
+  }
+
+  private precompilePatterns(): void {
+    for (const allowed of this.config.cors.allowedOrigins) {
+      if (allowed.includes('*')) {
+        const escaped = allowed.replace(/[+?^${}()|[\]\\]/g, '\\$&')
+        const pattern = escaped.replace(/\*/g, '.*')
+        this.originRegexCache.set(allowed, new RegExp(`^${pattern}$`))
+      }
+    }
+  }
 
   /**
    * 获取 CORS 头
@@ -35,9 +50,13 @@ export class CORSManager {
 
     for (const allowed of this.config.cors.allowedOrigins) {
       if (allowed.includes('*')) {
-        const escaped = allowed.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-        const pattern = escaped.replace(/\*/g, '.*')
-        const regex = new RegExp(`^${pattern}$`)
+        let regex = this.originRegexCache.get(allowed)
+        if (!regex) {
+          const escaped = allowed.replace(/[+?^${}()|[\]\\]/g, '\\$&')
+          const pattern = escaped.replace(/\*/g, '.*')
+          regex = new RegExp(`^${pattern}$`)
+          this.originRegexCache.set(allowed, regex)
+        }
         if (regex.test(origin)) {
           return true
         }
@@ -77,12 +96,16 @@ export class CORSManager {
   /**
    * 创建错误响应
    */
-  createErrorResponse(message: string, status: number, request: RequestContext): Response {
+  createErrorResponse(error: ApiError | string, status: number, request: RequestContext): Response {
     const corsHeaders = this.getHeaders(request)
     const headers = new Headers(corsHeaders)
     headers.set('Content-Type', 'application/json')
-    
-    return new Response(JSON.stringify({ error: message }), {
+
+    const body: ApiError = typeof error === 'string'
+      ? { code: 'INTERNAL_ERROR', message: error }
+      : error
+
+    return new Response(JSON.stringify(body), {
       status,
       headers,
     })

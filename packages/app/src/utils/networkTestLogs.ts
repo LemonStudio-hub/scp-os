@@ -79,7 +79,6 @@ export async function generateNetworkTestLogs(): Promise<string[]> {
   logs.push(`${ANSICode.cyan}[PHASE 2]${ANSICode.reset} TCP Connection Test`)
   logs.push('')
   
-  let completedTargets = 0
   for (const target of TEST_TARGETS) {
     logs.push(`${ANSICode.gray}  Testing ${target.name} (${target.host}:${target.port})...${ANSICode.reset}`)
     
@@ -94,7 +93,6 @@ export async function generateNetworkTestLogs(): Promise<string[]> {
     logs.push(`${ANSICode.gray}    Connected in ${latency}ms${ANSICode.reset}`)
     logs.push(`${ANSICode.green}    [OK] TCP connection successful${ANSICode.reset}`)
     logs.push('')
-    completedTargets++
   }
   
   // Phase 3: HTTP Request Test
@@ -103,7 +101,6 @@ export async function generateNetworkTestLogs(): Promise<string[]> {
   logs.push(`${ANSICode.gray}  Sending test requests...${ANSICode.reset}`)
   logs.push('')
   
-  completedTargets = 0
   for (const target of TEST_TARGETS) {
     if (target.type === 'DNS') continue  // Skip HTTP test for DNS targets
     
@@ -132,7 +129,6 @@ export async function generateNetworkTestLogs(): Promise<string[]> {
     logs.push(`${ANSICode.gray}    ${statusColor}HTTP ${statusCode}${ANSICode.reset} ${ANSICode.gray}(${responseTime}ms)${ANSICode.reset}`)
     logs.push(`${ANSICode.green}    [OK]${ANSICode.reset}`)
     logs.push('')
-    completedTargets++
   }
   
   // Phase 4: Packet Loss Test

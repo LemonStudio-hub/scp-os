@@ -125,6 +125,15 @@ export const SCRAPER_CONFIG = {
       /图像为.*创作/,
     ],
   },
+
+  // JWT 认证配置
+  // 生产环境必须通过 JWT_SECRET 环境变量/secret 覆盖此默认值
+  // Worker 端：wrangler secret put JWT_SECRET
+  // 此默认值仅用于本地开发，客户端与 Worker 端必须保持一致
+  jwt: {
+    secret: 'scp-os-default-secret-change-in-production',
+    expiresIn: '7d',
+  } as const,
 } as const
 
 export type ScraperConfig = typeof SCRAPER_CONFIG

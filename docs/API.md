@@ -1,6 +1,6 @@
 # API 参考文档
 
-SCP-OS 后端 API 基于 Cloudflare Workers 部署，提供 SCP 数据查询、聊天、反馈、用户管理等功能。
+SCP-OS 后端 API 基于 Cloudflare Workers 部署，提供 SCP 数据查询、聊天、反馈、用户管理等服务。
 
 **基础 URL**：`https://api.scpos.site`（生产环境）
 
@@ -120,8 +120,8 @@ GET /search?keyword={keyword}&branch={branch}&clearance_level={level}
 
 **行为说明**
 
-- 指定 `clearance_level` 时，使用 D1 数据库进行模糊搜索（按名称和标签匹配）
-- 未指定时，使用 SCP Wiki 网站搜索功能
+- 指定 `clearance_level` 时，通过 D1 数据库进行模糊搜索（按名称和标签匹配）
+- 未指定时，则调用 SCP Wiki 站内搜索功能
 
 ---
 
@@ -204,7 +204,7 @@ GET /stats
 
 ### 发送消息
 
-发送聊天消息，带频率限制（10 条/分钟/用户）。
+发送聊天消息，受频率限制（10 条/分钟/用户）。
 
 ```
 POST /chat/send
@@ -245,7 +245,7 @@ POST /chat/send
 
 ### 获取消息列表
 
-获取聊天消息，支持按房间过滤和时间游标。
+获取聊天消息，支持按房间过滤和时间游标分页。
 
 ```
 GET /chat/messages?limit={limit}&after={after}&room_id={room_id}
@@ -504,7 +504,7 @@ GET /debug?number={number}
 POST /performance
 ```
 
-**请求体**：任意 JSON 格式的性能指标数据，存储到 KV（1 小时过期）。
+**请求体**：任意 JSON 格式的性能指标数据，存储于 KV（1 小时后自动过期）。
 
 ---
 

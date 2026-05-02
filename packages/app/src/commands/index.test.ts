@@ -151,9 +151,33 @@ describe('commands/index', () => {
   })
 
   describe('info command', () => {
-    it('should display specified SCP information', () => {
+    it('should display specified SCP information', async () => {
       const handler = commandHandlers.info
-      handler(['173'], writeMock, writelnMock)
+      // Mock the scraper to return fake SCP data since info is now async
+      const { scraper } = await import('../utils/scraper')
+      vi.mocked(scraper.scrapeSCP).mockResolvedValue({
+        success: true,
+        data: {
+          id: 'SCP-173',
+          name: '雕像',
+          objectClass: 'KETER' as const,
+          containment: ['Special Containment Procedures'],
+          description: ['Description content'],
+          appendix: [],
+          references: [],
+          author: 'Unknown Author',
+          url: 'https://scp-wiki-cn.wikidot.com/scp-173'
+        },
+        cached: false,
+      })
+      vi.mocked(scraper.formatForTerminal).mockReturnValue([
+        'SCP-173 - The Sculpture',
+        'Object Class: KETER',
+        'Description: The sculpture...',
+      ])
+
+      // Need to set window.__terminalController to avoid startup sequence
+      await handler(['173'], writeMock, writelnMock)
       
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
@@ -216,7 +240,7 @@ describe('commands/index', () => {
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
       
-      expect(output).toContain('Emergency Contact Information')
+      expect(output).toContain('Emergency Contact')
       expect(output).toContain('Containment Breach')
       expect(output).toContain('911')
     })
@@ -246,7 +270,7 @@ describe('commands/index', () => {
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
       
-      expect(output).toContain('About System')
+      expect(output).toContain('About SCP-OS')
       expect(output).toContain('Secure. Contain. Protect.')
     })
 

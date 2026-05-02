@@ -60,6 +60,16 @@
             <div class="pc-docs__loading-dot" />
           </div>
 
+          <!-- Error State -->
+          <div v-else-if="reader.error.value" class="pc-docs__list-empty pc-docs__list-error">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+              <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M20 12v12M20 28v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p>{{ reader.error.value }}</p>
+            <button class="pc-docs__retry-btn" @click="reader.fetchArticles(1)">Retry</button>
+          </div>
+
           <!-- Empty State -->
           <div v-else-if="reader.filteredArticles.value.length === 0" class="pc-docs__list-empty">
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
@@ -211,7 +221,7 @@
             </div>
 
             <!-- Article Content -->
-            <div v-else class="pc-docs__article" v-html="reader.currentArticle.value.content" />
+            <div v-else class="pc-docs__article" v-html="sanitizedContent" />
           </div>
 
           <!-- TOC Toggle Button -->
@@ -233,7 +243,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, watch, computed } from 'vue'
+import DOMPurify from 'dompurify'
 import SCPWindow from '../../components/SCPWindow.vue'
 import { useDocsReader } from '../../composables/useDocsReader'
 import type { WindowInstance } from '../../types'
@@ -244,8 +255,16 @@ interface Props {
 }
 
 defineProps<Props>()
-
 const reader = useDocsReader()
+
+const sanitizedContent = computed(() => {
+  const content = reader.currentArticle.value?.content
+  if (!content) return ''
+  return DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
+  })
+})
 
 const listRef = ref<HTMLElement>()
 const contentRef = ref<HTMLElement>()
@@ -546,6 +565,18 @@ onBeforeUnmount(() => {
 .pc-docs__list-empty p {
   font-size: 13px;
   margin: 0;
+}
+
+.pc-docs__list-error {
+  color: var(--gui-error, #FF3B30);
+}
+
+.pc-docs__list-error p {
+  font-size: 13px;
+  margin: 0;
+  max-width: 240px;
+  text-align: center;
+  word-break: break-word;
 }
 
 .pc-docs__load-more {

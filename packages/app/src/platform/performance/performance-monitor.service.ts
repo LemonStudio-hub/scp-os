@@ -258,6 +258,10 @@ export class PerformanceMonitorService {
       this.collectMetrics()
     }, interval)
 
+    if (this.eventBus) {
+      this.eventBus.emit('performance:monitoring:started', {})
+    }
+
     // Initial collection
     this.collectMetrics()
   }
@@ -279,6 +283,10 @@ export class PerformanceMonitorService {
     }
 
     this.isMonitoring = false
+
+    if (this.eventBus) {
+      this.eventBus.emit('performance:monitoring:stopped', {})
+    }
   }
 
   /**
