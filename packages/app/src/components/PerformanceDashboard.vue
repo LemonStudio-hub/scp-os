@@ -23,6 +23,7 @@ import {
 } from './dashboard'
 import { PerformanceOptimizerService } from '../platform/performance/performance-optimizer.service'
 import { PerformanceApiService } from '../platform/performance/performance-api.service'
+import { useAuthStore } from '../stores/authStore'
 
 // Props
 const props = defineProps<{
@@ -255,6 +256,11 @@ onMounted(() => {
     monitorService.value = new PerformanceMonitorService()
     optimizerService.value = new PerformanceOptimizerService()
     apiService.value = new PerformanceApiService()
+
+    const authStore = useAuthStore()
+    if (authStore.userId) {
+      apiService.value.setUserId(authStore.userId)
+    }
 
     monitorService.value.startMonitoring(5000)
     isMonitoring.value = true

@@ -1,16 +1,10 @@
-/**
- * Performance API Service
- * Handles communication with the backend performance monitoring API
- */
-
 import type { PerformanceMetric, PerformanceReport } from './performance-monitor.service'
+import { getAuthHeaders } from '../../utils/authFetch'
 import logger from '../../utils/logger'
 
-/**
- * Performance API Service
- */
 export class PerformanceApiService {
   private apiUrl: string
+  private userId: string | null = null
   private isSending = false
   private sendInterval: number | null = null
 
@@ -18,11 +12,21 @@ export class PerformanceApiService {
     this.apiUrl = apiUrl
   }
 
-  /**
-   * Send performance metrics to the backend
-   * @param metrics Performance metrics to send
-   * @returns Promise<boolean> Success status
-   */
+  setUserId(userId: string): void {
+    this.userId = userId
+  }
+
+  private async buildHeaders(): Promise<Record<string, string>> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (this.userId) {
+      const authHeaders = await getAuthHeaders(this.userId)
+      headers['Authorization'] = authHeaders.Authorization
+    }
+    return headers
+  }
+
   async sendMetrics(metrics: PerformanceMetric[]): Promise<boolean> {
     if (this.isSending) {
       logger.warn('Already sending metrics')
@@ -34,9 +38,7 @@ export class PerformanceApiService {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await this.buildHeaders(),
         body: JSON.stringify({
           timestamp: new Date().toISOString(),
           metrics: metrics,
@@ -60,18 +62,11 @@ export class PerformanceApiService {
     }
   }
 
-  /**
-   * Send performance report to the backend
-   * @param report Performance report to send
-   * @returns Promise<boolean> Success status
-   */
   async sendReport(report: PerformanceReport): Promise<boolean> {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await this.buildHeaders(),
         body: JSON.stringify({
           type: 'report',
           timestamp: new Date().toISOString(),
@@ -93,18 +88,11 @@ export class PerformanceApiService {
     }
   }
 
-  /**
-   * Retrieve recent metrics from the backend
-   * @param limit Maximum number of metrics to retrieve
-   * @returns Promise<any[]> Array of metrics
-   */
   async getRecentMetrics(limit: number = 10): Promise<any[]> {
     try {
       const response = await fetch(`${this.apiUrl}?limit=${limit}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await this.buildHeaders(),
       })
 
       if (!response.ok) {
@@ -119,11 +107,6 @@ export class PerformanceApiService {
     }
   }
 
-  /**
-   * Start automatic metrics transmission
-   * @param intervalMs Interval in milliseconds
-   * @param metricsProvider Function to provide metrics
-   */
   startAutoSend(intervalMs: number = 60000, metricsProvider: () => PerformanceMetric[]): void {
     if (this.sendInterval) {
       logger.warn('Auto-send already started')
@@ -140,9 +123,6 @@ export class PerformanceApiService {
     }, intervalMs)
   }
 
-  /**
-   * Stop automatic metrics transmission
-   */
   stopAutoSend(): void {
     if (this.sendInterval) {
       clearInterval(this.sendInterval)
@@ -151,17 +131,11 @@ export class PerformanceApiService {
     }
   }
 
-  /**
-   * Get API status
-   * @returns Promise<boolean> API availability status
-   */
   async getApiStatus(): Promise<boolean> {
     try {
       const response = await fetch(this.apiUrl, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: await this.buildHeaders(),
       })
 
       return response.ok

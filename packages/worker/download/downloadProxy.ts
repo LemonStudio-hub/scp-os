@@ -6,7 +6,7 @@ import type {
   DownloadInitResponse,
 } from './types'
 import { logger } from '../utils/logger'
-import { validationError, internalError, notFoundError, rateLimitedError } from '../shared/errors'
+import { validationError, internalError, notFoundError } from '../shared/errors'
 
 function generateId(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
@@ -80,7 +80,7 @@ function validateUrl(url: string): { valid: boolean; error?: string } {
 function corsHeaders(origin: string): Record<string, string> {
   return {
     'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Range',
     'Access-Control-Expose-Headers': 'Content-Disposition, Content-Length, Content-Type, X-Download-ID, X-Download-Speed, X-Progress',
     'Vary': 'Origin',
@@ -320,103 +320,100 @@ export class DownloadProxy {
       let lastProgressUpdate = Date.now()
       let lastBytesCount = 0
       let speedHistory: number[] = []
+      const streamStartTime = Date.now()
 
       const reader = response.body.getReader()
 
       const stream = new ReadableStream({
-        start: async (controller) => {
-          const startTime = Date.now()
-
+        pull: async (controller) => {
           try {
-            while (true) {
-              const { done, value } = await reader.read()
+            const { done, value } = await reader.read()
 
-              if (done) {
-                const endTime = Date.now()
-                const progress: DownloadProgress = {
-                  downloadId,
-                  status: 'completed',
-                  url,
-                  filename,
-                  totalBytes: totalBytes || downloadedBytes,
-                  downloadedBytes,
-                  progress: 100,
-                  speed: 0,
-                  startTime,
-                  endTime,
-                  contentType,
-                }
-                await storeProgress(this.kv, downloadId, progress)
-
-                await addHistory(this.kv, {
-                  id: downloadId,
-                  url,
-                  filename,
-                  totalBytes: totalBytes || downloadedBytes,
-                  downloadedBytes,
-                  status: 'completed',
-                  createdAt: new Date(startTime).toISOString(),
-                  completedAt: new Date(endTime).toISOString(),
-                  contentType,
-                })
-
-                logger.info('Download completed', {
-                  downloadId,
-                  filename,
-                  totalBytes: totalBytes || downloadedBytes,
-                  duration: endTime - startTime,
-                })
-
-                controller.close()
-                return
+            if (done) {
+              const endTime = Date.now()
+              const progress: DownloadProgress = {
+                downloadId,
+                status: 'completed',
+                url,
+                filename,
+                totalBytes: totalBytes || downloadedBytes,
+                downloadedBytes,
+                progress: 100,
+                speed: 0,
+                startTime: streamStartTime,
+                endTime,
+                contentType,
               }
+              await storeProgress(this.kv, downloadId, progress)
 
-              downloadedBytes += value.length
+              await addHistory(this.kv, {
+                id: downloadId,
+                url,
+                filename,
+                totalBytes: totalBytes || downloadedBytes,
+                downloadedBytes,
+                status: 'completed',
+                createdAt: new Date(streamStartTime).toISOString(),
+                completedAt: new Date(endTime).toISOString(),
+                contentType,
+              })
 
-              if (rateLimitBps > 0) {
-                const now = Date.now()
-                speedHistory.push(value.length)
-                speedHistory = speedHistory.filter(
-                  (_, i) => now - startTime - (i * 1000) < 2000,
-                )
+              logger.info('Download completed', {
+                downloadId,
+                filename,
+                totalBytes: totalBytes || downloadedBytes,
+                duration: endTime - streamStartTime,
+              })
 
-                const recentSpeed = speedHistory.length > 0
-                  ? speedHistory.reduce((a, b) => a + b, 0) / (speedHistory.length * 1000) * 1000
-                  : 0
+              controller.close()
+              return
+            }
 
-                if (recentSpeed > rateLimitBps) {
-                  const waitMs = Math.ceil((value.length / rateLimitBps) * 1000)
-                  if (waitMs > 0 && waitMs < 5000) {
-                    await new Promise(resolve => setTimeout(resolve, waitMs))
-                  }
-                }
-              }
+            downloadedBytes += value.length
 
-              controller.enqueue(value)
-
+            if (rateLimitBps > 0) {
               const now = Date.now()
-              if (now - lastProgressUpdate >= DOWNLOAD_CONFIG.progressUpdateInterval) {
-                const elapsed = now - lastProgressUpdate
-                const chunkBytes = downloadedBytes - lastBytesCount
-                const currentSpeed = elapsed > 0 ? (chunkBytes / elapsed) * 1000 : 0
+              speedHistory.push(value.length)
+              speedHistory = speedHistory.filter(
+                (_, i) => now - streamStartTime - (i * 1000) < 2000,
+              )
 
-                const progress: DownloadProgress = {
-                  downloadId,
-                  status: 'downloading',
-                  url,
-                  filename,
-                  totalBytes,
-                  downloadedBytes,
-                  progress: totalBytes > 0 ? Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)) : Math.min(99, Math.round(downloadedBytes / 1024)),
-                  speed: Math.round(currentSpeed),
-                  startTime,
-                  contentType,
+              const recentSpeed = speedHistory.length > 0
+                ? speedHistory.reduce((a, b) => a + b, 0) / (speedHistory.length * 1000) * 1000
+                : 0
+
+              if (recentSpeed > rateLimitBps) {
+                const waitMs = Math.ceil((value.length / rateLimitBps) * 1000)
+                if (waitMs > 0 && waitMs < 5000) {
+                  await new Promise(resolve => setTimeout(resolve, waitMs))
                 }
-                await storeProgress(this.kv, downloadId, progress)
-
-                lastProgressUpdate = now
-                lastBytesCount = downloadedBytes
               }
+            }
+
+            controller.enqueue(value)
+
+            const now = Date.now()
+            if (now - lastProgressUpdate >= DOWNLOAD_CONFIG.progressUpdateInterval) {
+              const elapsed = now - lastProgressUpdate
+              const chunkBytes = downloadedBytes - lastBytesCount
+              const currentSpeed = elapsed > 0 ? (chunkBytes / elapsed) * 1000 : 0
+
+              const progress: DownloadProgress = {
+                downloadId,
+                status: 'downloading',
+                url,
+                filename,
+                totalBytes,
+                downloadedBytes,
+                progress: totalBytes > 0 ? Math.min(99, Math.round((downloadedBytes / totalBytes) * 100)) : Math.min(99, Math.round(downloadedBytes / 1024)),
+                speed: Math.round(currentSpeed),
+                startTime: streamStartTime,
+                contentType,
+              }
+              await storeProgress(this.kv, downloadId, progress)
+
+              lastProgressUpdate = now
+              lastBytesCount = downloadedBytes
             }
           } catch (e) {
             const err = e as Error
@@ -430,7 +427,7 @@ export class DownloadProxy {
                 downloadedBytes,
                 progress: totalBytes > 0 ? Math.round((downloadedBytes / totalBytes) * 100) : 0,
                 speed: 0,
-                startTime,
+                startTime: streamStartTime,
                 endTime: Date.now(),
                 error: err.message,
                 contentType,
@@ -444,7 +441,7 @@ export class DownloadProxy {
                 totalBytes,
                 downloadedBytes,
                 status: 'failed',
-                createdAt: new Date(startTime).toISOString(),
+                createdAt: new Date(streamStartTime).toISOString(),
                 completedAt: new Date().toISOString(),
                 error: err.message,
                 contentType,
@@ -469,7 +466,7 @@ export class DownloadProxy {
             downloadedBytes,
             progress: totalBytes > 0 ? Math.round((downloadedBytes / totalBytes) * 100) : 0,
             speed: 0,
-            startTime: Date.now(),
+            startTime: streamStartTime,
             endTime: Date.now(),
             contentType,
           }
@@ -482,7 +479,7 @@ export class DownloadProxy {
             totalBytes,
             downloadedBytes,
             status: 'cancelled',
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(streamStartTime).toISOString(),
             completedAt: new Date().toISOString(),
             contentType,
           })

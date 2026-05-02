@@ -1,4 +1,4 @@
-﻿import type { Router } from './router'
+import type { Router } from './router'
 import type { Env, RequestContext, ChatSendMessageBody, CreateChatRoomBody, SetNicknameBody, SubmitFeedbackBody, LikeFeedbackBody, SubmitCommentBody, VoteFeedbackBody, RegisterUserBody, PerformanceMetricsBody } from './shared/types'
 import { SCPScraper } from './index'
 import type { CORSManager } from './security/cors'
@@ -46,7 +46,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     }
   }
 
-  // 鈹€鈹€ Root 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.get('/', async (_req, _env, _ctx, _params, _url) => {
     const config = getConfig()
     return corsManager.createResponse({
@@ -54,26 +53,26 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
       version: '2.0.0',
       status: 'online',
       endpoints: {
-        '/scrape?number={number}': '鐖彇鎸囧畾SCP鐨勪俊鎭?,
-        '/search?keyword={keyword}&clearance_level={level}': '鎼滅储SCP',
-        '/list?limit={limit}&offset={offset}&clearance_level={level}': '鍒楀嚭SCP缂栧彿',
-        '/stats': '鑾峰彇鏁版嵁搴撶粺璁′俊鎭?,
-        '/debug?number={number}': '璋冭瘯锛氳繑鍥炲師濮婬TML',
-        '/performance': '鎬ц兘鐩戞帶API (POST/GET)',
-        '/chat/send': '鍙戦€佽亰澶╂秷鎭?(POST)',
-        '/chat/messages': '鑾峰彇鑱婂ぉ娑堟伅 (GET)',
-        '/chat/rooms': '鑾峰彇/鍒涘缓鑱婂ぉ瀹?(GET/POST)',
-        '/chat/nickname': '璁剧疆鐢ㄦ埛鏄电О (POST)',
-        '/chat/broadcast': '骞挎挱鏂版秷鎭?(POST)',
-        '/docs/items': '鏌ヨ SCP 鏉＄洰鍒楄〃',
-        '/docs/item/{scpNumber}': '鑾峰彇鍗曚釜鏉＄洰鍏冩暟鎹?,
-        '/docs/content/{scpNumber}': '鑾峰彇鏉＄洰瀹屾暣鍐呭',
-        '/docs/tales': '鏌ヨ鏁呬簨鍒楄〃',
-        '/docs/hubs': '鑾峰彇 Hub 鍒楄〃',
-        '/download/init': '鍒濆鍖栦笅杞?(POST)',
-        '/download/stream': '娴佸紡涓嬭浇 (GET)',
-        '/download/progress': '鏌ヨ涓嬭浇杩涘害 (GET)',
-        '/download/history': '涓嬭浇鍘嗗彶璁板綍 (GET/DELETE)',
+        '/scrape?number={number}': '\u722c\u53d6\u6307\u5b9aSCP\u7684\u4fe1\u606f',
+        '/search?keyword={keyword}&clearance_level={level}': '\u641c\u7d22SCP',
+        '/list?limit={limit}&offset={offset}&clearance_level={level}': '\u5217\u51faSCP\u7f16\u53f7',
+        '/stats': '\u83b7\u53d6\u6570\u636e\u5e93\u7edf\u8ba1\u4fe1\u606f',
+        '/debug?number={number}': '\u8c03\u8bd5\uff1a\u8fd4\u56de\u539f\u59cbHTML',
+        '/performance': '\u6027\u80fd\u76d1\u63a7API (POST/GET)',
+        '/chat/send': '\u53d1\u9001\u804a\u5929\u6d88\u606f (POST)',
+        '/chat/messages': '\u83b7\u53d6\u804a\u5929\u6d88\u606f (GET)',
+        '/chat/rooms': '\u83b7\u53d6/\u521b\u5efa\u804a\u5929\u5ba4 (GET/POST)',
+        '/chat/nickname': '\u8bbe\u7f6e\u7528\u6237\u6635\u79f0 (POST)',
+        '/chat/broadcast': '\u5e7f\u64ad\u65b0\u6d88\u606f (POST)',
+        '/docs/items': '\u67e5\u8be2 SCP \u6761\u76ee\u5217\u8868',
+        '/docs/item/{scpNumber}': '\u83b7\u53d6\u5355\u4e2a\u6761\u76ee\u5143\u6570\u636e',
+        '/docs/content/{scpNumber}': '\u83b7\u53d6\u6761\u76ee\u5b8c\u6574\u5185\u5bb9',
+        '/docs/tales': '\u67e5\u8be2\u6545\u4e8b\u5217\u8868',
+        '/docs/hubs': '\u83b7\u53d6 Hub \u5217\u8868',
+        '/download/init': '\u521d\u59cb\u5316\u4e0b\u8f7d (POST)',
+        '/download/stream': '\u6d41\u5f0f\u4e0b\u8f7d (GET)',
+        '/download/progress': '\u67e5\u8be2\u4e0b\u8f7d\u8fdb\u5ea6 (GET)',
+        '/download/history': '\u4e0b\u8f7d\u5386\u53f2\u8bb0\u5f55 (GET/DELETE)',
       },
       features: {
         modular: true,
@@ -87,7 +86,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     }, 200, ctx(_req))
   })
 
-  // 鈹€鈹€ SCP API 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.get('/scrape', async (req, _env, _ctx_, _params, url) => {
     const scpNumber = url.searchParams.get('number')
     const branch = url.searchParams.get('branch') || 'en'
@@ -139,7 +137,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     return corsManager.createResponse(result, 200, ctx(req))
   })
 
-  // 鈹€鈹€ Image Proxy 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.get('/image-proxy', async (req, _env, _ctx_, _params, url) => {
     const imageUrl = url.searchParams.get('url')
     if (!imageUrl) {
@@ -176,7 +173,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     }
   })
 
-  // 鈹€鈹€ Chat API 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.post('/chat/send', async (req, _env, _ctx_, _params, _url) => {
     if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
     try {
@@ -235,7 +231,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
   })
 
-  // 鈹€鈹€ Feedback API 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.post('/feedback/submit', async (req, _env, _ctx_, _params, _url) => {
     if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
     try {
@@ -315,7 +310,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
   })
 
-  // 鈹€鈹€ User API 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.post('/api/user/register', async (req, _env, _ctx_, _params, _url) => {
     if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
     try {
@@ -343,7 +337,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     return corsManager.createResponse(result, result.success ? 200 : 404, ctx(req))
   })
 
-  // 鈹€鈹€ Performance API 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.post('/performance', async (req, _env, _ctx_, _params, _url) => {
     try {
       const body = await req.json() as PerformanceMetricsBody
@@ -373,7 +366,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     }
   })
 
-  // 鈹€鈹€ Docs API 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.get('/docs/items', async (req, _env, _ctx_, _params, _url) => {
     const result = await docsAPI.handleDocsItems(req, env)
     return corsManager.createResponse(await result.json(), result.status, ctx(req))
@@ -399,7 +391,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     return corsManager.createResponse(await result.json(), result.status, ctx(req))
   })
 
-  // 鈹€鈹€ Download API 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
   router.post('/download/init', async (req, _env, _ctx_, _params, _url) => {
     try {
       const body = await req.json() as DownloadRequest

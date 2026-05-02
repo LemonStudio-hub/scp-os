@@ -1080,8 +1080,8 @@ export default {
       const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
       const authResult = await requireAuth(request, env, corsManager)
       let authenticatedUserId: string | undefined
-      if (typeof authResult === 'string') {
-        authenticatedUserId = authResult
+      if (!(authResult instanceof Response)) {
+        authenticatedUserId = authResult.userId
       }
       registerRoutes(router, {
         scraper,

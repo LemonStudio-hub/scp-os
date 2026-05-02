@@ -127,7 +127,7 @@ export const useDownloadStore = defineStore('download', () => {
     }
   }
 
-  async function startStreamDownload(downloadId: string, downloadUrl: string, filename: string, contentType: string, rateLimit?: number) {
+  async function startStreamDownload(downloadId: string, downloadUrl: string, filename: string, contentType: string, rateLimit?: number, totalBytes?: number) {
     clearError()
     isDownloading.value = true
     downloadProgress.value = {
@@ -135,7 +135,7 @@ export const useDownloadStore = defineStore('download', () => {
       url: downloadUrl,
       filename,
       status: 'downloading',
-      totalBytes: 0,
+      totalBytes: totalBytes || 0,
       downloadedBytes: 0,
       progress: 0,
       speed: 0,
