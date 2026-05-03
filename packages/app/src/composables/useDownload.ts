@@ -1,8 +1,10 @@
 import { ref } from 'vue'
 import { useDownloadStore } from '../stores/downloadStore'
+import { useI18n } from '../gui/composables/useI18n'
 
 export function useDownload() {
   const store = useDownloadStore()
+  const { t } = useI18n()
   const downloadUrl = ref('')
   const customFilename = ref('')
   const rateLimitKBps = ref(0)
@@ -13,10 +15,10 @@ export function useDownload() {
   function validateInput(): string | null {
     const url = downloadUrl.value.trim()
     if (!url) {
-      return '请输入下载链接'
+      return t('proxy.errorEmptyUrl')
     }
     if (!VALID_URL_REGEX.test(url)) {
-      return '请输入有效的 HTTP/HTTPS 链接'
+      return t('proxy.errorInvalidUrl')
     }
     return null
   }
@@ -75,10 +77,10 @@ export function useDownload() {
     const now = Date.now()
     const date = new Date(dateStr).getTime()
     const diff = now - date
-    if (diff < 60000) return '刚刚'
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} 分钟前`
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} 小时前`
-    return `${Math.floor(diff / 86400000)} 天前`
+    if (diff < 60000) return t('proxy.timeJustNow')
+    if (diff < 3600000) return t('proxy.timeMinAgo', { n: Math.floor(diff / 60000) })
+    if (diff < 86400000) return t('proxy.timeHourAgo', { n: Math.floor(diff / 3600000) })
+    return t('proxy.timeDayAgo', { n: Math.floor(diff / 86400000) })
   }
 
   function formatDuration(ms: number): string {

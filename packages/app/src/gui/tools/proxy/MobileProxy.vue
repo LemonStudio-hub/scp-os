@@ -13,7 +13,7 @@
           <input
             v-model="downloadUrl"
             type="url"
-            placeholder="输入下载链接..."
+            :placeholder="t('proxy.enterUrl')"
             class="mobile-proxy__input"
             @keyup.enter="startDownload()"
           />
@@ -29,12 +29,12 @@
         </div>
 
         <button class="mobile-proxy__advanced-toggle" @click="showAdvanced = !showAdvanced">
-          {{ showAdvanced ? '收起选项' : '高级选项' }}
+          {{ showAdvanced ? t('proxy.collapseOptions') : t('proxy.advancedOptions') }}
         </button>
 
         <div v-if="showAdvanced" class="mobile-proxy__advanced">
-          <input v-model="customFilename" type="text" placeholder="自定义文件名" class="mobile-proxy__input mobile-proxy__input--sub" />
-          <input v-model.number="rateLimitKBps" type="number" min="0" placeholder="速率限制 KB/s" class="mobile-proxy__input mobile-proxy__input--sub" />
+          <input v-model="customFilename" type="text" :placeholder="t('proxy.customFilename')" class="mobile-proxy__input mobile-proxy__input--sub" />
+          <input v-model.number="rateLimitKBps" type="number" min="0" :placeholder="t('proxy.rateLimitPlaceholder')" class="mobile-proxy__input mobile-proxy__input--sub" />
         </div>
       </div>
 
@@ -42,7 +42,7 @@
         <div class="mobile-proxy__dl-card">
           <div class="mobile-proxy__dl-header">
             <span class="mobile-proxy__dl-name">{{ store.downloadProgress.filename }}</span>
-            <span class="mobile-proxy__dl-peak">峰值: {{ formatSpeed(store.peakSpeed) }}</span>
+            <span class="mobile-proxy__dl-peak">{{ t('proxy.peak') }}: {{ formatSpeed(store.peakSpeed) }}</span>
           </div>
 
           <div class="mobile-proxy__dl-bar-track">
@@ -51,22 +51,22 @@
 
           <div class="mobile-proxy__dl-grid">
             <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">已下载</span>
+              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.downloaded') }}</span>
               <span class="mobile-proxy__dl-stat-value">
                 {{ formatBytes(store.downloadProgress.downloadedBytes) }}
                 <template v-if="store.downloadProgress.totalBytes > 0">/ {{ formatBytes(store.downloadProgress.totalBytes) }}</template>
               </span>
             </div>
             <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">进度</span>
+              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.progress') }}</span>
               <span class="mobile-proxy__dl-stat-value mobile-proxy__dl-stat-value--blue">{{ Math.min(100, store.currentProgress) }}%</span>
             </div>
             <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">速度</span>
+              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.currentSpeed') }}</span>
               <span class="mobile-proxy__dl-stat-value mobile-proxy__dl-stat-value--green">{{ formatSpeed(store.currentSpeed) }}</span>
             </div>
             <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">剩余</span>
+              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.eta') }}</span>
               <span class="mobile-proxy__dl-stat-value">{{ etaDisplay }}</span>
             </div>
           </div>
@@ -84,7 +84,7 @@
             </svg>
           </div>
 
-          <button class="mobile-proxy__cancel-btn" @click="cancel()">取消下载</button>
+          <button class="mobile-proxy__cancel-btn" @click="cancel()">{{ t('proxy.cancelDownload') }}</button>
         </div>
       </div>
 
@@ -92,45 +92,45 @@
         <div class="mobile-proxy__done-icon">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         </div>
-        <p class="mobile-proxy__done-text">下载完成</p>
+        <p class="mobile-proxy__done-text">{{ t('proxy.downloadComplete') }}</p>
         <p class="mobile-proxy__done-detail">{{ store.downloadProgress.filename }}</p>
         <div class="mobile-proxy__done-stats">
           <span>{{ formatBytes(store.downloadProgress.totalBytes || store.downloadProgress.downloadedBytes) }}</span>
           <span v-if="store.downloadProgress.startTime && store.downloadProgress.endTime">{{ formatDuration(store.downloadProgress.endTime - store.downloadProgress.startTime) }}</span>
         </div>
-        <button class="mobile-proxy__new-btn" @click="reset()">新下载</button>
+        <button class="mobile-proxy__new-btn" @click="reset()">{{ t('proxy.newDownload') }}</button>
       </div>
 
       <div v-if="history.length > 0" class="mobile-proxy__stats-bar">
         <div class="mobile-proxy__stats-chip">
-          <span class="mobile-proxy__stats-chip-label">总下载</span>
+          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.totalDownloads') }}</span>
           <span class="mobile-proxy__stats-chip-value">{{ store.downloadStats.totalDownloads }}</span>
         </div>
         <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--green">
-          <span class="mobile-proxy__stats-chip-label">成功</span>
+          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.statusDone') }}</span>
           <span class="mobile-proxy__stats-chip-value">{{ store.downloadStats.completedDownloads }}</span>
         </div>
         <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--purple">
-          <span class="mobile-proxy__stats-chip-label">总流量</span>
+          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.totalTraffic') }}</span>
           <span class="mobile-proxy__stats-chip-value">{{ formatBytes(store.downloadStats.totalBytesDownloaded) }}</span>
         </div>
         <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--blue">
-          <span class="mobile-proxy__stats-chip-label">均速</span>
+          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.avgSpeed') }}</span>
           <span class="mobile-proxy__stats-chip-value">{{ formatSpeed(store.downloadStats.averageSpeed) }}</span>
         </div>
       </div>
 
       <div class="mobile-proxy__history">
         <div class="mobile-proxy__history-header">
-          <span>历史记录</span>
-          <button v-if="history.length > 0" @click="store.fetchHistory(20, 0)">刷新</button>
+          <span>{{ t('proxy.history') }}</span>
+          <button v-if="history.length > 0" @click="store.fetchHistory(20, 0)">{{ t('proxy.refresh') }}</button>
         </div>
 
         <div v-if="store.isLoadingHistory" class="mobile-proxy__loading">
           <div class="mobile-proxy__spinner" />
         </div>
 
-        <div v-else-if="history.length === 0" class="mobile-proxy__empty">暂无记录</div>
+        <div v-else-if="history.length === 0" class="mobile-proxy__empty">{{ t('proxy.noRecords') }}</div>
 
         <div v-else class="mobile-proxy__history-list">
           <div v-for="item in history" :key="item.id" class="mobile-proxy__history-item" @click="store.deleteHistoryItem(item.id)">
@@ -255,9 +255,9 @@ const mSparklineLine = computed(() => {
 
 function statusLabel(status: string): string {
   switch (status) {
-    case 'completed': return '完成'
-    case 'failed': return '失败'
-    case 'cancelled': return '取消'
+    case 'completed': return t('proxy.statusCompleted')
+    case 'failed': return t('proxy.statusFailed')
+    case 'cancelled': return t('proxy.cancelled')
     default: return status
   }
 }
@@ -269,6 +269,19 @@ onMounted(() => {
 
 <style scoped>
 .mobile-proxy {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  color: #c9d1d9;
+  font-size: 13px;
+}
+
+.mobile-proxy__body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px;
 }
 
 .mobile-proxy__alert {
@@ -308,11 +321,12 @@ onMounted(() => {
   color: #c9d1d9;
   font-size: 14px;
   outline: none;
+  min-width: 0;
 }
 
 .mobile-proxy__input:focus { border-color: #58a6ff; }
 .mobile-proxy__input::placeholder { color: #484f58; }
-.mobile-proxy__input--sub { font-size: 13px; padding: 10px 12px; margin-bottom: 6px; }
+.mobile-proxy__input--sub { font-size: 13px; padding: 10px 12px; margin-bottom: 6px; width: 100%; box-sizing: border-box; }
 
 .mobile-proxy__download-btn {
   width: 48px;
@@ -345,6 +359,9 @@ onMounted(() => {
   background: #161b22;
   border-radius: 10px;
   border: 1px solid #21262d;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .mobile-proxy__downloading { margin-bottom: 20px; }
@@ -371,6 +388,7 @@ onMounted(() => {
   white-space: nowrap;
   flex: 1;
   margin-right: 8px;
+  min-width: 0;
 }
 
 .mobile-proxy__dl-peak {
@@ -405,7 +423,7 @@ onMounted(() => {
 .mobile-proxy__dl-stat { display: flex; flex-direction: column; gap: 2px; }
 
 .mobile-proxy__dl-stat-label { font-size: 10px; color: #484f58; text-transform: uppercase; }
-.mobile-proxy__dl-stat-value { font-size: 13px; font-weight: 500; color: #c9d1d9; font-family: 'SF Mono', monospace; }
+.mobile-proxy__dl-stat-value { font-size: 13px; font-weight: 500; color: #c9d1d9; font-family: 'SF Mono', monospace; word-break: break-all; }
 .mobile-proxy__dl-stat-value--green { color: #3fb950; }
 .mobile-proxy__dl-stat-value--blue { color: #58a6ff; }
 
@@ -441,7 +459,7 @@ onMounted(() => {
 
 .mobile-proxy__done-icon { color: #3fb950; margin-bottom: 8px; }
 .mobile-proxy__done-text { font-size: 16px; font-weight: 600; color: #3fb950; margin: 0 0 4px; }
-.mobile-proxy__done-detail { font-size: 12px; color: #8b949e; margin: 0 0 8px; }
+.mobile-proxy__done-detail { font-size: 12px; color: #8b949e; margin: 0 0 8px; word-break: break-all; }
 
 .mobile-proxy__done-stats {
   display: flex;

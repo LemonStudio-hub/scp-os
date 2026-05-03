@@ -291,7 +291,7 @@ export function useDocsReader() {
           scpNumber: item.scp_number || item.scpNumber || '',
           title: item.title || '',
           objectClass: (item.object_class || item.objectClass || 'Unknown') as SCPObjectClass,
-          series: item.series || 1,
+          series: Number(item.series) || 1,
           rating: item.rating || 0,
           url: item.url || '',
         }))
@@ -410,7 +410,7 @@ export function useDocsReader() {
         scpNumber,
         title: metaItem?.title || '',
         objectClass: (metaItem?.object_class || metaItem?.objectClass || 'Unknown') as SCPObjectClass,
-        series: metaItem?.series || 1,
+        series: Number(metaItem?.series) || 1,
         rating: metaItem?.rating || 0,
         url: metaItem?.url || '',
         content: sanitizedContent,

@@ -325,6 +325,7 @@ function onClose(): void {
     }
   }
   editorStore.closeAll()
+  emit('close')
 }
 
 function toggleFindBar(): void {

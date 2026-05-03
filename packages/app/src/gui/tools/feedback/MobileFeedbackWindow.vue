@@ -294,7 +294,7 @@ const commentForms = ref<Record<string, string>>({})
 const isSubmittingComment = ref<Record<string, boolean>>({})
 const isLoadingComments = ref<Record<string, boolean>>({})
 const isVoting = ref<Record<string, boolean>>({})
-const expandedComments = ref<Set<number>>(new Set())
+const expandedComments = ref<Record<number, boolean>>({})
 
 onMounted(async () => {
   userId = authStore.userId || await indexedDBService.getUserId()
@@ -446,11 +446,11 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
 }
 
 async function toggleComments(item: FeedbackItem) {
-  const isExpanded = expandedComments.value.has(item.id)
+  const isExpanded = !!expandedComments.value[item.id]
   if (isExpanded) {
-    expandedComments.value.delete(item.id)
+    delete expandedComments.value[item.id]
   } else {
-    expandedComments.value.add(item.id)
+    expandedComments.value[item.id] = true
   }
 
   if (!isExpanded && item.comments.length === 0) {
@@ -459,7 +459,7 @@ async function toggleComments(item: FeedbackItem) {
 }
 
 function isCommentsExpanded(itemId: number): boolean {
-  return expandedComments.value.has(itemId)
+  return !!expandedComments.value[itemId]
 }
 
 async function loadComments(item: FeedbackItem) {

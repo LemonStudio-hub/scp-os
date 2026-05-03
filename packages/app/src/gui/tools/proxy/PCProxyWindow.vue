@@ -41,7 +41,7 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                <span>下载</span>
+                <span>{{ t('proxy.download') }}</span>
               </button>
             </div>
           </div>
@@ -50,18 +50,18 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :style="{ transform: showAdvanced ? 'rotate(90deg)' : '' }">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
-            高级选项
+            {{ t('proxy.advancedOptions') }}
           </button>
 
           <transition name="proxy-slide">
             <div v-if="showAdvanced" class="proxy-window__advanced">
               <div class="proxy-window__input-group">
-                <label class="proxy-window__label">文件名</label>
-                <input v-model="customFilename" type="text" placeholder="自动识别" class="proxy-window__input" />
+                <label class="proxy-window__label">{{ t('proxy.filename') }}</label>
+              <input v-model="customFilename" type="text" :placeholder="t('proxy.autoDetect')" class="proxy-window__input" />
               </div>
               <div class="proxy-window__input-group">
-                <label class="proxy-window__label">速率限制 (KB/s)</label>
-                <input v-model.number="rateLimitKBps" type="number" min="0" max="51200" placeholder="0 = 不限" class="proxy-window__input proxy-window__input--small" />
+                <label class="proxy-window__label">{{ t('proxy.rateLimit') }}</label>
+              <input v-model.number="rateLimitKBps" type="number" min="0" max="51200" :placeholder="t('proxy.noLimit')" class="proxy-window__input proxy-window__input--small" />
               </div>
             </div>
           </transition>
@@ -75,7 +75,7 @@
                 <span class="proxy-window__progress-filename">{{ store.downloadProgress.filename }}</span>
               </div>
               <div class="proxy-window__progress-peak">
-                <span class="proxy-window__stat-label">峰值</span>
+                <span class="proxy-window__stat-label">{{ t('proxy.peak') }}</span>
                 <span class="proxy-window__stat-value proxy-window__stat-value--green">{{ formatSpeed(store.peakSpeed) }}</span>
               </div>
             </div>
@@ -99,7 +99,7 @@
 
             <div class="proxy-window__progress-stats-grid">
               <div class="proxy-window__stat-item">
-                <span class="proxy-window__stat-label">已下载</span>
+                <span class="proxy-window__stat-label">{{ t('proxy.downloaded') }}</span>
                 <span class="proxy-window__stat-value">
                   {{ formatBytes(store.downloadProgress.downloadedBytes) }}
                   <template v-if="store.downloadProgress.totalBytes > 0">
@@ -108,35 +108,35 @@
                 </span>
               </div>
               <div class="proxy-window__stat-item">
-                <span class="proxy-window__stat-label">进度</span>
+                <span class="proxy-window__stat-label">{{ t('proxy.progress') }}</span>
                 <span class="proxy-window__stat-value proxy-window__stat-value--blue">{{ Math.min(100, store.currentProgress) }}%</span>
               </div>
               <div class="proxy-window__stat-item">
-                <span class="proxy-window__stat-label">当前速度</span>
+                <span class="proxy-window__stat-label">{{ t('proxy.currentSpeed') }}</span>
                 <span class="proxy-window__stat-value proxy-window__stat-value--green">{{ formatSpeed(store.currentSpeed) }}</span>
               </div>
               <div class="proxy-window__stat-item">
-                <span class="proxy-window__stat-label">预计剩余</span>
+                <span class="proxy-window__stat-label">{{ t('proxy.eta') }}</span>
                 <span class="proxy-window__stat-value">{{ etaDisplay }}</span>
               </div>
               <div class="proxy-window__stat-item">
-                <span class="proxy-window__stat-label">已耗时</span>
+                <span class="proxy-window__stat-label">{{ t('proxy.elapsed') }}</span>
                 <span class="proxy-window__stat-value">{{ elapsedDisplay }}</span>
               </div>
               <div class="proxy-window__stat-item">
-                <span class="proxy-window__stat-label">平均速度</span>
+                <span class="proxy-window__stat-label">{{ t('proxy.avgSpeed') }}</span>
                 <span class="proxy-window__stat-value">{{ avgSpeedDisplay }}</span>
               </div>
             </div>
 
             <div class="proxy-window__sparkline-section">
               <div class="proxy-window__sparkline-header">
-                <span class="proxy-window__sparkline-title">实时速度</span>
+                <span class="proxy-window__sparkline-title">{{ t('proxy.realtimeSpeed') }}</span>
                 <div class="proxy-window__sparkline-legend">
                   <span class="proxy-window__legend-dot proxy-window__legend-dot--current" />
-                  <span>当前</span>
+                  <span>{{ t('proxy.current') }}</span>
                   <span class="proxy-window__legend-dot proxy-window__legend-dot--avg" />
-                  <span>平均</span>
+                  <span>{{ t('proxy.average') }}</span>
                 </div>
               </div>
               <svg class="proxy-window__sparkline" :viewBox="`0 0 ${sparklineWidth} ${sparklineHeight}`" preserveAspectRatio="none">
@@ -168,7 +168,7 @@
             <div class="proxy-window__progress-actions">
               <button class="proxy-window__btn proxy-window__btn--danger proxy-window__btn--full" @click="cancel()">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-                取消下载
+                {{ t('proxy.cancelDownload') }}
               </button>
             </div>
           </div>
@@ -182,7 +182,7 @@
               </svg>
             </div>
             <div class="proxy-window__success-info">
-              <p class="proxy-window__success-title">下载完成</p>
+              <p class="proxy-window__success-title">{{ t('proxy.downloadComplete') }}</p>
               <p class="proxy-window__success-detail">
                 {{ store.downloadProgress.filename }} &middot;
                 {{ formatBytes(store.downloadProgress.totalBytes || store.downloadProgress.downloadedBytes) }}
@@ -190,16 +190,16 @@
             </div>
             <div class="proxy-window__success-stats">
               <div class="proxy-window__success-stat">
-                <span class="proxy-window__success-stat-label">耗时</span>
+                <span class="proxy-window__success-stat-label">{{ t('proxy.duration') }}</span>
                 <span class="proxy-window__success-stat-value">{{ successDuration }}</span>
               </div>
               <div class="proxy-window__success-stat">
-                <span class="proxy-window__success-stat-label">平均速度</span>
+                <span class="proxy-window__success-stat-label">{{ t('proxy.avgSpeed') }}</span>
                 <span class="proxy-window__success-stat-value">{{ successAvgSpeed }}</span>
               </div>
             </div>
             <button class="proxy-window__btn proxy-window__btn--primary proxy-window__btn--sm" @click="reset()">
-              新下载
+              {{ t('proxy.newDownload') }}
             </button>
           </div>
         </div>
@@ -208,7 +208,7 @@
           <div class="proxy-window__section-header">
             <h3 class="proxy-window__section-title">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-              数据统计
+              {{ t('proxy.statistics') }}
             </h3>
           </div>
           <div class="proxy-window__stats-grid">
@@ -218,7 +218,7 @@
               </div>
               <div class="proxy-window__stat-card-content">
                 <span class="proxy-window__stat-card-value">{{ store.downloadStats.totalDownloads }}</span>
-                <span class="proxy-window__stat-card-label">总下载</span>
+                <span class="proxy-window__stat-card-label">{{ t('proxy.totalDownloads') }}</span>
               </div>
             </div>
             <div class="proxy-window__stat-card">
@@ -227,7 +227,7 @@
               </div>
               <div class="proxy-window__stat-card-content">
                 <span class="proxy-window__stat-card-value">{{ store.downloadStats.completedDownloads }}</span>
-                <span class="proxy-window__stat-card-label">已完成</span>
+                <span class="proxy-window__stat-card-label">{{ t('proxy.completed') }}</span>
               </div>
             </div>
             <div class="proxy-window__stat-card">
@@ -236,7 +236,7 @@
               </div>
               <div class="proxy-window__stat-card-content">
                 <span class="proxy-window__stat-card-value">{{ store.downloadStats.cancelledDownloads }}</span>
-                <span class="proxy-window__stat-card-label">已取消</span>
+                <span class="proxy-window__stat-card-label">{{ t('proxy.cancelled') }}</span>
               </div>
             </div>
             <div class="proxy-window__stat-card">
@@ -245,7 +245,7 @@
               </div>
               <div class="proxy-window__stat-card-content">
                 <span class="proxy-window__stat-card-value">{{ formatBytes(store.downloadStats.totalBytesDownloaded) }}</span>
-                <span class="proxy-window__stat-card-label">总流量</span>
+                <span class="proxy-window__stat-card-label">{{ t('proxy.totalTraffic') }}</span>
               </div>
             </div>
             <div class="proxy-window__stat-card proxy-window__stat-card--wide">
@@ -254,7 +254,7 @@
               </div>
               <div class="proxy-window__stat-card-content">
                 <span class="proxy-window__stat-card-value">{{ formatSpeed(store.downloadStats.averageSpeed) }}</span>
-                <span class="proxy-window__stat-card-label">平均速度</span>
+                <span class="proxy-window__stat-card-label">{{ t('proxy.avgSpeed') }}</span>
               </div>
             </div>
             <div class="proxy-window__stat-card">
@@ -263,7 +263,7 @@
               </div>
               <div class="proxy-window__stat-card-content">
                 <span class="proxy-window__stat-card-value">{{ store.downloadStats.successRate }}%</span>
-                <span class="proxy-window__stat-card-label">成功率</span>
+                <span class="proxy-window__stat-card-label">{{ t('proxy.successRate') }}</span>
               </div>
             </div>
           </div>
@@ -273,9 +273,9 @@
           <div class="proxy-window__section-header">
             <h3 class="proxy-window__section-title">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              历史记录
+              {{ t('proxy.history') }}
             </h3>
-            <button v-if="history.length > 0" class="proxy-window__btn proxy-window__btn--ghost proxy-window__btn--xs" @click="store.fetchHistory(20, 0)">刷新</button>
+            <button v-if="history.length > 0" class="proxy-window__btn proxy-window__btn--ghost proxy-window__btn--xs" @click="store.fetchHistory(20, 0)">{{ t('proxy.refresh') }}</button>
           </div>
 
           <div v-if="store.isLoadingHistory" class="proxy-window__loading">
@@ -286,7 +286,7 @@
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3">
               <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
             </svg>
-            <span>暂无下载记录</span>
+            <span>{{ t('proxy.noHistory') }}</span>
           </div>
 
           <div v-else class="proxy-window__history-list">
@@ -307,7 +307,7 @@
                   <div class="proxy-window__history-bar-fill" />
                 </div>
               </div>
-              <button class="proxy-window__history-delete" title="删除" @click="store.deleteHistoryItem(item.id)">
+              <button class="proxy-window__history-delete" :title="t('proxy.delete')" @click="store.deleteHistoryItem(item.id)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             </div>
@@ -317,7 +317,7 @@
               class="proxy-window__btn proxy-window__btn--ghost proxy-window__btn--full"
               @click="store.fetchHistory(Math.min(100, store.historyTotal), history.length)"
             >
-              加载更多 ({{ store.historyTotal - history.length }})
+              {{ t('proxy.loadMore', { n: store.historyTotal - history.length }) }}
             </button>
           </div>
         </div>
@@ -455,17 +455,17 @@ const statusBadgeClass = computed(() => {
 })
 
 const statusBadgeText = computed(() => {
-  if (store.isDownloading) return '传输中'
-  if (store.downloadProgress?.status === 'completed') return '完成'
-  if (store.downloadProgress?.status === 'failed') return '失败'
-  return '就绪'
+  if (store.isDownloading) return t('proxy.statusTransferring')
+  if (store.downloadProgress?.status === 'completed') return t('proxy.statusDone')
+  if (store.downloadProgress?.status === 'failed') return t('proxy.statusFailed')
+  return t('proxy.statusReady')
 })
 
 function statusLabel(status: string): string {
   switch (status) {
-    case 'completed': return '已完成'
-    case 'failed': return '失败'
-    case 'cancelled': return '已取消'
+    case 'completed': return t('proxy.statusCompleted')
+    case 'failed': return t('proxy.statusFailed')
+    case 'cancelled': return t('proxy.cancelled')
     default: return status
   }
 }
