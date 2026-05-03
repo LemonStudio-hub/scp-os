@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.4.0](https://github.com/LemonStudio-hub/scp-os/compare/v0.3.0...v0.4.0) (2026-05-03)
+
+
+### Features
+
+* **feedback:** 将评论展开状态从Set改为Record类型 ([9be11bf](https://github.com/LemonStudio-hub/scp-os/commit/9be11bf8b7f7d11e34b522219ba241481038fe8d))
+* **proxy:** 重构图片代理功能并优化下载模块 ([337b1f0](https://github.com/LemonStudio-hub/scp-os/commit/337b1f0449f3b5aa33a08c550984a5daa0d35559))
+* **router:** 添加DELETE方法路由支持 ([a9669b5](https://github.com/LemonStudio-hub/scp-os/commit/a9669b55daeebc68246e893f105e042df3d3b546))
+* **scraper:** 为爬虫添加重试机制和错误分类处理 ([81218df](https://github.com/LemonStudio-hub/scp-os/commit/81218df9c329da712f912a857e4d027c813ebb73))
+* **下载:** 添加域名白名单校验并更新协议校验方式 ([0f7c645](https://github.com/LemonStudio-hub/scp-os/commit/0f7c645b8fe9eedef9a58022db8fbf38a91eb0bf))
+* 新增 SCP 离线阅读器功能并优化移动端体验 ([8857ae5](https://github.com/LemonStudio-hub/scp-os/commit/8857ae5d141b379903127e5c4a9c945489544422))
+* 添加下载代理国际化支持并优化反馈组件 ([9be11bf](https://github.com/LemonStudio-hub/scp-os/commit/9be11bf8b7f7d11e34b522219ba241481038fe8d))
+
+
+### Bug Fixes
+
+* **config:** 为jwtSecret添加默认值以防未配置环境变量 ([8482246](https://github.com/LemonStudio-hub/scp-os/commit/8482246ff490e7e9e2c9a3a0c6f5ccdb05ca6fc5))
+* **docs:** 修复SCP文档系列号类型转换问题 ([9be11bf](https://github.com/LemonStudio-hub/scp-os/commit/9be11bf8b7f7d11e34b522219ba241481038fe8d))
+* **download:** 修复下载进度跟踪和错误处理问题 ([337b1f0](https://github.com/LemonStudio-hub/scp-os/commit/337b1f0449f3b5aa33a08c550984a5daa0d35559))
+* **parser:** 改进斜体标记和广告代码的清理逻辑 ([81218df](https://github.com/LemonStudio-hub/scp-os/commit/81218df9c329da712f912a857e4d027c813ebb73))
+
+
+### Performance Improvements
+
+* **download:** 优化下载进度更新和速率限制算法 ([337b1f0](https://github.com/LemonStudio-hub/scp-os/commit/337b1f0449f3b5aa33a08c550984a5daa0d35559))
+* **scraper:** 使用静态导入cheerio并优化类型定义 ([81218df](https://github.com/LemonStudio-hub/scp-os/commit/81218df9c329da712f912a857e4d027c813ebb73))
+
 ## [0.3.0](https://github.com/LemonStudio-hub/scp-os/compare/v0.2.0...v0.3.0) (2026-05-02)
 
 ### Docs 阅读器（新功能）
