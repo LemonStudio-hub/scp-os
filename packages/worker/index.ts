@@ -1,7 +1,7 @@
 ﻿/**
  * SCP Scraper Worker
  * 重构版本 - 使用模块化架构
- * CI配置验证 v3
+ * CI配置验证 v4
  */
 
 import { getConfig } from './shared/config'
