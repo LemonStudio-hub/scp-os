@@ -28,6 +28,8 @@ export const SCRAPER_CONFIG = {
   cors: {
     allowedOrigins: [
       'https://scpos.site',
+      'https://api.scpos.site',
+      'https://admin.scpos.site',
       'https://scpos.pages.dev',
       'https://*.scpos.pages.dev',
       'https://scpos.woodcat.online',

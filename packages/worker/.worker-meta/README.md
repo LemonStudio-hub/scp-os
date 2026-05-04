@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "scp-os-worker" generated at 2026-05-04T04:48:58.502Z.
