@@ -379,7 +379,7 @@
                       'mobile-docs__theme-btn--active': reader.readerTheme.value === 'dark',
                     }"
                     @click="
-                      reader.readerTheme.value = 'dark'
+                      reader.readerTheme.value = 'dark';
                       reader.toggleTheme()
                     "
                   >
@@ -398,7 +398,7 @@
                       'mobile-docs__theme-btn--active': reader.readerTheme.value === 'light',
                     }"
                     @click="
-                      reader.readerTheme.value = 'light'
+                      reader.readerTheme.value = 'light';
                       reader.toggleTheme()
                     "
                   >
