@@ -52,6 +52,7 @@ tauri.conf.json.bak
 # Wrangler (Cloudflare Workers)
 .wrangler/
 *.wrangler/
+.worker-meta/
 wrangler.toml.bak
 
 # Environment files

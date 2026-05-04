@@ -1,0 +1,29 @@
+# robots.txt for SCP-OS
+# https://scpos.site/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin-index.html
+Disallow: /api/
+Disallow: /*.json$
+
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /admin-index.html
+Disallow: /api/
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /admin/
+Disallow: /admin-index.html
+Disallow: /api/
+
+User-agent: bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /admin-index.html
+Disallow: /api/
+
+Sitemap: https://scpos.site/sitemap.xml

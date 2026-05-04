@@ -14,6 +14,7 @@ export default defineConfig({
     vue(),
     {
       name: 'copy-service-worker',
+      apply: 'build',
       async generateBundle() {
         // 编译 Service Worker TypeScript 到 JavaScript
         const swSource = join(__dirname, 'public/sw.ts')
@@ -65,14 +66,25 @@ export default defineConfig({
     minify: 'terser',
     modulePreload: { polyfill: false },
     cssCodeSplit: true,
+    cssMinify: true,
+    reportCompressedSize: false,
+    assetsInlineLimit: 4096,
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
+        passes: 2,
+        ecma: 2020,
+      },
+      format: {
+        comments: false,
       },
     },
     rollupOptions: {
       output: {
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('vue')) {
@@ -87,6 +99,9 @@ export default defineConfig({
             if (id.includes('hammer')) {
               return 'gestures'
             }
+            if (id.includes('codemirror') || id.includes('@codemirror')) {
+              return 'editor'
+            }
           }
         },
       },
@@ -96,6 +111,17 @@ export default defineConfig({
   server: {
     headers: {
       'Cache-Control': 'public, max-age=31536000',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'SAMEORIGIN',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+    },
+  },
+  preview: {
+    headers: {
+      'Cache-Control': 'public, max-age=31536000, immutable',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'SAMEORIGIN',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
     },
   },
 })

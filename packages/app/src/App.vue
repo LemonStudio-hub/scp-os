@@ -179,20 +179,20 @@ function handleLoginSuccess(): void {
 
 <template>
   <!-- App Loading Overlay -->
-  <div v-if="!isAppReady" class="app-loading-overlay">
+  <div v-if="!isAppReady" class="app-loading-overlay" role="status" aria-live="polite" aria-label="应用加载中">
     <div class="app-loading-content">
       <!-- SCP Logo Animation -->
-      <div class="app-loading-logo">
+      <div class="app-loading-logo" aria-hidden="true">
         <div class="app-loading-logo-ring"></div>
         <div class="app-loading-logo-ring app-loading-logo-ring--delayed"></div>
         <div class="app-loading-logo-text">SCP</div>
       </div>
 
       <!-- Loading Text -->
-      <div class="app-loading-text">{{ t(loadingStep) }}</div>
+      <div class="app-loading-text" aria-live="polite">{{ t(loadingStep) }}</div>
 
       <!-- Progress Bar -->
-      <div class="app-loading-progress">
+      <div class="app-loading-progress" role="progressbar" :aria-valuenow="loadingProgress" aria-valuemin="0" aria-valuemax="100" aria-label="加载进度">
         <div class="app-loading-progress-bar">
           <div class="app-loading-progress-fill" :style="{ width: `${loadingProgress}%` }"></div>
         </div>
@@ -200,7 +200,7 @@ function handleLoginSuccess(): void {
       </div>
 
       <!-- Loading Dots Animation -->
-      <div class="app-loading-dots">
+      <div class="app-loading-dots" aria-hidden="true">
         <div class="app-loading-dot"></div>
         <div class="app-loading-dot"></div>
         <div class="app-loading-dot"></div>

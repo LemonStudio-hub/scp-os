@@ -1,6 +1,6 @@
 <template>
   <!-- Mobile Layout -->
-  <div v-if="mobile.isMobile.value" class="mobile-app">
+  <div v-if="mobile.isMobile.value" class="mobile-app" role="application" aria-label="SCP-OS 移动端">
     <!-- Home Screen (default view) -->
     <HomeScreen v-if="!activeTool" @launch="onHomeLaunch" />
 
@@ -16,7 +16,7 @@
   </div>
 
   <!-- Desktop Layout -->
-  <div v-else class="desktop-app">
+  <div v-else class="desktop-app" role="application" aria-label="SCP-OS 桌面端">
     <!-- Desktop Screen (always rendered as background) -->
     <DesktopScreen @launch="onHomeLaunch" />
 

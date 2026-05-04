@@ -1,5 +1,5 @@
 <template>
-  <div class="login-screen">
+  <div class="login-screen" role="dialog" aria-label="SCP-OS 登录" aria-modal="true">
     <!-- Background with gradient and pattern (same as HomeScreen) -->
     <div class="login-screen__background">
       <div class="login-screen__gradient" />
@@ -17,10 +17,10 @@
     <!-- Main Content -->
     <div class="login-screen__content">
       <!-- Logo Section -->
-      <div class="login-screen__logo-section">
+      <div class="login-screen__logo-section" aria-hidden="true">
         <div class="login-screen__logo-container">
           <!-- SCP Foundation Logo -->
-          <svg class="login-screen__logo" width="80" height="80" viewBox="0 0 80 80" fill="none">
+          <svg class="login-screen__logo" width="80" height="80" viewBox="0 0 80 80" fill="none" role="img" aria-label="SCP Foundation Logo">
             <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="2" opacity="0.6" />
             <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
             <circle cx="40" cy="40" r="20" stroke="currentColor" stroke-width="1" opacity="0.2" />
@@ -45,10 +45,12 @@
       <p class="login-screen__subtitle">输入您的工作代号以开始</p>
 
       <!-- Login Form -->
-      <form class="login-screen__form" @submit.prevent="handleLogin">
+      <form class="login-screen__form" @submit.prevent="handleLogin" aria-label="登录表单">
         <!-- Input Field -->
         <div class="login-screen__input-wrapper">
+          <label for="mobile-nickname-input" class="sr-only">工作代号</label>
           <input
+            id="mobile-nickname-input"
             ref="inputRef"
             v-model="nickname"
             type="text"
@@ -63,6 +65,9 @@
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
+            aria-required="true"
+            :aria-invalid="!!error"
+            :aria-describedby="error ? 'mobile-login-error' : undefined"
             @focus="isFocused = true"
             @blur="isFocused = false"
             @input="onInputChange"
@@ -81,7 +86,7 @@
 
         <!-- Error Message -->
         <transition name="error-fade">
-          <p v-if="error" class="login-screen__error">{{ error }}</p>
+          <p v-if="error" id="mobile-login-error" class="login-screen__error" role="alert">{{ error }}</p>
         </transition>
 
         <!-- Character Count -->
