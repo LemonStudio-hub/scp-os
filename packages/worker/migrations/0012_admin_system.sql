@@ -52,22 +52,38 @@ CREATE TABLE IF NOT EXISTS system_settings (
 CREATE INDEX IF NOT EXISTS idx_system_settings_key ON system_settings(key);
 
 -- =============================================
--- 4. 用户表扩展字段（封禁相关）
+-- 4. 登录失败记录表
+-- =============================================
+CREATE TABLE IF NOT EXISTS admin_login_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT NOT NULL,
+  fail_count INTEGER DEFAULT 1,
+  ip_address TEXT DEFAULT '',
+  last_fail_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_login_attempts_username ON admin_login_attempts(username);
+CREATE INDEX IF NOT EXISTS idx_admin_login_attempts_last_fail ON admin_login_attempts(last_fail_at);
+
+-- =============================================
+-- 5. 用户表扩展字段（封禁相关）
 -- =============================================
 ALTER TABLE users ADD COLUMN is_banned INTEGER DEFAULT 0;
 ALTER TABLE users ADD COLUMN ban_reason TEXT DEFAULT '';
 ALTER TABLE users ADD COLUMN banned_at DATETIME DEFAULT NULL;
 
 -- =============================================
--- 5. 插入默认超级管理员账户
+-- 6. 插入默认超级管理员账户（强密码）
 -- =============================================
-INSERT OR IGNORE INTO admin_users (username, password_hash, role) 
-VALUES ('admin', 'PBKDF2$100000$c2FsdA==$cGFzc3dvcmQ=', 'super_admin');
+-- 密码: YKmd814()2rLkwJT
+-- 密码强度: 16位，包含大写、小写、数字、特殊字符
+INSERT OR IGNORE INTO admin_users (username, password_hash, role)
+VALUES ('admin', 'PBKDF2$100000$1sHyylugRy53a7+qPMVjeg==$iBKTY0ISw7rjVbIWlsIGeBneXKollxJ4ZouGdaWDL6I=', 'super_admin');
 
 -- =============================================
--- 6. 插入默认系统设置
+-- 7. 插入默认系统设置
 -- =============================================
-INSERT OR IGNORE INTO system_settings (key, value, description) VALUES 
+INSERT OR IGNORE INTO system_settings (key, value, description) VALUES
   ('site_name', 'SCP-OS', '站点名称'),
   ('site_description', 'SCP Foundation Web OS', '站点描述'),
   ('cache_duration', '1800000', '缓存时长（毫秒）'),
