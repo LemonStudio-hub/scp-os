@@ -22,18 +22,40 @@
               :style="col.width ? { width: col.width } : undefined"
               @click="col.sortable ? onSort(col.key) : undefined"
             >
-              <div class="admin-table__th-content" :class="{ 'admin-table__th--sortable': col.sortable }">
+              <div
+                class="admin-table__th-content"
+                :class="{ 'admin-table__th--sortable': col.sortable }"
+              >
                 <span>{{ col.label }}</span>
                 <span v-if="col.sortable" class="admin-table__sort-icon">
-                  <svg v-if="sortColumn === col.key && sortDirection === 'asc'" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 3L9 7H3L6 3Z" fill="currentColor"/>
+                  <svg
+                    v-if="sortColumn === col.key && sortDirection === 'asc'"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                  >
+                    <path d="M6 3L9 7H3L6 3Z" fill="currentColor" />
                   </svg>
-                  <svg v-else-if="sortColumn === col.key && sortDirection === 'desc'" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M6 9L3 5H9L6 9Z" fill="currentColor"/>
+                  <svg
+                    v-else-if="sortColumn === col.key && sortDirection === 'desc'"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                  >
+                    <path d="M6 9L3 5H9L6 9Z" fill="currentColor" />
                   </svg>
-                  <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none" class="admin-table__sort-inactive">
-                    <path d="M6 2L9 6H3L6 2Z" fill="currentColor" opacity="0.3"/>
-                    <path d="M6 10L3 6H9L6 10Z" fill="currentColor" opacity="0.3"/>
+                  <svg
+                    v-else
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    class="admin-table__sort-inactive"
+                  >
+                    <path d="M6 2L9 6H3L6 2Z" fill="currentColor" opacity="0.3" />
+                    <path d="M6 10L3 6H9L6 10Z" fill="currentColor" opacity="0.3" />
                   </svg>
                 </span>
               </div>
@@ -55,8 +77,23 @@
             <td :colspan="columns.length + (selectable ? 1 : 0)" class="admin-table__empty">
               <div class="admin-table__empty-content">
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <path d="M20 8V32M8 20H32" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
-                  <rect x="4" y="4" width="32" height="32" rx="6" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                  <path
+                    d="M20 8V32M8 20H32"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    opacity="0.3"
+                  />
+                  <rect
+                    x="4"
+                    y="4"
+                    width="32"
+                    height="32"
+                    rx="6"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    opacity="0.2"
+                  />
                 </svg>
                 <span>暂无数据</span>
               </div>
@@ -129,12 +166,12 @@ const emit = defineEmits<{
 const sortColumn = ref<string>('')
 const sortDirection = ref<'asc' | 'desc'>('asc')
 
-const allSelected = computed(() =>
-  props.data.length > 0 && props.data.every(row => props.selectedIds.includes(row.id))
+const allSelected = computed(
+  () => props.data.length > 0 && props.data.every((row) => props.selectedIds.includes(row.id))
 )
 
-const someSelected = computed(() =>
-  !allSelected.value && props.data.some(row => props.selectedIds.includes(row.id))
+const someSelected = computed(
+  () => !allSelected.value && props.data.some((row) => props.selectedIds.includes(row.id))
 )
 
 function onSort(key: string) {
@@ -151,7 +188,10 @@ function onSelectAll() {
   if (allSelected.value) {
     emit('select', [])
   } else {
-    emit('select', props.data.map(row => row.id))
+    emit(
+      'select',
+      props.data.map((row) => row.id)
+    )
   }
 }
 
@@ -222,7 +262,7 @@ function onSelectRow(id: number) {
 .admin-table__sort-icon {
   display: flex;
   align-items: center;
-  color: #E94560;
+  color: #e94560;
 }
 
 .admin-table__sort-inactive {
@@ -290,8 +330,8 @@ function onSelectRow(id: number) {
 }
 
 .admin-table__checkbox input:checked + .admin-table__checkmark {
-  background: #E94560;
-  border-color: #E94560;
+  background: #e94560;
+  border-color: #e94560;
 }
 
 .admin-table__checkbox input:checked + .admin-table__checkmark::after {
@@ -307,8 +347,8 @@ function onSelectRow(id: number) {
 }
 
 .admin-table__checkbox input:indeterminate + .admin-table__checkmark {
-  background: #E94560;
-  border-color: #E94560;
+  background: #e94560;
+  border-color: #e94560;
 }
 
 .admin-table__checkbox input:indeterminate + .admin-table__checkmark::after {
@@ -338,8 +378,12 @@ function onSelectRow(id: number) {
 }
 
 @keyframes admin-skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .admin-table__empty {

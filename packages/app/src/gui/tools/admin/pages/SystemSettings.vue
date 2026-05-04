@@ -5,8 +5,19 @@
     </div>
     <template v-else>
       <div v-if="!adminStore.isSuperAdmin" class="sys-settings__no-perm">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="0.3"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0110 0v4" />
         </svg>
         <span>仅超级管理员可编辑系统设置</span>
       </div>
@@ -29,7 +40,9 @@
                 >
                   <span class="sys-settings__toggle-knob" />
                 </button>
-                <span class="sys-settings__toggle-label">{{ item.value === '1' ? '启用' : '禁用' }}</span>
+                <span class="sys-settings__toggle-label">{{
+                  item.value === '1' ? '启用' : '禁用'
+                }}</span>
               </template>
               <template v-else-if="isNumericValue(item.value)">
                 <input
@@ -51,7 +64,11 @@
           </div>
         </div>
         <div v-if="adminStore.isSuperAdmin" class="sys-settings__footer">
-          <button class="sys-settings__btn sys-settings__btn--primary" :disabled="saving" @click="handleSave">
+          <button
+            class="sys-settings__btn sys-settings__btn--primary"
+            :disabled="saving"
+            @click="handleSave"
+          >
             {{ saving ? '保存中...' : '保存设置' }}
           </button>
         </div>
@@ -163,13 +180,15 @@ onMounted(fetchSettings)
   width: 32px;
   height: 32px;
   border: 3px solid #1a1a1a;
-  border-top-color: #E94560;
+  border-top-color: #e94560;
   border-radius: 50%;
   animation: sysSettingsSpin 0.8s linear infinite;
 }
 
 @keyframes sysSettingsSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sys-settings__no-perm {
@@ -259,7 +278,7 @@ onMounted(fetchSettings)
 }
 
 .sys-settings__toggle--on {
-  background: #E94560;
+  background: #e94560;
 }
 
 .sys-settings__toggle-knob {
@@ -296,7 +315,7 @@ onMounted(fetchSettings)
 }
 
 .sys-settings__input:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .sys-settings__input:disabled {
@@ -334,7 +353,7 @@ onMounted(fetchSettings)
 }
 
 .sys-settings__btn--primary {
-  background: #E94560;
+  background: #e94560;
   color: #ffffff;
 }
 

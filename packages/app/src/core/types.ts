@@ -11,10 +11,10 @@ export const ServiceLifetime = {
   /** Transient - new instance for each resolve */
   TRANSIENT: 'transient',
   /** Scoped - same instance within a scope */
-  SCOPED: 'scoped'
+  SCOPED: 'scoped',
 } as const
 
-export type ServiceLifetime = typeof ServiceLifetime[keyof typeof ServiceLifetime]
+export type ServiceLifetime = (typeof ServiceLifetime)[keyof typeof ServiceLifetime]
 
 /**
  * Service factory function type

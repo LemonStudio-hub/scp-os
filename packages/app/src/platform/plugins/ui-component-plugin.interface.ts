@@ -55,40 +55,40 @@ export interface UIComponentDefinition {
 export interface IUIComponentPlugin extends Plugin {
   /** Plugin type identifier */
   type: 'ui'
-  
+
   /** UI component metadata */
   metadata: UIComponentMetadata
-  
+
   /** UI component definitions provided by this plugin */
   components: UIComponentDefinition[]
-  
+
   /**
    * Get a component by ID
    * @param componentId Component ID
    * @returns Component definition or null
    */
   getComponent(componentId: string): UIComponentDefinition | null
-  
+
   /**
    * Get all component IDs
    * @returns Array of component IDs
    */
   getComponentIds(): string[]
-  
+
   /**
    * Check if plugin provides a specific component
    * @param componentId Component ID
    * @returns True if component exists
    */
   hasComponent(componentId: string): boolean
-  
+
   /**
    * Get components by category
    * @param category Component category
    * @returns Array of component definitions
    */
   getComponentsByCategory(category: string): UIComponentDefinition[]
-  
+
   /**
    * Get default component for this plugin
    * @returns Default component definition

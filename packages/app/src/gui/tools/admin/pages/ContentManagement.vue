@@ -13,21 +13,40 @@
         </button>
       </div>
       <div class="content-mgmt__header-actions">
-        <button class="content-mgmt__btn content-mgmt__btn--secondary" @click="showExportMenu = !showExportMenu">
+        <button
+          class="content-mgmt__btn content-mgmt__btn--secondary"
+          @click="showExportMenu = !showExportMenu"
+        >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 2V9M7 9L4 6M7 9L10 6M3 11H11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M7 2V9M7 9L4 6M7 9L10 6M3 11H11"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
           导出
         </button>
         <Transition name="dropdown">
           <div v-if="showExportMenu" class="content-mgmt__dropdown">
-            <button class="content-mgmt__dropdown-item" @click="handleExport('csv')">导出 CSV</button>
-            <button class="content-mgmt__dropdown-item" @click="handleExport('json')">导出 JSON</button>
+            <button class="content-mgmt__dropdown-item" @click="handleExport('csv')">
+              导出 CSV
+            </button>
+            <button class="content-mgmt__dropdown-item" @click="handleExport('json')">
+              导出 JSON
+            </button>
           </div>
         </Transition>
         <button class="content-mgmt__btn content-mgmt__btn--secondary" @click="openImportModal">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 9V2M7 2L4 5M7 2L10 5M3 12H11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M7 9V2M7 2L4 5M7 2L10 5M3 12H11"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
           导入
         </button>
@@ -36,9 +55,20 @@
 
     <div class="content-mgmt__search-bar">
       <div class="content-mgmt__search">
-        <svg class="content-mgmt__search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/>
-          <path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <svg
+          class="content-mgmt__search-icon"
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+        >
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2" />
+          <path
+            d="M9.5 9.5L12.5 12.5"
+            stroke="currentColor"
+            stroke-width="1.2"
+            stroke-linecap="round"
+          />
         </svg>
         <input
           v-model="searchQuery"
@@ -62,8 +92,18 @@
       </template>
       <template #cell-actions="{ row }">
         <div class="content-mgmt__cell-actions">
-          <button class="content-mgmt__action-btn content-mgmt__action-btn--edit" @click.stop="openEditModal(row)">编辑</button>
-          <button class="content-mgmt__action-btn content-mgmt__action-btn--danger" @click.stop="openDeleteConfirm(row)">删除</button>
+          <button
+            class="content-mgmt__action-btn content-mgmt__action-btn--edit"
+            @click.stop="openEditModal(row)"
+          >
+            编辑
+          </button>
+          <button
+            class="content-mgmt__action-btn content-mgmt__action-btn--danger"
+            @click.stop="openDeleteConfirm(row)"
+          >
+            删除
+          </button>
         </div>
       </template>
     </DataTable>
@@ -82,7 +122,12 @@
       @clear="selectedIds = []"
     />
 
-    <Modal :visible="editModalVisible" title="编辑内容" width="520px" @close="editModalVisible = false">
+    <Modal
+      :visible="editModalVisible"
+      title="编辑内容"
+      width="520px"
+      @close="editModalVisible = false"
+    >
       <div class="content-mgmt__modal-body">
         <div v-for="field in editableFields" :key="field.key" class="content-mgmt__modal-field">
           <label class="content-mgmt__modal-label">{{ field.label }}</label>
@@ -95,12 +140,24 @@
         </div>
       </div>
       <template #footer>
-        <button class="content-mgmt__btn content-mgmt__btn--ghost" @click="editModalVisible = false">取消</button>
-        <button class="content-mgmt__btn content-mgmt__btn--primary" @click="handleSave">保存</button>
+        <button
+          class="content-mgmt__btn content-mgmt__btn--ghost"
+          @click="editModalVisible = false"
+        >
+          取消
+        </button>
+        <button class="content-mgmt__btn content-mgmt__btn--primary" @click="handleSave">
+          保存
+        </button>
       </template>
     </Modal>
 
-    <Modal :visible="importModalVisible" title="导入内容" width="420px" @close="importModalVisible = false">
+    <Modal
+      :visible="importModalVisible"
+      title="导入内容"
+      width="420px"
+      @close="importModalVisible = false"
+    >
       <div class="content-mgmt__modal-body">
         <div class="content-mgmt__modal-field">
           <label class="content-mgmt__modal-label">粘贴 JSON 数据</label>
@@ -113,8 +170,15 @@
         </div>
       </div>
       <template #footer>
-        <button class="content-mgmt__btn content-mgmt__btn--ghost" @click="importModalVisible = false">取消</button>
-        <button class="content-mgmt__btn content-mgmt__btn--primary" @click="handleImport">导入</button>
+        <button
+          class="content-mgmt__btn content-mgmt__btn--ghost"
+          @click="importModalVisible = false"
+        >
+          取消
+        </button>
+        <button class="content-mgmt__btn content-mgmt__btn--primary" @click="handleImport">
+          导入
+        </button>
       </template>
     </Modal>
 
@@ -231,7 +295,7 @@ const importData = ref('')
 const deleteConfirmVisible = ref(false)
 const deleteTarget = ref<Record<string, any> | null>(null)
 
-const activeTabConfig = computed(() => tabs.find(t => t.key === activeTab.value)!)
+const activeTabConfig = computed(() => tabs.find((t) => t.key === activeTab.value)!)
 const activeColumns = computed(() => activeTabConfig.value.columns)
 const editableFields = computed(() => activeTabConfig.value.editFields)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize)))
@@ -287,7 +351,13 @@ function formatDate(val: string | number) {
   if (!val) return '-'
   const d = new Date(typeof val === 'number' ? val * 1000 : val)
   if (isNaN(d.getTime())) return String(val)
-  return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function openEditModal(row: Record<string, any>) {
@@ -304,7 +374,12 @@ async function handleSave() {
   const token = adminStore.token
   if (!token || !editTarget.value) return
   try {
-    const res = await adminApi.updateAdminContent(token, activeTab.value, editTarget.value.id, editForm.value)
+    const res = await adminApi.updateAdminContent(
+      token,
+      activeTab.value,
+      editTarget.value.id,
+      editForm.value
+    )
     if (res.success) {
       toast.success('内容已更新')
       editModalVisible.value = false
@@ -344,7 +419,12 @@ async function handleBatchAction(key: string) {
     const token = adminStore.token
     if (!token) return
     try {
-      const res = await adminApi.batchContentOperation(token, activeTab.value, 'delete', selectedIds.value)
+      const res = await adminApi.batchContentOperation(
+        token,
+        activeTab.value,
+        'delete',
+        selectedIds.value
+      )
       if (res.success) {
         toast.success('批量删除成功')
         selectedIds.value = []
@@ -366,7 +446,9 @@ async function handleExport(format: 'csv' | 'json') {
     const res = await adminApi.exportContent(token, activeTab.value, format)
     if (res.success && res.data) {
       const content = format === 'json' ? JSON.stringify(res.data, null, 2) : res.data
-      const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' })
+      const blob = new Blob([content], {
+        type: format === 'json' ? 'application/json' : 'text/csv',
+      })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -497,7 +579,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__search-input:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .content-mgmt__search-input::placeholder {
@@ -534,7 +616,7 @@ onMounted(fetchContent)
 
 .content-mgmt__btn--primary {
   background: rgba(233, 69, 96, 0.15);
-  color: #E94560;
+  color: #e94560;
   border-color: rgba(233, 69, 96, 0.2);
 }
 
@@ -618,7 +700,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__action-btn--edit {
-  color: #0A84FF;
+  color: #0a84ff;
   border-color: rgba(10, 132, 255, 0.2);
 }
 
@@ -627,7 +709,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__action-btn--danger {
-  color: #FF3B30;
+  color: #ff3b30;
   border-color: rgba(255, 59, 48, 0.2);
 }
 
@@ -666,7 +748,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__input:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .content-mgmt__input::placeholder {
@@ -688,7 +770,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__textarea:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .content-mgmt__textarea::placeholder {

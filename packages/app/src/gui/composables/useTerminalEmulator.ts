@@ -60,9 +60,7 @@ export function useTerminalEmulator(options: UseTerminalEmulatorOptions) {
         )
       }
     } else {
-      terminal.writeln(
-        `${ANSICode.yellow}Command not found: ${command}${ANSICode.reset}`
-      )
+      terminal.writeln(`${ANSICode.yellow}Command not found: ${command}${ANSICode.reset}`)
     }
 
     writePrompt()

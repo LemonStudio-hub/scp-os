@@ -30,12 +30,7 @@ export class HttpError extends Error {
   public readonly statusText: string
   public readonly data?: any
 
-  constructor(
-    message: string,
-    status: number,
-    statusText: string,
-    data?: any
-  ) {
+  constructor(message: string, status: number, statusText: string, data?: any) {
     super(message)
     this.name = 'HttpError'
     this.status = status

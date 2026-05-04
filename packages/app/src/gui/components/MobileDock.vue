@@ -1,6 +1,8 @@
 <template>
   <div class="mobile-dock fixed bottom-2 left-1/2 -translate-x-1/2 z-[200]">
-    <div class="flex items-center gap-2 px-4 pb-[calc(4px+env(safe-area-inset-bottom,0px))] pt-1 bg-[rgba(44,44,46,0.85)] backdrop-blur-[20px] backdrop-saturate-[180%] border border-white/[0.08] rounded-[20px] shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
+    <div
+      class="flex items-center gap-2 px-4 pb-[calc(4px+env(safe-area-inset-bottom,0px))] pt-1 bg-[rgba(44,44,46,0.85)] backdrop-blur-[20px] backdrop-saturate-[180%] border border-white/[0.08] rounded-[20px] shadow-[0_16px_40px_rgba(0,0,0,0.6)]"
+    >
       <div class="flex items-center gap-1">
         <button
           v-for="item in items"
@@ -15,10 +17,23 @@
           @click="onTap(item)"
           @touchstart="onTap(item)"
         >
-          <GUIIcon :name="item.iconName" :size="24" class="transition-transform duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-[1.15]" />
-          <span class="text-[11px] font-medium text-[#8E8E93] whitespace-nowrap tracking-wide">{{ t(item.label) }}</span>
-          <span v-if="item.badge && item.badge > 0" class="absolute bottom-[2px] w-[16px] h-[16px] px-[5px] bg-[#FF3B30] rounded-full text-[10px] font-bold text-white leading-none">{{ item.badge }}</span>
-          <span v-if="activeTools.includes(item.tool)" class="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-[#8E8E93] rounded-full animate-ios-pulse" />
+          <GUIIcon
+            :name="item.iconName"
+            :size="24"
+            class="transition-transform duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-[1.15]"
+          />
+          <span class="text-[11px] font-medium text-[#8E8E93] whitespace-nowrap tracking-wide">{{
+            t(item.label)
+          }}</span>
+          <span
+            v-if="item.badge && item.badge > 0"
+            class="absolute bottom-[2px] w-[16px] h-[16px] px-[5px] bg-[#FF3B30] rounded-full text-[10px] font-bold text-white leading-none"
+            >{{ item.badge }}</span
+          >
+          <span
+            v-if="activeTools.includes(item.tool)"
+            class="absolute bottom-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-[#8E8E93] rounded-full animate-ios-pulse"
+          />
         </button>
       </div>
     </div>
@@ -53,8 +68,18 @@ interface Props {
 // a Temporal Dead Zone error at runtime.
 withDefaults(defineProps<Props>(), {
   items: () => [
-    { id: 'terminal', tool: 'terminal' as ToolType, label: 'app.terminal', iconName: 'terminal' as IconName },
-    { id: 'files', tool: 'filemanager' as ToolType, label: 'app.files', iconName: 'folder' as IconName },
+    {
+      id: 'terminal',
+      tool: 'terminal' as ToolType,
+      label: 'app.terminal',
+      iconName: 'terminal' as IconName,
+    },
+    {
+      id: 'files',
+      tool: 'filemanager' as ToolType,
+      label: 'app.files',
+      iconName: 'folder' as IconName,
+    },
     { id: 'editor', tool: 'editor' as ToolType, label: 'app.editor', iconName: 'edit' as IconName },
   ],
   activeTools: () => [],

@@ -21,7 +21,9 @@ export function useCommandHistory() {
   const error = ref<Error | null>(null)
 
   // Inject dependencies
-  const repository = getGlobalContainer().resolve<ICommandHistoryRepository>('CommandHistoryRepository')
+  const repository = getGlobalContainer().resolve<ICommandHistoryRepository>(
+    'CommandHistoryRepository'
+  )
   const eventBus = getGlobalEventBus()
 
   // Load history from repository
@@ -31,7 +33,7 @@ export function useCommandHistory() {
 
     try {
       const entities = await repository.getRecent(100)
-      history.value = entities.map(e => e.command)
+      history.value = entities.map((e) => e.command)
       currentIndex.value = -1
     } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
@@ -52,7 +54,7 @@ export function useCommandHistory() {
         id: crypto.randomUUID(),
         command,
         timestamp: new Date(),
-        success: true
+        success: true,
       })
 
       await repository.addCommand(entry)
@@ -78,7 +80,8 @@ export function useCommandHistory() {
       return ''
     }
 
-    if (direction === -1) { // Up
+    if (direction === -1) {
+      // Up
       if (currentIndex.value < history.value.length - 1) {
         currentIndex.value++
         const index = history.value.length - 1 - currentIndex.value
@@ -86,7 +89,8 @@ export function useCommandHistory() {
         eventBus.emit('command:history:navigated', { command, direction })
         return command
       }
-    } else { // Down
+    } else {
+      // Down
       if (currentIndex.value > -1) {
         currentIndex.value--
         if (currentIndex.value === -1) {
@@ -126,7 +130,7 @@ export function useCommandHistory() {
   const searchHistory = async (query: string): Promise<string[]> => {
     try {
       const results = await repository.search(query)
-      return results.map(r => r.command)
+      return results.map((r) => r.command)
     } catch (err) {
       error.value = err instanceof Error ? err : new Error(String(err))
       console.error('[useCommandHistory] Failed to search history:', err)
@@ -146,7 +150,7 @@ export function useCommandHistory() {
         successful: 0,
         failed: 0,
         averageDuration: 0,
-        mostUsedCommands: []
+        mostUsedCommands: [],
       }
     }
   }
@@ -183,6 +187,6 @@ export function useCommandHistory() {
     clearHistory,
     searchHistory,
     getStatistics,
-    loadHistory
+    loadHistory,
   }
 }

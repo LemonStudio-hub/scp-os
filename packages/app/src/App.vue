@@ -9,7 +9,13 @@ import { useTabsStore } from './stores/tabs'
 import { useWindowManagerStore } from './gui/stores/windowManager'
 import { useAuthStore } from './stores/authStore'
 import { injectGUITokens } from './gui/design-tokens'
-import { registerAllTools, ToolRegistry, useKeyboardShortcutManager, registerShortcut, setContext } from './gui'
+import {
+  registerAllTools,
+  ToolRegistry,
+  useKeyboardShortcutManager,
+  registerShortcut,
+  setContext,
+} from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
@@ -57,10 +63,7 @@ onMounted(async () => {
   // Step 4 & 5: Initialize tabs store and load saved GUI windows in parallel
   loadingStep.value = 'loading.steps.data'
   loadingProgress.value = 50
-  await Promise.all([
-    tabsStore.initialize(),
-    wmStore.loadWindowStates()
-  ])
+  await Promise.all([tabsStore.initialize(), wmStore.loadWindowStates()])
   loadingProgress.value = 90
 
   // Loading complete — show app immediately
@@ -85,20 +88,22 @@ onMounted(async () => {
     handler: () => {
       const terminal = ToolRegistry.get('terminal')
       if (terminal) {
-        import('./gui/registry/ToolRegistry').then(({ openTool }) => {
-          openTool('terminal', (config) => {
-            wmStore.openWindow({
-              id: config.id,
-              tool: config.tool,
-              title: config.title,
-              iconName: config.iconName,
-              width: config.width,
-              height: config.height,
+        import('./gui/registry/ToolRegistry')
+          .then(({ openTool }) => {
+            openTool('terminal', (config) => {
+              wmStore.openWindow({
+                id: config.id,
+                tool: config.tool,
+                title: config.title,
+                iconName: config.iconName,
+                width: config.width,
+                height: config.height,
+              })
             })
           })
-        }).catch((err) => {
-          logger.warn('[App] Failed to import ToolRegistry:', err)
-        })
+          .catch((err) => {
+            logger.warn('[App] Failed to import ToolRegistry:', err)
+          })
       }
     },
   })
@@ -154,7 +159,7 @@ onMounted(async () => {
       title: '系统通知',
       message: '欢迎使用SCP-OS系统，这是一个测试通知。',
       icon: 'info',
-      duration: 5000
+      duration: 5000,
     })
   }, 1000)
 })
@@ -211,11 +216,7 @@ function handleLoginSuccess(): void {
         key="mobile-login"
         @login-success="handleLoginSuccess"
       />
-      <PCLoginScreen
-        v-else
-        key="desktop-login"
-        @login-success="handleLoginSuccess"
-      />
+      <PCLoginScreen v-else key="desktop-login" @login-success="handleLoginSuccess" />
     </template>
 
     <!-- Main App (shown when app is ready; auth checks run in background) -->
@@ -255,7 +256,8 @@ function handleLoginSuccess(): void {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -264,7 +266,8 @@ html, body {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: #060606;
   color: #ffffff;
 }
@@ -280,7 +283,9 @@ body {
 /* ── Fade Transition for Login/Main App Switching ──────────────── */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
 }
 
 .fade-enter-from {

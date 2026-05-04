@@ -5,15 +5,29 @@
         <!-- Header -->
         <div class="video-player__header">
           <div class="video-player__title">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="1" y="3" width="14" height="10" rx="2"/>
-              <path d="M6 6l4 2-4 2V6z"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="1" y="3" width="14" height="10" rx="2" />
+              <path d="M6 6l4 2-4 2V6z" />
             </svg>
             {{ fileName }}
           </div>
           <button class="video-player__close-btn" @click="close">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M5 5l10 10M15 5L5 15"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M5 5l10 10M15 5L5 15" />
             </svg>
           </button>
         </div>
@@ -82,23 +96,26 @@ const mimeType = computed(() => {
   return 'video/mp4'
 })
 
-watch(() => props.visible, async (val) => {
-  if (val && props.file) {
-    await loadVideo()
-    await nextTick()
-  } else {
-    // Stop playback when closing
-    if (videoRef.value) {
-      videoRef.value.pause()
-      videoRef.value.src = ''
+watch(
+  () => props.visible,
+  async (val) => {
+    if (val && props.file) {
+      await loadVideo()
+      await nextTick()
+    } else {
+      // Stop playback when closing
+      if (videoRef.value) {
+        videoRef.value.pause()
+        videoRef.value.src = ''
+      }
+      videoSrc.value = ''
     }
-    videoSrc.value = ''
   }
-})
+)
 
 async function loadVideo() {
   try {
-    const path = props.file.path || ('/' + props.file.name)
+    const path = props.file.path || '/' + props.file.name
     const data = filesystem.readFile(path)
 
     if (typeof data === 'string') {
@@ -140,15 +157,21 @@ function close() {
 .video-player {
   width: 90%;
   max-width: 800px;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-radius: 16px;
   overflow: hidden;
   animation: video-fade-in 0.3s ease;
 }
 
 @keyframes video-fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -157,7 +180,7 @@ function close() {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .video-player__title {
@@ -166,7 +189,7 @@ function close() {
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -180,8 +203,8 @@ function close() {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: opacity 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -215,7 +238,7 @@ function close() {
   align-items: center;
   gap: 12px;
   padding: 60px 20px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-size: 14px;
 }
 
@@ -223,13 +246,15 @@ function close() {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: var(--gui-accent, #007AFF);
+  border-top-color: var(--gui-accent, #007aff);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Info ───────────────────────────────────────────────────────────── */
@@ -245,7 +270,7 @@ function close() {
 .video-player__name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

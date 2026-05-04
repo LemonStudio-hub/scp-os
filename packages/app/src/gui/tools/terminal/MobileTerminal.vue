@@ -88,7 +88,11 @@ function getMobileTerminalTheme() {
 }
 
 // Use shared terminal emulator composable
-const { writePrompt, handleInput, clearAndPrompt: onClear } = useTerminalEmulator({
+const {
+  writePrompt,
+  handleInput,
+  clearAndPrompt: onClear,
+} = useTerminalEmulator({
   getTerminal: () => terminal.value,
 })
 
@@ -99,7 +103,7 @@ async function displayBootLog(): Promise<void> {
 
   const bootLogs = getBootLogs(config.app.fastBoot)
   const fastMode = config.app.fastBoot
-  
+
   // 动态速度配置（与主终端保持一致）
   const baseDelay = fastMode ? 5 : 30
   const minDelay = fastMode ? 3 : 15
@@ -110,25 +114,30 @@ async function displayBootLog(): Promise<void> {
     if (!fastMode) {
       // 根据行内容计算延迟
       let delay = baseDelay
-      
+
       // 空行快速滚动
       if (line.trim().length === 0) {
         delay = minDelay
       }
-      
+
       // 包含重要信息的行显示更长时间
-      if (line.includes('ONLINE') || line.includes('Security') || 
-          line.includes('Established') || line.includes('ACTIVE') ||
-          line.includes('COMPLETE') || line.includes('══════════')) {
+      if (
+        line.includes('ONLINE') ||
+        line.includes('Security') ||
+        line.includes('Established') ||
+        line.includes('ACTIVE') ||
+        line.includes('COMPLETE') ||
+        line.includes('══════════')
+      ) {
         delay *= 1.3
       }
-      
+
       // ASCII 框线框显示更长时间
       if (line.includes('═') || line.includes('█')) {
         delay *= 1.2
       }
-      
-      await new Promise(r => setTimeout(r, Math.min(delay, maxDelay)))
+
+      await new Promise((r) => setTimeout(r, Math.min(delay, maxDelay)))
     }
   }
 }
@@ -139,7 +148,7 @@ async function displayShutdownLog(): Promise<void> {
 
   const shutdownLogs = getShutdownLogs(config.app.fastBoot)
   const fastMode = config.app.fastBoot
-  
+
   // 动态速度配置（与开机日志保持一致）
   const baseDelay = fastMode ? 5 : 30
   const minDelay = fastMode ? 3 : 15
@@ -150,23 +159,23 @@ async function displayShutdownLog(): Promise<void> {
     if (!fastMode) {
       // 根据行内容计算延迟
       let delay = baseDelay
-      
+
       // 空行快速滚动
       if (line.trim().length === 0) {
         delay = minDelay
       }
-      
+
       // OK 状态显示更长时间
       if (line.includes('[  OK  ]')) {
         delay *= 1.2
       }
-      
+
       // 系统停止信息显示更长时间
       if (line.includes('halted') || line.includes('SHUTDOWN') || line.includes('HALTED')) {
         delay *= 1.5
       }
-      
-      await new Promise(r => setTimeout(r, Math.min(delay, maxDelay)))
+
+      await new Promise((r) => setTimeout(r, Math.min(delay, maxDelay)))
     }
   }
 }
@@ -174,7 +183,7 @@ async function displayShutdownLog(): Promise<void> {
 function displayStartupPrompt(): void {
   const term = terminal.value
   if (!term) return
-  
+
   term.writeln('')
   term.writeln('\x1b[33mSystem is offline. Type "start" to boot.\x1b[0m')
   writePrompt()
@@ -200,13 +209,19 @@ function displayWelcomeMessage(): void {
     // Mobile: shorter box to fit narrow terminals (~40 cols)
     term.writeln('\x1b[32m╔══════════════════════════════════╗\x1b[0m')
     term.writeln('\x1b[32m║\x1b[0m   \x1b[1;32mSCP Foundation OS\x1b[0m        \x1b[32m║\x1b[0m')
-    term.writeln('\x1b[32m║\x1b[0m     \x1b[33mSecure. Contain. Protect.\x1b[0m      \x1b[32m║\x1b[0m')
+    term.writeln(
+      '\x1b[32m║\x1b[0m     \x1b[33mSecure. Contain. Protect.\x1b[0m      \x1b[32m║\x1b[0m'
+    )
     term.writeln('\x1b[32m╚══════════════════════════════════╝\x1b[0m')
   } else {
     // Desktop: full width box
     term.writeln('\x1b[32m╔══════════════════════════════════════════════════════════╗\x1b[0m')
-    term.writeln('\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Operating System\x1b[0m         \x1b[32m║\x1b[0m')
-    term.writeln('\x1b[32m║\x1b[0m              \x1b[33mSecure. Contain. Protect.\x1b[0m              \x1b[32m║\x1b[0m')
+    term.writeln(
+      '\x1b[32m║\x1b[0m          \x1b[1;32mSCP Foundation Operating System\x1b[0m         \x1b[32m║\x1b[0m'
+    )
+    term.writeln(
+      '\x1b[32m║\x1b[0m              \x1b[33mSecure. Contain. Protect.\x1b[0m              \x1b[32m║\x1b[0m'
+    )
     term.writeln('\x1b[32m╚══════════════════════════════════════════════════════════╝\x1b[0m')
   }
 
@@ -279,12 +294,15 @@ function sendKey(key: string): void {
 }
 
 // Watch for theme changes
-watch(() => themeStore.currentThemeId, () => {
-  if (terminal.value) {
-    terminal.value.options.theme = getMobileTerminalTheme()
-    terminal.value.refresh(0, terminal.value.rows - 1)
+watch(
+  () => themeStore.currentThemeId,
+  () => {
+    if (terminal.value) {
+      terminal.value.options.theme = getMobileTerminalTheme()
+      terminal.value.refresh(0, terminal.value.rows - 1)
+    }
   }
-})
+)
 
 onMounted(() => {
   setTimeout(() => initTerminal(), 50)
@@ -351,7 +369,7 @@ onBeforeUnmount(() => {
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
   color: var(--gui-text-primary, #f0f0f0);
-  font-family: var(--gui-font-mono, "JetBrains Mono", Consolas, monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', Consolas, monospace);
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
   cursor: pointer;

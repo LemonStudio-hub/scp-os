@@ -19,14 +19,14 @@ export function useCommandHistory() {
         })
         return
       }
-      
+
       history.value.push(command)
-      
+
       // Limit history size
       if (history.value.length > MAX_HISTORY_SIZE) {
         history.value.shift()
       }
-      
+
       currentIndex.value = -1
     } catch (error) {
       errorHandler.handleError({
@@ -54,7 +54,8 @@ export function useCommandHistory() {
         return
       }
 
-      if (direction === -1) { // Up
+      if (direction === -1) {
+        // Up
         if (currentIndex.value < history.value.length - 1) {
           currentIndex.value++
           const index = history.value.length - 1 - currentIndex.value
@@ -69,7 +70,8 @@ export function useCommandHistory() {
             })
           }
         }
-      } else { // Down
+      } else {
+        // Down
         if (currentIndex.value > -1) {
           currentIndex.value--
           if (currentIndex.value === -1) {
@@ -126,6 +128,6 @@ export function useCommandHistory() {
     currentIndex,
     addToHistory,
     navigateHistory,
-    resetIndex
+    resetIndex,
   }
 }

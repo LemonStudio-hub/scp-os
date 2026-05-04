@@ -9,7 +9,7 @@ import type {
   ConfigSource,
   ConfigChangeEvent,
   ConfigManagerOptions,
-  Environment
+  Environment,
 } from './types'
 import { EventBus, getGlobalEventBus } from '../../platform/events/event-bus'
 import logger from '../../utils/logger'
@@ -20,8 +20,6 @@ import logger from '../../utils/logger'
 class EnvironmentSource implements ConfigSource {
   name = 'environment'
   priority = 1000
-
-
 
   get(key: string): ConfigValue | undefined {
     const envKey = key.toUpperCase().replace(/-/g, '_')
@@ -100,7 +98,7 @@ export class ConfigManager {
       debug: options.debug ?? false,
       enableValidation: options.enableValidation ?? true,
       sources: options.sources ?? [],
-      schemas: options.schemas ?? []
+      schemas: options.schemas ?? [],
     }
 
     this.eventBus = getGlobalEventBus()
@@ -123,8 +121,8 @@ export class ConfigManager {
     if (this.config.debug) {
       logger.info('[ConfigManager] Configuration manager initialized', {
         environment: this.config.environment,
-        sources: this.sources.map(s => s.name),
-        schemas: this.schemas.size
+        sources: this.sources.map((s) => s.name),
+        schemas: this.schemas.size,
       })
     }
   }
@@ -133,8 +131,12 @@ export class ConfigManager {
    * Detect current environment
    */
   private detectEnvironment(): Environment {
-    if (typeof window === 'undefined' || typeof window.location === 'undefined' || typeof window.location.hostname === 'undefined') {
-      return 'development'  // Default to development in test environment
+    if (
+      typeof window === 'undefined' ||
+      typeof window.location === 'undefined' ||
+      typeof window.location.hostname === 'undefined'
+    ) {
+      return 'development' // Default to development in test environment
     }
     const hostname = window.location.hostname
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -163,7 +165,7 @@ export class ConfigManager {
    * Remove a configuration source
    */
   removeSource(sourceName: string): void {
-    this.sources = this.sources.filter(s => s.name !== sourceName)
+    this.sources = this.sources.filter((s) => s.name !== sourceName)
     this.clearCache()
 
     if (this.config.debug) {
@@ -202,7 +204,7 @@ export class ConfigManager {
     const oldValue = this.get(key)
 
     // Find memory source
-    const memorySource = this.sources.find(s => s.name === 'memory') as MemorySource
+    const memorySource = this.sources.find((s) => s.name === 'memory') as MemorySource
     if (memorySource && memorySource.set) {
       memorySource.set(key, value)
     }
@@ -216,7 +218,7 @@ export class ConfigManager {
       oldValue,
       newValue: value,
       source,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     } as ConfigChangeEvent)
 
     if (this.config.debug) {
@@ -316,7 +318,7 @@ export class ConfigManager {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
 
@@ -368,7 +370,7 @@ export class ConfigManager {
    * Reset configuration to defaults
    */
   reset(): void {
-    const memorySource = this.sources.find(s => s.name === 'memory') as MemorySource
+    const memorySource = this.sources.find((s) => s.name === 'memory') as MemorySource
     if (memorySource) {
       memorySource.clear()
     }
@@ -402,7 +404,7 @@ export class ConfigManager {
    * Get configuration source
    */
   getSource(sourceName: string): ConfigSource | undefined {
-    return this.sources.find(s => s.name === sourceName)
+    return this.sources.find((s) => s.name === sourceName)
   }
 
   /**

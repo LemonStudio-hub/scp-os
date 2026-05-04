@@ -25,10 +25,19 @@ const roleLabel = computed(() => {
         <span class="admin-topbar__role">{{ roleLabel }}</span>
       </div>
       <button class="admin-topbar__logout" title="退出登录" @click="emit('logout')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
         </svg>
       </button>
     </div>
@@ -81,7 +90,7 @@ const roleLabel = computed(() => {
 .admin-topbar__role {
   font-size: 11px;
   font-weight: 500;
-  color: #E94560;
+  color: #e94560;
   background: rgba(233, 69, 96, 0.1);
   padding: 2px 8px;
   border-radius: 4px;
@@ -104,6 +113,6 @@ const roleLabel = computed(() => {
 
 .admin-topbar__logout:hover {
   background: rgba(233, 69, 96, 0.1);
-  color: #E94560;
+  color: #e94560;
 }
 </style>

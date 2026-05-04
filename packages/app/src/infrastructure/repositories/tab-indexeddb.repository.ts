@@ -56,7 +56,7 @@ export class TabIndexedDBRepository
   async getCollection(): Promise<TabCollection> {
     const entities = await this.findAll()
     const collection = new TabCollection()
-    entities.forEach(entity => collection.add(entity))
+    entities.forEach((entity) => collection.add(entity))
 
     // Set active tab from metadata
     const metadata = await this.getMetadata()
@@ -94,7 +94,7 @@ export class TabIndexedDBRepository
    */
   async findByType(type: TabType): Promise<TabEntity[]> {
     const result = await this.find({
-      filter: entity => entity.type === type
+      filter: (entity) => entity.type === type,
     })
     return result.data
   }
@@ -104,7 +104,7 @@ export class TabIndexedDBRepository
    */
   async findByStatus(status: TabStatus): Promise<TabEntity[]> {
     const result = await this.find({
-      filter: entity => entity.status === status
+      filter: (entity) => entity.status === status,
     })
     return result.data
   }
@@ -120,20 +120,19 @@ export class TabIndexedDBRepository
     }
 
     if (options.type) {
-      filters.push(entity => entity.type === options.type)
+      filters.push((entity) => entity.type === options.type)
     }
 
     if (options.status) {
-      filters.push(entity => entity.status === options.status)
+      filters.push((entity) => entity.status === options.status)
     }
 
-    const combinedFilter = filters.length > 0
-      ? (entity: TabEntity) => filters.every(f => f(entity))
-      : undefined
+    const combinedFilter =
+      filters.length > 0 ? (entity: TabEntity) => filters.every((f) => f(entity)) : undefined
 
     const result = await super.find({
       ...options,
-      filter: combinedFilter
+      filter: combinedFilter,
     })
     return result.data
   }
@@ -145,7 +144,7 @@ export class TabIndexedDBRepository
     const entities = await this.findAll()
     const counts: Record<string, number> = {}
 
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       counts[entity.type] = (counts[entity.type] || 0) + 1
     })
 
@@ -159,7 +158,7 @@ export class TabIndexedDBRepository
     const entities = await this.findAll()
     const counts: Record<string, number> = {}
 
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       counts[entity.status] = (counts[entity.status] || 0) + 1
     })
 
@@ -234,7 +233,7 @@ export class TabIndexedDBRepository
       ...json,
       status,
       createdAt: new Date(json.createdAt),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
 
     await this.save(updated)
@@ -254,7 +253,7 @@ export class TabIndexedDBRepository
       ...json,
       title,
       createdAt: new Date(json.createdAt),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
 
     await this.save(updated)
@@ -274,10 +273,10 @@ export class TabIndexedDBRepository
       ...json,
       data: {
         ...tab.data,
-        [key]: value
+        [key]: value,
       },
       createdAt: new Date(json.createdAt),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
 
     await this.save(updated)
@@ -296,7 +295,7 @@ export class TabIndexedDBRepository
       request.onsuccess = () => {
         const data = request.result
         resolve({
-          activeTabId: data?.activeTabId || null
+          activeTabId: data?.activeTabId || null,
         })
       }
 
@@ -316,7 +315,7 @@ export class TabIndexedDBRepository
       const data = {
         id: TabIndexedDBRepository.METADATA_KEY,
         ...metadata,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       }
 
       const request = store.put(data)

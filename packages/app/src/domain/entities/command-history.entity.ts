@@ -101,7 +101,7 @@ export class CommandHistoryEntity implements Entity {
       timestamp: this.timestamp.toISOString(),
       success: this.success,
       duration: this.duration,
-      error: this.error
+      error: this.error,
     }
   }
 
@@ -118,7 +118,7 @@ export class CommandHistoryEntity implements Entity {
   }): CommandHistoryEntity {
     return new CommandHistoryEntity({
       ...data,
-      timestamp: new Date(data.timestamp)
+      timestamp: new Date(data.timestamp),
     })
   }
 }
@@ -223,8 +223,6 @@ export class CommandHistoryCollection {
    */
   search(query: string): CommandHistoryEntity[] {
     const lowerQuery = query.toLowerCase()
-    return this.entries.filter(entry =>
-      entry.command.toLowerCase().includes(lowerQuery)
-    )
+    return this.entries.filter((entry) => entry.command.toLowerCase().includes(lowerQuery))
   }
 }

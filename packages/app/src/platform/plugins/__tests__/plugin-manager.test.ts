@@ -3,11 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import {
-  PluginManager,
-  getGlobalPluginManager,
-  resetGlobalPluginManager
-} from '../plugin-manager'
+import { PluginManager, getGlobalPluginManager, resetGlobalPluginManager } from '../plugin-manager'
 import { ExtensionRegistry } from '../../extensions/extension-point'
 import { EventBus } from '../../events/event-bus'
 import type { CommandPlugin, ThemePlugin } from '../types'
@@ -23,7 +19,7 @@ describe('PluginManager', () => {
     extensionRegistry = new ExtensionRegistry()
     pluginManager = new PluginManager({
       eventBus,
-      extensionRegistry
+      extensionRegistry,
     })
     resetGlobalPluginManager()
   })
@@ -38,9 +34,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       const result = await pluginManager.register(plugin)
@@ -59,9 +55,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       await pluginManager.register(plugin)
@@ -81,9 +77,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       const result = await pluginManager.register(plugin)
@@ -114,9 +110,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       await pluginManager.register(plugin)
@@ -136,9 +132,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       await pluginManager.register(plugin)
@@ -159,9 +155,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       await pluginManager.register(plugin)
@@ -183,9 +179,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       await pluginManager.register(plugin)
@@ -206,9 +202,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       const result = await pluginManager.register(plugin)
@@ -230,9 +226,9 @@ describe('PluginManager', () => {
             name: 'test',
             aliases: ['t'],
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       await pluginManager.register(plugin)
@@ -262,7 +258,7 @@ describe('PluginManager', () => {
             error: '#ff0000',
             success: '#00ff00',
             warning: '#ffff00',
-            info: '#00ffff'
+            info: '#00ffff',
           },
           terminal: {
             ansiColors: {
@@ -274,12 +270,12 @@ describe('PluginManager', () => {
               magenta: '',
               cyan: '',
               white: '',
-              reset: ''
+              reset: '',
             },
             fontFamily: 'monospace',
-            fontSize: 14
-          }
-        }
+            fontSize: 14,
+          },
+        },
       }
 
       await pluginManager.register(plugin)
@@ -300,9 +296,9 @@ describe('PluginManager', () => {
           {
             name: 'test',
             description: 'Test command',
-            handler: vi.fn()
-          }
-        ]
+            handler: vi.fn(),
+          },
+        ],
       }
 
       await pluginManager.register(plugin)
@@ -316,7 +312,7 @@ describe('PluginManager', () => {
         name: 'plugin1',
         version: '1.0.0',
         type: 'command',
-        commands: [{ name: 'test1', description: 'Test', handler: vi.fn() }]
+        commands: [{ name: 'test1', description: 'Test', handler: vi.fn() }],
       }
 
       const plugin2: ThemePlugin = {
@@ -333,7 +329,7 @@ describe('PluginManager', () => {
             error: '#f00',
             success: '#0f0',
             warning: '#ff0',
-            info: '#0ff'
+            info: '#0ff',
           },
           terminal: {
             ansiColors: {
@@ -345,12 +341,12 @@ describe('PluginManager', () => {
               magenta: '',
               cyan: '',
               white: '',
-              reset: ''
+              reset: '',
             },
             fontFamily: 'monospace',
-            fontSize: 14
-          }
-        }
+            fontSize: 14,
+          },
+        },
       }
 
       await pluginManager.register(plugin1)
@@ -365,14 +361,14 @@ describe('PluginManager', () => {
         name: 'plugin1',
         version: '1.0.0',
         type: 'command',
-        commands: [{ name: 'test1', description: 'Test', handler: vi.fn() }]
+        commands: [{ name: 'test1', description: 'Test', handler: vi.fn() }],
       }
 
       const plugin2: CommandPlugin = {
         name: 'plugin2',
         version: '1.0.0',
         type: 'command',
-        commands: [{ name: 'test2', description: 'Test', handler: vi.fn() }]
+        commands: [{ name: 'test2', description: 'Test', handler: vi.fn() }],
       }
 
       await pluginManager.register(plugin1)
@@ -390,7 +386,7 @@ describe('PluginManager', () => {
         name: 'plugin1',
         version: '1.0.0',
         type: 'command',
-        commands: [{ name: 'test1', description: 'Test', handler: vi.fn() }]
+        commands: [{ name: 'test1', description: 'Test', handler: vi.fn() }],
       }
 
       const plugin2: ThemePlugin = {
@@ -407,7 +403,7 @@ describe('PluginManager', () => {
             error: '#f00',
             success: '#0f0',
             warning: '#ff0',
-            info: '#0ff'
+            info: '#0ff',
           },
           terminal: {
             ansiColors: {
@@ -419,12 +415,12 @@ describe('PluginManager', () => {
               magenta: '',
               cyan: '',
               white: '',
-              reset: ''
+              reset: '',
             },
             fontFamily: 'monospace',
-            fontSize: 14
-          }
-        }
+            fontSize: 14,
+          },
+        },
       }
 
       await pluginManager.register(plugin1)

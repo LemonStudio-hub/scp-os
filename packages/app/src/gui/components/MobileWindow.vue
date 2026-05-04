@@ -1,21 +1,18 @@
 <template>
   <Transition name="ios-slide" appear>
-    <div
-      v-if="visible"
-      ref="windowRef"
-      class="mobile-window"
-    >
+    <div v-if="visible" ref="windowRef" class="mobile-window">
       <!-- iOS Navigation Bar -->
-      <MobileNavBar
-        :show-back="showBack"
-        :back-label="backLabel"
-        :border="true"
-        @back="onBack"
-      >
+      <MobileNavBar :show-back="showBack" :back-label="backLabel" :border="true" @back="onBack">
         <template #left>
           <button v-if="showBack" class="mobile-nav-bar__btn" @click="onBack">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              <path d="M14 4L7 11L14 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M14 4L7 11L14 18"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
             <span v-if="backLabel" class="mobile-nav-bar__btn-label">{{ backLabel }}</span>
           </button>
@@ -115,7 +112,7 @@ setCallbacks({
   position: fixed;
   inset: 0;
   z-index: var(--gui-z-window, 300);
-  background: var(--gui-bg-base, #1C1C1E);
+  background: var(--gui-bg-base, #1c1c1e);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -127,7 +124,7 @@ setCallbacks({
   font-family: var(--gui-font-sans);
   font-size: var(--gui-font-base, 13px);
   font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

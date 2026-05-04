@@ -7,7 +7,6 @@
   >
     <div class="settings-app k-ios-page k-ios-page--dark">
       <div class="settings-app__content gui-scrollable">
-
         <!-- Terminal Section -->
         <div class="k-ios-block__title">{{ t('settings.terminal') }}</div>
         <div class="k-ios-list">
@@ -20,8 +19,20 @@
             </div>
             <div class="k-ios-list__item-right">
               <span class="k-ios-list__item-value">{{ settings.fontSize }}px</span>
-              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                class="k-ios-list__item-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M4 2L8 6L4 10"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
           </div>
@@ -61,20 +72,94 @@
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                class="k-ios-list__item-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M4 2L8 6L4 10"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
           </div>
 
           <!-- Theme Selection -->
-          <div v-for="theme in themeStore.availableThemes" :key="theme.id" class="k-ios-list__item" @click="themeStore.setTheme(theme.id)">
+          <div
+            v-for="theme in themeStore.availableThemes"
+            :key="theme.id"
+            class="k-ios-list__item"
+            @click="themeStore.setTheme(theme.id)"
+          >
             <div class="k-ios-list__item-left">
               <div class="theme-icon">
-                <svg v-if="theme.id === 'dark'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                <svg v-else-if="theme.id === 'light'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                <svg v-else-if="theme.id === 'scp'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                <svg
+                  v-if="theme.id === 'dark'"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+                <svg
+                  v-else-if="theme.id === 'light'"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg
+                  v-else-if="theme.id === 'scp'"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <svg
+                  v-else
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="4 17 10 11 4 5" />
+                  <line x1="12" y1="19" x2="20" y2="19" />
+                </svg>
               </div>
               <div class="k-ios-list__item-content">
                 <div class="k-ios-list__item-label">{{ theme.name }}</div>
@@ -82,7 +167,12 @@
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <div class="k-ios-list__item-radio" :class="{ 'k-ios-list__item-radio--active': themeStore.currentThemeId === theme.id }" />
+              <div
+                class="k-ios-list__item-radio"
+                :class="{
+                  'k-ios-list__item-radio--active': themeStore.currentThemeId === theme.id,
+                }"
+              />
             </div>
           </div>
           <!-- Haptic Feedback -->
@@ -116,8 +206,20 @@
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                class="k-ios-list__item-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M4 2L8 6L4 10"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
           </div>
@@ -149,12 +251,26 @@
           <div class="k-ios-list__item" @click="confirmClearData">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">{{ t('settings.clearAllData') }}</div>
+                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">
+                  {{ t('settings.clearAllData') }}
+                </div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                class="k-ios-list__item-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M4 2L8 6L4 10"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
           </div>
@@ -214,33 +330,56 @@
         </div>
 
         <!-- Reset -->
-        <div class="k-ios-list" style="margin-top: var(--gui-spacing-xl, 24px);">
+        <div class="k-ios-list" style="margin-top: var(--gui-spacing-xl, 24px)">
           <div class="k-ios-list__item" @click="confirmResetSettings">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label k-ios-list__item-label--centered">{{ t('settings.resetAll') }}</div>
+                <div class="k-ios-list__item-label k-ios-list__item-label--centered">
+                  {{ t('settings.resetAll') }}
+                </div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+              <svg
+                class="k-ios-list__item-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M4 2L8 6L4 10"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
           </div>
         </div>
 
-        <div style="height: var(--gui-spacing-3xl, 48px);" />
+        <div style="height: var(--gui-spacing-3xl, 48px)" />
       </div>
 
       <!-- Confirmation Dialog -->
       <Transition name="gui-ios-fade">
-        <div v-if="confirmDialog" class="settings-confirm-overlay" @click.self="confirmDialog = null">
+        <div
+          v-if="confirmDialog"
+          class="settings-confirm-overlay"
+          @click.self="confirmDialog = null"
+        >
           <div class="settings-confirm-dialog">
             <h3 class="settings-confirm-title">{{ confirmDialog.title }}</h3>
             <p class="settings-confirm-text">{{ confirmDialog.text }}</p>
             <div class="settings-confirm-actions">
-              <button class="settings-confirm-btn" @click="confirmDialog = null">{{ t('common.cancel') }}</button>
-              <button class="settings-confirm-btn settings-confirm-btn--destructive" @click="confirmDialog.action">
+              <button class="settings-confirm-btn" @click="confirmDialog = null">
+                {{ t('common.cancel') }}
+              </button>
+              <button
+                class="settings-confirm-btn settings-confirm-btn--destructive"
+                @click="confirmDialog.action"
+              >
                 {{ confirmDialog.confirmText }}
               </button>
             </div>
@@ -251,7 +390,10 @@
       <!-- Font Size Slider Sheet -->
       <Sheet v-model:visible="sliderSheets.fontSize">
         <div class="settings-slider-sheet">
-          <div class="settings-slider-sheet__preview" :style="{ fontSize: `${sliderValues.fontSize}px` }">
+          <div
+            class="settings-slider-sheet__preview"
+            :style="{ fontSize: `${sliderValues.fontSize}px` }"
+          >
             {{ t('settings.fontPreview') }}
           </div>
           <input
@@ -278,12 +420,21 @@
             <div
               v-for="loc in availableLocales"
               :key="loc"
-              :class="['settings-language-sheet__option', { 'settings-language-sheet__option--active': locale === loc }]"
+              :class="[
+                'settings-language-sheet__option',
+                { 'settings-language-sheet__option--active': locale === loc },
+              ]"
               @click="selectLanguage(loc)"
             >
               <span class="settings-language-sheet__label">{{ localeNames[loc] }}</span>
               <svg v-if="locale === loc" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M5 10L9 14L15 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M5 10L9 14L15 6"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
           </div>
@@ -292,10 +443,7 @@
     </div>
 
     <!-- Wallpaper Picker -->
-    <WallpaperPicker
-      v-model:visible="wallpaperPickerVisible"
-      @change="onWallpaperChange"
-    />
+    <WallpaperPicker v-model:visible="wallpaperPickerVisible" @change="onWallpaperChange" />
   </MobileWindow>
 </template>
 
@@ -359,11 +507,14 @@ themeStore.init()
 
 // User ID
 const userId = ref<string>('Loading...')
-indexedDBService.getUserId().then(id => {
-  userId.value = id
-}).catch(() => {
-  userId.value = 'Unknown'
-})
+indexedDBService
+  .getUserId()
+  .then((id) => {
+    userId.value = id
+  })
+  .catch(() => {
+    userId.value = 'Unknown'
+  })
 
 // Wallpaper picker
 const wallpaperPickerVisible = ref(false)
@@ -418,7 +569,9 @@ function loadSettings(): AppSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return { ...defaultSettings, ...JSON.parse(raw) }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return { ...defaultSettings }
 }
 
@@ -426,10 +579,14 @@ const settings = reactive<AppSettings>(loadSettings())
 
 let prevFontSize = settings.fontSize
 
-watch(settings, () => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-  applySettings()
-}, { deep: true })
+watch(
+  settings,
+  () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    applySettings()
+  },
+  { deep: true }
+)
 
 function getActiveTerminal() {
   return window.__terminalInstance?.terminal || null
@@ -443,7 +600,9 @@ function applySettings(): void {
     try {
       terminal.options.fontSize = settings.fontSize
       terminal.refresh(0, terminal.rows - 1)
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     prevFontSize = settings.fontSize
   }
 }
@@ -462,11 +621,9 @@ function onFontSizeChange(): void {
   settings.fontSize = sliderValues.fontSize
 }
 
-
-
 function toggleSetting(key: keyof AppSettings): void {
   if (typeof settings[key] === 'boolean') {
-    (settings[key] as boolean) = !(settings[key] as boolean)
+    ;(settings[key] as boolean) = !(settings[key] as boolean)
     triggerHaptic()
   }
 }
@@ -591,9 +748,9 @@ function formatBytes(bytes: number): string {
 }
 
 .k-ios-list__item-radio--active {
-  border-color: var(--gui-accent, #8E8E93);
-  background: var(--gui-accent, #8E8E93);
-  box-shadow: inset 0 0 0 3px var(--gui-bg-surface-raised, #3A3A3C);
+  border-color: var(--gui-accent, #8e8e93);
+  background: var(--gui-accent, #8e8e93);
+  box-shadow: inset 0 0 0 3px var(--gui-bg-surface-raised, #3a3a3c);
 }
 
 /* Theme icon in settings */
@@ -691,7 +848,7 @@ function formatBytes(bytes: number): string {
 }
 
 .settings-slider-sheet__preview {
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   color: var(--gui-text-primary, #ffffff);
   padding: var(--gui-spacing-xl, 24px);
   background: var(--gui-bg-surface, #1c1c1e);
@@ -733,7 +890,7 @@ function formatBytes(bytes: number): string {
 .settings-language-sheet__title {
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   text-align: center;
   margin-bottom: var(--gui-spacing-base, 16px);
 }
@@ -749,7 +906,7 @@ function formatBytes(bytes: number): string {
   align-items: center;
   justify-content: space-between;
   padding: var(--gui-spacing-md, 12px) var(--gui-spacing-base, 16px);
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border-radius: var(--gui-radius-base, 8px);
   cursor: pointer;
   transition: all var(--gui-transition-fast, 120ms ease);
@@ -766,12 +923,12 @@ function formatBytes(bytes: number): string {
 }
 
 .settings-language-sheet__option--active svg {
-  color: var(--gui-accent, #8E8E93);
+  color: var(--gui-accent, #8e8e93);
 }
 
 .settings-language-sheet__label {
   font-size: var(--gui-font-base, 13px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 </style>

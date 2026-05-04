@@ -129,7 +129,9 @@ class WallpaperService {
       const request = index.getAll()
       request.onsuccess = () => {
         // Sort by creation date (newest first)
-        const results = (request.result as WallpaperInfo[]).sort((a, b) => b.createdAt - a.createdAt)
+        const results = (request.result as WallpaperInfo[]).sort(
+          (a, b) => b.createdAt - a.createdAt
+        )
         resolve(results)
       }
       request.onerror = () => reject(request.error)
@@ -191,7 +193,9 @@ class WallpaperService {
       } else {
         localStorage.removeItem('scp-os-current-wallpaper')
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   /**

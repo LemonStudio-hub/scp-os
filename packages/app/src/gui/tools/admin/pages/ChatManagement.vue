@@ -38,7 +38,12 @@
           {{ formatDate(value) }}
         </template>
         <template #cell-actions="{ row }">
-          <button class="chat-mgmt__action-btn chat-mgmt__action-btn--danger" @click.stop="openDeleteMsgConfirm(row)">删除</button>
+          <button
+            class="chat-mgmt__action-btn chat-mgmt__action-btn--danger"
+            @click.stop="openDeleteMsgConfirm(row)"
+          >
+            删除
+          </button>
         </template>
       </DataTable>
 
@@ -51,14 +56,12 @@
     </div>
 
     <div v-else class="chat-mgmt__section">
-      <DataTable
-        :columns="roomColumns"
-        :data="rooms"
-        :loading="roomsLoading"
-        :selectable="false"
-      >
+      <DataTable :columns="roomColumns" :data="rooms" :loading="roomsLoading" :selectable="false">
         <template #cell-is_public="{ row }">
-          <span class="chat-mgmt__badge" :class="row.is_public ? 'chat-mgmt__badge--public' : 'chat-mgmt__badge--private'">
+          <span
+            class="chat-mgmt__badge"
+            :class="row.is_public ? 'chat-mgmt__badge--public' : 'chat-mgmt__badge--private'"
+          >
             {{ row.is_public ? '公开' : '私有' }}
           </span>
         </template>
@@ -67,22 +70,47 @@
         </template>
         <template #cell-actions="{ row }">
           <div class="chat-mgmt__cell-actions">
-            <button class="chat-mgmt__action-btn chat-mgmt__action-btn--edit" @click.stop="openEditRoomModal(row)">编辑</button>
-            <button class="chat-mgmt__action-btn chat-mgmt__action-btn--danger" @click.stop="openDeleteRoomConfirm(row)">删除</button>
+            <button
+              class="chat-mgmt__action-btn chat-mgmt__action-btn--edit"
+              @click.stop="openEditRoomModal(row)"
+            >
+              编辑
+            </button>
+            <button
+              class="chat-mgmt__action-btn chat-mgmt__action-btn--danger"
+              @click.stop="openDeleteRoomConfirm(row)"
+            >
+              删除
+            </button>
           </div>
         </template>
       </DataTable>
     </div>
 
-    <Modal :visible="editRoomVisible" title="编辑房间" width="420px" @close="editRoomVisible = false">
+    <Modal
+      :visible="editRoomVisible"
+      title="编辑房间"
+      width="420px"
+      @close="editRoomVisible = false"
+    >
       <div class="chat-mgmt__modal-body">
         <div class="chat-mgmt__modal-field">
           <label class="chat-mgmt__modal-label">房间名称</label>
-          <input v-model="editRoomForm.name" class="chat-mgmt__input" type="text" placeholder="房间名称" />
+          <input
+            v-model="editRoomForm.name"
+            class="chat-mgmt__input"
+            type="text"
+            placeholder="房间名称"
+          />
         </div>
         <div class="chat-mgmt__modal-field">
           <label class="chat-mgmt__modal-label">描述</label>
-          <textarea v-model="editRoomForm.description" class="chat-mgmt__textarea" rows="3" placeholder="房间描述"></textarea>
+          <textarea
+            v-model="editRoomForm.description"
+            class="chat-mgmt__textarea"
+            rows="3"
+            placeholder="房间描述"
+          ></textarea>
         </div>
         <div class="chat-mgmt__modal-field">
           <label class="chat-mgmt__modal-label">是否公开</label>
@@ -94,12 +122,16 @@
             >
               <span class="chat-mgmt__toggle-knob" />
             </button>
-            <span class="chat-mgmt__toggle-label">{{ editRoomForm.is_public === 1 ? '公开' : '私有' }}</span>
+            <span class="chat-mgmt__toggle-label">{{
+              editRoomForm.is_public === 1 ? '公开' : '私有'
+            }}</span>
           </label>
         </div>
       </div>
       <template #footer>
-        <button class="chat-mgmt__btn chat-mgmt__btn--ghost" @click="editRoomVisible = false">取消</button>
+        <button class="chat-mgmt__btn chat-mgmt__btn--ghost" @click="editRoomVisible = false">
+          取消
+        </button>
         <button class="chat-mgmt__btn chat-mgmt__btn--primary" @click="handleSaveRoom">保存</button>
       </template>
     </Modal>
@@ -180,7 +212,13 @@ function formatDate(val: string | number) {
   if (!val) return '-'
   const d = new Date(typeof val === 'number' ? val * 1000 : val)
   if (isNaN(d.getTime())) return String(val)
-  return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function onRoomFilterChange() {
@@ -266,7 +304,11 @@ async function handleSaveRoom() {
   const token = adminStore.token
   if (!token || !editRoomTarget.value) return
   try {
-    const res = await adminApi.updateAdminChatRoom(token, editRoomTarget.value.id, editRoomForm.value)
+    const res = await adminApi.updateAdminChatRoom(
+      token,
+      editRoomTarget.value.id,
+      editRoomForm.value
+    )
     if (res.success) {
       toast.success('房间已更新')
       editRoomVisible.value = false
@@ -379,7 +421,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__select:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .chat-mgmt__msg-content {
@@ -400,12 +442,12 @@ onMounted(() => {
 
 .chat-mgmt__badge--public {
   background: rgba(52, 199, 89, 0.12);
-  color: #34C759;
+  color: #34c759;
 }
 
 .chat-mgmt__badge--private {
   background: rgba(255, 204, 0, 0.12);
-  color: #FFCC00;
+  color: #ffcc00;
 }
 
 .chat-mgmt__cell-actions {
@@ -430,7 +472,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__action-btn--edit {
-  color: #0A84FF;
+  color: #0a84ff;
   border-color: rgba(10, 132, 255, 0.2);
 }
 
@@ -439,7 +481,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__action-btn--danger {
-  color: #FF3B30;
+  color: #ff3b30;
   border-color: rgba(255, 59, 48, 0.2);
 }
 
@@ -467,7 +509,7 @@ onMounted(() => {
 
 .chat-mgmt__btn--primary {
   background: rgba(233, 69, 96, 0.15);
-  color: #E94560;
+  color: #e94560;
   border-color: rgba(233, 69, 96, 0.2);
 }
 
@@ -517,7 +559,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__input:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .chat-mgmt__input::placeholder {
@@ -539,7 +581,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__textarea:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .chat-mgmt__textarea::placeholder {
@@ -566,7 +608,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__toggle--on {
-  background: #E94560;
+  background: #e94560;
 }
 
 .chat-mgmt__toggle-knob {

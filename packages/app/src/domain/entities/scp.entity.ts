@@ -106,7 +106,7 @@ export class SCPEntity implements Entity {
       low: 1,
       medium: 2,
       high: 3,
-      extreme: 4
+      extreme: 4,
     }
     return priority[this.warningLevel] ?? 0
   }
@@ -119,7 +119,7 @@ export class SCPEntity implements Entity {
       Safe: 1,
       Euclid: 2,
       Keter: 3,
-      Thaumiel: 4
+      Thaumiel: 4,
     }
     return priority[this.class] ?? 0
   }
@@ -147,7 +147,7 @@ export class SCPEntity implements Entity {
       containmentProcedures: this.containmentProcedures,
       warningLevel: this.warningLevel,
       createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString()
+      updatedAt: this.updatedAt.toISOString(),
     }
   }
 
@@ -168,7 +168,7 @@ export class SCPEntity implements Entity {
     return new SCPEntity({
       ...data,
       createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
-      updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined,
     })
   }
 }

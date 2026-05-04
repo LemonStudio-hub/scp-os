@@ -5,7 +5,11 @@ import { scraper } from '../utils/scraper'
 import { filesystem } from '../utils/filesystem'
 import { useTabsStore } from '../stores/tabs'
 import { useSystemStore } from '../stores/system'
-import { createBorderLine, createBorderedTitle, isNarrowTerminal } from '../utils/terminalResponsive'
+import {
+  createBorderLine,
+  createBorderedTitle,
+  isNarrowTerminal,
+} from '../utils/terminalResponsive'
 import { generateInfoQueryLogs } from '../utils/infoQueryLogs'
 import { generateSecurityCheckLogs } from '../utils/securityCheckLogs'
 import { generateNetworkTestLogs } from '../utils/networkTestLogs'
@@ -26,11 +30,11 @@ export const commandHandlers: CommandMap = {
     if (window.__terminalController) {
       window.__terminalController.clear()
     }
-    
+
     // Mark system as running
     const systemStore = useSystemStore()
     systemStore.markSystemRunning()
-    
+
     // Use global terminal controller to display boot log and welcome message
     if (window.__terminalController) {
       await window.__terminalController.displayBootLog()
@@ -47,7 +51,7 @@ export const commandHandlers: CommandMap = {
     const systemStore = useSystemStore()
     systemStore.resetBootLogShown()
     systemStore.markSystemRunning()
-    
+
     // Use global terminal controller to clear terminal and display boot log
     if (window.__terminalController) {
       window.__terminalController.clear()
@@ -62,22 +66,22 @@ export const commandHandlers: CommandMap = {
 
   shutdown: async (args, _write, writeln) => {
     const confirmation = args[0]?.toLowerCase()
-    
+
     if (confirmation === 'now') {
       writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
       writeln('')
-      
+
       // Get stores
       const tabsStore = useTabsStore()
       const systemStore = useSystemStore()
-      
+
       // Clear all tabs
       tabsStore.clearAllTabs()
-      
+
       // Mark system as shutdown
       systemStore.markSystemShutdown()
       systemStore.resetBootLogShown()
-      
+
       // Use global terminal controller to display shutdown log and startup prompt
       if (window.__terminalController) {
         await window.__terminalController.displayShutdownLog()
@@ -97,7 +101,7 @@ export const commandHandlers: CommandMap = {
     const b = border()
     const t = borderedTitle('Available Commands')
     const isNarrow = isNarrowTerminal()
-    
+
     const helpText = [
       b,
       t,
@@ -112,15 +116,15 @@ export const commandHandlers: CommandMap = {
         return `  ${usage} - ${desc}`
       }),
       '',
-      b
+      b,
     ]
-    helpText.forEach(line => writeln(line))
+    helpText.forEach((line) => writeln(line))
   },
 
   status: (_args, _write, writeln) => {
     const b = border()
     const t = borderedTitle('System Status Report')
-    
+
     const statusInfo = [
       b,
       t,
@@ -142,9 +146,9 @@ export const commandHandlers: CommandMap = {
       '  Database Status:      Synchronized',
       '  Last Update:          2026-03-31 14:32:15 UTC',
       '',
-      b
+      b,
     ]
-    statusInfo.forEach(line => writeln(line))
+    statusInfo.forEach((line) => writeln(line))
   },
 
   clear: (_args, write, _writeln) => {
@@ -158,7 +162,7 @@ export const commandHandlers: CommandMap = {
   containment: (_args, _write, writeln) => {
     const b = border()
     const t = borderedTitle('Containment Protocols')
-    
+
     const containmentInfo = [
       b,
       t,
@@ -187,15 +191,15 @@ export const commandHandlers: CommandMap = {
       '    - Foundation secret weapons',
       '    - Extremely high classification',
       '',
-      b
+      b,
     ]
-    containmentInfo.forEach(line => writeln(line))
+    containmentInfo.forEach((line) => writeln(line))
   },
 
   'scp-list': (_args, _write, writeln) => {
     const b = border()
     const t = borderedTitle('Known SCP Objects')
-    
+
     const scpList = [
       b,
       t,
@@ -221,15 +225,17 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.cyan}  Use "info CN-<number>" for Chinese branch${ANSICode.reset}`,
       `${ANSICode.cyan}  Use "search <keyword>" to search for specific objects${ANSICode.reset}`,
       '',
-      b
+      b,
     ]
-    scpList.forEach(line => writeln(line))
+    scpList.forEach((line) => writeln(line))
   },
 
   info: async (args, _write, writeln) => {
     const input = args[0]
     if (!input) {
-      writeln(`${ANSICode.yellow}Please specify SCP number, e.g.: info 173, info CN-001${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.yellow}Please specify SCP number, e.g.: info 173, info CN-001${ANSICode.reset}`
+      )
       return
     }
 
@@ -249,7 +255,9 @@ export const commandHandlers: CommandMap = {
     try {
       if (forcedBranch) {
         // 用户强制指定了分部，直接查询
-        writeln(`${ANSICode.cyan}Connecting to ${forcedBranch.toUpperCase()} Branch Wiki...${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.cyan}Connecting to ${forcedBranch.toUpperCase()} Branch Wiki...${ANSICode.reset}`
+        )
         writeln('')
 
         // 显示查询日志（带动画效果）
@@ -263,7 +271,7 @@ export const commandHandlers: CommandMap = {
           if (line.includes('[PARSE]') || line.includes('[CLEAN]')) delay = 30
           if (line.includes('[DONE]')) delay = 100
           if (line.trim() === '') delay = 10
-          await new Promise(r => setTimeout(r, delay + Math.random() * 20))
+          await new Promise((r) => setTimeout(r, delay + Math.random() * 20))
         }
 
         const result = await scraper.scrapeSCP(scpNumber, forcedBranch)
@@ -275,7 +283,7 @@ export const commandHandlers: CommandMap = {
           }
 
           const formattedLines = scraper.formatForTerminal(result.data)
-          formattedLines.forEach(line => writeln(line))
+          formattedLines.forEach((line) => writeln(line))
         } else {
           writeln(`${ANSICode.red}Query failed: ${result.error}${ANSICode.reset}`)
           writeln('')
@@ -303,7 +311,7 @@ export const commandHandlers: CommandMap = {
           if (line.includes('[PARSE]') || line.includes('[CLEAN]')) delay = 30
           if (line.includes('[DONE]')) delay = 100
           if (line.trim() === '') delay = 10
-          await new Promise(r => setTimeout(r, delay + Math.random() * 20))
+          await new Promise((r) => setTimeout(r, delay + Math.random() * 20))
         }
 
         const cnResult = await scraper.scrapeSCP(scpNumber, 'cn')
@@ -318,10 +326,12 @@ export const commandHandlers: CommandMap = {
           }
 
           const formattedLines = scraper.formatForTerminal(cnResult.data)
-          formattedLines.forEach(line => writeln(line))
+          formattedLines.forEach((line) => writeln(line))
         } else {
           // 中文分部找不到，尝试英文主站点
-          writeln(`${ANSICode.yellow}Not found on Chinese Branch, trying English Main Site...${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.yellow}Not found on Chinese Branch, trying English Main Site...${ANSICode.reset}`
+          )
           writeln('')
 
           // 显示查询日志（带动画效果）
@@ -334,7 +344,7 @@ export const commandHandlers: CommandMap = {
             if (line.includes('[PARSE]') || line.includes('[CLEAN]')) delay = 30
             if (line.includes('[DONE]')) delay = 100
             if (line.trim() === '') delay = 10
-            await new Promise(r => setTimeout(r, delay + Math.random() * 20))
+            await new Promise((r) => setTimeout(r, delay + Math.random() * 20))
           }
 
           const enResult = await scraper.scrapeSCP(scpNumber, 'en')
@@ -349,9 +359,11 @@ export const commandHandlers: CommandMap = {
             }
 
             const formattedLines = scraper.formatForTerminal(enResult.data)
-            formattedLines.forEach(line => writeln(line))
+            formattedLines.forEach((line) => writeln(line))
           } else {
-            writeln(`${ANSICode.red}Query failed: SCP-${scpNumber} not found on both Chinese and English Wikis${ANSICode.reset}`)
+            writeln(
+              `${ANSICode.red}Query failed: SCP-${scpNumber} not found on both Chinese and English Wikis${ANSICode.reset}`
+            )
             writeln('')
             writeln(`${ANSICode.yellow}Tips:${ANSICode.reset}`)
             writeln(`  - Ensure the SCP number is correct, e.g.: 173, 096, 682`)
@@ -365,14 +377,16 @@ export const commandHandlers: CommandMap = {
         }
       }
     } catch (error) {
-      writeln(`${ANSICode.red}Query failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}Query failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   protocol: (_args, _write, writeln) => {
     const protocols = [
       border(),
-      borderedTitle("Security Protocols"),
+      borderedTitle('Security Protocols'),
       border(),
       '',
       '  Major Security Protocols:',
@@ -397,15 +411,15 @@ export const commandHandlers: CommandMap = {
       '    - Explores anomalous spaces',
       '    - Equipped with specialized equipment',
       '',
-      border()
+      border(),
     ]
-    protocols.forEach(line => writeln(line))
+    protocols.forEach((line) => writeln(line))
   },
 
   emergency: (_args, _write, writeln) => {
     const emergencyInfo = [
       border(),
-      borderedTitle("Emergency Contact"),
+      borderedTitle('Emergency Contact'),
       border(),
       '',
       `${ANSICode.red}  [ALERT] Containment Breach Hotline:${ANSICode.reset}`,
@@ -426,15 +440,15 @@ export const commandHandlers: CommandMap = {
       '',
       `${ANSICode.yellow}  Note: All emergency contacts require authentication${ANSICode.reset}`,
       '',
-      border()
+      border(),
     ]
-    emergencyInfo.forEach(line => writeln(line))
+    emergencyInfo.forEach((line) => writeln(line))
   },
 
   version: (_args, _write, writeln) => {
     const versionInfo = [
       border(),
-      borderedTitle("System Version"),
+      borderedTitle('System Version'),
       border(),
       '',
       '  SCP Foundation Operating System',
@@ -445,15 +459,15 @@ export const commandHandlers: CommandMap = {
       `${ANSICode.red}  Authorized Personnel Only${ANSICode.reset}`,
       `${ANSICode.red}  Unauthorized access will result in severe penalties${ANSICode.reset}`,
       '',
-      border()
+      border(),
     ]
-    versionInfo.forEach(line => writeln(line))
+    versionInfo.forEach((line) => writeln(line))
   },
 
   about: (_args, _write, writeln) => {
     const aboutInfo = [
       border(),
-      borderedTitle("About SCP-OS"),
+      borderedTitle('About SCP-OS'),
       border(),
       '',
       '  SCP-OS - SCP Foundation Operating System',
@@ -479,16 +493,18 @@ export const commandHandlers: CommandMap = {
       '',
       `${ANSICode.green}  Secure. Contain. Protect.${ANSICode.reset}`,
       '',
-      border()
+      border(),
     ]
-    aboutInfo.forEach(line => writeln(line))
+    aboutInfo.forEach((line) => writeln(line))
   },
 
   search: async (args, _write, writeln) => {
     try {
       const keyword = args.join(' ')
       if (!keyword) {
-        writeln(`${ANSICode.yellow}Please enter search keyword, e.g.: search statue${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.yellow}Please enter search keyword, e.g.: search statue${ANSICode.reset}`
+        )
         return
       }
 
@@ -501,7 +517,7 @@ export const commandHandlers: CommandMap = {
         writeln(`${ANSICode.green}Found matching SCP object:${ANSICode.reset}`)
         writeln('')
         const formattedLines = scraper.formatForTerminal(result.data)
-        formattedLines.forEach(line => writeln(line))
+        formattedLines.forEach((line) => writeln(line))
       } else {
         writeln(`${ANSICode.red}${result.error}${ANSICode.reset}`)
         writeln('')
@@ -511,43 +527,45 @@ export const commandHandlers: CommandMap = {
         writeln(`  - Use "info <number>" if you know the SCP number`)
       }
     } catch (error) {
-      writeln(`${ANSICode.red}Search failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}Search failed: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   check: async (_args, _write, writeln) => {
     const logs = generateSecurityCheckLogs()
-    
+
     for (const line of logs) {
       writeln(line)
-      
+
       // 动态延迟，模拟真实扫描过程
       let delay = 15
-      
+
       if (line.includes('[INIT]')) delay = 30
       if (line.includes('[SCAN]') || line.includes('[FINT]')) delay = 20
       if (line.includes('[SECU]')) delay = 25
       if (line.includes('[NETW]')) delay = 30
       if (line.includes('[CRYP]')) delay = 20
-      if (line.includes('Progress:')) delay = 50  // 进度条停顿一下
+      if (line.includes('Progress:')) delay = 50 // 进度条停顿一下
       if (line.includes('[SUMMARY]')) delay = 30
       if (line.includes('SYSTEM SECURE')) delay = 100
-      
+
       if (line.trim() === '') delay = 8
-      
-      await new Promise(r => setTimeout(r, delay + Math.random() * 15))
+
+      await new Promise((r) => setTimeout(r, delay + Math.random() * 15))
     }
   },
 
   network: async (_args, _write, writeln) => {
     const logs = await generateNetworkTestLogs()
-    
+
     for (const line of logs) {
       writeln(line)
-      
+
       // Dynamic delay to simulate realistic network testing
       let delay = 15
-      
+
       if (line.includes('[PHASE 1]')) delay = 30
       if (line.includes('[PHASE 2]')) delay = 25
       if (line.includes('[PHASE 3]')) delay = 30
@@ -557,10 +575,10 @@ export const commandHandlers: CommandMap = {
       if (line.includes('progress') || line.includes('[')) delay = 50
       if (line.includes('NETWORK HEALTHY')) delay = 100
       if (line.includes('╔') || line.includes('╚')) delay = 60
-      
+
       if (line.trim() === '') delay = 8
-      
-      await new Promise(r => setTimeout(r, delay + Math.random() * 15))
+
+      await new Promise((r) => setTimeout(r, delay + Math.random() * 15))
     }
   },
 
@@ -572,11 +590,15 @@ export const commandHandlers: CommandMap = {
       window.openPerformanceDashboard()
       writeln(`${ANSICode.green}✓ Performance Dashboard opened${ANSICode.reset}`)
       writeln('')
-      writeln(`${ANSICode.gray}Monitor real-time metrics, view performance issues,${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.gray}Monitor real-time metrics, view performance issues,${ANSICode.reset}`
+      )
       writeln(`${ANSICode.gray}and receive optimization recommendations.${ANSICode.reset}`)
     } else {
       // Fallback: show text-based performance info
-      writeln(`${ANSICode.yellow}[!] GUI Dashboard not available, showing text summary...${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.yellow}[!] GUI Dashboard not available, showing text summary...${ANSICode.reset}`
+      )
       writeln('')
 
       const mem = window.performance?.memory
@@ -595,7 +617,9 @@ export const commandHandlers: CommandMap = {
       writeln('  - Close unused tabs to free memory')
       writeln('  - Reduce font size for better rendering')
       writeln('')
-      writeln(`${ANSICode.yellow}Tip: Use the desktop version for full GUI dashboard${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.yellow}Tip: Use the desktop version for full GUI dashboard${ANSICode.reset}`
+      )
     }
   },
 
@@ -610,13 +634,15 @@ export const commandHandlers: CommandMap = {
 
   ls: (_args, _write, writeln) => {
     const path = _args[0] || ''
-    
+
     try {
       // 检查路径是否存在
       if (path) {
         const node = filesystem.getNodeByPath(path)
         if (!node) {
-          writeln(`${ANSICode.red}ls: cannot access '${path}': No such file or directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}ls: cannot access '${path}': No such file or directory${ANSICode.reset}`
+          )
           return
         }
         if (node.type !== 'directory') {
@@ -624,19 +650,19 @@ export const commandHandlers: CommandMap = {
           return
         }
       }
-      
+
       const files = filesystem.listDirectory(path)
-      
+
       if (files.length === 0) {
         writeln(`${ANSICode.gray}total 0${ANSICode.reset}`)
         return
       }
-      
+
       // 计算总大小
       const totalSize = files.reduce((sum, file) => sum + file.size, 0)
       writeln(`${ANSICode.gray}total ${Math.ceil(totalSize / 1024)}${ANSICode.reset}`)
-      
-      files.forEach(file => {
+
+      files.forEach((file) => {
         const permissions = [
           file.type === 'directory' ? 'd' : '-',
           file.permissions.user.read ? 'r' : '-',
@@ -647,17 +673,20 @@ export const commandHandlers: CommandMap = {
           file.permissions.group.execute ? 'x' : '-',
           file.permissions.others.read ? 'r' : '-',
           file.permissions.others.write ? 'w' : '-',
-          file.permissions.others.execute ? 'x' : '-'
+          file.permissions.others.execute ? 'x' : '-',
         ].join('')
-        
+
         const size = file.size.toString().padStart(10)
         const mtime = new Date(file.mtime).toLocaleString()
-        const name = file.type === 'directory' ? `${ANSICode.blue}${file.name}/${ANSICode.reset}` : file.name
-        
+        const name =
+          file.type === 'directory' ? `${ANSICode.blue}${file.name}/${ANSICode.reset}` : file.name
+
         writeln(`${permissions} ${file.owner} ${file.group} ${size} ${mtime} ${name}`)
       })
     } catch (error) {
-      writeln(`${ANSICode.red}ls: error reading directory '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}ls: error reading directory '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
@@ -671,26 +700,28 @@ export const commandHandlers: CommandMap = {
       writeln(`${ANSICode.yellow}Usage: cd <path>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       const node = filesystem.getNodeByPath(path)
       if (!node) {
         writeln(`${ANSICode.red}cd: ${path}: No such file or directory${ANSICode.reset}`)
         return
       }
-      
+
       if (node.type !== 'directory') {
         writeln(`${ANSICode.red}cd: ${path}: Not a directory${ANSICode.reset}`)
         return
       }
-      
+
       if (filesystem.changeDirectory(path)) {
         // 目录更改成功，不输出任何内容
       } else {
         writeln(`${ANSICode.red}cd: ${path}: Permission denied${ANSICode.reset}`)
       }
     } catch (error) {
-      writeln(`${ANSICode.red}cd: error changing directory '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}cd: error changing directory '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
@@ -704,76 +735,92 @@ export const commandHandlers: CommandMap = {
       writeln(`${ANSICode.yellow}Usage: mkdir <directory>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 检查父目录是否存在
-      const parts = dirPath.split('/').filter(p => p !== '')
+      const parts = dirPath.split('/').filter((p) => p !== '')
       parts.pop()
       const parentPath = parts.join('/')
-      
+
       if (parentPath) {
         const parentNode = filesystem.getNodeByPath(parentPath)
         if (!parentNode) {
-          writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': No such file or directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}mkdir: cannot create directory '${dirPath}': No such file or directory${ANSICode.reset}`
+          )
           return
         }
         if (parentNode.type !== 'directory') {
-          writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': Not a directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}mkdir: cannot create directory '${dirPath}': Not a directory${ANSICode.reset}`
+          )
           return
         }
       }
-      
+
       // 检查目录是否已存在
       const existingNode = filesystem.getNodeByPath(dirPath)
       if (existingNode) {
-        writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': File exists${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}mkdir: cannot create directory '${dirPath}': File exists${ANSICode.reset}`
+        )
         return
       }
-      
+
       if (filesystem.createDirectory(dirPath)) {
         writeln(`${ANSICode.green}Created directory: ${dirPath}${ANSICode.reset}`)
       } else {
-        writeln(`${ANSICode.red}mkdir: cannot create directory '${dirPath}': Permission denied${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}mkdir: cannot create directory '${dirPath}': Permission denied${ANSICode.reset}`
+        )
       }
     } catch (error) {
-      writeln(`${ANSICode.red}mkdir: error creating directory '${dirPath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}mkdir: error creating directory '${dirPath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   rm: (_args, _write, writeln) => {
     const path = _args[0]
     const recursive = _args.includes('-r') || _args.includes('-rf')
-    
+
     if (!path || path.startsWith('-')) {
       writeln(`${ANSICode.yellow}Usage: rm [-r] <file|directory>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       const node = filesystem.getNodeByPath(path)
       if (!node) {
-        writeln(`${ANSICode.red}rm: cannot remove '${path}': No such file or directory${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}rm: cannot remove '${path}': No such file or directory${ANSICode.reset}`
+        )
         return
       }
-      
+
       // 检查是否是目录且没有递归选项
       if (node.type === 'directory' && !recursive) {
         // 检查目录是否为空
         const children = Object.keys(node.children || {})
         if (children.length > 0) {
           writeln(`${ANSICode.red}rm: cannot remove '${path}': Is a directory${ANSICode.reset}`)
-          writeln(`${ANSICode.gray}Use 'rm -r ${path}' to remove directories and their contents${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.gray}Use 'rm -r ${path}' to remove directories and their contents${ANSICode.reset}`
+          )
           return
         }
       }
-      
+
       if (filesystem.deleteNode(path)) {
         writeln(`${ANSICode.green}Removed: ${path}${ANSICode.reset}`)
       } else {
         writeln(`${ANSICode.red}rm: cannot remove '${path}': Permission denied${ANSICode.reset}`)
       }
     } catch (error) {
-      writeln(`${ANSICode.red}rm: error removing '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}rm: error removing '${path}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
@@ -783,19 +830,19 @@ export const commandHandlers: CommandMap = {
       writeln(`${ANSICode.yellow}Usage: cat <file>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       const node = filesystem.getNodeByPath(filePath)
       if (!node) {
         writeln(`${ANSICode.red}cat: ${filePath}: No such file or directory${ANSICode.reset}`)
         return
       }
-      
+
       if (node.type === 'directory') {
         writeln(`${ANSICode.red}cat: ${filePath}: Is a directory${ANSICode.reset}`)
         return
       }
-      
+
       const content = filesystem.readFile(filePath)
       if (content !== null) {
         writeln(content)
@@ -803,7 +850,9 @@ export const commandHandlers: CommandMap = {
         writeln(`${ANSICode.red}cat: ${filePath}: Permission denied${ANSICode.reset}`)
       }
     } catch (error) {
-      writeln(`${ANSICode.red}cat: error reading '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}cat: error reading '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
@@ -812,11 +861,11 @@ export const commandHandlers: CommandMap = {
       writeln('')
       return
     }
-    
+
     // 解析重定向操作符
     let redirectIndex = -1
     let appendMode = false
-    
+
     for (let i = 0; i < _args.length; i++) {
       if (_args[i] === '>' || _args[i] === '>>') {
         redirectIndex = i
@@ -824,26 +873,28 @@ export const commandHandlers: CommandMap = {
         break
       }
     }
-    
+
     if (redirectIndex !== -1) {
       const text = _args.slice(0, redirectIndex).join(' ')
       const filePath = _args[redirectIndex + 1]
-      
+
       if (!filePath) {
         writeln(`${ANSICode.red}echo: missing file operand${ANSICode.reset}`)
         return
       }
-      
+
       // 检查文件是否存在
       const existingContent = filesystem.readFile(filePath)
-      
+
       if (appendMode && existingContent !== null) {
         // 追加模式
         const newContent = existingContent + (existingContent.endsWith('\n') ? '' : '\n') + text
         if (filesystem.writeFile(filePath, newContent)) {
           // 重定向成功，不输出任何内容
         } else {
-          writeln(`${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`
+          )
         }
       } else {
         // 覆盖模式或创建新文件
@@ -852,14 +903,18 @@ export const commandHandlers: CommandMap = {
           if (filesystem.writeFile(filePath, text)) {
             // 重定向成功，不输出任何内容
           } else {
-            writeln(`${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`)
+            writeln(
+              `${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`
+            )
           }
         } else {
           // 文件不存在，创建新文件
           if (filesystem.createFile(filePath, text)) {
             // 重定向成功，不输出任何内容
           } else {
-            writeln(`${ANSICode.red}echo: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`)
+            writeln(
+              `${ANSICode.red}echo: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`
+            )
           }
         }
       }
@@ -874,30 +929,36 @@ export const commandHandlers: CommandMap = {
       writeln(`${ANSICode.yellow}Usage: touch <file>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 检查父目录是否存在
-      const parts = filePath.split('/').filter(p => p !== '')
+      const parts = filePath.split('/').filter((p) => p !== '')
       parts.pop()
       const parentPath = parts.join('/')
-      
+
       if (parentPath) {
         const parentNode = filesystem.getNodeByPath(parentPath)
         if (!parentNode) {
-          writeln(`${ANSICode.red}touch: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}touch: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`
+          )
           return
         }
         if (parentNode.type !== 'directory') {
-          writeln(`${ANSICode.red}touch: cannot create file '${filePath}': Not a directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}touch: cannot create file '${filePath}': Not a directory${ANSICode.reset}`
+          )
           return
         }
       }
-      
+
       // 检查文件是否已存在
       const existingNode = filesystem.getNodeByPath(filePath)
       if (existingNode) {
         if (existingNode.type === 'directory') {
-          writeln(`${ANSICode.red}touch: cannot create file '${filePath}': Is a directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}touch: cannot create file '${filePath}': Is a directory${ANSICode.reset}`
+          )
           return
         }
         // 文件已存在，更新修改时间
@@ -905,130 +966,160 @@ export const commandHandlers: CommandMap = {
         writeln(`${ANSICode.green}Updated: ${filePath}${ANSICode.reset}`)
         return
       }
-      
+
       if (filesystem.createFile(filePath)) {
         writeln(`${ANSICode.green}Created: ${filePath}${ANSICode.reset}`)
       } else {
-        writeln(`${ANSICode.red}touch: cannot create file '${filePath}': Permission denied${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}touch: cannot create file '${filePath}': Permission denied${ANSICode.reset}`
+        )
       }
     } catch (error) {
-      writeln(`${ANSICode.red}touch: error creating file '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}touch: error creating file '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   cp: (_args, _write, writeln) => {
     const source = _args[0]
     const destination = _args[1]
-    
+
     if (!source || !destination) {
       writeln(`${ANSICode.yellow}Usage: cp <source> <destination>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 检查源文件是否存在
       const sourceNode = filesystem.getNodeByPath(source)
       if (!sourceNode) {
-        writeln(`${ANSICode.red}cp: cannot stat '${source}': No such file or directory${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}cp: cannot stat '${source}': No such file or directory${ANSICode.reset}`
+        )
         return
       }
-      
+
       // 检查目标父目录是否存在
-      const destParts = destination.split('/').filter(p => p !== '')
+      const destParts = destination.split('/').filter((p) => p !== '')
       destParts.pop()
       const destParentPath = destParts.join('/')
-      
+
       if (destParentPath) {
         const destParentNode = filesystem.getNodeByPath(destParentPath)
         if (!destParentNode) {
-          writeln(`${ANSICode.red}cp: cannot copy to '${destination}': No such file or directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}cp: cannot copy to '${destination}': No such file or directory${ANSICode.reset}`
+          )
           return
         }
         if (destParentNode.type !== 'directory') {
-          writeln(`${ANSICode.red}cp: cannot copy to '${destination}': Not a directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}cp: cannot copy to '${destination}': Not a directory${ANSICode.reset}`
+          )
           return
         }
       }
-      
+
       // 检查目标是否已存在
       const existingNode = filesystem.getNodeByPath(destination)
       if (existingNode) {
         writeln(`${ANSICode.red}cp: cannot copy to '${destination}': File exists${ANSICode.reset}`)
         return
       }
-      
+
       if (filesystem.copyNode(source, destination)) {
         writeln(`${ANSICode.green}Copied ${source} to ${destination}${ANSICode.reset}`)
       } else {
-        writeln(`${ANSICode.red}cp: cannot copy '${source}' to '${destination}': Permission denied${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}cp: cannot copy '${source}' to '${destination}': Permission denied${ANSICode.reset}`
+        )
       }
     } catch (error) {
-      writeln(`${ANSICode.red}cp: error copying '${source}' to '${destination}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}cp: error copying '${source}' to '${destination}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   mv: (_args, _write, writeln) => {
     const source = _args[0]
     const destination = _args[1]
-    
+
     if (!source || !destination) {
       writeln(`${ANSICode.yellow}Usage: mv <source> <destination>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 检查源文件是否存在
       const sourceNode = filesystem.getNodeByPath(source)
       if (!sourceNode) {
-        writeln(`${ANSICode.red}mv: cannot stat '${source}': No such file or directory${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}mv: cannot stat '${source}': No such file or directory${ANSICode.reset}`
+        )
         return
       }
-      
+
       // 检查目标父目录是否存在
-      const destParts = destination.split('/').filter(p => p !== '')
+      const destParts = destination.split('/').filter((p) => p !== '')
       destParts.pop()
       const destParentPath = destParts.join('/')
-      
+
       if (destParentPath) {
         const destParentNode = filesystem.getNodeByPath(destParentPath)
         if (!destParentNode) {
-          writeln(`${ANSICode.red}mv: cannot move to '${destination}': No such file or directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}mv: cannot move to '${destination}': No such file or directory${ANSICode.reset}`
+          )
           return
         }
         if (destParentNode.type !== 'directory') {
-          writeln(`${ANSICode.red}mv: cannot move to '${destination}': Not a directory${ANSICode.reset}`)
+          writeln(
+            `${ANSICode.red}mv: cannot move to '${destination}': Not a directory${ANSICode.reset}`
+          )
           return
         }
       }
-      
+
       if (filesystem.moveNode(source, destination)) {
         writeln(`${ANSICode.green}Moved ${source} to ${destination}${ANSICode.reset}`)
       } else {
-        writeln(`${ANSICode.red}mv: cannot move '${source}' to '${destination}': Permission denied${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}mv: cannot move '${source}' to '${destination}': Permission denied${ANSICode.reset}`
+        )
       }
     } catch (error) {
-      writeln(`${ANSICode.red}mv: error moving '${source}' to '${destination}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}mv: error moving '${source}' to '${destination}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   uname: (_args, _write, writeln) => {
     const all = _args.includes('-a')
     if (all) {
-      writeln(`Linux scp-terminal 5.15.0-100-generic #110-Ubuntu SMP Wed Jun 14 15:30:30 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux`)
+      writeln(
+        `Linux scp-terminal 5.15.0-100-generic #110-Ubuntu SMP Wed Jun 14 15:30:30 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux`
+      )
     } else {
       writeln(`Linux`)
     }
   },
 
   df: (_args, _write, writeln) => {
-    writeln(`${ANSICode.green}Filesystem     1K-blocks    Used Available Use% Mounted on${ANSICode.reset}`)
+    writeln(
+      `${ANSICode.green}Filesystem     1K-blocks    Used Available Use% Mounted on${ANSICode.reset}`
+    )
     writeln(`/dev/sda1       20971520  524288  20447232   3% /`)
     writeln(`tmpfs            1048576       0   1048576   0% /dev/shm`)
     writeln(`tmpfs             524288    1024    523264   1% /run`)
   },
 
   free: (_args, _write, writeln) => {
-    writeln(`${ANSICode.green}              total        used        free      shared  buff/cache   available${ANSICode.reset}`)
+    writeln(
+      `${ANSICode.green}              total        used        free      shared  buff/cache   available${ANSICode.reset}`
+    )
     writeln(`Mem:        4194304      524288     3145728        8192      524288     3670016`)
     writeln(`Swap:       2097152           0     2097152`)
   },
@@ -1042,12 +1133,12 @@ export const commandHandlers: CommandMap = {
     const path = _args[0] || ''
     const patternIndex = _args.indexOf('-name')
     const pattern = patternIndex !== -1 ? _args[patternIndex + 1] : ''
-    
+
     if (!pattern) {
       writeln(`${ANSICode.yellow}Usage: find <path> -name <pattern>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 检查起始路径是否存在
       if (path) {
@@ -1061,29 +1152,31 @@ export const commandHandlers: CommandMap = {
           return
         }
       }
-      
+
       const results = filesystem.findFiles(pattern, path)
-      
+
       if (results.length === 0) {
         writeln(`${ANSICode.gray}No files matching '${pattern}' found${ANSICode.reset}`)
         return
       }
-      
-      results.forEach(file => writeln(file))
+
+      results.forEach((file) => writeln(file))
     } catch (error) {
-      writeln(`${ANSICode.red}find: error searching for files: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}find: error searching for files: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   grep: (_args, _write, writeln) => {
     const pattern = _args[0]
     const files = _args.slice(1)
-    
+
     if (!pattern || files.length === 0) {
       writeln(`${ANSICode.yellow}Usage: grep <pattern> <file>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 验证所有文件是否存在且可读
       const validFiles: string[] = []
@@ -1099,64 +1192,72 @@ export const commandHandlers: CommandMap = {
         }
         validFiles.push(file)
       }
-      
+
       if (validFiles.length === 0) {
         return
       }
-      
+
       const results = filesystem.grepContent(pattern, validFiles)
-      
+
       if (results.length === 0) {
         writeln(`${ANSICode.gray}No matches found for '${pattern}'${ANSICode.reset}`)
         return
       }
-      
-      results.forEach(result => {
-        result.lines.forEach(line => {
+
+      results.forEach((result) => {
+        result.lines.forEach((line) => {
           // 高亮匹配的部分
           const highlightedLine = line.replace(
             new RegExp(pattern, 'gi'),
-            match => `${ANSICode.red}${match}${ANSICode.reset}`
+            (match) => `${ANSICode.red}${match}${ANSICode.reset}`
           )
           writeln(`${ANSICode.green}${result.file}:${ANSICode.reset}${highlightedLine}`)
         })
       })
     } catch (error) {
-      writeln(`${ANSICode.red}grep: error searching content: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}grep: error searching content: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
   chmod: (_args, _write, writeln) => {
     const permissions = _args[0]
     const filePath = _args[1]
-    
+
     if (!permissions || !filePath) {
       writeln(`${ANSICode.yellow}Usage: chmod <permissions> <file>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 检查文件是否存在
       const node = filesystem.getNodeByPath(filePath)
       if (!node) {
-        writeln(`${ANSICode.red}chmod: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}chmod: cannot access '${filePath}': No such file or directory${ANSICode.reset}`
+        )
         return
       }
-      
+
       // 简化的权限设置
       const newPermissions = {
         user: { read: true, write: true, execute: true },
         group: { read: true, write: false, execute: true },
-        others: { read: true, write: false, execute: false }
+        others: { read: true, write: false, execute: false },
       }
-      
+
       if (filesystem.changePermissions(filePath, newPermissions)) {
         writeln(`${ANSICode.green}Changed permissions for ${filePath}${ANSICode.reset}`)
       } else {
-        writeln(`${ANSICode.red}chmod: cannot change permissions of '${filePath}': Permission denied${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}chmod: cannot change permissions of '${filePath}': Permission denied${ANSICode.reset}`
+        )
       }
     } catch (error) {
-      writeln(`${ANSICode.red}chmod: error changing permissions of '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}chmod: error changing permissions of '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   },
 
@@ -1165,35 +1266,43 @@ export const commandHandlers: CommandMap = {
   chown: (_args, _write, writeln) => {
     const ownerGroup = _args[0]
     const filePath = _args[1]
-    
+
     if (!ownerGroup || !filePath) {
       writeln(`${ANSICode.yellow}Usage: chown <owner>:<group> <file>${ANSICode.reset}`)
       return
     }
-    
+
     const [owner, group] = ownerGroup.split(':')
     if (!owner || !group) {
       writeln(`${ANSICode.yellow}Usage: chown <owner>:<group> <file>${ANSICode.reset}`)
       return
     }
-    
+
     try {
       // 检查文件是否存在
       const node = filesystem.getNodeByPath(filePath)
       if (!node) {
-        writeln(`${ANSICode.red}chown: cannot access '${filePath}': No such file or directory${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}chown: cannot access '${filePath}': No such file or directory${ANSICode.reset}`
+        )
         return
       }
-      
+
       if (filesystem.changeOwner(filePath, owner, group)) {
-        writeln(`${ANSICode.green}Changed owner for ${filePath} to ${owner}:${group}${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.green}Changed owner for ${filePath} to ${owner}:${group}${ANSICode.reset}`
+        )
       } else {
-        writeln(`${ANSICode.red}chown: cannot change ownership of '${filePath}': Permission denied${ANSICode.reset}`)
+        writeln(
+          `${ANSICode.red}chown: cannot change ownership of '${filePath}': Permission denied${ANSICode.reset}`
+        )
       }
     } catch (error) {
-      writeln(`${ANSICode.red}chown: error changing ownership of '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      writeln(
+        `${ANSICode.red}chown: error changing ownership of '${filePath}': ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
-  }
+  },
 }
 
 export function getCommandHandler(command: CommandType): CommandHandler | null {

@@ -24,11 +24,29 @@ const iconName = computed<IconName>(() => {
 
   const ext = props.name.split('.').pop()?.toLowerCase() || ''
   const iconMap: Record<string, IconName> = {
-    ts: 'file', js: 'file', json: 'file', html: 'file', css: 'file',
-    vue: 'file', py: 'file', rs: 'file', go: 'file', sh: 'file',
-    md: 'edit', txt: 'file', log: 'file', csv: 'list',
-    png: 'file', jpg: 'file', jpeg: 'file', gif: 'file', svg: 'file', webp: 'file',
-    zip: 'file', tar: 'file', gz: 'file',
+    ts: 'file',
+    js: 'file',
+    json: 'file',
+    html: 'file',
+    css: 'file',
+    vue: 'file',
+    py: 'file',
+    rs: 'file',
+    go: 'file',
+    sh: 'file',
+    md: 'edit',
+    txt: 'file',
+    log: 'file',
+    csv: 'list',
+    png: 'file',
+    jpg: 'file',
+    jpeg: 'file',
+    gif: 'file',
+    svg: 'file',
+    webp: 'file',
+    zip: 'file',
+    tar: 'file',
+    gz: 'file',
   }
 
   return iconMap[ext] || 'file'

@@ -5,11 +5,11 @@
       <div class="pc-login-screen__gradient" />
       <div class="pc-login-screen__pattern">
         <svg width="100%" height="100%" viewBox="0 0 800 800" fill="none">
-          <circle cx="400" cy="400" r="360" :stroke="patternColor1" stroke-width="1"/>
-          <circle cx="400" cy="400" r="240" :stroke="patternColor2" stroke-width="1"/>
-          <circle cx="400" cy="400" r="120" :stroke="patternColor3" stroke-width="1"/>
-          <line x1="0" y1="400" x2="800" y2="400" :stroke="patternColor3" stroke-width="0.5"/>
-          <line x1="400" y1="0" x2="400" y2="800" :stroke="patternColor3" stroke-width="0.5"/>
+          <circle cx="400" cy="400" r="360" :stroke="patternColor1" stroke-width="1" />
+          <circle cx="400" cy="400" r="240" :stroke="patternColor2" stroke-width="1" />
+          <circle cx="400" cy="400" r="120" :stroke="patternColor3" stroke-width="1" />
+          <line x1="0" y1="400" x2="800" y2="400" :stroke="patternColor3" stroke-width="0.5" />
+          <line x1="400" y1="0" x2="400" y2="800" :stroke="patternColor3" stroke-width="0.5" />
         </svg>
       </div>
     </div>
@@ -24,10 +24,30 @@
         <div class="pc-login-screen__logo-section">
           <div class="pc-login-screen__logo-container">
             <!-- SCP Foundation Logo (larger for desktop) -->
-            <svg class="pc-login-screen__logo" width="100" height="100" viewBox="0 0 100 100" fill="none">
-              <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="2.5" opacity="0.6"/>
-              <circle cx="50" cy="50" r="35" stroke="currentColor" stroke-width="2" opacity="0.4"/>
-              <circle cx="50" cy="50" r="25" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+            <svg
+              class="pc-login-screen__logo"
+              width="100"
+              height="100"
+              viewBox="0 0 100 100"
+              fill="none"
+            >
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                stroke="currentColor"
+                stroke-width="2.5"
+                opacity="0.6"
+              />
+              <circle cx="50" cy="50" r="35" stroke="currentColor" stroke-width="2" opacity="0.4" />
+              <circle
+                cx="50"
+                cy="50"
+                r="25"
+                stroke="currentColor"
+                stroke-width="1.5"
+                opacity="0.2"
+              />
               <text
                 x="50"
                 y="60"
@@ -37,7 +57,9 @@
                 font-weight="900"
                 fill="currentColor"
                 letter-spacing="3"
-              >SCP</text>
+              >
+                SCP
+              </text>
             </svg>
           </div>
         </div>
@@ -58,7 +80,10 @@
                 v-model="nickname"
                 type="text"
                 class="pc-login-screen__input"
-                :class="{ 'pc-login-screen__input--error': error, 'pc-login-screen__input--focused': isFocused }"
+                :class="{
+                  'pc-login-screen__input--error': error,
+                  'pc-login-screen__input--focused': isFocused,
+                }"
                 placeholder="工作代号 / 昵称"
                 maxlength="20"
                 autocomplete="off"
@@ -69,9 +94,18 @@
                 @blur="isFocused = false"
                 @input="onInputChange"
               />
-              <div v-if="nickname && !error" class="pc-login-screen__input-clear" @click="clearInput">
+              <div
+                v-if="nickname && !error"
+                class="pc-login-screen__input-clear"
+                @click="clearInput"
+              >
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-                  <path d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                  <path
+                    d="M13.5 4.5L4.5 13.5M4.5 4.5l9 9"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </div>
             </div>
@@ -79,9 +113,17 @@
             <transition name="error-slide">
               <p v-if="error" class="pc-login-screen__error">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2"/>
-                  <line x1="7" y1="4" x2="7" y2="7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                  <circle cx="7" cy="10" r="0.6" fill="currentColor"/>
+                  <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.2" />
+                  <line
+                    x1="7"
+                    y1="4"
+                    x2="7"
+                    y2="7.5"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                    stroke-linecap="round"
+                  />
+                  <circle cx="7" cy="10" r="0.6" fill="currentColor" />
                 </svg>
                 {{ error }}
               </p>
@@ -90,7 +132,10 @@
 
           <!-- Character Count & Validation Hint -->
           <div class="pc-login-screen__meta-row">
-            <span class="pc-login-screen__char-count" :class="{ 'pc-login-screen__char-count--warning': nickname.length >= 18 }">
+            <span
+              class="pc-login-screen__char-count"
+              :class="{ 'pc-login-screen__char-count--warning': nickname.length >= 18 }"
+            >
               {{ nickname.length }}/20 字符
             </span>
             <span v-if="!isValid && nickname.length > 0" class="pc-login-screen__hint">
@@ -102,19 +147,47 @@
           <button
             type="submit"
             class="pc-login-screen__button"
-            :class="{ 'pc-login-screen__button--loading': isLoading, 'pc-login-screen__button--disabled': !isValid || isLoading }"
+            :class="{
+              'pc-login-screen__button--loading': isLoading,
+              'pc-login-screen__button--disabled': !isValid || isLoading,
+            }"
             :disabled="!isValid || isLoading"
           >
             <span v-if="!isLoading" class="pc-login-screen__button-text">
               进入系统
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M9 3l5 5m0 0l-5 5m5-5H3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M9 3l5 5m0 0l-5 5m5-5H3"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </span>
             <span v-else class="pc-login-screen__button-loading">
-              <svg class="pc-login-screen__spinner" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
-                <path d="M10 2a8 8 0 0 1 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <svg
+                class="pc-login-screen__spinner"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  opacity="0.25"
+                />
+                <path
+                  d="M10 2a8 8 0 0 1 8 8"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
               </svg>
               正在验证身份...
             </span>
@@ -233,7 +306,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-base, #1C1C1E);
+  background: var(--gui-bg-base, #1c1c1e);
 }
 
 /* ── Background Layer ───────────────────────────────────────────── */
@@ -241,7 +314,7 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--gui-bg-base, #1C1C1E);
+  background: var(--gui-bg-base, #1c1c1e);
   overflow: hidden;
 }
 
@@ -249,9 +322,21 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 50% 30%, var(--gui-wallpaper-gradient1, rgba(142, 142, 147, 0.08)) 0%, transparent 60%),
-    radial-gradient(ellipse at 30% 70%, var(--gui-wallpaper-gradient2, rgba(142, 142, 147, 0.05)) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, var(--gui-wallpaper-gradient3, rgba(63, 63, 66, 0.03)) 0%, transparent 40%);
+    radial-gradient(
+      ellipse at 50% 30%,
+      var(--gui-wallpaper-gradient1, rgba(142, 142, 147, 0.08)) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 30% 70%,
+      var(--gui-wallpaper-gradient2, rgba(142, 142, 147, 0.05)) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 70% 80%,
+      var(--gui-wallpaper-gradient3, rgba(63, 63, 66, 0.03)) 0%,
+      transparent 40%
+    );
 }
 
 .pc-login-screen__pattern {
@@ -294,8 +379,8 @@ onMounted(() => {
   border-radius: var(--radius-squircle-2xl, 24px);
   border: 1px solid rgba(255, 255, 255, 0.08); /* glassBorder */
   box-shadow:
-    0 24px 48px rgba(0, 0, 0, 0.5), /* xl shadow */
-    0 8px 16px rgba(0, 0, 0, 0.3),
+    0 24px 48px rgba(0, 0, 0, 0.5),
+    /* xl shadow */ 0 8px 16px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
@@ -307,11 +392,7 @@ onMounted(() => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(
-    ellipse at 50% 30%,
-    rgba(142, 142, 147, 0.04) 0%,
-    transparent 60%
-  );
+  background: radial-gradient(ellipse at 50% 30%, rgba(142, 142, 147, 0.04) 0%, transparent 60%);
   pointer-events: none;
   animation: card-glow-shift 8s ease-in-out infinite alternate;
 }
@@ -353,7 +434,7 @@ onMounted(() => {
 }
 
 .pc-login-screen__logo {
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   filter: drop-shadow(0 0 30px rgba(142, 142, 147, 0.35));
   animation: pc-logo-glow 4s ease-in-out infinite;
   transition: filter var(--gui-transition-base, 200ms ease);
@@ -364,7 +445,8 @@ onMounted(() => {
 }
 
 @keyframes pc-logo-glow {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 30px rgba(142, 142, 147, 0.35));
   }
   50% {
@@ -375,12 +457,19 @@ onMounted(() => {
 /* ── Typography ─────────────────────────────────────────────────── */
 .pc-login-screen__title {
   margin: 0 0 var(--gui-spacing-sm, 8px);
-  font-family: var(--gui-font-sans, -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif);
+  font-family: var(
+    --gui-font-sans,
+    -apple-system,
+    'SF Pro Display',
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
   font-size: var(--gui-font-3xl, 28px);
   font-weight: var(--gui-font-weight-bold, 700);
   letter-spacing: 0.02em;
   text-align: center;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   animation: title-fade-up 0.5s ease 0.25s both;
 }
 
@@ -399,7 +488,7 @@ onMounted(() => {
   margin: 0 0 var(--gui-spacing-3xl, 48px);
   font-size: var(--gui-font-base, 13px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   text-align: center;
   letter-spacing: 0.01em;
   animation: subtitle-fade-up 0.5s ease 0.32s both;
@@ -422,7 +511,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--gui-spacing-md, 12px);
-  animation: form-fade-up 0.5s var(--ease-ios-gentle, cubic-bezier(0.25, 0.46, 0.45, 0.94)) 0.4s both;
+  animation: form-fade-up 0.5s var(--ease-ios-gentle, cubic-bezier(0.25, 0.46, 0.45, 0.94)) 0.4s
+    both;
 }
 
 @keyframes form-fade-up {
@@ -448,7 +538,7 @@ onMounted(() => {
   margin-bottom: var(--gui-spacing-xs, 4px);
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -464,10 +554,17 @@ onMounted(() => {
   height: 56px; /* Larger than mobile */
   padding: 0 var(--gui-spacing-lg, 20px);
   padding-right: 48px; /* Space for clear button */
-  font-family: var(--gui-font-sans, -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif);
+  font-family: var(
+    --gui-font-sans,
+    -apple-system,
+    'SF Pro Display',
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   background: rgba(255, 255, 255, 0.05);
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--gui-radius-lg, 12px);
@@ -488,19 +585,19 @@ onMounted(() => {
 .pc-login-screen__input--focused,
 .pc-login-screen__input:focus {
   background: rgba(255, 255, 255, 0.09);
-  border-color: var(--gui-accent, #8E8E93);
+  border-color: var(--gui-accent, #8e8e93);
   box-shadow:
     0 0 0 4px rgba(142, 142, 147, 0.12),
     0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 .pc-login-screen__input--error {
-  border-color: var(--gui-error, #FF3B30);
+  border-color: var(--gui-error, #ff3b30);
   background: rgba(255, 59, 48, 0.04);
 }
 
 .pc-login-screen__input--error:focus {
-  border-color: var(--gui-error, #FF3B30);
+  border-color: var(--gui-error, #ff3b30);
   box-shadow:
     0 0 0 4px rgba(255, 59, 48, 0.12),
     0 6px 20px rgba(0, 0, 0, 0.25);
@@ -524,7 +621,7 @@ onMounted(() => {
 }
 
 .pc-login-screen__input-clear:hover {
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   background: rgba(255, 255, 255, 0.12);
   transform: translateY(-50%) scale(1.05);
 }
@@ -542,7 +639,7 @@ onMounted(() => {
   padding: 0 var(--gui-spacing-sm, 8px);
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-error, #FF3B30);
+  color: var(--gui-error, #ff3b30);
   line-height: var(--gui-line-height-tight, 1.3);
 }
 
@@ -585,7 +682,7 @@ onMounted(() => {
 }
 
 .pc-login-screen__char-count--warning {
-  color: var(--gui-warning, #FFCC00);
+  color: var(--gui-warning, #ffcc00);
 }
 
 .pc-login-screen__hint {
@@ -601,14 +698,21 @@ onMounted(() => {
   width: 100%;
   height: 56px; /* Larger than mobile */
   margin-top: var(--gui-spacing-lg, 20px);
-  font-family: var(--gui-font-sans, -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif);
+  font-family: var(
+    --gui-font-sans,
+    -apple-system,
+    'SF Pro Display',
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-semibold, 600);
   color: var(--gui-text-inverse, #000000);
   background: linear-gradient(
     135deg,
-    var(--gui-accent-hover, #AEAEB2) 0%,
-    var(--gui-accent, #8E8E93) 100%
+    var(--gui-accent-hover, #aeaeb2) 0%,
+    var(--gui-accent, #8e8e93) 100%
   );
   border: none;
   border-radius: var(--gui-radius-lg, 12px);
@@ -622,11 +726,7 @@ onMounted(() => {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.22) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, transparent 50%);
   opacity: 0;
   transition: opacity var(--gui-transition-fast, 120ms ease);
 }
@@ -638,31 +738,34 @@ onMounted(() => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.15),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
   transition: left 0.6s ease;
 }
 
-.pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(.pc-login-screen__button--loading) {
+.pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  ) {
   transform: translateY(-3px) scale(1.01);
   box-shadow:
     0 12px 32px rgba(142, 142, 147, 0.45),
     0 6px 12px rgba(0, 0, 0, 0.25);
 }
 
-.pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(.pc-login-screen__button--loading)::before {
+.pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  )::before {
   opacity: 1;
 }
 
-.pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(.pc-login-screen__button--loading)::after {
+.pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  )::after {
   left: 100%;
 }
 
-.pc-login-screen__button:active:not(.pc-login-screen__button--disabled):not(.pc-login-screen__button--loading) {
+.pc-login-screen__button:active:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  ) {
   transform: translateY(-1px) scale(0.99);
   box-shadow:
     0 6px 16px rgba(142, 142, 147, 0.35),
@@ -703,8 +806,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Card Footer ────────────────────────────────────────────────── */
@@ -718,8 +825,12 @@ onMounted(() => {
 }
 
 @keyframes footer-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .pc-login-card-footer__text {

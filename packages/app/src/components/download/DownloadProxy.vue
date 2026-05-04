@@ -4,7 +4,9 @@
       <div class="max-w-2xl mx-auto">
         <div class="mb-6">
           <h2 class="text-lg font-semibold mb-1">下载代理</h2>
-          <p class="text-sm text-gray-400">通过 Cloudflare Workers 代理下载文件，支持流式传输和速率控制</p>
+          <p class="text-sm text-gray-400">
+            通过 Cloudflare Workers 代理下载文件，支持流式传输和速率控制
+          </p>
         </div>
 
         <div v-if="store.error && !store.isDownloading" class="alert alert-error mb-4">
@@ -12,7 +14,12 @@
             <span class="text-red-400 shrink-0 mt-0.5">&#x26A0;</span>
             <div>
               <p class="text-sm text-red-300">{{ store.error }}</p>
-              <button class="text-xs text-red-400 hover:text-red-300 mt-1 underline" @click="store.clearError()">关闭</button>
+              <button
+                class="text-xs text-red-400 hover:text-red-300 mt-1 underline"
+                @click="store.clearError()"
+              >
+                关闭
+              </button>
             </div>
           </div>
         </div>
@@ -44,11 +51,16 @@
               class="text-xs text-gray-400 hover:text-gray-300 self-start flex items-center gap-1"
               @click="showAdvanced = !showAdvanced"
             >
-              <span class="transition-transform" :class="{ 'rotate-90': showAdvanced }">&#9654;</span>
+              <span class="transition-transform" :class="{ 'rotate-90': showAdvanced }"
+                >&#9654;</span
+              >
               高级选项
             </button>
 
-            <div v-if="showAdvanced" class="flex flex-wrap gap-4 bg-gray-800/50 rounded p-3 border border-gray-700/50">
+            <div
+              v-if="showAdvanced"
+              class="flex flex-wrap gap-4 bg-gray-800/50 rounded p-3 border border-gray-700/50"
+            >
               <div class="flex-1 min-w-[180px]">
                 <label class="block text-xs text-gray-400 mb-1">自定义文件名（可选）</label>
                 <input
@@ -110,14 +122,25 @@
           </div>
         </div>
 
-        <div v-if="store.downloadProgress && !store.isDownloading && store.downloadProgress.status === 'completed'" class="mb-4">
+        <div
+          v-if="
+            store.downloadProgress &&
+            !store.isDownloading &&
+            store.downloadProgress.status === 'completed'
+          "
+          class="mb-4"
+        >
           <div class="bg-green-900/30 border border-green-700/50 rounded-lg p-4">
             <div class="flex items-center justify-between">
               <div>
                 <p class="text-sm font-medium text-green-300">下载完成</p>
                 <p class="text-xs text-green-400/70 mt-0.5">
                   {{ store.downloadProgress.filename }} -
-                  {{ formatBytes(store.downloadProgress.totalBytes || store.downloadProgress.downloadedBytes) }}
+                  {{
+                    formatBytes(
+                      store.downloadProgress.totalBytes || store.downloadProgress.downloadedBytes
+                    )
+                  }}
                 </p>
               </div>
               <button
@@ -143,7 +166,9 @@
           </div>
 
           <div v-if="store.isLoadingHistory" class="text-center py-6">
-            <div class="inline-block w-5 h-5 border-2 border-gray-500 border-t-blue-400 rounded-full animate-spin"></div>
+            <div
+              class="inline-block w-5 h-5 border-2 border-gray-500 border-t-blue-400 rounded-full animate-spin"
+            ></div>
           </div>
 
           <div v-else-if="history.length === 0" class="text-center py-6">
@@ -158,11 +183,19 @@
             >
               <div class="flex items-start justify-between gap-2">
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm text-gray-200 truncate" :title="item.filename">{{ item.filename }}</p>
-                  <p class="text-xs text-gray-500 truncate mt-0.5" :title="item.url">{{ item.url }}</p>
+                  <p class="text-sm text-gray-200 truncate" :title="item.filename">
+                    {{ item.filename }}
+                  </p>
+                  <p class="text-xs text-gray-500 truncate mt-0.5" :title="item.url">
+                    {{ item.url }}
+                  </p>
                   <div class="flex items-center gap-3 mt-1.5">
-                    <span class="text-xs" :class="statusColor(item.status)">{{ statusLabel(item.status) }}</span>
-                    <span class="text-xs text-gray-500">{{ formatBytes(item.totalBytes || item.downloadedBytes) }}</span>
+                    <span class="text-xs" :class="statusColor(item.status)">{{
+                      statusLabel(item.status)
+                    }}</span>
+                    <span class="text-xs text-gray-500">{{
+                      formatBytes(item.totalBytes || item.downloadedBytes)
+                    }}</span>
                     <span class="text-xs text-gray-500">{{ formatTimeAgo(item.createdAt) }}</span>
                   </div>
                 </div>
@@ -221,19 +254,27 @@ const progressBarColor = computed(() => {
 
 function statusColor(status: string): string {
   switch (status) {
-    case 'completed': return 'text-green-400'
-    case 'failed': return 'text-red-400'
-    case 'cancelled': return 'text-yellow-400'
-    default: return 'text-gray-400'
+    case 'completed':
+      return 'text-green-400'
+    case 'failed':
+      return 'text-red-400'
+    case 'cancelled':
+      return 'text-yellow-400'
+    default:
+      return 'text-gray-400'
   }
 }
 
 function statusLabel(status: string): string {
   switch (status) {
-    case 'completed': return '已完成'
-    case 'failed': return '失败'
-    case 'cancelled': return '已取消'
-    default: return status
+    case 'completed':
+      return '已完成'
+    case 'failed':
+      return '失败'
+    case 'cancelled':
+      return '已取消'
+    default:
+      return status
   }
 }
 

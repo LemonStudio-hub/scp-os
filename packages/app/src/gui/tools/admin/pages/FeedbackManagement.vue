@@ -19,12 +19,7 @@
       </div>
     </div>
 
-    <DataTable
-      :columns="columns"
-      :data="feedbackList"
-      :loading="loading"
-      :selectable="false"
-    >
+    <DataTable :columns="columns" :data="feedbackList" :loading="loading" :selectable="false">
       <template #cell-status="{ row }">
         <select
           class="feedback-mgmt__status-select"
@@ -42,7 +37,7 @@
       <template #cell-upvotes="{ value }">
         <span class="feedback-mgmt__vote feedback-mgmt__vote--up">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 3L9 7H3L6 3Z" fill="currentColor"/>
+            <path d="M6 3L9 7H3L6 3Z" fill="currentColor" />
           </svg>
           {{ value ?? 0 }}
         </span>
@@ -50,7 +45,7 @@
       <template #cell-downvotes="{ value }">
         <span class="feedback-mgmt__vote feedback-mgmt__vote--down">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 9L3 5H9L6 9Z" fill="currentColor"/>
+            <path d="M6 9L3 5H9L6 9Z" fill="currentColor" />
           </svg>
           {{ value ?? 0 }}
         </span>
@@ -60,8 +55,18 @@
       </template>
       <template #cell-actions="{ row }">
         <div class="feedback-mgmt__cell-actions">
-          <button class="feedback-mgmt__action-btn feedback-mgmt__action-btn--view" @click.stop="openDetailModal(row)">查看</button>
-          <button class="feedback-mgmt__action-btn feedback-mgmt__action-btn--danger" @click.stop="openDeleteConfirm(row)">删除</button>
+          <button
+            class="feedback-mgmt__action-btn feedback-mgmt__action-btn--view"
+            @click.stop="openDetailModal(row)"
+          >
+            查看
+          </button>
+          <button
+            class="feedback-mgmt__action-btn feedback-mgmt__action-btn--danger"
+            @click.stop="openDeleteConfirm(row)"
+          >
+            删除
+          </button>
         </div>
       </template>
     </DataTable>
@@ -89,7 +94,9 @@
         </div>
         <div class="feedback-mgmt__detail-row">
           <span class="feedback-mgmt__detail-label">状态</span>
-          <span class="feedback-mgmt__detail-value">{{ statusLabels[detailTarget.status] ?? detailTarget.status }}</span>
+          <span class="feedback-mgmt__detail-value">{{
+            statusLabels[detailTarget.status] ?? detailTarget.status
+          }}</span>
         </div>
         <div class="feedback-mgmt__detail-row">
           <span class="feedback-mgmt__detail-label">时间</span>
@@ -97,7 +104,9 @@
         </div>
         <div class="feedback-mgmt__detail-row feedback-mgmt__detail-row--full">
           <span class="feedback-mgmt__detail-label">内容</span>
-          <p class="feedback-mgmt__detail-content">{{ detailTarget.content || detailTarget.description || '暂无详细内容' }}</p>
+          <p class="feedback-mgmt__detail-content">
+            {{ detailTarget.content || detailTarget.description || '暂无详细内容' }}
+          </p>
         </div>
       </div>
     </Modal>
@@ -162,7 +171,13 @@ function formatDate(val: string | number) {
   if (!val) return '-'
   const d = new Date(typeof val === 'number' ? val * 1000 : val)
   if (isNaN(d.getTime())) return String(val)
-  return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function onFilterChange() {
@@ -274,7 +289,7 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__select:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .feedback-mgmt__status-select {
@@ -290,22 +305,22 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__status--pending {
-  color: #FFCC00;
+  color: #ffcc00;
   border-color: rgba(255, 204, 0, 0.3);
 }
 
 .feedback-mgmt__status--in_progress {
-  color: #0A84FF;
+  color: #0a84ff;
   border-color: rgba(10, 132, 255, 0.3);
 }
 
 .feedback-mgmt__status--resolved {
-  color: #34C759;
+  color: #34c759;
   border-color: rgba(52, 199, 89, 0.3);
 }
 
 .feedback-mgmt__status--rejected {
-  color: #FF3B30;
+  color: #ff3b30;
   border-color: rgba(255, 59, 48, 0.3);
 }
 
@@ -318,11 +333,11 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__vote--up {
-  color: #34C759;
+  color: #34c759;
 }
 
 .feedback-mgmt__vote--down {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .feedback-mgmt__cell-actions {
@@ -347,7 +362,7 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__action-btn--view {
-  color: #0A84FF;
+  color: #0a84ff;
   border-color: rgba(10, 132, 255, 0.2);
 }
 
@@ -356,7 +371,7 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__action-btn--danger {
-  color: #FF3B30;
+  color: #ff3b30;
   border-color: rgba(255, 59, 48, 0.2);
 }
 

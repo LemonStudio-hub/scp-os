@@ -18,7 +18,7 @@ describe('CommandAutocompleteService', () => {
     it('should return matching commands for partial input', () => {
       const suggestions = service.getSuggestions('hel')
       expect(suggestions.length).toBeGreaterThan(0)
-      expect(suggestions.some(s => s.text === 'help')).toBe(true)
+      expect(suggestions.some((s) => s.text === 'help')).toBe(true)
     })
 
     it('should return argument suggestions for known command', () => {
@@ -30,13 +30,13 @@ describe('CommandAutocompleteService', () => {
     it('should return CN- prefix suggestions for info command', () => {
       const suggestions = service.getSuggestions('info CN-')
       expect(suggestions.length).toBeGreaterThan(0)
-      expect(suggestions.some(s => s.text.includes('CN-'))).toBe(true)
+      expect(suggestions.some((s) => s.text.includes('CN-'))).toBe(true)
     })
 
     it('should return shutdown argument suggestions', () => {
       const suggestions = service.getSuggestions('shutdown ')
       expect(suggestions.length).toBeGreaterThan(0)
-      expect(suggestions.some(s => s.text === 'now')).toBe(true)
+      expect(suggestions.some((s) => s.text === 'now')).toBe(true)
     })
 
     it('should return empty for unknown command with no partial match', () => {
@@ -48,12 +48,12 @@ describe('CommandAutocompleteService', () => {
   describe('fuzzy matching', () => {
     it('should match by subsequence', () => {
       const suggestions = service.getSuggestions('hlp')
-      expect(suggestions.some(s => s.text === 'help')).toBe(true)
+      expect(suggestions.some((s) => s.text === 'help')).toBe(true)
     })
 
     it('should prioritize prefix matches over fuzzy matches', () => {
       const suggestions = service.getSuggestions('he')
-      const helpIndex = suggestions.findIndex(s => s.text === 'help')
+      const helpIndex = suggestions.findIndex((s) => s.text === 'help')
       expect(helpIndex).toBeLessThan(suggestions.length)
     })
   })
@@ -64,10 +64,12 @@ describe('CommandAutocompleteService', () => {
     })
 
     it('should return single suggestion text directly', () => {
-      const result = service.formatSuggestions([{
-        text: 'help',
-        type: 'command',
-      }])
+      const result = service.formatSuggestions([
+        {
+          text: 'help',
+          type: 'command',
+        },
+      ])
       expect(result).toEqual(['help'])
     })
 
@@ -84,7 +86,7 @@ describe('CommandAutocompleteService', () => {
     it('should record and influence future suggestions', () => {
       service.recordChoice('he', 'help')
       const suggestions = service.getSuggestions('he')
-      const helpSuggestion = suggestions.find(s => s.text === 'help')
+      const helpSuggestion = suggestions.find((s) => s.text === 'help')
       expect(helpSuggestion).toBeDefined()
     })
   })
@@ -112,9 +114,7 @@ describe('CommandAutocompleteService', () => {
     })
 
     it('should wrap around index', () => {
-      const suggestions = [
-        { text: 'help', type: 'command' as const },
-      ]
+      const suggestions = [{ text: 'help', type: 'command' as const }]
       expect(service.getSuggestionAt(suggestions, 5)).toBe('help')
     })
 

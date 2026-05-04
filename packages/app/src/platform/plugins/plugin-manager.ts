@@ -12,7 +12,7 @@ import type {
   TypedPlugin,
   PluginStatus,
   PluginLoadResult,
-  PluginValidationResult
+  PluginValidationResult,
 } from './types'
 import { PluginStatus as Status } from './types'
 import { ExtensionRegistry, getGlobalExtensionRegistry } from '../extensions/extension-point'
@@ -59,7 +59,7 @@ export class PluginManager {
     this.config = {
       debug: config.debug ?? false,
       eventBus: config.eventBus ?? getGlobalEventBus(),
-      extensionRegistry: config.extensionRegistry ?? getGlobalExtensionRegistry()
+      extensionRegistry: config.extensionRegistry ?? getGlobalExtensionRegistry(),
     }
 
     this.eventBus = this.config.eventBus
@@ -78,7 +78,7 @@ export class PluginManager {
     if (this.plugins.has(plugin.name)) {
       return {
         success: false,
-        error: `Plugin ${plugin.name} is already registered`
+        error: `Plugin ${plugin.name} is already registered`,
       }
     }
 
@@ -87,7 +87,7 @@ export class PluginManager {
     if (!validation.valid) {
       return {
         success: false,
-        error: `Plugin validation failed: ${validation.errors.join(', ')}`
+        error: `Plugin validation failed: ${validation.errors.join(', ')}`,
       }
     }
 
@@ -97,7 +97,7 @@ export class PluginManager {
         if (!this.plugins.has(dep)) {
           return {
             success: false,
-            error: `Plugin ${plugin.name} requires ${dep}, but it is not registered`
+            error: `Plugin ${plugin.name} requires ${dep}, but it is not registered`,
           }
         }
       }
@@ -106,7 +106,7 @@ export class PluginManager {
     // Create plugin entry
     const entry: PluginEntry = {
       plugin,
-      status: Status.REGISTERED
+      status: Status.REGISTERED,
     }
 
     this.plugins.set(plugin.name, entry)
@@ -119,7 +119,7 @@ export class PluginManager {
     this.eventBus.emit(EventType.PLUGIN_LOAD, {
       action: 'load',
       pluginName: plugin.name,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
 
     // Load plugin
@@ -135,14 +135,14 @@ export class PluginManager {
     if (!entry) {
       return {
         success: false,
-        error: `Plugin ${pluginName} not found`
+        error: `Plugin ${pluginName} not found`,
       }
     }
 
     if (entry.status === Status.LOADED || entry.status === Status.ENABLED) {
       return {
         success: true,
-        plugin: entry.plugin
+        plugin: entry.plugin,
       }
     }
 
@@ -165,7 +165,7 @@ export class PluginManager {
 
       return {
         success: true,
-        plugin: entry.plugin
+        plugin: entry.plugin,
       }
     } catch (error) {
       entry.status = Status.ERROR
@@ -175,7 +175,7 @@ export class PluginManager {
 
       return {
         success: false,
-        error: entry.error
+        error: entry.error,
       }
     }
   }
@@ -189,14 +189,14 @@ export class PluginManager {
     if (!entry) {
       return {
         success: false,
-        error: `Plugin ${pluginName} not found`
+        error: `Plugin ${pluginName} not found`,
       }
     }
 
     if (entry.status === Status.ERROR) {
       return {
         success: false,
-        error: `Plugin ${pluginName} is in error state: ${entry.error}`
+        error: `Plugin ${pluginName} is in error state: ${entry.error}`,
       }
     }
 
@@ -211,7 +211,7 @@ export class PluginManager {
     if (entry.status === Status.ENABLED) {
       return {
         success: true,
-        plugin: entry.plugin
+        plugin: entry.plugin,
       }
     }
 
@@ -232,12 +232,12 @@ export class PluginManager {
       this.eventBus.emit(EventType.PLUGIN_ENABLE, {
         action: 'enable',
         pluginName,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       return {
         success: true,
-        plugin: entry.plugin
+        plugin: entry.plugin,
       }
     } catch (error) {
       entry.status = Status.ERROR
@@ -247,7 +247,7 @@ export class PluginManager {
 
       return {
         success: false,
-        error: entry.error
+        error: entry.error,
       }
     }
   }
@@ -261,14 +261,14 @@ export class PluginManager {
     if (!entry) {
       return {
         success: false,
-        error: `Plugin ${pluginName} not found`
+        error: `Plugin ${pluginName} not found`,
       }
     }
 
     if (entry.status !== Status.ENABLED) {
       return {
         success: false,
-        error: `Plugin ${pluginName} is not enabled`
+        error: `Plugin ${pluginName} is not enabled`,
       }
     }
 
@@ -289,12 +289,12 @@ export class PluginManager {
       this.eventBus.emit(EventType.PLUGIN_DISABLE, {
         action: 'disable',
         pluginName,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       return {
         success: true,
-        plugin: entry.plugin
+        plugin: entry.plugin,
       }
     } catch (error) {
       entry.status = Status.ERROR
@@ -304,7 +304,7 @@ export class PluginManager {
 
       return {
         success: false,
-        error: entry.error
+        error: entry.error,
       }
     }
   }
@@ -318,7 +318,7 @@ export class PluginManager {
     if (!entry) {
       return {
         success: false,
-        error: `Plugin ${pluginName} not found`
+        error: `Plugin ${pluginName} not found`,
       }
     }
 
@@ -347,12 +347,12 @@ export class PluginManager {
       this.eventBus.emit(EventType.PLUGIN_UNLOAD, {
         action: 'unload',
         pluginName,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       })
 
       return {
         success: true,
-        plugin: entry.plugin
+        plugin: entry.plugin,
       }
     } catch (error) {
       entry.status = Status.ERROR
@@ -362,7 +362,7 @@ export class PluginManager {
 
       return {
         success: false,
-        error: entry.error
+        error: entry.error,
       }
     }
   }
@@ -456,9 +456,7 @@ export class PluginManager {
 
     // Validate plugin type
     const pluginType = (plugin as TypedPlugin).type
-    if (
-      !['command', 'theme', 'datasource', 'ui'].includes(pluginType)
-    ) {
+    if (!['command', 'theme', 'datasource', 'ui'].includes(pluginType)) {
       errors.push(`Invalid plugin type: ${pluginType}`)
     }
 
@@ -501,7 +499,7 @@ export class PluginManager {
     return {
       valid: errors.length === 0,
       errors,
-      warnings
+      warnings,
     }
   }
 

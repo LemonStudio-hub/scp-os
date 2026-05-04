@@ -109,16 +109,16 @@ export class CommandAutocompleteService {
           text: command,
           displayText: command,
           description: COMMAND_DESCRIPTIONS[command],
-          type: 'command'
+          type: 'command',
         })
       }
     }
 
     // 添加历史记录分数
     return suggestions
-      .map(s => ({
+      .map((s) => ({
         ...s,
-        _score: this.calculateMatchScore(input, s.text) + this.history.getScore(input, s.text)
+        _score: this.calculateMatchScore(input, s.text) + this.history.getScore(input, s.text),
       }))
       .sort((a, b) => b._score - a._score)
       .slice(0, this.maxSuggestions)
@@ -130,12 +130,14 @@ export class CommandAutocompleteService {
    */
   private getShutdownSuggestions(args: string[]): AutocompleteSuggestion[] {
     if (args.length === 0) {
-      return [{
-        text: 'now',
-        displayText: 'now',
-        description: '立即关闭系统',
-        type: 'argument'
-      }]
+      return [
+        {
+          text: 'now',
+          displayText: 'now',
+          description: '立即关闭系统',
+          type: 'argument',
+        },
+      ]
     }
     return []
   }
@@ -147,12 +149,37 @@ export class CommandAutocompleteService {
   private getInfoSuggestions(args: string[]): AutocompleteSuggestion[] {
     if (args.length === 0) {
       return [
-        { text: 'CN-', displayText: 'CN-<number>', description: '查询中文分部 SCP', type: 'argument' },
-        { text: '173', displayText: '173', description: 'SCP-173 - The Sculpture', type: 'argument' },
+        {
+          text: 'CN-',
+          displayText: 'CN-<number>',
+          description: '查询中文分部 SCP',
+          type: 'argument',
+        },
+        {
+          text: '173',
+          displayText: '173',
+          description: 'SCP-173 - The Sculpture',
+          type: 'argument',
+        },
         { text: '096', displayText: '096', description: 'SCP-096 - The Shy Guy', type: 'argument' },
-        { text: '682', displayText: '682', description: 'SCP-682 - The Hard-to-Destroy Reptile', type: 'argument' },
-        { text: '999', displayText: '999', description: 'SCP-999 - The Tickle Monster', type: 'argument' },
-        { text: '049', displayText: '049', description: 'SCP-049 - The Plague Doctor', type: 'argument' },
+        {
+          text: '682',
+          displayText: '682',
+          description: 'SCP-682 - The Hard-to-Destroy Reptile',
+          type: 'argument',
+        },
+        {
+          text: '999',
+          displayText: '999',
+          description: 'SCP-999 - The Tickle Monster',
+          type: 'argument',
+        },
+        {
+          text: '049',
+          displayText: '049',
+          description: 'SCP-049 - The Plague Doctor',
+          type: 'argument',
+        },
       ]
     }
 
@@ -168,7 +195,7 @@ export class CommandAutocompleteService {
             text: fullNum,
             displayText: fullNum,
             description: `中文分部 SCP-${num}`,
-            type: 'argument'
+            type: 'argument',
           })
         }
       }
@@ -201,11 +228,11 @@ export class CommandAutocompleteService {
 
     if (!trimmed) {
       // 空输入，返回所有命令
-      return AVAILABLE_COMMANDS.map(cmd => ({
+      return AVAILABLE_COMMANDS.map((cmd) => ({
         text: cmd,
         displayText: cmd,
         description: COMMAND_DESCRIPTIONS[cmd],
-        type: 'command' as const
+        type: 'command' as const,
       })).slice(0, this.maxSuggestions)
     }
 
@@ -249,16 +276,20 @@ export class CommandAutocompleteService {
     lines.push(`${ANSICode.cyan}可能的补全:${ANSICode.reset}`)
     lines.push('')
 
-    const maxTextLength = Math.max(...suggestions.map(s => s.text.length))
+    const maxTextLength = Math.max(...suggestions.map((s) => s.text.length))
 
     for (const suggestion of suggestions) {
       const paddedText = suggestion.text.padEnd(maxTextLength + 2)
       const description = suggestion.description || ''
 
       if (suggestion.type === 'command') {
-        lines.push(`  ${ANSICode.green}${paddedText}${ANSICode.reset}${ANSICode.gray}${description}${ANSICode.reset}`)
+        lines.push(
+          `  ${ANSICode.green}${paddedText}${ANSICode.reset}${ANSICode.gray}${description}${ANSICode.reset}`
+        )
       } else {
-        lines.push(`  ${ANSICode.yellow}${paddedText}${ANSICode.reset}${ANSICode.gray}${description}${ANSICode.reset}`)
+        lines.push(
+          `  ${ANSICode.yellow}${paddedText}${ANSICode.reset}${ANSICode.gray}${description}${ANSICode.reset}`
+        )
       }
     }
 

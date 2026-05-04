@@ -22,11 +22,11 @@ export const useTabsStore = defineStore('tabs', () => {
 
   // Computed
   const activeTab = computed(() => {
-    return tabs.value.find(tab => tab.id === activeTabId.value) || null
+    return tabs.value.find((tab) => tab.id === activeTabId.value) || null
   })
 
   const lockedTabs = computed(() => {
-    return tabs.value.filter(tab => tab.isLocked)
+    return tabs.value.filter((tab) => tab.isLocked)
   })
 
   const tabCount = computed(() => tabs.value.length)
@@ -65,11 +65,7 @@ export const useTabsStore = defineStore('tabs', () => {
     if (!isInitialized.value) return
 
     try {
-      await indexedDBService.saveTabs(
-        tabs.value,
-        activeTabId.value,
-        sidebarOpen.value
-      )
+      await indexedDBService.saveTabs(tabs.value, activeTabId.value, sidebarOpen.value)
     } catch (error) {
       logger.error('[Tabs Store] Failed to save tabs:', error)
     }
@@ -83,7 +79,7 @@ export const useTabsStore = defineStore('tabs', () => {
       isActive: true,
       isLocked: true,
       createdAt: Date.now(),
-      lastActiveAt: Date.now()
+      lastActiveAt: Date.now(),
     }
     tabs.value = [defaultTab]
     activeTabId.value = defaultTab.id
@@ -103,11 +99,11 @@ export const useTabsStore = defineStore('tabs', () => {
       isActive: true,
       isLocked: false,
       createdAt: Date.now(),
-      lastActiveAt: Date.now()
+      lastActiveAt: Date.now(),
     }
 
     // Set new tab as active
-    tabs.value.forEach(tab => tab.isActive = false)
+    tabs.value.forEach((tab) => (tab.isActive = false))
     tabs.value.push(newTab)
     activeTabId.value = newTab.id
     saveTabs()
@@ -119,9 +115,9 @@ export const useTabsStore = defineStore('tabs', () => {
   const switchTab = (tabId: string) => {
     if (tabId === activeTabId.value) return // No-op if already active
 
-    const tab = tabs.value.find(t => t.id === tabId)
+    const tab = tabs.value.find((t) => t.id === tabId)
     if (tab) {
-      tabs.value.forEach(t => t.isActive = false)
+      tabs.value.forEach((t) => (t.isActive = false))
       tab.isActive = true
       tab.lastActiveAt = Date.now()
       activeTabId.value = tabId
@@ -131,25 +127,24 @@ export const useTabsStore = defineStore('tabs', () => {
 
   // Close tab
   const closeTab = (tabId: string) => {
-    const tab = tabs.value.find(t => t.id === tabId)
+    const tab = tabs.value.find((t) => t.id === tabId)
     if (!tab) return false
 
     // Cannot close locked tabs
-      if (tab.isLocked) {
-        logger.warn('[Tabs Store] Cannot close locked tab:', tabId)
-        return false
-      }
+    if (tab.isLocked) {
+      logger.warn('[Tabs Store] Cannot close locked tab:', tabId)
+      return false
+    }
 
     // Remove tab
-    const index = tabs.value.findIndex(t => t.id === tabId)
+    const index = tabs.value.findIndex((t) => t.id === tabId)
     tabs.value.splice(index, 1)
 
     // If closing active tab, switch to most recent tab
     if (tab.isActive && tabs.value.length > 0) {
       // Switch to most recently used tab
-      const remainingTabs = tabs.value.filter(t => t.id !== tabId)
-      const lastActive = remainingTabs
-        .sort((a, b) => b.lastActiveAt - a.lastActiveAt)[0]
+      const remainingTabs = tabs.value.filter((t) => t.id !== tabId)
+      const lastActive = remainingTabs.sort((a, b) => b.lastActiveAt - a.lastActiveAt)[0]
       if (lastActive) {
         switchTab(lastActive.id)
       }
@@ -166,7 +161,7 @@ export const useTabsStore = defineStore('tabs', () => {
 
   // Rename tab
   const renameTab = (tabId: string, newTitle: string) => {
-    const tab = tabs.value.find(t => t.id === tabId)
+    const tab = tabs.value.find((t) => t.id === tabId)
     if (tab && newTitle.trim()) {
       tab.title = newTitle.trim()
       saveTabs()
@@ -175,7 +170,7 @@ export const useTabsStore = defineStore('tabs', () => {
 
   // Toggle lock tab
   const toggleLockTab = (tabId: string) => {
-    const tab = tabs.value.find(t => t.id === tabId)
+    const tab = tabs.value.find((t) => t.id === tabId)
     if (tab) {
       tab.isLocked = !tab.isLocked
       saveTabs()
@@ -205,8 +200,8 @@ export const useTabsStore = defineStore('tabs', () => {
     const now = Date.now()
     const toRemove: string[] = []
 
-    tabs.value.forEach(tab => {
-      if (!tab.isLocked && !tab.isActive && (now - tab.lastActiveAt) > maxAge) {
+    tabs.value.forEach((tab) => {
+      if (!tab.isLocked && !tab.isActive && now - tab.lastActiveAt > maxAge) {
         toRemove.push(tab.id)
       }
     })
@@ -229,16 +224,14 @@ export const useTabsStore = defineStore('tabs', () => {
 
   // Get recently used tabs
   const getRecentTabs = (limit: number = 5) => {
-    return [...tabs.value]
-      .sort((a, b) => b.lastActiveAt - a.lastActiveAt)
-      .slice(0, limit)
+    return [...tabs.value].sort((a, b) => b.lastActiveAt - a.lastActiveAt).slice(0, limit)
   }
 
   // Clear all tabs (for shutdown)
   const clearAllTabs = async () => {
     // Get all tab IDs before clearing
-    const tabIds = tabs.value.map(tab => tab.id)
-    
+    const tabIds = tabs.value.map((tab) => tab.id)
+
     // Delete all terminal states from IndexedDB
     for (const tabId of tabIds) {
       try {
@@ -247,21 +240,25 @@ export const useTabsStore = defineStore('tabs', () => {
         logger.error('[Tabs Store] Failed to delete terminal state:', error)
       }
     }
-    
+
     // Clear all tabs
     tabs.value = []
     activeTabId.value = ''
-    
+
     // Save to IndexedDB
     saveTabs()
-    
+
     logger.info('[Tabs Store] All tabs cleared')
   }
 
   // Watch for tab changes and auto-save
-  watch(tabs, () => {
-    saveTabs()
-  }, { deep: true })
+  watch(
+    tabs,
+    () => {
+      saveTabs()
+    },
+    { deep: true }
+  )
 
   return {
     // State
@@ -286,6 +283,6 @@ export const useTabsStore = defineStore('tabs', () => {
     cleanupOldTabs,
     getTabsByCreationOrder,
     getRecentTabs,
-    clearAllTabs
+    clearAllTabs,
   }
 })

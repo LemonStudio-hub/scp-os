@@ -13,12 +13,9 @@ export class FetchHttpClient implements IHttpClient {
   private defaultHeaders: Record<string, string>
   private defaultTimeout: number
 
-  constructor(config?: {
-    defaultHeaders?: Record<string, string>
-    defaultTimeout?: number
-  }) {
+  constructor(config?: { defaultHeaders?: Record<string, string>; defaultTimeout?: number }) {
     this.defaultHeaders = config?.defaultHeaders || {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     }
     this.defaultTimeout = config?.defaultTimeout || 30000
   }
@@ -29,29 +26,37 @@ export class FetchHttpClient implements IHttpClient {
   async get<T = any>(url: string, options?: HttpRequestOptions): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       method: 'GET',
-      ...options
+      ...options,
     })
   }
 
   /**
    * Make a POST request
    */
-  async post<T = any>(url: string, data?: any, options?: HttpRequestOptions): Promise<HttpResponse<T>> {
+  async post<T = any>(
+    url: string,
+    data?: any,
+    options?: HttpRequestOptions
+  ): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
-      ...options
+      ...options,
     })
   }
 
   /**
    * Make a PUT request
    */
-  async put<T = any>(url: string, data?: any, options?: HttpRequestOptions): Promise<HttpResponse<T>> {
+  async put<T = any>(
+    url: string,
+    data?: any,
+    options?: HttpRequestOptions
+  ): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
-      ...options
+      ...options,
     })
   }
 
@@ -61,18 +66,22 @@ export class FetchHttpClient implements IHttpClient {
   async delete<T = any>(url: string, options?: HttpRequestOptions): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       method: 'DELETE',
-      ...options
+      ...options,
     })
   }
 
   /**
    * Make a PATCH request
    */
-  async patch<T = any>(url: string, data?: any, options?: HttpRequestOptions): Promise<HttpResponse<T>> {
+  async patch<T = any>(
+    url: string,
+    data?: any,
+    options?: HttpRequestOptions
+  ): Promise<HttpResponse<T>> {
     return this.request<T>(url, {
       method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
-      ...options
+      ...options,
     })
   }
 
@@ -99,10 +108,10 @@ export class FetchHttpClient implements IHttpClient {
         method: options.method,
         headers: {
           ...this.defaultHeaders,
-          ...options.headers
+          ...options.headers,
         },
         body: options.body,
-        signal: controller.signal
+        signal: controller.signal,
       })
 
       clearTimeout(timeoutId)
@@ -127,7 +136,7 @@ export class FetchHttpClient implements IHttpClient {
         data,
         status: response.status,
         statusText: response.statusText,
-        headers
+        headers,
       }
     } catch (error) {
       clearTimeout(timeoutId)

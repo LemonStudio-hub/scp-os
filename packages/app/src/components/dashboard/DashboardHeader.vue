@@ -2,43 +2,66 @@
   <div class="dashboard-header">
     <div class="header-left">
       <div class="dashboard-title">
-        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span>
+        <span class="icon"
+          ><svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 3v18h18" />
+            <path d="M18 17V9" />
+            <path d="M13 17V5" />
+            <path d="M8 17v-3" /></svg
+        ></span>
         <h2>Performance Monitor</h2>
       </div>
       <span class="version">{{ version }}</span>
     </div>
-    
+
     <div class="header-right">
       <div class="monitoring-status" :class="{ active: isMonitoring }">
         <span class="status-dot"></span>
         <span class="status-text">{{ isMonitoring ? 'Monitoring' : 'Stopped' }}</span>
       </div>
-      
-      <button 
-        class="btn-control" 
+
+      <button
+        class="btn-control"
         :title="isMonitoring ? 'Stop monitoring' : 'Start monitoring'"
         aria-label="Toggle monitoring"
         @click="$emit('toggleMonitoring')"
       >
         {{ isMonitoring ? '⏹' : '▶' }}
       </button>
-      
-      <button 
-        class="btn-control" 
+
+      <button
+        class="btn-control"
         title="Refresh data"
         aria-label="Refresh data"
         @click="$emit('refresh')"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="23 4 23 10 17 10" />
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+        </svg>
       </button>
-      
-      <button 
-        class="btn-close" 
-        aria-label="Close dashboard"
-        @click="$emit('close')"
-      >
-        X
-      </button>
+
+      <button class="btn-close" aria-label="Close dashboard" @click="$emit('close')">X</button>
     </div>
   </div>
 </template>
@@ -62,7 +85,7 @@ defineEmits<{
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   flex-shrink: 0;
 }
@@ -82,14 +105,14 @@ defineEmits<{
 .dashboard-title .icon {
   display: flex;
   align-items: center;
-  color: var(--gui-accent, #8E8E93);
+  color: var(--gui-accent, #8e8e93);
 }
 
 .dashboard-title h2 {
   margin: 0;
   font-size: 17px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: -0.01em;
 }
 
@@ -97,7 +120,7 @@ defineEmits<{
   font-size: 11px;
   font-weight: 500;
   color: var(--gui-text-tertiary, #636366);
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   padding: 3px 8px;
   border-radius: var(--gui-radius-sm, 6px);
   letter-spacing: 0.02em;
@@ -114,7 +137,7 @@ defineEmits<{
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border-radius: var(--gui-radius-md, 10px);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   transition: all 200ms ease;
@@ -134,26 +157,33 @@ defineEmits<{
 }
 
 .monitoring-status.active .status-dot {
-  background: var(--gui-success, #34C759);
+  background: var(--gui-success, #34c759);
   animation: statusPulse 2s ease-in-out infinite;
 }
 
 @keyframes statusPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.3); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.3);
+  }
 }
 
 .status-text {
   font-size: 11px;
   font-weight: 600;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   letter-spacing: 0.02em;
   text-transform: uppercase;
   transition: color 200ms ease;
 }
 
 .monitoring-status.active .status-text {
-  color: var(--gui-success, #34C759);
+  color: var(--gui-success, #34c759);
 }
 
 /* ── Control Buttons ─────────────────────────────────────────────── */
@@ -163,8 +193,8 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
-  color: var(--gui-text-secondary, #8E8E93);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
+  color: var(--gui-text-secondary, #8e8e93);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
@@ -175,7 +205,7 @@ defineEmits<{
 
 .btn-control:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .btn-control:active {
@@ -188,8 +218,8 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
-  color: var(--gui-text-secondary, #8E8E93);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
+  color: var(--gui-text-secondary, #8e8e93);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
@@ -201,7 +231,7 @@ defineEmits<{
 
 .btn-close:hover {
   background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
-  color: var(--gui-error, #FF3B30);
+  color: var(--gui-error, #ff3b30);
 }
 
 .btn-close:active {

@@ -1,11 +1,14 @@
 <template>
   <div
     ref="windowRef"
-    :class="['pc-window', { 
-      'pc-window--focused': win.focused, 
-      'pc-window--minimized': win.minimized, 
-      'pc-window--maximized': win.maximized, 
-    }]"
+    :class="[
+      'pc-window',
+      {
+        'pc-window--focused': win.focused,
+        'pc-window--minimized': win.minimized,
+        'pc-window--maximized': win.maximized,
+      },
+    ]"
     :style="windowStyle"
     :data-theme="themeStore.currentTheme.name"
     @mousedown="onWindowClick"
@@ -26,7 +29,9 @@
           :title="t('pc.minimize')"
           @click.stop="onMinimize"
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="6" width="8" height="1.5" rx="0.75"/></svg>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect x="2" y="6" width="8" height="1.5" rx="0.75" />
+          </svg>
         </button>
         <button
           v-if="win.config.maximizable"
@@ -35,11 +40,32 @@
           @click.stop="onMaximize"
         >
           <svg v-if="!win.maximized" width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="2" y="2" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <rect
+              x="2"
+              y="2"
+              width="8"
+              height="8"
+              rx="1.5"
+              stroke="currentColor"
+              stroke-width="1.2"
+            />
           </svg>
           <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="1" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-            <path d="M3 3V2C3 1.45 3.45 1 4 1H11V4L10 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <rect
+              x="1"
+              y="3"
+              width="8"
+              height="8"
+              rx="1.5"
+              stroke="currentColor"
+              stroke-width="1.2"
+            />
+            <path
+              d="M3 3V2C3 1.45 3.45 1 4 1H11V4L10 3"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
         <button
@@ -49,7 +75,12 @@
           @click.stop="onClose"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            <path
+              d="M3 3L9 9M9 3L3 9"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
@@ -62,14 +93,38 @@
 
     <!-- Resize Handles -->
     <template v-if="win.config.resizable !== false && !win.maximized">
-      <div class="pc-window__resize pc-window__resize--n" @mousedown.stop="onResizeStart('n', $event)" />
-      <div class="pc-window__resize pc-window__resize--s" @mousedown.stop="onResizeStart('s', $event)" />
-      <div class="pc-window__resize pc-window__resize--e" @mousedown.stop="onResizeStart('e', $event)" />
-      <div class="pc-window__resize pc-window__resize--w" @mousedown.stop="onResizeStart('w', $event)" />
-      <div class="pc-window__resize pc-window__resize--ne" @mousedown.stop="onResizeStart('ne', $event)" />
-      <div class="pc-window__resize pc-window__resize--nw" @mousedown.stop="onResizeStart('nw', $event)" />
-      <div class="pc-window__resize pc-window__resize--se" @mousedown.stop="onResizeStart('se', $event)" />
-      <div class="pc-window__resize pc-window__resize--sw" @mousedown.stop="onResizeStart('sw', $event)" />
+      <div
+        class="pc-window__resize pc-window__resize--n"
+        @mousedown.stop="onResizeStart('n', $event)"
+      />
+      <div
+        class="pc-window__resize pc-window__resize--s"
+        @mousedown.stop="onResizeStart('s', $event)"
+      />
+      <div
+        class="pc-window__resize pc-window__resize--e"
+        @mousedown.stop="onResizeStart('e', $event)"
+      />
+      <div
+        class="pc-window__resize pc-window__resize--w"
+        @mousedown.stop="onResizeStart('w', $event)"
+      />
+      <div
+        class="pc-window__resize pc-window__resize--ne"
+        @mousedown.stop="onResizeStart('ne', $event)"
+      />
+      <div
+        class="pc-window__resize pc-window__resize--nw"
+        @mousedown.stop="onResizeStart('nw', $event)"
+      />
+      <div
+        class="pc-window__resize pc-window__resize--se"
+        @mousedown.stop="onResizeStart('se', $event)"
+      />
+      <div
+        class="pc-window__resize pc-window__resize--sw"
+        @mousedown.stop="onResizeStart('sw', $event)"
+      />
     </template>
   </div>
 </template>
@@ -99,15 +154,26 @@ const emit = defineEmits<{
 }>()
 
 // Safe window instance with defaults for standalone usage
-const win = computed(() => props.windowInstance ?? {
-  config: { id: '', title: '', minimizable: true, maximizable: true, closable: true, resizable: true },
-  position: { x: 0, y: 0 },
-  size: { width: 800, height: 600 },
-  zIndex: 100,
-  focused: true,
-  minimized: false,
-  maximized: false,
-} as WindowInstance)
+const win = computed(
+  () =>
+    props.windowInstance ??
+    ({
+      config: {
+        id: '',
+        title: '',
+        minimizable: true,
+        maximizable: true,
+        closable: true,
+        resizable: true,
+      },
+      position: { x: 0, y: 0 },
+      size: { width: 800, height: 600 },
+      zIndex: 100,
+      focused: true,
+      minimized: false,
+      maximized: false,
+    } as WindowInstance)
+)
 
 const windowManager = useWindowManagerStore()
 
@@ -124,34 +190,36 @@ const getScreenBounds = () => {
 }
 
 // ── Draggable ────────────────────────────────────────────────────────
-const { dragState, handleMouseDown: onTitleBarMouseDown, stop: stopDrag } = useDraggable(
-  windowRef,
-  {
-    boundary: getScreenBounds(),
-    onMove: (x: number, y: number) => {
-      windowManager.updateWindowPosition(win.value.config.id, Math.round(x), Math.round(y))
-    },
-  }
-)
+const {
+  dragState,
+  handleMouseDown: onTitleBarMouseDown,
+  stop: stopDrag,
+} = useDraggable(windowRef, {
+  boundary: getScreenBounds(),
+  onMove: (x: number, y: number) => {
+    windowManager.updateWindowPosition(win.value.config.id, Math.round(x), Math.round(y))
+  },
+})
 
 // ── Resizable ────────────────────────────────────────────────────────
-const { handleMouseDown: onResizeStart, stop: stopResize, setInitialSize } = useResizable(
-  windowRef,
-  {
-    minWidth: win.value.config.minWidth ?? 320,
-    minHeight: win.value.config.minHeight ?? 240,
-    maxWidth: window.innerWidth,
-    maxHeight: window.innerHeight,
-    onResize: (width: number, height: number, x: number, y: number) => {
-      windowManager.updateWindowDimensions(win.value.config.id, {
-        x: Math.round(x),
-        y: Math.round(y),
-        width: Math.round(width),
-        height: Math.round(height),
-      })
-    },
-  }
-)
+const {
+  handleMouseDown: onResizeStart,
+  stop: stopResize,
+  setInitialSize,
+} = useResizable(windowRef, {
+  minWidth: win.value.config.minWidth ?? 320,
+  minHeight: win.value.config.minHeight ?? 240,
+  maxWidth: window.innerWidth,
+  maxHeight: window.innerHeight,
+  onResize: (width: number, height: number, x: number, y: number) => {
+    windowManager.updateWindowDimensions(win.value.config.id, {
+      x: Math.round(x),
+      y: Math.round(y),
+      width: Math.round(width),
+      height: Math.round(height),
+    })
+  },
+})
 
 // ── Window Style (Single Source of Truth) ────────────────────────────
 const windowStyle = computed(() => {
@@ -207,7 +275,7 @@ function onMaximize() {
 onMounted(() => {
   // Initialize theme store
   themeStore.init()
-  
+
   // Set initial position/size in composables
   const { position, size } = win.value
   dragState.value.currentX = position.x
@@ -240,20 +308,26 @@ function handleWindowResize() {
   position: fixed;
   display: flex;
   flex-direction: column;
-  background: var(--gui-window-bg, #1C1C1E);
+  background: var(--gui-window-bg, #1c1c1e);
   border: 0.5px solid var(--gui-window-border, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-xl, 14px);
   overflow: hidden;
-  animation: windowOpenSpring 0.45s var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
+  animation: windowOpenSpring 0.45s
+    var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
   will-change: transform, opacity, box-shadow;
   box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3));
-  transition: border-color var(--gui-transition-base, 200ms ease),
-              box-shadow var(--gui-transition-base, 200ms ease),
-              transform var(--gui-transition-base, 200ms ease);
+  transition:
+    border-color var(--gui-transition-base, 200ms ease),
+    box-shadow var(--gui-transition-base, 200ms ease),
+    transform var(--gui-transition-base, 200ms ease);
 }
 
 .pc-window:hover {
-  box-shadow: var(--gui-shadow-ios-modal, 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.06));
+  box-shadow: var(
+    --gui-shadow-ios-modal,
+    0 12px 40px rgba(0, 0, 0, 0.6),
+    0 0 1px rgba(255, 255, 255, 0.06)
+  );
   transform: translateY(-2px);
 }
 
@@ -270,7 +344,11 @@ function handleWindowResize() {
 
 .pc-window--focused {
   border-color: var(--gui-window-border-active, rgba(255, 255, 255, 0.12));
-  box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06));
+  box-shadow: var(
+    --gui-shadow-ios-modal,
+    0 20px 60px rgba(0, 0, 0, 0.7),
+    0 0 1px rgba(255, 255, 255, 0.06)
+  );
 }
 
 .pc-window:not(.pc-window--focused) {
@@ -301,8 +379,9 @@ function handleWindowResize() {
   cursor: grab;
   user-select: none;
   flex-shrink: 0;
-  transition: background var(--gui-transition-fast, 120ms ease),
-              box-shadow var(--gui-transition-fast, 120ms ease);
+  transition:
+    background var(--gui-transition-fast, 120ms ease),
+    box-shadow var(--gui-transition-fast, 120ms ease);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
@@ -331,7 +410,7 @@ function handleWindowResize() {
   font-family: var(--gui-font-sans);
   font-size: var(--gui-font-base, 13px);
   font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -340,7 +419,7 @@ function handleWindowResize() {
 }
 
 /* Ensure title is visible in light mode */
-.pc-window[data-theme="light"] .pc-window__title {
+.pc-window[data-theme='light'] .pc-window__title {
   color: var(--gui-text-primary, #000000);
 }
 
@@ -359,7 +438,7 @@ function handleWindowResize() {
   justify-content: center;
   width: 14px;
   height: 14px;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border: none;
   border-radius: var(--gui-radius-full, 999px);
   color: transparent;
@@ -367,31 +446,36 @@ function handleWindowResize() {
   transition: all var(--gui-transition-snappy, 250ms cubic-bezier(0.2, 0.9, 0.3, 1.1));
   -webkit-tap-highlight-color: transparent;
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1),
-              0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--icon:hover {
   transform: scale(1.1);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
-              0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .pc-window__btn--icon:active {
   transform: scale(0.9);
   filter: brightness(0.9);
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.2),
-              0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 0, 0, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Minimize button - Yellow */
 .pc-window__btn--minimize {
-  background: var(--gui-warning, #FFCC00);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: var(--gui-warning, #ffcc00);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--minimize:hover {
-  background: var(--gui-warning, #FFCC00);
+  background: var(--gui-warning, #ffcc00);
   filter: brightness(1.1);
 }
 
@@ -401,12 +485,14 @@ function handleWindowResize() {
 
 /* Maximize button - Green */
 .pc-window__btn--maximize {
-  background: var(--gui-success, #34C759);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: var(--gui-success, #34c759);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--maximize:hover {
-  background: var(--gui-success, #34C759);
+  background: var(--gui-success, #34c759);
   filter: brightness(1.1);
 }
 
@@ -416,12 +502,14 @@ function handleWindowResize() {
 
 /* Close button - Red */
 .pc-window__btn--close {
-  background: var(--gui-error, #FF3B30);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: var(--gui-error, #ff3b30);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--close:hover {
-  background: var(--gui-error, #FF3B30);
+  background: var(--gui-error, #ff3b30);
   filter: brightness(1.1);
 }
 
@@ -446,7 +534,7 @@ function handleWindowResize() {
 .pc-window__content {
   flex: 1;
   overflow: auto;
-  background: var(--gui-bg-base, #1C1C1E);
+  background: var(--gui-bg-base, #1c1c1e);
   min-height: 0;
   -webkit-overflow-scrolling: touch;
 }
@@ -477,28 +565,60 @@ function handleWindowResize() {
 }
 
 .pc-window__resize--n {
-  top: -4px; left: 16px; right: 16px; height: 8px; cursor: n-resize;
+  top: -4px;
+  left: 16px;
+  right: 16px;
+  height: 8px;
+  cursor: n-resize;
 }
 .pc-window__resize--s {
-  bottom: -4px; left: 16px; right: 16px; height: 8px; cursor: s-resize;
+  bottom: -4px;
+  left: 16px;
+  right: 16px;
+  height: 8px;
+  cursor: s-resize;
 }
 .pc-window__resize--e {
-  top: 16px; right: -4px; bottom: 16px; width: 8px; cursor: e-resize;
+  top: 16px;
+  right: -4px;
+  bottom: 16px;
+  width: 8px;
+  cursor: e-resize;
 }
 .pc-window__resize--w {
-  top: 16px; left: -4px; bottom: 16px; width: 8px; cursor: w-resize;
+  top: 16px;
+  left: -4px;
+  bottom: 16px;
+  width: 8px;
+  cursor: w-resize;
 }
 .pc-window__resize--ne {
-  top: -4px; right: -4px; width: 20px; height: 20px; cursor: ne-resize;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  cursor: ne-resize;
 }
 .pc-window__resize--nw {
-  top: -4px; left: -4px; width: 20px; height: 20px; cursor: nw-resize;
+  top: -4px;
+  left: -4px;
+  width: 20px;
+  height: 20px;
+  cursor: nw-resize;
 }
 .pc-window__resize--se {
-  bottom: -4px; right: -4px; width: 20px; height: 20px; cursor: se-resize;
+  bottom: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  cursor: se-resize;
 }
 .pc-window__resize--sw {
-  bottom: -4px; left: -4px; width: 20px; height: 20px; cursor: sw-resize;
+  bottom: -4px;
+  left: -4px;
+  width: 20px;
+  height: 20px;
+  cursor: sw-resize;
 }
 
 /* ── PC Specific Styles ────────────────────────────────────────────── */

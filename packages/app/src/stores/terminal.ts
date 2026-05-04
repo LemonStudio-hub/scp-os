@@ -19,7 +19,8 @@ export const useTerminalStore = defineStore('terminal', () => {
   }
 
   function checkMobile() {
-    isMobile.value = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    isMobile.value =
+      window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
   }
 
   function setupResizeListener() {

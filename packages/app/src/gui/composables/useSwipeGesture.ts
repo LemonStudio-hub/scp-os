@@ -63,9 +63,8 @@ export function useSwipeGesture(
     swipe.value.deltaY = touch.clientY - swipe.value.startY
 
     const elapsed = Date.now() - startTime
-    swipe.value.velocity = elapsed > 0 ? Math.sqrt(
-      swipe.value.deltaX ** 2 + swipe.value.deltaY ** 2
-    ) / elapsed : 0
+    swipe.value.velocity =
+      elapsed > 0 ? Math.sqrt(swipe.value.deltaX ** 2 + swipe.value.deltaY ** 2) / elapsed : 0
   }
 
   function onTouchEnd() {
@@ -80,11 +79,12 @@ export function useSwipeGesture(
     const absX = Math.abs(deltaX)
     const absY = Math.abs(deltaY)
 
-    const meetsDistance = direction === 'horizontal'
-      ? absX >= minDistance
-      : direction === 'vertical'
-        ? absY >= minDistance
-        : (absX >= minDistance || absY >= minDistance)
+    const meetsDistance =
+      direction === 'horizontal'
+        ? absX >= minDistance
+        : direction === 'vertical'
+          ? absY >= minDistance
+          : absX >= minDistance || absY >= minDistance
 
     const meetsTime = elapsed <= maxTime
 

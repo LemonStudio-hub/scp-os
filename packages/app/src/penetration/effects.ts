@@ -40,9 +40,7 @@ export async function connectionLostEffect(
   writeln('\x1b[32mCONNECTION RESTORED\x1b[0m')
 }
 
-export async function accessDeniedEffect(
-  writeln: (t: string) => void
-): Promise<void> {
+export async function accessDeniedEffect(writeln: (t: string) => void): Promise<void> {
   const banner = '  ACCESS DENIED  '
   const border = '═'.repeat(banner.length)
   writeln(`\x1b[5m\x1b[31m╔${border}╗\x1b[0m`)
@@ -58,7 +56,10 @@ function generateGlitchLine(width: number): string {
   for (let i = 0; i < width; i++) {
     if (Math.random() < 0.3) {
       const colors = ['\x1b[31m', '\x1b[32m', '\x1b[33m', '\x1b[35m', '\x1b[36m']
-      line += randomChoice(colors) + GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] + '\x1b[0m'
+      line +=
+        randomChoice(colors) +
+        GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)] +
+        '\x1b[0m'
     } else {
       line += GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)]
     }

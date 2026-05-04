@@ -16,11 +16,7 @@ export abstract class IndexedDBBaseRepository<T extends Entity> implements IRepo
   protected readonly dbName: string
   protected readonly dbVersion: number
 
-  constructor(
-    storeName: string,
-    dbName: string = 'scp-terminal-db',
-    dbVersion: number = 1
-  ) {
+  constructor(storeName: string, dbName: string = 'scp-terminal-db', dbVersion: number = 1) {
     this.storeName = storeName
     this.dbName = dbName
     this.dbVersion = dbVersion
@@ -145,7 +141,7 @@ export abstract class IndexedDBBaseRepository<T extends Entity> implements IRepo
         resolve({
           data: entities,
           total,
-          hasMore
+          hasMore,
         })
       }
 

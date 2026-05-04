@@ -7,32 +7,75 @@
           <span class="fm-image-viewer__title">{{ fileName }}</span>
           <div class="fm-image-viewer__actions">
             <button class="fm-image-viewer__action-btn" :title="t('viewer.rotate')" @click="rotate">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M14 3h3v3"/>
-                <path d="M14 9a5 5 0 10-2 4"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M14 3h3v3" />
+                <path d="M14 9a5 5 0 10-2 4" />
               </svg>
             </button>
             <button class="fm-image-viewer__action-btn" :title="t('viewer.zoomIn')" @click="zoomIn">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="8" cy="8" r="5"/>
-                <path d="M12 12l4 4M6 8h4M8 6v4"/>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <circle cx="8" cy="8" r="5" />
+                <path d="M12 12l4 4M6 8h4M8 6v4" />
               </svg>
             </button>
-            <button class="fm-image-viewer__action-btn" :title="t('viewer.zoomOut')" @click="zoomOut">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                <circle cx="8" cy="8" r="5"/>
-                <path d="M12 12l4 4M6 8h4"/>
+            <button
+              class="fm-image-viewer__action-btn"
+              :title="t('viewer.zoomOut')"
+              @click="zoomOut"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <circle cx="8" cy="8" r="5" />
+                <path d="M12 12l4 4M6 8h4" />
               </svg>
             </button>
-            <button class="fm-image-viewer__action-btn" :title="t('viewer.reset')" @click="resetView">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M3 3v4h4M15 15v-4h-4"/>
-                <path d="M15 3L9 9M3 15l6-6"/>
+            <button
+              class="fm-image-viewer__action-btn"
+              :title="t('viewer.reset')"
+              @click="resetView"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M3 3v4h4M15 15v-4h-4" />
+                <path d="M15 3L9 9M3 15l6-6" />
               </svg>
             </button>
             <button class="fm-image-viewer__close-btn" @click="close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M5 5l10 10M15 5L5 15"/>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M5 5l10 10M15 5L5 15" />
               </svg>
             </button>
           </div>
@@ -107,20 +150,23 @@ const imageStyle = computed(() => ({
   transition: 'transform 0.2s ease',
 }))
 
-watch(() => props.visible, async (val) => {
-  if (val && props.file) {
-    await loadImage()
-  } else {
-    resetView()
-    imageSrc.value = ''
+watch(
+  () => props.visible,
+  async (val) => {
+    if (val && props.file) {
+      await loadImage()
+    } else {
+      resetView()
+      imageSrc.value = ''
+    }
   }
-})
+)
 
 async function loadImage() {
   try {
-    const path = props.file.path || ('/' + props.file.name)
+    const path = props.file.path || '/' + props.file.name
     const data = filesystem.readFile(path)
-    
+
     if (data !== null && typeof data === 'string') {
       // Check if it's a data URL or a URL
       if (data.startsWith('data:') || data.startsWith('http')) {
@@ -224,8 +270,14 @@ function close() {
 }
 
 @keyframes fm-image-fade-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -248,7 +300,7 @@ function close() {
 .fm-image-viewer__title {
   font-size: 14px;
   font-weight: 500;
-  color: #FFFFFF;
+  color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -270,7 +322,7 @@ function close() {
   border-radius: 8px;
   border: none;
   background: rgba(255, 255, 255, 0.15);
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
   transition: background 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -317,13 +369,15 @@ function close() {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #FFFFFF;
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: fm-spin 0.8s linear infinite;
 }
 
 @keyframes fm-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Footer ─────────────────────────────────────────────────────────── */

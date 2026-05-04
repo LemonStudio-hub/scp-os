@@ -1,19 +1,47 @@
 <template>
-  <div ref="desktopRef" class="desktop-screen" :style="desktopThemeStyles" @contextmenu="handleDesktopContextMenu">
+  <div
+    ref="desktopRef"
+    class="desktop-screen"
+    :style="desktopThemeStyles"
+    @contextmenu="handleDesktopContextMenu"
+  >
     <!-- Wallpaper -->
-    <div class="desktop-screen__wallpaper" :class="{ 'has-custom-wallpaper': !!customWallpaperUrl }">
+    <div
+      class="desktop-screen__wallpaper"
+      :class="{ 'has-custom-wallpaper': !!customWallpaperUrl }"
+    >
       <!-- Custom wallpaper image -->
-      <img v-if="customWallpaperUrl" :src="customWallpaperUrl" class="desktop-screen__wallpaper-image" alt="Custom wallpaper" fetchpriority="high" />
+      <img
+        v-if="customWallpaperUrl"
+        :src="customWallpaperUrl"
+        class="desktop-screen__wallpaper-image"
+        alt="Custom wallpaper"
+        fetchpriority="high"
+      />
       <!-- Default gradient overlay -->
       <div class="desktop-screen__wallpaper-gradient" />
       <!-- SVG pattern overlay -->
       <div class="desktop-screen__wallpaper-pattern">
         <svg width="100%" height="100%" viewBox="0 0 800 800" fill="none">
-          <circle cx="400" cy="400" r="360" :stroke="wallpaperPatternColor1" stroke-width="1"/>
-          <circle cx="400" cy="400" r="240" :stroke="wallpaperPatternColor2" stroke-width="1"/>
-          <circle cx="400" cy="400" r="120" :stroke="wallpaperPatternColor3" stroke-width="1"/>
-          <line x1="0" y1="400" x2="800" y2="400" :stroke="wallpaperPatternColor3" stroke-width="0.5"/>
-          <line x1="400" y1="0" x2="400" y2="800" :stroke="wallpaperPatternColor3" stroke-width="0.5"/>
+          <circle cx="400" cy="400" r="360" :stroke="wallpaperPatternColor1" stroke-width="1" />
+          <circle cx="400" cy="400" r="240" :stroke="wallpaperPatternColor2" stroke-width="1" />
+          <circle cx="400" cy="400" r="120" :stroke="wallpaperPatternColor3" stroke-width="1" />
+          <line
+            x1="0"
+            y1="400"
+            x2="800"
+            y2="400"
+            :stroke="wallpaperPatternColor3"
+            stroke-width="0.5"
+          />
+          <line
+            x1="400"
+            y1="0"
+            x2="400"
+            y2="800"
+            :stroke="wallpaperPatternColor3"
+            stroke-width="0.5"
+          />
         </svg>
       </div>
     </div>
@@ -33,61 +61,143 @@
       >
         <div class="desktop-screen__icon-content">
           <div
-class="desktop-screen__icon-bg" :class="`desktop-screen__icon-bg--${app.id}`"
-               :style="iconGradientStyle">
+            class="desktop-screen__icon-bg"
+            :class="`desktop-screen__icon-bg--${app.id}`"
+            :style="iconGradientStyle"
+          >
             <template v-if="app.id === 'terminal'">
               <span class="desktop-screen__icon-text">&gt;_</span>
             </template>
             <template v-else-if="app.id === 'files'">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"
+                />
               </svg>
             </template>
             <template v-else-if="app.id === 'settings'">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+                />
               </svg>
             </template>
             <template v-else-if="app.id === 'chat'">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                />
               </svg>
             </template>
             <template v-else-if="app.id === 'dash'">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="9" rx="1"/>
-                <rect x="14" y="3" width="7" height="5" rx="1"/>
-                <rect x="14" y="12" width="7" height="9" rx="1"/>
-                <rect x="3" y="16" width="7" height="5" rx="1"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="7" height="9" rx="1" />
+                <rect x="14" y="3" width="7" height="5" rx="1" />
+                <rect x="14" y="12" width="7" height="9" rx="1" />
+                <rect x="3" y="16" width="7" height="5" rx="1" />
               </svg>
             </template>
             <template v-else-if="app.id === 'feedback'">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                <line x1="9" y1="9" x2="15" y2="9"/>
-                <line x1="9" y1="13" x2="13" y2="13"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                <line x1="9" y1="9" x2="15" y2="9" />
+                <line x1="9" y1="13" x2="13" y2="13" />
               </svg>
             </template>
             <template v-else-if="app.id === 'docs'">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
-                <line x1="9" y1="7" x2="15" y2="7"/>
-                <line x1="9" y1="11" x2="15" y2="11"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+                <line x1="9" y1="7" x2="15" y2="7" />
+                <line x1="9" y1="11" x2="15" y2="11" />
               </svg>
             </template>
             <template v-else-if="app.id === 'proxy'">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-            </svg>
-          </template>
-          <template v-else-if="app.id === 'editor'">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 20h9"/>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/>
-            </svg>
-          </template>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </template>
+            <template v-else-if="app.id === 'editor'">
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
+              </svg>
+            </template>
           </div>
           <span class="desktop-screen__icon-label">{{ app.label }}</span>
         </div>
@@ -95,7 +205,7 @@ class="desktop-screen__icon-bg" :class="`desktop-screen__icon-bg--${app.id}`"
     </div>
 
     <!-- PC Taskbar -->
-    <PCTaskbar 
+    <PCTaskbar
       ref="startButtonRef"
       :items="taskbarItems"
       :active-tools="activeTools"
@@ -148,15 +258,78 @@ export interface DesktopApp {
 const { t } = useI18n()
 
 const apps: DesktopApp[] = [
-  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', color: 'var(--gui-accent)', x: 50, y: 50 },
-  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', color: 'var(--gui-accent)', x: 180, y: 50 },
-  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)', x: 310, y: 50 },
-  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)', x: 50, y: 180 },
-  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)', x: 180, y: 180 },
-  { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)', x: 310, y: 180 },
-  { id: 'proxy', label: t('home.apps.proxy'), tool: 'proxy', color: 'var(--gui-accent)', x: 180, y: 310 },
-  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)', x: 50, y: 310 },
-  { id: 'editor', label: t('home.apps.editor'), tool: 'editor', color: 'var(--gui-accent)', x: 310, y: 310 },
+  {
+    id: 'terminal',
+    label: t('home.apps.terminal'),
+    tool: 'terminal',
+    color: 'var(--gui-accent)',
+    x: 50,
+    y: 50,
+  },
+  {
+    id: 'files',
+    label: t('home.apps.files'),
+    tool: 'filemanager',
+    color: 'var(--gui-accent)',
+    x: 180,
+    y: 50,
+  },
+  {
+    id: 'chat',
+    label: t('home.apps.chat'),
+    tool: 'chat',
+    color: 'var(--gui-accent)',
+    x: 310,
+    y: 50,
+  },
+  {
+    id: 'dash',
+    label: t('home.apps.dash'),
+    tool: 'dash',
+    color: 'var(--gui-accent)',
+    x: 50,
+    y: 180,
+  },
+  {
+    id: 'feedback',
+    label: t('home.apps.feedback'),
+    tool: 'feedback',
+    color: 'var(--gui-accent)',
+    x: 180,
+    y: 180,
+  },
+  {
+    id: 'docs',
+    label: t('home.apps.docs'),
+    tool: 'docs',
+    color: 'var(--gui-accent)',
+    x: 310,
+    y: 180,
+  },
+  {
+    id: 'proxy',
+    label: t('home.apps.proxy'),
+    tool: 'proxy',
+    color: 'var(--gui-accent)',
+    x: 180,
+    y: 310,
+  },
+  {
+    id: 'settings',
+    label: t('home.apps.settings'),
+    tool: 'settings',
+    color: 'var(--gui-accent)',
+    x: 50,
+    y: 310,
+  },
+  {
+    id: 'editor',
+    label: t('home.apps.editor'),
+    tool: 'editor',
+    color: 'var(--gui-accent)',
+    x: 310,
+    y: 310,
+  },
 ]
 
 const taskbarItems: PCTaskbarItem[] = [
@@ -213,7 +386,7 @@ const initDraggable = (app: DesktopApp, element: HTMLElement) => {
     },
     onEnd: (x, y) => {
       // Update app position
-      const appIndex = apps.findIndex(a => a.id === app.id)
+      const appIndex = apps.findIndex((a) => a.id === app.id)
       if (appIndex !== -1) {
         apps[appIndex].x = x
         apps[appIndex].y = y
@@ -228,15 +401,15 @@ const initDraggable = (app: DesktopApp, element: HTMLElement) => {
 // Handle mouse down on app
 const handleMouseDown = (event: MouseEvent, app: DesktopApp) => {
   // Find the element for this app
-  const element = appIcons.value.find(el => el.dataset.appId === app.id)
+  const element = appIcons.value.find((el) => el.dataset.appId === app.id)
   if (!element) return
-  
+
   // Get or initialize draggable
   let draggable = dragStates.get(app.id)
   if (!draggable) {
     draggable = initDraggable(app, element)
   }
-  
+
   draggable.handleMouseDown(event)
 }
 
@@ -247,7 +420,7 @@ const onAppDoubleClick = (app: DesktopApp) => {
 
 // Handle taskbar app launch
 const onTaskbarLaunch = (item: PCTaskbarItem) => {
-  const app = apps.find(a => a.tool === item.tool)
+  const app = apps.find((a) => a.tool === item.tool)
   if (app) {
     emit('launch', app)
   }
@@ -260,7 +433,7 @@ const onStartClick = () => {
 
 // Handle start menu app launch
 const onStartMenuLaunch = (app: StartMenuApp) => {
-  const desktopApp = apps.find(a => a.tool === app.tool) || {
+  const desktopApp = apps.find((a) => a.tool === app.tool) || {
     id: app.id,
     label: app.label,
     tool: app.tool,
@@ -289,7 +462,7 @@ const onPowerAction = (action: string) => {
 // Handle desktop context menu
 const handleDesktopContextMenu = (event: MouseEvent) => {
   event.preventDefault()
-  
+
   contextMenu.value = {
     visible: true,
     x: event.clientX,
@@ -386,7 +559,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
 // Handle app context menu
 const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
   event.preventDefault()
-  
+
   contextMenu.value = {
     visible: true,
     x: event.clientX,
@@ -443,8 +616,12 @@ function handleClickOutside(event: MouseEvent) {
   const startButtonEl = startButtonRef.value?.$el ?? startButtonRef.value
   const contextMenuEl = contextMenuRef.value?.$el ?? contextMenuRef.value
 
-  if (startMenuEl && !startMenuEl.contains(event.target as Node) &&
-      startButtonEl && !startButtonEl.contains(event.target as Node)) {
+  if (
+    startMenuEl &&
+    !startMenuEl.contains(event.target as Node) &&
+    startButtonEl &&
+    !startButtonEl.contains(event.target as Node)
+  ) {
     isStartMenuOpen.value = false
   }
 
@@ -506,7 +683,7 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 
   // Clean up drag states
-  dragStates.forEach(draggable => {
+  dragStates.forEach((draggable) => {
     draggable.stop()
   })
   dragStates.clear()
@@ -604,9 +781,10 @@ onUnmounted(() => {
   width: 72px;
   height: 72px;
   border-radius: var(--gui-radius-xl, 14px);
-  color: var(--gui-text-inverse, #FFFFFF);
-  box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4)),
-              inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: var(--gui-text-inverse, #ffffff);
+  box-shadow:
+    var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
 }
@@ -616,7 +794,12 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, transparent 50%, rgba(0, 0, 0, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
   border-radius: inherit;
   pointer-events: none;
 }
@@ -633,18 +816,27 @@ onUnmounted(() => {
 .desktop-screen__icon-text {
   position: relative;
   z-index: 1;
-  font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", "SF Mono", Consolas, monospace);
+  font-family: var(
+    --gui-font-mono,
+    'JetBrains Mono',
+    'Cascadia Code',
+    'Fira Code',
+    'SF Mono',
+    Consolas,
+    monospace
+  );
   font-size: 32px;
   font-weight: var(--gui-font-weight-bold, 700);
-  color: var(--gui-text-inverse, #FFFFFF);
+  color: var(--gui-text-inverse, #ffffff);
   letter-spacing: -1px;
   line-height: 1;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .desktop-screen__icon:hover .desktop-screen__icon-bg {
-  box-shadow: var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6)),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow:
+    var(--gui-shadow-lg, 0 16px 40px rgba(0, 0, 0, 0.6)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
   transform: scale(1.1);
 }
 
@@ -657,9 +849,11 @@ onUnmounted(() => {
   width: 100%;
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   text-align: center;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.6);
+  text-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
@@ -683,21 +877,21 @@ onUnmounted(() => {
   .desktop-screen__icon {
     width: 90px;
   }
-  
+
   .desktop-screen__icon-bg {
     width: 64px;
     height: 64px;
   }
-  
+
   .desktop-screen__icon-bg svg {
     width: 28px;
     height: 28px;
   }
-  
+
   .desktop-screen__icon-text {
     font-size: 28px;
   }
-  
+
   .desktop-screen__icon-label {
     font-size: var(--gui-font-xs, 11px);
   }
@@ -707,21 +901,21 @@ onUnmounted(() => {
   .desktop-screen__icon {
     width: 80px;
   }
-  
+
   .desktop-screen__icon-bg {
     width: 56px;
     height: 56px;
   }
-  
+
   .desktop-screen__icon-bg svg {
     width: 24px;
     height: 24px;
   }
-  
+
   .desktop-screen__icon-text {
     font-size: 24px;
   }
-  
+
   .desktop-screen__icon-label {
     font-size: var(--gui-font-xs, 11px);
   }

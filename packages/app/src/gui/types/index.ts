@@ -2,7 +2,18 @@
  * GUI Window Management Types
  */
 
-export type ToolType = 'filemanager' | 'editor' | 'terminal' | 'settings' | 'chat' | 'dash' | 'feedback' | 'docs' | 'proxy' | 'notification' | 'admin'
+export type ToolType =
+  | 'filemanager'
+  | 'editor'
+  | 'terminal'
+  | 'settings'
+  | 'chat'
+  | 'dash'
+  | 'feedback'
+  | 'docs'
+  | 'proxy'
+  | 'notification'
+  | 'admin'
 
 export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen'
 
@@ -50,7 +61,16 @@ export interface WindowInstance {
 }
 
 export interface WindowEvent {
-  type: 'open' | 'close' | 'focus' | 'blur' | 'minimize' | 'maximize' | 'restore' | 'move' | 'resize'
+  type:
+    | 'open'
+    | 'close'
+    | 'focus'
+    | 'blur'
+    | 'minimize'
+    | 'maximize'
+    | 'restore'
+    | 'move'
+    | 'resize'
   windowId: string
   timestamp: number
 }
@@ -130,9 +150,27 @@ export interface EditorState {
 // Context Menu Types
 
 export type ContextMenuIcon =
-  | 'folder' | 'edit' | 'trash' | 'file' | 'refresh'
-  | 'plus' | 'folder-open' | 'x' | 'save' | 'search' | 'list' | 'settings'
-  | 'eye' | 'sort' | 'play' | 'pin' | 'info' | 'terminal' | 'battery' | 'wifi' | 'menu'
+  | 'folder'
+  | 'edit'
+  | 'trash'
+  | 'file'
+  | 'refresh'
+  | 'plus'
+  | 'folder-open'
+  | 'x'
+  | 'save'
+  | 'search'
+  | 'list'
+  | 'settings'
+  | 'eye'
+  | 'sort'
+  | 'play'
+  | 'pin'
+  | 'info'
+  | 'terminal'
+  | 'battery'
+  | 'wifi'
+  | 'menu'
   | 'file-text'
 
 export interface ContextMenuItem {

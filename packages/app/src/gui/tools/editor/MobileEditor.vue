@@ -12,17 +12,42 @@
           <button
             v-for="file in editorStore.openFiles"
             :key="file.id"
-            :class="['mobile-editor__tab', { 'mobile-editor__tab--active': file.id === editorStore.activeFileId }]"
+            :class="[
+              'mobile-editor__tab',
+              { 'mobile-editor__tab--active': file.id === editorStore.activeFileId },
+            ]"
             @click="editorStore.setActiveFile(file.id)"
           >
             <span class="mobile-editor__tab-name">{{ file.name }}</span>
             <span v-if="file.dirty" class="mobile-editor__dirty" />
             <button class="mobile-editor__tab-close" @click.stop="closeFile(file.id)">
-              <svg width="8" height="8" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1l8 8M9 1L1 9"/></svg>
+              <svg
+                width="8"
+                height="8"
+                viewBox="0 0 10 10"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M1 1l8 8M9 1L1 9" />
+              </svg>
             </button>
           </button>
-          <button class="mobile-editor__tab mobile-editor__tab--add" @click="editorStore.openNewFile">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+          <button
+            class="mobile-editor__tab mobile-editor__tab--add"
+            @click="editorStore.openNewFile"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="8" y1="3" x2="8" y2="13" />
+              <line x1="3" y1="8" x2="13" y2="8" />
+            </svg>
           </button>
         </div>
       </div>
@@ -37,16 +62,52 @@
             placeholder="Find..."
             @input="performFind"
           />
-          <span v-if="findCount > 0" class="mobile-editor__find-count">{{ findCurrentIndex }}/{{ findCount }}</span>
-          <span v-else-if="findText && findCount === 0" class="mobile-editor__find-count mobile-editor__find-count--none">0</span>
+          <span v-if="findCount > 0" class="mobile-editor__find-count"
+            >{{ findCurrentIndex }}/{{ findCount }}</span
+          >
+          <span
+            v-else-if="findText && findCount === 0"
+            class="mobile-editor__find-count mobile-editor__find-count--none"
+            >0</span
+          >
           <button class="mobile-editor__find-btn" @click="findPrev">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9L8 5L4 9"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M12 9L8 5L4 9" />
+            </svg>
           </button>
           <button class="mobile-editor__find-btn" @click="findNext">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7L8 11L12 7"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M4 7L8 11L12 7" />
+            </svg>
           </button>
-          <button class="mobile-editor__find-btn mobile-editor__find-btn--close" @click="closeFindBar">
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l10 10M12 2L2 12"/></svg>
+          <button
+            class="mobile-editor__find-btn mobile-editor__find-btn--close"
+            @click="closeFindBar"
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 14 14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M2 2l10 10M12 2L2 12" />
+            </svg>
           </button>
         </div>
       </Transition>
@@ -72,7 +133,9 @@
           <span class="mobile-editor__status-text">{{ statusInfo }}</span>
         </div>
         <div class="mobile-editor__status-right">
-          <span class="mobile-editor__status-text">{{ editorStore.activeFile?.language?.toUpperCase() || 'TXT' }}</span>
+          <span class="mobile-editor__status-text">{{
+            editorStore.activeFile?.language?.toUpperCase() || 'TXT'
+          }}</span>
         </div>
       </div>
 
@@ -115,27 +178,114 @@
         </div>
         <div class="mobile-editor__kb-divider" />
         <div class="mobile-editor__kb-group">
-          <button class="mobile-editor__kb-btn mobile-editor__kb-btn--nav" @click="moveCursor('left')">←</button>
-          <button class="mobile-editor__kb-btn mobile-editor__kb-btn--nav" @click="moveCursor('right')">→</button>
-          <button class="mobile-editor__kb-btn mobile-editor__kb-btn--nav" @click="moveCursor('up')">↑</button>
-          <button class="mobile-editor__kb-btn mobile-editor__kb-btn--nav" @click="moveCursor('down')">↓</button>
+          <button
+            class="mobile-editor__kb-btn mobile-editor__kb-btn--nav"
+            @click="moveCursor('left')"
+          >
+            ←
+          </button>
+          <button
+            class="mobile-editor__kb-btn mobile-editor__kb-btn--nav"
+            @click="moveCursor('right')"
+          >
+            →
+          </button>
+          <button
+            class="mobile-editor__kb-btn mobile-editor__kb-btn--nav"
+            @click="moveCursor('up')"
+          >
+            ↑
+          </button>
+          <button
+            class="mobile-editor__kb-btn mobile-editor__kb-btn--nav"
+            @click="moveCursor('down')"
+          >
+            ↓
+          </button>
         </div>
         <div class="mobile-editor__kb-divider" />
         <div class="mobile-editor__kb-group">
-          <button class="mobile-editor__kb-btn" :class="{ 'mobile-editor__kb-btn--active': showFindBar }" @click="toggleFindBar">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4"/><path d="M10 10l3.5 3.5"/></svg>
+          <button
+            class="mobile-editor__kb-btn"
+            :class="{ 'mobile-editor__kb-btn--active': showFindBar }"
+            @click="toggleFindBar"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="7" cy="7" r="4" />
+              <path d="M10 10l3.5 3.5" />
+            </svg>
           </button>
           <button class="mobile-editor__kb-btn" @click="toggleWordWrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h15a3 3 0 110 6h-4"/><polyline points="14 15 11 18 14 21"/><path d="M3 18h7"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 6h18" />
+              <path d="M3 12h15a3 3 0 110 6h-4" />
+              <polyline points="14 15 11 18 14 21" />
+              <path d="M3 18h7" />
+            </svg>
           </button>
           <button class="mobile-editor__kb-btn" @click="undo">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h7a4 4 0 010 8H8"/><polyline points="6 3 3 6 6 9"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 6h7a4 4 0 010 8H8" />
+              <polyline points="6 3 3 6 6 9" />
+            </svg>
           </button>
           <button class="mobile-editor__kb-btn" @click="redo">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 6H6a4 4 0 000 8h2"/><polyline points="10 3 13 6 10 9"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M13 6H6a4 4 0 000 8h2" />
+              <polyline points="10 3 13 6 10 9" />
+            </svg>
           </button>
           <button class="mobile-editor__kb-btn mobile-editor__kb-btn--save" @click="saveFile">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 14h-9a1.5 1.5 0 01-1.5-1.5v-9A1.5 1.5 0 013.5 2h7L14 5.5v7a1.5 1.5 0 01-1.5 1.5z"/><path d="M5 14v-4h6v4"/><path d="M5 2v3h4V2"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12.5 14h-9a1.5 1.5 0 01-1.5-1.5v-9A1.5 1.5 0 013.5 2h7L14 5.5v7a1.5 1.5 0 01-1.5 1.5z"
+              />
+              <path d="M5 14v-4h6v4" />
+              <path d="M5 2v3h4V2" />
+            </svg>
           </button>
         </div>
       </div>
@@ -184,16 +334,19 @@ const statusInfo = computed(() => {
   return `Ln ${line}, Col ${col} · ${totalLines}L · ${chars}C`
 })
 
-watch(() => props.visible, (newVisible) => {
-  if (newVisible) {
-    if (props.data?.filePath) {
-      editorStore.openFile(props.data.filePath)
-    }
-    if (editorStore.openFiles.length === 0) {
-      editorStore.openNewFile()
+watch(
+  () => props.visible,
+  (newVisible) => {
+    if (newVisible) {
+      if (props.data?.filePath) {
+        editorStore.openFile(props.data.filePath)
+      }
+      if (editorStore.openFiles.length === 0) {
+        editorStore.openNewFile()
+      }
     }
   }
-})
+)
 
 function onInput(event: Event): void {
   const target = event.target as HTMLTextAreaElement
@@ -267,7 +420,10 @@ function moveCursor(direction: 'left' | 'right' | 'up' | 'down'): void {
       const lineStart = value.lastIndexOf('\n', pos - 1) + 1
       const prevLineStart = lineStart > 0 ? value.lastIndexOf('\n', lineStart - 2) + 1 : 0
       const col = pos - lineStart
-      ta.selectionStart = ta.selectionEnd = Math.min(prevLineStart + col, lineStart > 0 ? lineStart - 1 : value.length)
+      ta.selectionStart = ta.selectionEnd = Math.min(
+        prevLineStart + col,
+        lineStart > 0 ? lineStart - 1 : value.length
+      )
       break
     }
     case 'down': {
@@ -276,7 +432,10 @@ function moveCursor(direction: 'left' | 'right' | 'up' | 'down'): void {
       const lineStart = value.lastIndexOf('\n', pos - 1) + 1
       const col = pos - lineStart
       const nextLineStart = lineEnd >= 0 ? lineEnd + 1 : value.length
-      ta.selectionStart = ta.selectionEnd = Math.min(nextLineStart + col, nextLineEnd >= 0 ? nextLineEnd : value.length)
+      ta.selectionStart = ta.selectionEnd = Math.min(
+        nextLineStart + col,
+        nextLineEnd >= 0 ? nextLineEnd : value.length
+      )
       break
     }
   }
@@ -306,7 +465,7 @@ function saveFile(): void {
 }
 
 function closeFile(fileId: string): void {
-  const file = editorStore.openFiles.find(f => f.id === fileId)
+  const file = editorStore.openFiles.find((f) => f.id === fileId)
   if (file?.dirty) {
     if (!confirm(`"${file.name}" has unsaved changes. Close anyway?`)) {
       return
@@ -423,7 +582,7 @@ function findPrev(): void {
   flex-direction: column;
   height: 100%;
   background: var(--gui-bg-base, #060606);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
 }
 
 /* ── Tab Bar ──────────────────────────────────────────────────────────── */
@@ -534,7 +693,7 @@ function findPrev(): void {
   padding: 6px 10px;
   color: var(--gui-text-primary, #f0f0f0);
   font-size: 13px;
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -550,7 +709,7 @@ function findPrev(): void {
 .mobile-editor__find-count {
   font-size: 10px;
   color: var(--gui-text-secondary, #a8a8a8);
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   min-width: 28px;
   text-align: center;
 }
@@ -576,7 +735,7 @@ function findPrev(): void {
 }
 
 .mobile-editor__find-btn:active {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
   color: var(--gui-text-primary, #f0f0f0);
 }
 
@@ -594,7 +753,7 @@ function findPrev(): void {
   outline: none;
   resize: none;
   padding: 16px;
-  font-family: var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", Consolas, monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', 'Cascadia Code', Consolas, monospace);
   font-size: 16px !important;
   line-height: 1.7;
   tab-size: 2;
@@ -631,7 +790,7 @@ function findPrev(): void {
 .mobile-editor__status-text {
   font-size: 10px;
   color: var(--gui-text-tertiary, #6a6a6a);
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
 }
 
 /* ── Keyboard Toolbar ─────────────────────────────────────────────────── */
@@ -680,7 +839,7 @@ function findPrev(): void {
   color: var(--gui-text-primary, #f0f0f0);
   font-size: 13px;
   font-weight: 500;
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: all 0.1s ease;

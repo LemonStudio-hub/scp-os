@@ -79,10 +79,10 @@ export interface ApplicationTemplateConfig {
 export interface IApplicationTemplate {
   /** Template metadata */
   metadata: ApplicationTemplateMetadata
-  
+
   /** Template configuration */
   config: ApplicationTemplateConfig
-  
+
   /**
    * Validate template configuration
    * @returns Validation result
@@ -91,7 +91,7 @@ export interface IApplicationTemplate {
     valid: boolean
     errors: string[]
   }
-  
+
   /**
    * Get template summary
    * @returns Template summary
@@ -102,13 +102,13 @@ export interface IApplicationTemplate {
     category: string
     features: string[]
   }
-  
+
   /**
    * Export template to JSON
    * @returns JSON string
    */
   toJSON(): string
-  
+
   /**
    * Clone template
    * @returns Cloned template

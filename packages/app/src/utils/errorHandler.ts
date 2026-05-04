@@ -51,10 +51,7 @@ export class ErrorHandler {
     return error
   }
 
-  public wrapAsync<T>(
-    fn: () => Promise<T>,
-    errorConfig: Partial<ErrorConfig>
-  ): Promise<T> {
+  public wrapAsync<T>(fn: () => Promise<T>, errorConfig: Partial<ErrorConfig>): Promise<T> {
     return fn().catch((error) => {
       throw this.handleError({
         type: ErrorType.UNKNOWN_ERROR,
@@ -66,10 +63,7 @@ export class ErrorHandler {
     })
   }
 
-  public wrapSync<T>(
-    fn: () => T,
-    errorConfig: Partial<ErrorConfig>
-  ): T {
+  public wrapSync<T>(fn: () => T, errorConfig: Partial<ErrorConfig>): T {
     try {
       return fn()
     } catch (error) {
@@ -85,7 +79,7 @@ export class ErrorHandler {
 
   private addErrorLog(log: ErrorLog) {
     this.errorLogs.value.push(log)
-    
+
     // Limit log count
     if (this.errorLogs.value.length > this.maxLogs) {
       this.errorLogs.value.shift()
@@ -116,7 +110,7 @@ export class ErrorHandler {
     this.terminalWriter(`${ANSICode.red}[${timestamp}] ERROR - ${severity}${ANSICode.reset}\r\n`)
     this.terminalWriter(`${ANSICode.yellow}Type: ${type}${ANSICode.reset}\r\n`)
     this.terminalWriter(`${ANSICode.white}Message: ${error.message}${ANSICode.reset}\r\n`)
-    
+
     if (error.details) {
       this.terminalWriter(`${ANSICode.gray}Details: ${error.details}${ANSICode.reset}\r\n`)
     }
@@ -129,7 +123,7 @@ export class ErrorHandler {
         writer(`  ${index + 1}. ${suggestion}${ANSICode.reset}\r\n`)
       })
     }
-    
+
     if (this.terminalWriter) {
       this.terminalWriter(`\r\n`)
     }
@@ -164,12 +158,14 @@ export class ErrorHandler {
         'Refer to command examples',
       ],
     }
-    
-    return suggestionsMap[type] || [
-      'If it\'s a network issue, please check your connection',
-      'If the problem persists, please refresh the page',
-      'Use "help" command to get help',
-    ]
+
+    return (
+      suggestionsMap[type] || [
+        "If it's a network issue, please check your connection",
+        'If the problem persists, please refresh the page',
+        'Use "help" command to get help',
+      ]
+    )
   }
 
   private getSeverityDisplay(severity: string): string {
@@ -227,11 +223,11 @@ export class ErrorHandler {
   }
 
   public getErrorsByType(type: string): ErrorLog[] {
-    return this.errorLogs.value.filter(log => log.type === type)
+    return this.errorLogs.value.filter((log) => log.type === type)
   }
 
   public getErrorsBySeverity(severity: string): ErrorLog[] {
-    return this.errorLogs.value.filter(log => log.severity === severity)
+    return this.errorLogs.value.filter((log) => log.severity === severity)
   }
 }
 
@@ -251,9 +247,6 @@ export async function withErrorHandling<T>(
 }
 
 // Convenience sync error handling
-export function withSyncErrorHandling<T>(
-  fn: () => T,
-  config: Partial<ErrorConfig>
-): T {
+export function withSyncErrorHandling<T>(fn: () => T, config: Partial<ErrorConfig>): T {
   return errorHandler.wrapSync(fn, config)
 }

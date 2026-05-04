@@ -59,12 +59,12 @@ export function useTerminalRefactored(containerRef: Ref<HTMLElement | null>) {
           brightBlue: '#5c5cff',
           brightMagenta: '#ff00ff',
           brightCyan: '#00ffff',
-          brightWhite: '#ffffff'
+          brightWhite: '#ffffff',
         },
         fontSize: 14,
         fontFamily: 'monospace',
         cursorBlink: true,
-        scrollback: 1000
+        scrollback: 1000,
       })
 
       // Create fit addon
@@ -137,7 +137,7 @@ export function useTerminalRefactored(containerRef: Ref<HTMLElement | null>) {
     try {
       const buffer = terminal.value.buffer.active
       const content: string[] = []
-      
+
       for (let i = 0; i < buffer.length; i++) {
         const line = buffer.getLine(i)
         if (line) {
@@ -194,7 +194,7 @@ export function useTerminalRefactored(containerRef: Ref<HTMLElement | null>) {
     currentTabId.value = event.tabId
     clear()
     // Load content for new tab
-    tabRepository.findById(event.tabId).then(tab => {
+    tabRepository.findById(event.tabId).then((tab) => {
       if (tab) {
         const content = tab.getData('content')
         if (content) {
@@ -237,6 +237,6 @@ export function useTerminalRefactored(containerRef: Ref<HTMLElement | null>) {
     resize,
     focus,
     blur,
-    dispose
+    dispose,
   }
 }

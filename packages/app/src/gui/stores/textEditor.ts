@@ -19,17 +19,17 @@ export const useTextEditorStore = defineStore('textEditor', () => {
 
   // Computed
   const activeFile = computed(() => {
-    return openFiles.value.find(f => f.id === activeFileId.value) || null
+    return openFiles.value.find((f) => f.id === activeFileId.value) || null
   })
 
   const hasUnsavedChanges = computed(() => {
-    return openFiles.value.some(f => f.dirty)
+    return openFiles.value.some((f) => f.dirty)
   })
 
   // Actions
   function openFile(path: string, content?: string): OpenFile {
     // Check if file is already open
-    const existing = openFiles.value.find(f => f.path === path)
+    const existing = openFiles.value.find((f) => f.path === path)
     if (existing) {
       activeFileId.value = existing.id
       return existing
@@ -76,7 +76,7 @@ export const useTextEditorStore = defineStore('textEditor', () => {
   }
 
   function closeFile(fileId: string): boolean {
-    const index = openFiles.value.findIndex(f => f.id === fileId)
+    const index = openFiles.value.findIndex((f) => f.id === fileId)
     if (index === -1) return false
 
     const file = openFiles.value[index]
@@ -90,14 +90,15 @@ export const useTextEditorStore = defineStore('textEditor', () => {
 
     // If closing active file, activate another
     if (activeFileId.value === fileId) {
-      activeFileId.value = openFiles.value.length > 0 ? openFiles.value[openFiles.value.length - 1].id : null
+      activeFileId.value =
+        openFiles.value.length > 0 ? openFiles.value[openFiles.value.length - 1].id : null
     }
 
     return true
   }
 
   function updateContent(fileId: string, content: string): void {
-    const file = openFiles.value.find(f => f.id === fileId)
+    const file = openFiles.value.find((f) => f.id === fileId)
     if (!file) return
 
     file.content = content
@@ -106,7 +107,7 @@ export const useTextEditorStore = defineStore('textEditor', () => {
   }
 
   function saveFile(fileId: string): boolean {
-    const file = openFiles.value.find(f => f.id === fileId)
+    const file = openFiles.value.find((f) => f.id === fileId)
     if (!file) return false
 
     const result = filesystem.writeFile(file.path, file.content)
@@ -138,10 +139,23 @@ export const useTextEditorStore = defineStore('textEditor', () => {
   function detectLanguage(fileName: string): string {
     const ext = fileName.split('.').pop()?.toLowerCase() || ''
     const langMap: Record<string, string> = {
-      ts: 'typescript', js: 'javascript', json: 'json', html: 'html',
-      css: 'css', vue: 'vue', md: 'markdown', txt: 'plaintext',
-      py: 'python', rs: 'rust', go: 'go', sh: 'shell', xml: 'xml',
-      yaml: 'yaml', yml: 'yaml', sql: 'sql', log: 'log',
+      ts: 'typescript',
+      js: 'javascript',
+      json: 'json',
+      html: 'html',
+      css: 'css',
+      vue: 'vue',
+      md: 'markdown',
+      txt: 'plaintext',
+      py: 'python',
+      rs: 'rust',
+      go: 'go',
+      sh: 'shell',
+      xml: 'xml',
+      yaml: 'yaml',
+      yml: 'yaml',
+      sql: 'sql',
+      log: 'log',
     }
     return langMap[ext] || 'plaintext'
   }

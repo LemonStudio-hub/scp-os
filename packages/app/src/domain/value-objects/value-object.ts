@@ -61,8 +61,10 @@ export abstract class ValueObject<T> {
    * Get hash code
    */
   hashCode(): number {
-    return String(this.value).split('').reduce((acc, char) => {
-      return ((acc << 5) - acc) + char.charCodeAt(0)
-    }, 0)
+    return String(this.value)
+      .split('')
+      .reduce((acc, char) => {
+        return (acc << 5) - acc + char.charCodeAt(0)
+      }, 0)
   }
 }

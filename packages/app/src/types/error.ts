@@ -4,42 +4,42 @@ export const ErrorType = {
   TERMINAL_DISPOSE_FAILED: 'TERMINAL_DISPOSE_FAILED',
   TERMINAL_NOT_AVAILABLE: 'TERMINAL_NOT_AVAILABLE',
   TERMINAL_WRITE_FAILED: 'TERMINAL_WRITE_FAILED',
-  
+
   // 命令错误
   COMMAND_NOT_FOUND: 'COMMAND_NOT_FOUND',
   COMMAND_EXECUTION_FAILED: 'COMMAND_EXECUTION_FAILED',
   COMMAND_INVALID_ARGS: 'COMMAND_INVALID_ARGS',
   COMMAND_PARSING_FAILED: 'COMMAND_PARSING_FAILED',
-  
+
   // 数据错误
   DATA_NOT_FOUND: 'DATA_NOT_FOUND',
   DATA_INVALID: 'DATA_INVALID',
-  
+
   // 网络错误
   NETWORK_ERROR: 'NETWORK_ERROR',
-  
+
   // 历史错误
   HISTORY_UPDATE_FAILED: 'HISTORY_UPDATE_FAILED',
   HISTORY_NAVIGATION_FAILED: 'HISTORY_NAVIGATION_FAILED',
   HISTORY_RESET_FAILED: 'HISTORY_RESET_FAILED',
-  
+
   // 回调错误
   CALLBACK_EXECUTION_FAILED: 'CALLBACK_EXECUTION_FAILED',
-  
+
   // 输入错误
   INVALID_INPUT: 'INVALID_INPUT',
-  
+
   // 全局错误
   GLOBAL_ERROR: 'GLOBAL_ERROR',
   UNHANDLED_PROMISE_REJECTION: 'UNHANDLED_PROMISE_REJECTION',
   VUE_ERROR: 'VUE_ERROR',
-  
+
   // 系统错误
   SYSTEM_ERROR: 'SYSTEM_ERROR',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR',
 } as const
 
-export type ErrorType = typeof ErrorType[keyof typeof ErrorType]
+export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType]
 
 export const ErrorSeverity = {
   LOW: 'LOW',
@@ -48,7 +48,7 @@ export const ErrorSeverity = {
   CRITICAL: 'CRITICAL',
 } as const
 
-export type ErrorSeverity = typeof ErrorSeverity[keyof typeof ErrorSeverity]
+export type ErrorSeverity = (typeof ErrorSeverity)[keyof typeof ErrorSeverity]
 
 export interface ErrorLog {
   timestamp: Date
@@ -87,7 +87,7 @@ export class SCPError extends Error {
     this.details = config.details
     this.context = config.context
     this.timestamp = new Date()
-    
+
     // 确保 stack trace 正确
     if ('captureStackTrace' in Error && typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, SCPError)

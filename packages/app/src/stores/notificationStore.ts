@@ -3,7 +3,11 @@ import { ref, computed } from 'vue'
 import { config } from '../config'
 import { useAuthStore } from './authStore'
 
-export type NotificationType = 'feedback_comment' | 'feedback_upvote' | 'feedback_downvote' | 'chat_message'
+export type NotificationType =
+  | 'feedback_comment'
+  | 'feedback_upvote'
+  | 'feedback_downvote'
+  | 'chat_message'
 
 export interface AppNotification {
   id: number
@@ -50,7 +54,9 @@ export const useNotificationStore = defineStore('notification', () => {
     if (!authStore.userId) return
     isLoading.value = true
     try {
-      const response = await authStore.authFetch(`${API_BASE}/notifications?limit=${limit}&offset=${offset}`)
+      const response = await authStore.authFetch(
+        `${API_BASE}/notifications?limit=${limit}&offset=${offset}`
+      )
       if (!response.ok) return
       const result = await response.json()
       if (result.success) {
@@ -94,11 +100,13 @@ export const useNotificationStore = defineStore('notification', () => {
       const result = await response.json()
       if (result.success) {
         if (notificationId) {
-          const n = notifications.value.find(n => n.id === notificationId)
+          const n = notifications.value.find((n) => n.id === notificationId)
           if (n) n.is_read = 1
           unreadCount.value = Math.max(0, unreadCount.value - 1)
         } else {
-          notifications.value.forEach(n => { n.is_read = 1 })
+          notifications.value.forEach((n) => {
+            n.is_read = 1
+          })
           unreadCount.value = 0
         }
       }
@@ -117,9 +125,9 @@ export const useNotificationStore = defineStore('notification', () => {
       if (!response.ok) return
       const result = await response.json()
       if (result.success) {
-        const n = notifications.value.find(n => n.id === notificationId)
+        const n = notifications.value.find((n) => n.id === notificationId)
         if (n && !n.is_read) unreadCount.value = Math.max(0, unreadCount.value - 1)
-        notifications.value = notifications.value.filter(n => n.id !== notificationId)
+        notifications.value = notifications.value.filter((n) => n.id !== notificationId)
         total.value = Math.max(0, total.value - 1)
       }
     } catch {

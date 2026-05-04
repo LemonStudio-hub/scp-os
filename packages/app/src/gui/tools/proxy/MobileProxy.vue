@@ -1,152 +1,246 @@
 <template>
-  <MobileWindow :visible="visible" :title="t('app.proxy')" :show-back="true" @close="$emit('close')">
+  <MobileWindow
+    :visible="visible"
+    :title="t('app.proxy')"
+    :show-back="true"
+    @close="$emit('close')"
+  >
     <div class="mobile-proxy" :style="speedStyle">
-
       <div class="mobile-proxy__body">
-      <div v-if="store.error && !store.isDownloading" class="mobile-proxy__alert mobile-proxy__alert--error">
-        <span>{{ store.error }}</span>
-        <button @click="store.clearError()">&times;</button>
-      </div>
+        <div
+          v-if="store.error && !store.isDownloading"
+          class="mobile-proxy__alert mobile-proxy__alert--error"
+        >
+          <span>{{ store.error }}</span>
+          <button @click="store.clearError()">&times;</button>
+        </div>
 
-      <div v-if="!store.isDownloading && store.downloadProgress?.status !== 'completed'" class="mobile-proxy__input-area">
-        <div class="mobile-proxy__input-wrap">
-          <input
-            v-model="downloadUrl"
-            type="url"
-            :placeholder="t('proxy.enterUrl')"
-            class="mobile-proxy__input"
-            @keyup.enter="startDownload()"
-          />
-          <button
-            class="mobile-proxy__download-btn"
-            :disabled="!downloadUrl.trim()"
-            @click="startDownload()"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        <div
+          v-if="!store.isDownloading && store.downloadProgress?.status !== 'completed'"
+          class="mobile-proxy__input-area"
+        >
+          <div class="mobile-proxy__input-wrap">
+            <input
+              v-model="downloadUrl"
+              type="url"
+              :placeholder="t('proxy.enterUrl')"
+              class="mobile-proxy__input"
+              @keyup.enter="startDownload()"
+            />
+            <button
+              class="mobile-proxy__download-btn"
+              :disabled="!downloadUrl.trim()"
+              @click="startDownload()"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            </button>
+          </div>
+
+          <button class="mobile-proxy__advanced-toggle" @click="showAdvanced = !showAdvanced">
+            {{ showAdvanced ? t('proxy.collapseOptions') : t('proxy.advancedOptions') }}
+          </button>
+
+          <div v-if="showAdvanced" class="mobile-proxy__advanced">
+            <input
+              v-model="customFilename"
+              type="text"
+              :placeholder="t('proxy.customFilename')"
+              class="mobile-proxy__input mobile-proxy__input--sub"
+            />
+            <input
+              v-model.number="rateLimitKBps"
+              type="number"
+              min="0"
+              :placeholder="t('proxy.rateLimitPlaceholder')"
+              class="mobile-proxy__input mobile-proxy__input--sub"
+            />
+          </div>
+        </div>
+
+        <div v-if="store.downloadProgress && store.isDownloading" class="mobile-proxy__downloading">
+          <div class="mobile-proxy__dl-card">
+            <div class="mobile-proxy__dl-header">
+              <span class="mobile-proxy__dl-name">{{ store.downloadProgress.filename }}</span>
+              <span class="mobile-proxy__dl-peak"
+                >{{ t('proxy.peak') }}: {{ formatSpeed(store.peakSpeed) }}</span
+              >
+            </div>
+
+            <div class="mobile-proxy__dl-bar-track">
+              <div
+                class="mobile-proxy__dl-bar-fill"
+                :style="{ width: `${Math.min(100, store.currentProgress)}%` }"
+              />
+            </div>
+
+            <div class="mobile-proxy__dl-grid">
+              <div class="mobile-proxy__dl-stat">
+                <span class="mobile-proxy__dl-stat-label">{{ t('proxy.downloaded') }}</span>
+                <span class="mobile-proxy__dl-stat-value">
+                  {{ formatBytes(store.downloadProgress.downloadedBytes) }}
+                  <template v-if="store.downloadProgress.totalBytes > 0"
+                    >/ {{ formatBytes(store.downloadProgress.totalBytes) }}</template
+                  >
+                </span>
+              </div>
+              <div class="mobile-proxy__dl-stat">
+                <span class="mobile-proxy__dl-stat-label">{{ t('proxy.progress') }}</span>
+                <span class="mobile-proxy__dl-stat-value mobile-proxy__dl-stat-value--blue"
+                  >{{ Math.min(100, store.currentProgress) }}%</span
+                >
+              </div>
+              <div class="mobile-proxy__dl-stat">
+                <span class="mobile-proxy__dl-stat-label">{{ t('proxy.currentSpeed') }}</span>
+                <span class="mobile-proxy__dl-stat-value mobile-proxy__dl-stat-value--green">{{
+                  formatSpeed(store.currentSpeed)
+                }}</span>
+              </div>
+              <div class="mobile-proxy__dl-stat">
+                <span class="mobile-proxy__dl-stat-label">{{ t('proxy.eta') }}</span>
+                <span class="mobile-proxy__dl-stat-value">{{ etaDisplay }}</span>
+              </div>
+            </div>
+
+            <div v-if="store.recentSpeedHistory.length > 1" class="mobile-proxy__sparkline-wrap">
+              <svg class="mobile-proxy__sparkline" viewBox="0 0 280 40" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="mSpeedGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#3fb950" stop-opacity="0.3" />
+                    <stop offset="100%" stop-color="#3fb950" stop-opacity="0.02" />
+                  </linearGradient>
+                </defs>
+                <path :d="mSparklineArea" fill="url(#mSpeedGrad)" />
+                <path
+                  :d="mSparklineLine"
+                  fill="none"
+                  stroke="#3fb950"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+
+            <button class="mobile-proxy__cancel-btn" @click="cancel()">
+              {{ t('proxy.cancelDownload') }}
+            </button>
+          </div>
+        </div>
+
+        <div
+          v-if="store.downloadProgress?.status === 'completed' && !store.isDownloading"
+          class="mobile-proxy__done"
+        >
+          <div class="mobile-proxy__done-icon">
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
+          </div>
+          <p class="mobile-proxy__done-text">{{ t('proxy.downloadComplete') }}</p>
+          <p class="mobile-proxy__done-detail">{{ store.downloadProgress.filename }}</p>
+          <div class="mobile-proxy__done-stats">
+            <span>{{
+              formatBytes(
+                store.downloadProgress.totalBytes || store.downloadProgress.downloadedBytes
+              )
+            }}</span>
+            <span v-if="store.downloadProgress.startTime && store.downloadProgress.endTime">{{
+              formatDuration(store.downloadProgress.endTime - store.downloadProgress.startTime)
+            }}</span>
+          </div>
+          <button class="mobile-proxy__new-btn" @click="reset()">
+            {{ t('proxy.newDownload') }}
           </button>
         </div>
 
-        <button class="mobile-proxy__advanced-toggle" @click="showAdvanced = !showAdvanced">
-          {{ showAdvanced ? t('proxy.collapseOptions') : t('proxy.advancedOptions') }}
-        </button>
-
-        <div v-if="showAdvanced" class="mobile-proxy__advanced">
-          <input v-model="customFilename" type="text" :placeholder="t('proxy.customFilename')" class="mobile-proxy__input mobile-proxy__input--sub" />
-          <input v-model.number="rateLimitKBps" type="number" min="0" :placeholder="t('proxy.rateLimitPlaceholder')" class="mobile-proxy__input mobile-proxy__input--sub" />
+        <div v-if="history.length > 0" class="mobile-proxy__stats-bar">
+          <div class="mobile-proxy__stats-chip">
+            <span class="mobile-proxy__stats-chip-label">{{ t('proxy.totalDownloads') }}</span>
+            <span class="mobile-proxy__stats-chip-value">{{
+              store.downloadStats.totalDownloads
+            }}</span>
+          </div>
+          <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--green">
+            <span class="mobile-proxy__stats-chip-label">{{ t('proxy.statusDone') }}</span>
+            <span class="mobile-proxy__stats-chip-value">{{
+              store.downloadStats.completedDownloads
+            }}</span>
+          </div>
+          <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--purple">
+            <span class="mobile-proxy__stats-chip-label">{{ t('proxy.totalTraffic') }}</span>
+            <span class="mobile-proxy__stats-chip-value">{{
+              formatBytes(store.downloadStats.totalBytesDownloaded)
+            }}</span>
+          </div>
+          <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--blue">
+            <span class="mobile-proxy__stats-chip-label">{{ t('proxy.avgSpeed') }}</span>
+            <span class="mobile-proxy__stats-chip-value">{{
+              formatSpeed(store.downloadStats.averageSpeed)
+            }}</span>
+          </div>
         </div>
-      </div>
 
-      <div v-if="store.downloadProgress && store.isDownloading" class="mobile-proxy__downloading">
-        <div class="mobile-proxy__dl-card">
-          <div class="mobile-proxy__dl-header">
-            <span class="mobile-proxy__dl-name">{{ store.downloadProgress.filename }}</span>
-            <span class="mobile-proxy__dl-peak">{{ t('proxy.peak') }}: {{ formatSpeed(store.peakSpeed) }}</span>
+        <div class="mobile-proxy__history">
+          <div class="mobile-proxy__history-header">
+            <span>{{ t('proxy.history') }}</span>
+            <button v-if="history.length > 0" @click="store.fetchHistory(20, 0)">
+              {{ t('proxy.refresh') }}
+            </button>
           </div>
 
-          <div class="mobile-proxy__dl-bar-track">
-            <div class="mobile-proxy__dl-bar-fill" :style="{ width: `${Math.min(100, store.currentProgress)}%` }" />
+          <div v-if="store.isLoadingHistory" class="mobile-proxy__loading">
+            <div class="mobile-proxy__spinner" />
           </div>
 
-          <div class="mobile-proxy__dl-grid">
-            <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.downloaded') }}</span>
-              <span class="mobile-proxy__dl-stat-value">
-                {{ formatBytes(store.downloadProgress.downloadedBytes) }}
-                <template v-if="store.downloadProgress.totalBytes > 0">/ {{ formatBytes(store.downloadProgress.totalBytes) }}</template>
-              </span>
-            </div>
-            <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.progress') }}</span>
-              <span class="mobile-proxy__dl-stat-value mobile-proxy__dl-stat-value--blue">{{ Math.min(100, store.currentProgress) }}%</span>
-            </div>
-            <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.currentSpeed') }}</span>
-              <span class="mobile-proxy__dl-stat-value mobile-proxy__dl-stat-value--green">{{ formatSpeed(store.currentSpeed) }}</span>
-            </div>
-            <div class="mobile-proxy__dl-stat">
-              <span class="mobile-proxy__dl-stat-label">{{ t('proxy.eta') }}</span>
-              <span class="mobile-proxy__dl-stat-value">{{ etaDisplay }}</span>
-            </div>
+          <div v-else-if="history.length === 0" class="mobile-proxy__empty">
+            {{ t('proxy.noRecords') }}
           </div>
 
-          <div v-if="store.recentSpeedHistory.length > 1" class="mobile-proxy__sparkline-wrap">
-            <svg class="mobile-proxy__sparkline" viewBox="0 0 280 40" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="mSpeedGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#3fb950" stop-opacity="0.3"/>
-                  <stop offset="100%" stop-color="#3fb950" stop-opacity="0.02"/>
-                </linearGradient>
-              </defs>
-              <path :d="mSparklineArea" fill="url(#mSpeedGrad)" />
-              <path :d="mSparklineLine" fill="none" stroke="#3fb950" stroke-width="1.5" stroke-linecap="round" />
-            </svg>
-          </div>
-
-          <button class="mobile-proxy__cancel-btn" @click="cancel()">{{ t('proxy.cancelDownload') }}</button>
-        </div>
-      </div>
-
-      <div v-if="store.downloadProgress?.status === 'completed' && !store.isDownloading" class="mobile-proxy__done">
-        <div class="mobile-proxy__done-icon">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-        </div>
-        <p class="mobile-proxy__done-text">{{ t('proxy.downloadComplete') }}</p>
-        <p class="mobile-proxy__done-detail">{{ store.downloadProgress.filename }}</p>
-        <div class="mobile-proxy__done-stats">
-          <span>{{ formatBytes(store.downloadProgress.totalBytes || store.downloadProgress.downloadedBytes) }}</span>
-          <span v-if="store.downloadProgress.startTime && store.downloadProgress.endTime">{{ formatDuration(store.downloadProgress.endTime - store.downloadProgress.startTime) }}</span>
-        </div>
-        <button class="mobile-proxy__new-btn" @click="reset()">{{ t('proxy.newDownload') }}</button>
-      </div>
-
-      <div v-if="history.length > 0" class="mobile-proxy__stats-bar">
-        <div class="mobile-proxy__stats-chip">
-          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.totalDownloads') }}</span>
-          <span class="mobile-proxy__stats-chip-value">{{ store.downloadStats.totalDownloads }}</span>
-        </div>
-        <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--green">
-          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.statusDone') }}</span>
-          <span class="mobile-proxy__stats-chip-value">{{ store.downloadStats.completedDownloads }}</span>
-        </div>
-        <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--purple">
-          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.totalTraffic') }}</span>
-          <span class="mobile-proxy__stats-chip-value">{{ formatBytes(store.downloadStats.totalBytesDownloaded) }}</span>
-        </div>
-        <div class="mobile-proxy__stats-chip mobile-proxy__stats-chip--blue">
-          <span class="mobile-proxy__stats-chip-label">{{ t('proxy.avgSpeed') }}</span>
-          <span class="mobile-proxy__stats-chip-value">{{ formatSpeed(store.downloadStats.averageSpeed) }}</span>
-        </div>
-      </div>
-
-      <div class="mobile-proxy__history">
-        <div class="mobile-proxy__history-header">
-          <span>{{ t('proxy.history') }}</span>
-          <button v-if="history.length > 0" @click="store.fetchHistory(20, 0)">{{ t('proxy.refresh') }}</button>
-        </div>
-
-        <div v-if="store.isLoadingHistory" class="mobile-proxy__loading">
-          <div class="mobile-proxy__spinner" />
-        </div>
-
-        <div v-else-if="history.length === 0" class="mobile-proxy__empty">{{ t('proxy.noRecords') }}</div>
-
-        <div v-else class="mobile-proxy__history-list">
-          <div v-for="item in history" :key="item.id" class="mobile-proxy__history-item" @click="store.deleteHistoryItem(item.id)">
-            <div class="mobile-proxy__history-dot" :class="`mobile-proxy__history-dot--${item.status}`" />
-            <div class="mobile-proxy__history-info">
-              <span class="mobile-proxy__history-name">{{ item.filename }}</span>
-              <span class="mobile-proxy__history-meta">
-                <span :class="`mobile-proxy__history-status--${item.status}`">{{ statusLabel(item.status) }}</span>
-                &middot; {{ formatBytes(item.totalBytes || item.downloadedBytes) }}
-                &middot; {{ formatTimeAgo(item.createdAt) }}
-              </span>
+          <div v-else class="mobile-proxy__history-list">
+            <div
+              v-for="item in history"
+              :key="item.id"
+              class="mobile-proxy__history-item"
+              @click="store.deleteHistoryItem(item.id)"
+            >
+              <div
+                class="mobile-proxy__history-dot"
+                :class="`mobile-proxy__history-dot--${item.status}`"
+              />
+              <div class="mobile-proxy__history-info">
+                <span class="mobile-proxy__history-name">{{ item.filename }}</span>
+                <span class="mobile-proxy__history-meta">
+                  <span :class="`mobile-proxy__history-status--${item.status}`">{{
+                    statusLabel(item.status)
+                  }}</span>
+                  &middot; {{ formatBytes(item.totalBytes || item.downloadedBytes) }} &middot;
+                  {{ formatTimeAgo(item.createdAt) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   </MobileWindow>
 </template>
@@ -227,8 +321,10 @@ watchEffect(() => {
 const mSparklineArea = computed(() => {
   const samples = store.recentSpeedHistory
   if (samples.length < 2) return ''
-  const W = 280, H = 40, P = 3
-  const maxS = Math.max(...samples.map(s => s.speed), 1)
+  const W = 280,
+    H = 40,
+    P = 3
+  const maxS = Math.max(...samples.map((s) => s.speed), 1)
   const step = (W - P * 2) / Math.max(samples.length - 1, 1)
   const pts = samples.map((s, i) => {
     const x = P + i * step
@@ -242,8 +338,10 @@ const mSparklineArea = computed(() => {
 const mSparklineLine = computed(() => {
   const samples = store.recentSpeedHistory
   if (samples.length < 2) return ''
-  const W = 280, H = 40, P = 3
-  const maxS = Math.max(...samples.map(s => s.speed), 1)
+  const W = 280,
+    H = 40,
+    P = 3
+  const maxS = Math.max(...samples.map((s) => s.speed), 1)
   const step = (W - P * 2) / Math.max(samples.length - 1, 1)
   const pts = samples.map((s, i) => {
     const x = P + i * step
@@ -255,10 +353,14 @@ const mSparklineLine = computed(() => {
 
 function statusLabel(status: string): string {
   switch (status) {
-    case 'completed': return t('proxy.statusCompleted')
-    case 'failed': return t('proxy.statusFailed')
-    case 'cancelled': return t('proxy.cancelled')
-    default: return status
+    case 'completed':
+      return t('proxy.statusCompleted')
+    case 'failed':
+      return t('proxy.statusFailed')
+    case 'cancelled':
+      return t('proxy.cancelled')
+    default:
+      return status
   }
 }
 
@@ -308,9 +410,15 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.mobile-proxy__input-area { margin-bottom: 20px; }
+.mobile-proxy__input-area {
+  margin-bottom: 20px;
+}
 
-.mobile-proxy__input-wrap { display: flex; gap: 8px; margin-bottom: 8px; }
+.mobile-proxy__input-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
 
 .mobile-proxy__input {
   flex: 1;
@@ -324,9 +432,19 @@ onMounted(() => {
   min-width: 0;
 }
 
-.mobile-proxy__input:focus { border-color: #58a6ff; }
-.mobile-proxy__input::placeholder { color: #484f58; }
-.mobile-proxy__input--sub { font-size: 13px; padding: 10px 12px; margin-bottom: 6px; width: 100%; box-sizing: border-box; }
+.mobile-proxy__input:focus {
+  border-color: #58a6ff;
+}
+.mobile-proxy__input::placeholder {
+  color: #484f58;
+}
+.mobile-proxy__input--sub {
+  font-size: 13px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
 
 .mobile-proxy__download-btn {
   width: 48px;
@@ -342,7 +460,9 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.mobile-proxy__download-btn:disabled { opacity: 0.4; }
+.mobile-proxy__download-btn:disabled {
+  opacity: 0.4;
+}
 
 .mobile-proxy__advanced-toggle {
   background: none;
@@ -364,7 +484,9 @@ onMounted(() => {
   gap: 6px;
 }
 
-.mobile-proxy__downloading { margin-bottom: 20px; }
+.mobile-proxy__downloading {
+  margin-bottom: 20px;
+}
 
 .mobile-proxy__dl-card {
   background: #161b22;
@@ -420,12 +542,30 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
-.mobile-proxy__dl-stat { display: flex; flex-direction: column; gap: 2px; }
+.mobile-proxy__dl-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
-.mobile-proxy__dl-stat-label { font-size: 10px; color: #484f58; text-transform: uppercase; }
-.mobile-proxy__dl-stat-value { font-size: 13px; font-weight: 500; color: #c9d1d9; font-family: 'SF Mono', monospace; word-break: break-all; }
-.mobile-proxy__dl-stat-value--green { color: #3fb950; }
-.mobile-proxy__dl-stat-value--blue { color: #58a6ff; }
+.mobile-proxy__dl-stat-label {
+  font-size: 10px;
+  color: #484f58;
+  text-transform: uppercase;
+}
+.mobile-proxy__dl-stat-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #c9d1d9;
+  font-family: 'SF Mono', monospace;
+  word-break: break-all;
+}
+.mobile-proxy__dl-stat-value--green {
+  color: #3fb950;
+}
+.mobile-proxy__dl-stat-value--blue {
+  color: #58a6ff;
+}
 
 .mobile-proxy__sparkline-wrap {
   background: #0d1117;
@@ -435,7 +575,11 @@ onMounted(() => {
   margin-bottom: 12px;
 }
 
-.mobile-proxy__sparkline { width: 100%; height: 40px; display: block; }
+.mobile-proxy__sparkline {
+  width: 100%;
+  height: 40px;
+  display: block;
+}
 
 .mobile-proxy__cancel-btn {
   width: 100%;
@@ -457,9 +601,22 @@ onMounted(() => {
   border-radius: 12px;
 }
 
-.mobile-proxy__done-icon { color: #3fb950; margin-bottom: 8px; }
-.mobile-proxy__done-text { font-size: 16px; font-weight: 600; color: #3fb950; margin: 0 0 4px; }
-.mobile-proxy__done-detail { font-size: 12px; color: #8b949e; margin: 0 0 8px; word-break: break-all; }
+.mobile-proxy__done-icon {
+  color: #3fb950;
+  margin-bottom: 8px;
+}
+.mobile-proxy__done-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3fb950;
+  margin: 0 0 4px;
+}
+.mobile-proxy__done-detail {
+  font-size: 12px;
+  color: #8b949e;
+  margin: 0 0 8px;
+  word-break: break-all;
+}
 
 .mobile-proxy__done-stats {
   display: flex;
@@ -501,13 +658,31 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.mobile-proxy__stats-chip-label { font-size: 10px; color: #484f58; text-transform: uppercase; }
-.mobile-proxy__stats-chip-value { font-size: 13px; font-weight: 600; color: #c9d1d9; font-family: 'SF Mono', monospace; }
-.mobile-proxy__stats-chip--green .mobile-proxy__stats-chip-value { color: #3fb950; }
-.mobile-proxy__stats-chip--purple .mobile-proxy__stats-chip-value { color: #a371f7; }
-.mobile-proxy__stats-chip--blue .mobile-proxy__stats-chip-value { color: #58a6ff; }
+.mobile-proxy__stats-chip-label {
+  font-size: 10px;
+  color: #484f58;
+  text-transform: uppercase;
+}
+.mobile-proxy__stats-chip-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c9d1d9;
+  font-family: 'SF Mono', monospace;
+}
+.mobile-proxy__stats-chip--green .mobile-proxy__stats-chip-value {
+  color: #3fb950;
+}
+.mobile-proxy__stats-chip--purple .mobile-proxy__stats-chip-value {
+  color: #a371f7;
+}
+.mobile-proxy__stats-chip--blue .mobile-proxy__stats-chip-value {
+  color: #58a6ff;
+}
 
-.mobile-proxy__history { border-top: 1px solid #21262d; padding-top: 16px; }
+.mobile-proxy__history {
+  border-top: 1px solid #21262d;
+  padding-top: 16px;
+}
 
 .mobile-proxy__history-header {
   display: flex;
@@ -527,7 +702,11 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.mobile-proxy__loading { display: flex; justify-content: center; padding: 20px; }
+.mobile-proxy__loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
 
 .mobile-proxy__spinner {
   width: 20px;
@@ -538,11 +717,24 @@ onMounted(() => {
   animation: mproxy-spin 0.8s linear infinite;
 }
 
-@keyframes mproxy-spin { to { transform: rotate(360deg); } }
+@keyframes mproxy-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
-.mobile-proxy__empty { text-align: center; padding: 20px; color: #484f58; font-size: 13px; }
+.mobile-proxy__empty {
+  text-align: center;
+  padding: 20px;
+  color: #484f58;
+  font-size: 13px;
+}
 
-.mobile-proxy__history-list { display: flex; flex-direction: column; gap: 6px; }
+.mobile-proxy__history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 .mobile-proxy__history-item {
   display: flex;
@@ -560,15 +752,41 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.mobile-proxy__history-dot--completed { background: #3fb950; }
-.mobile-proxy__history-dot--failed { background: #f85149; }
-.mobile-proxy__history-dot--cancelled { background: #d29922; }
+.mobile-proxy__history-dot--completed {
+  background: #3fb950;
+}
+.mobile-proxy__history-dot--failed {
+  background: #f85149;
+}
+.mobile-proxy__history-dot--cancelled {
+  background: #d29922;
+}
 
-.mobile-proxy__history-info { flex: 1; min-width: 0; }
-.mobile-proxy__history-name { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mobile-proxy__history-meta { display: block; font-size: 11px; color: #484f58; margin-top: 2px; }
+.mobile-proxy__history-info {
+  flex: 1;
+  min-width: 0;
+}
+.mobile-proxy__history-name {
+  display: block;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mobile-proxy__history-meta {
+  display: block;
+  font-size: 11px;
+  color: #484f58;
+  margin-top: 2px;
+}
 
-.mobile-proxy__history-status--completed { color: #3fb950; }
-.mobile-proxy__history-status--failed { color: #f85149; }
-.mobile-proxy__history-status--cancelled { color: #d29922; }
+.mobile-proxy__history-status--completed {
+  color: #3fb950;
+}
+.mobile-proxy__history-status--failed {
+  color: #f85149;
+}
+.mobile-proxy__history-status--cancelled {
+  color: #d29922;
+}
 </style>

@@ -12,19 +12,19 @@ export function isMobileDevice(): boolean {
 
 export function getResponsiveFontSize(): number {
   if (typeof window === 'undefined' || typeof window.innerWidth === 'undefined') {
-    return 14  // Default to desktop/tablet size in test environment
+    return 14 // Default to desktop/tablet size in test environment
   }
-  
+
   const screenWidth = window.innerWidth
-  
+
   if (screenWidth >= 1200) {
-    return 16  // Desktop large
+    return 16 // Desktop large
   } else if (screenWidth >= 768) {
-    return 14  // Desktop/tablet
+    return 14 // Desktop/tablet
   } else if (screenWidth >= 480) {
-    return 12  // Mobile large
+    return 12 // Mobile large
   } else {
-    return 10  // Mobile small
+    return 10 // Mobile small
   }
 }
 
@@ -37,20 +37,20 @@ export function createTerminalConfig(): TerminalConfig {
     cursorStyle: 'block',
     scrollback: config.terminal.scrollback,
     tabStopWidth: config.terminal.tabStopWidth,
-    allowProposedApi: true
+    allowProposedApi: true,
   }
 }
 
 export function updateTerminalFontSize(terminal: any): void {
   if (!terminal) return
-  
+
   const newFontSize = getResponsiveFontSize()
   terminal.options.fontSize = newFontSize
   terminal.refresh(0, terminal.rows - 1)
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export function randomDelay(min: number, max: number): number {

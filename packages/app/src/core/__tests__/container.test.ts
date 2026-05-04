@@ -8,7 +8,7 @@ import {
   getGlobalContainer,
   resetGlobalContainer,
   registerGlobal,
-  resolveGlobal
+  resolveGlobal,
 } from '../container'
 import type { ServiceFactory } from '../types'
 import { ServiceLifetime as Lifetime } from '../types'
@@ -186,7 +186,7 @@ describe('DIContainer', () => {
     it('should resolve dependencies', () => {
       const depFactory: ServiceFactory<{ id: number }> = () => ({ id: 1 })
       const serviceFactory: ServiceFactory<{ dep: any }> = (c) => ({
-        dep: c.resolve('dep')
+        dep: c.resolve('dep'),
       })
 
       container.register('dep', depFactory)
@@ -198,10 +198,10 @@ describe('DIContainer', () => {
 
     it('should detect circular dependencies', () => {
       const factoryA: ServiceFactory<{ depB: any }> = (c) => ({
-        depB: c.resolve('ServiceB')
+        depB: c.resolve('ServiceB'),
       })
       const factoryB: ServiceFactory<{ depA: any }> = (c) => ({
-        depA: c.resolve('ServiceA')
+        depA: c.resolve('ServiceA'),
       })
 
       container.register('ServiceA', factoryA)
@@ -214,10 +214,10 @@ describe('DIContainer', () => {
       const containerNoCheck = new DIContainer({ detectCircularDependencies: false })
 
       const factoryA: ServiceFactory<{ depB: any }> = (c) => ({
-        depB: c.resolve('ServiceB')
+        depB: c.resolve('ServiceB'),
       })
       const factoryB: ServiceFactory<{ depA: any }> = (c) => ({
-        depA: c.resolve('ServiceA')
+        depA: c.resolve('ServiceA'),
       })
 
       containerNoCheck.register('ServiceA', factoryA)
@@ -243,7 +243,7 @@ describe('DIContainer', () => {
         debug: true,
         autoRegister: true,
         detectCircularDependencies: false,
-        defaultLifetime: Lifetime.TRANSIENT
+        defaultLifetime: Lifetime.TRANSIENT,
       })
 
       const config = customContainer.getConfig()

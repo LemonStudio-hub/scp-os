@@ -16,5 +16,5 @@ export const ALL_PHASES: PhaseConfig[] = [
 ]
 
 export function getPhase(id: PenetrationPhase): PhaseConfig | undefined {
-  return ALL_PHASES.find(p => p.id === id)
+  return ALL_PHASES.find((p) => p.id === id)
 }

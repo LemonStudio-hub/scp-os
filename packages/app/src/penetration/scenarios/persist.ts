@@ -53,9 +53,7 @@ export const persistPhase: PhaseConfig = {
       } else {
         writeln(error('用法: crontab -l | crontab -e'))
       }
-    }
-
-    else if (cmd === 'ssh-key') {
+    } else if (cmd === 'ssh-key') {
       await typeWithDelay('正在植入 SSH 公钥...', write, 2000)
       const keyHash = generateRandomHash(64)
       const lines = [
@@ -75,9 +73,7 @@ export const persistPhase: PhaseConfig = {
       ]
       await typeLines(lines, write, writeln)
       completeAction('setup_persistence')
-    }
-
-    else if (cmd === 'backdoor') {
+    } else if (cmd === 'backdoor') {
       await typeWithDelay('正在部署反向 shell 后门...', write, 2500)
       const port = randomInt(4400, 4600)
       const lines = [
@@ -105,9 +101,7 @@ export const persistPhase: PhaseConfig = {
       ]
       await typeLines(lines, write, writeln)
       completeAction('install_backdoor')
-    }
-
-    else if (cmd === 'service') {
+    } else if (cmd === 'service') {
       if (args[0] === 'install') {
         await typeWithDelay('正在注册系统服务...', write, 2000)
         const lines = [
@@ -142,9 +136,7 @@ export const persistPhase: PhaseConfig = {
       } else {
         writeln(error('用法: service install'))
       }
-    }
-
-    else if (cmd === 'useradd') {
+    } else if (cmd === 'useradd') {
       await typeWithDelay('正在创建后门账户...', write, 1500)
       const username = `svc_${generateRandomHash(4)}`
       const password = generateRandomHash(12)
@@ -165,9 +157,7 @@ export const persistPhase: PhaseConfig = {
       ]
       await typeLines(lines, write, writeln)
       completeAction('install_backdoor')
-    }
-
-    else {
+    } else {
       writeln(warning(`未知命令: ${cmd}`))
       writeln(info('可用命令: crontab, ssh-key, backdoor, service install, useradd'))
     }

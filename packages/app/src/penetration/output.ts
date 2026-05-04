@@ -40,7 +40,10 @@ export async function typeWithDelay(
   write('\n')
 }
 
-export function colorize(text: string, color: 'red' | 'green' | 'yellow' | 'cyan' | 'gray' | 'bold' | 'dim'): string {
+export function colorize(
+  text: string,
+  color: 'red' | 'green' | 'yellow' | 'cyan' | 'gray' | 'bold' | 'dim'
+): string {
   const codes = {
     red: '\x1b[31m',
     green: '\x1b[32m',
@@ -81,5 +84,5 @@ export function header(title: string, width: number = 50): string {
 }
 
 export function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

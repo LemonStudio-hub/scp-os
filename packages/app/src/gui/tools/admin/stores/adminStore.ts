@@ -10,7 +10,10 @@ export const useAdminStore = defineStore('admin', () => {
   const isAuthenticated = computed(() => !!token.value)
   const isSuperAdmin = computed(() => admin.value?.role === 'super_admin')
 
-  async function login(username: string, password: string): Promise<{ success: boolean; error?: string }> {
+  async function login(
+    username: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const data = await adminApi.adminLogin(username, password)
       if (data.success && data.token) {

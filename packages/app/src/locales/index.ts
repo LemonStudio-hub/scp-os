@@ -95,7 +95,8 @@ export const en = {
   'settings.license': 'License',
   'settings.resetAll': 'Reset All Settings',
   'settings.clearConfirmTitle': 'Clear All Data',
-  'settings.clearConfirmMsg': 'This will delete all terminal states, tabs, and saved data. This action cannot be undone.',
+  'settings.clearConfirmMsg':
+    'This will delete all terminal states, tabs, and saved data. This action cannot be undone.',
   'settings.clear': 'Clear',
   'settings.failedClear': 'Failed to clear data',
   'settings.resetTitle': 'Reset Settings',

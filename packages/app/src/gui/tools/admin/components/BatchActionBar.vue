@@ -3,9 +3,7 @@
     <div v-if="selectedCount > 0" class="admin-batch-bar">
       <div class="admin-batch-bar__info">
         <span class="admin-batch-bar__count">已选择 {{ selectedCount }} 项</span>
-        <button class="admin-batch-bar__clear" @click="$emit('clear')">
-          清除选择
-        </button>
+        <button class="admin-batch-bar__clear" @click="$emit('clear')">清除选择</button>
       </div>
       <div class="admin-batch-bar__actions">
         <button
@@ -15,14 +13,48 @@
           :class="action.type ? `admin-batch-bar__action--${action.type}` : ''"
           @click="$emit('action', action.key)"
         >
-          <svg v-if="action.icon === 'delete'" width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 4H12M5 4V3C5 2.44772 5.44772 2 6 2H8C8.55228 2 9 2.44772 9 3V4M11 4V11C11 11.5523 10.5523 12 10 12H4C3.44772 12 3 11.5523 3 11V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <svg
+            v-if="action.icon === 'delete'"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+          >
+            <path
+              d="M2 4H12M5 4V3C5 2.44772 5.44772 2 6 2H8C8.55228 2 9 2.44772 9 3V4M11 4V11C11 11.5523 10.5523 12 10 12H4C3.44772 12 3 11.5523 3 11V4"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            />
           </svg>
-          <svg v-else-if="action.icon === 'download'" width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M7 2V9M7 9L4 6M7 9L10 6M3 11H11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg
+            v-else-if="action.icon === 'download'"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+          >
+            <path
+              d="M7 2V9M7 9L4 6M7 9L10 6M3 11H11"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
-          <svg v-else-if="action.icon === 'archive'" width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M2 4H12M3 4V11C3 11.5523 3.44772 12 4 12H10C10.5523 12 11 11.5523 11 11V4M5 7H9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <svg
+            v-else-if="action.icon === 'archive'"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+          >
+            <path
+              d="M2 4H12M3 4V11C3 11.5523 3.44772 12 4 12H10C10.5523 12 11 11.5523 11 11V4M5 7H9"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            />
           </svg>
           {{ action.label }}
         </button>
@@ -74,7 +106,7 @@ defineEmits<{
 .admin-batch-bar__count {
   font-size: 13px;
   font-weight: 500;
-  color: #E94560;
+  color: #e94560;
   white-space: nowrap;
 }
 
@@ -129,23 +161,23 @@ defineEmits<{
 .admin-batch-bar__action--danger {
   background: rgba(255, 59, 48, 0.1);
   border-color: rgba(255, 59, 48, 0.2);
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .admin-batch-bar__action--danger:hover {
   background: rgba(255, 59, 48, 0.2);
-  color: #FF453A;
+  color: #ff453a;
 }
 
 .admin-batch-bar__action--warning {
   background: rgba(255, 204, 0, 0.1);
   border-color: rgba(255, 204, 0, 0.2);
-  color: #FFCC00;
+  color: #ffcc00;
 }
 
 .admin-batch-bar__action--warning:hover {
   background: rgba(255, 204, 0, 0.2);
-  color: #FFD60A;
+  color: #ffd60a;
 }
 
 .batch-bar-enter-active {

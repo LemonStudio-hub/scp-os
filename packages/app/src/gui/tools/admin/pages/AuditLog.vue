@@ -33,12 +33,7 @@
       </div>
     </div>
 
-    <DataTable
-      :columns="columns"
-      :data="logs"
-      :loading="loading"
-      :selectable="false"
-    >
+    <DataTable :columns="columns" :data="logs" :loading="loading" :selectable="false">
       <template #cell-action="{ row }">
         <span class="audit-log__action-badge">{{ formatAction(row.action) }}</span>
       </template>
@@ -121,7 +116,14 @@ function formatDate(val: string | number) {
   if (!val) return '-'
   const d = new Date(typeof val === 'number' ? val * 1000 : val)
   if (isNaN(d.getTime())) return String(val)
-  return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  return d.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
 }
 
 function onFilterChange() {
@@ -192,7 +194,7 @@ onMounted(fetchLogs)
 }
 
 .audit-log__select:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .audit-log__date-range {
@@ -214,7 +216,7 @@ onMounted(fetchLogs)
 }
 
 .audit-log__date-input:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .audit-log__date-sep {
@@ -229,7 +231,7 @@ onMounted(fetchLogs)
   font-size: 11px;
   font-weight: 500;
   background: rgba(233, 69, 96, 0.1);
-  color: #E94560;
+  color: #e94560;
 }
 
 .audit-log__details {

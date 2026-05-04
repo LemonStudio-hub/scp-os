@@ -37,7 +37,7 @@ const STORES = {
   USER_SETTINGS: 'user_settings',
   SCP_CONTENT: 'scp_content',
   READING_PROGRESS: 'reading_progress',
-  SCP_FAVORITES: 'scp_favorites'
+  SCP_FAVORITES: 'scp_favorites',
 }
 
 class IndexedDBService {
@@ -112,14 +112,18 @@ class IndexedDBService {
 
         // Create reading progress store
         if (!db.objectStoreNames.contains(STORES.READING_PROGRESS)) {
-          const readingProgressStore = db.createObjectStore(STORES.READING_PROGRESS, { keyPath: 'scpNumber' })
+          const readingProgressStore = db.createObjectStore(STORES.READING_PROGRESS, {
+            keyPath: 'scpNumber',
+          })
           readingProgressStore.createIndex('lastReadAt', 'lastReadAt', { unique: false })
           logger.info('[IndexedDB] Created reading progress store')
         }
 
         // Create SCP favorites store
         if (!db.objectStoreNames.contains(STORES.SCP_FAVORITES)) {
-          const favoritesStore = db.createObjectStore(STORES.SCP_FAVORITES, { keyPath: 'scpNumber' })
+          const favoritesStore = db.createObjectStore(STORES.SCP_FAVORITES, {
+            keyPath: 'scpNumber',
+          })
           favoritesStore.createIndex('addedAt', 'addedAt', { unique: false })
           logger.info('[IndexedDB] Created SCP favorites store')
         }
@@ -151,15 +155,15 @@ class IndexedDBService {
 
       clearRequest.onsuccess = () => {
         // Add all tabs
-      const addRequests = tabs.map(tab => {
-        return new Promise<void>((addResolve, addReject) => {
-          // Convert tab to plain object to avoid DataCloneError
-          const plainTab = JSON.parse(JSON.stringify(tab))
-          const request = store.add(plainTab)
-          request.onsuccess = () => addResolve()
-          request.onerror = () => addReject(request.error)
+        const addRequests = tabs.map((tab) => {
+          return new Promise<void>((addResolve, addReject) => {
+            // Convert tab to plain object to avoid DataCloneError
+            const plainTab = JSON.parse(JSON.stringify(tab))
+            const request = store.add(plainTab)
+            request.onsuccess = () => addResolve()
+            request.onerror = () => addReject(request.error)
+          })
         })
-      })
 
         Promise.all(addRequests)
           .then(() => {
@@ -169,7 +173,7 @@ class IndexedDBService {
               id: '_metadata',
               activeTabId,
               sidebarOpen,
-              updatedAt: Date.now()
+              updatedAt: Date.now(),
             }
             const metaRequest = metadataStore.add(metadata)
             metaRequest.onsuccess = () => resolve()
@@ -185,7 +189,7 @@ class IndexedDBService {
   /**
    * Load tabs data
    */
-  async loadTabs(): Promise<{ tabs: any[], activeTabId: string, sidebarOpen: boolean }> {
+  async loadTabs(): Promise<{ tabs: any[]; activeTabId: string; sidebarOpen: boolean }> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TABS], 'readonly')
@@ -201,7 +205,7 @@ class IndexedDBService {
         resolve({
           tabs,
           activeTabId: metadata?.activeTabId || '',
-          sidebarOpen: metadata?.sidebarOpen || false
+          sidebarOpen: metadata?.sidebarOpen || false,
         })
       }
 
@@ -221,7 +225,7 @@ class IndexedDBService {
       const data = {
         tabId,
         content,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       }
 
       const request = store.put(data)
@@ -324,7 +328,10 @@ class IndexedDBService {
   async getStorageSize(): Promise<number> {
     const db = this.getDB()
     return new Promise((resolve) => {
-      const transaction = db.transaction([STORES.TABS, STORES.TERMINAL_STATES, STORES.FILESYSTEM], 'readonly')
+      const transaction = db.transaction(
+        [STORES.TABS, STORES.TERMINAL_STATES, STORES.FILESYSTEM],
+        'readonly'
+      )
 
       let totalSize = 0
       let completed = 0
@@ -340,17 +347,17 @@ class IndexedDBService {
       const estimateSize = (storeName: string) => {
         const store = transaction.objectStore(storeName)
         const request = store.getAllKeys()
-        
+
         request.onsuccess = () => {
           const keys = request.result
-          
+
           if (keys.length === 0) {
             checkComplete()
             return
           }
 
           let keyCount = 0
-          
+
           keys.forEach((key) => {
             const getReq = store.get(key)
             getReq.onsuccess = () => {
@@ -396,7 +403,7 @@ class IndexedDBService {
         key: 'filesystem',
         root,
         currentPath,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       }
 
       const request = store.put(data)
@@ -408,7 +415,7 @@ class IndexedDBService {
   /**
    * Load filesystem data
    */
-  async loadFilesystem(): Promise<{ root: any, currentPath: string[] } | null> {
+  async loadFilesystem(): Promise<{ root: any; currentPath: string[] } | null> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.FILESYSTEM], 'readonly')
@@ -421,7 +428,7 @@ class IndexedDBService {
         if (data) {
           resolve({
             root: data.root,
-            currentPath: data.currentPath
+            currentPath: data.currentPath,
           })
         } else {
           resolve(null)
@@ -442,7 +449,7 @@ class IndexedDBService {
 
       const data = {
         ...windowData,
-        updatedAt: Date.now()
+        updatedAt: Date.now(),
       }
 
       const request = store.put(data)
@@ -517,7 +524,7 @@ class IndexedDBService {
       const request = store.put({
         key,
         value,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       })
 
       request.onsuccess = () => resolve()
@@ -611,7 +618,12 @@ class IndexedDBService {
   /**
    * 保存 SCP 内容缓存
    */
-  async saveSCPContent(data: { scpNumber: string; content: string; rawHtml: string; wordCount: number }): Promise<void> {
+  async saveSCPContent(data: {
+    scpNumber: string
+    content: string
+    rawHtml: string
+    wordCount: number
+  }): Promise<void> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.SCP_CONTENT], 'readwrite')
@@ -622,7 +634,7 @@ class IndexedDBService {
         content: data.content,
         rawHtml: data.rawHtml,
         cachedAt: Date.now(),
-        wordCount: data.wordCount
+        wordCount: data.wordCount,
       }
 
       const request = store.put(record)
@@ -693,7 +705,11 @@ class IndexedDBService {
   /**
    * 保存阅读进度
    */
-  async saveReadingProgress(data: { scpNumber: string; scrollPosition: number; readingTime: number }): Promise<void> {
+  async saveReadingProgress(data: {
+    scpNumber: string
+    scrollPosition: number
+    readingTime: number
+  }): Promise<void> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.READING_PROGRESS], 'readwrite')
@@ -707,7 +723,7 @@ class IndexedDBService {
           scpNumber: data.scpNumber,
           scrollPosition: data.scrollPosition,
           lastReadAt: Date.now(),
-          readingTime: (existing?.readingTime || 0) + data.readingTime
+          readingTime: (existing?.readingTime || 0) + data.readingTime,
         }
 
         const request = store.put(record)
@@ -752,7 +768,7 @@ class IndexedDBService {
       const record: FavoriteRecord = {
         scpNumber: data.scpNumber,
         addedAt: Date.now(),
-        title: data.title
+        title: data.title,
       }
 
       const request = store.put(record)

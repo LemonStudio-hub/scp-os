@@ -10,23 +10,67 @@
           @click="removeToast(toast.id)"
         >
           <div class="admin-toast__icon">
-            <svg v-if="toast.type === 'success'" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 8L7 11L12 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              v-if="toast.type === 'success'"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <path
+                d="M4 8L7 11L12 5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
-            <svg v-else-if="toast.type === 'error'" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <svg
+              v-else-if="toast.type === 'error'"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <path
+                d="M4 4L12 12M12 4L4 12"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
-            <svg v-else-if="toast.type === 'warning'" width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 5V8M8 11H8.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <svg
+              v-else-if="toast.type === 'warning'"
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            >
+              <path
+                d="M8 5V8M8 11H8.01"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
             <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 5V8M8 11H8.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path
+                d="M8 5V8M8 11H8.01"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
           </div>
           <span class="admin-toast__message">{{ toast.message }}</span>
           <button class="admin-toast__close" @click.stop="removeToast(toast.id)">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              <path
+                d="M3 3L9 9M9 3L3 9"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+              />
             </svg>
           </button>
         </div>
@@ -62,7 +106,9 @@ const { toasts, removeToast } = useToast()
   background: #1a1a1a;
   border: 1px solid #2a2a2a;
   border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 1px rgba(255, 255, 255, 0.06);
   pointer-events: auto;
   cursor: pointer;
   max-width: 100%;
@@ -80,22 +126,22 @@ const { toasts, removeToast } = useToast()
 
 .admin-toast--success .admin-toast__icon {
   background: rgba(52, 199, 89, 0.12);
-  color: #34C759;
+  color: #34c759;
 }
 
 .admin-toast--error .admin-toast__icon {
   background: rgba(255, 59, 48, 0.12);
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .admin-toast--warning .admin-toast__icon {
   background: rgba(255, 204, 0, 0.12);
-  color: #FFCC00;
+  color: #ffcc00;
 }
 
 .admin-toast--info .admin-toast__icon {
   background: rgba(10, 132, 255, 0.12);
-  color: #0A84FF;
+  color: #0a84ff;
 }
 
 .admin-toast__message {

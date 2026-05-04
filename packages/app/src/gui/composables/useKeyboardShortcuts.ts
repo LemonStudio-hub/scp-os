@@ -53,7 +53,7 @@ let handlerRef: ((event: KeyboardEvent) => void) | null = null
  * Parse a key combination string into a binding
  */
 export function parseShortcut(shortcut: string): ShortcutBinding {
-  const parts = shortcut.split('+').map(p => p.trim())
+  const parts = shortcut.split('+').map((p) => p.trim())
   let ctrlOrMeta = false
   let shift = false
   let alt = false
@@ -95,25 +95,27 @@ export function matchesShortcut(event: KeyboardEvent, binding: ShortcutBinding):
  * Format a shortcut for display (e.g., "⌘T" on Mac, "Ctrl+T" on Windows)
  */
 export function formatShortcut(shortcut: string): string {
-  const parts = shortcut.split('+').map(p => p.trim())
+  const parts = shortcut.split('+').map((p) => p.trim())
   const isMac = navigator.platform.toUpperCase().includes('MAC')
 
-  return parts.map(part => {
-    const lower = part.toLowerCase()
-    if (lower === 'ctrl') return isMac ? '⌃' : 'Ctrl'
-    if (lower === 'cmd' || lower === 'meta') return isMac ? '⌘' : 'Ctrl'
-    if (lower === 'command') return isMac ? '⌘' : 'Ctrl'
-    if (lower === 'shift') return isMac ? '⇧' : 'Shift'
-    if (lower === 'alt' || lower === 'option') return isMac ? '⌥' : 'Alt'
-    return part
-  }).join(isMac ? '' : '+')
+  return parts
+    .map((part) => {
+      const lower = part.toLowerCase()
+      if (lower === 'ctrl') return isMac ? '⌃' : 'Ctrl'
+      if (lower === 'cmd' || lower === 'meta') return isMac ? '⌘' : 'Ctrl'
+      if (lower === 'command') return isMac ? '⌘' : 'Ctrl'
+      if (lower === 'shift') return isMac ? '⇧' : 'Shift'
+      if (lower === 'alt' || lower === 'option') return isMac ? '⌥' : 'Alt'
+      return part
+    })
+    .join(isMac ? '' : '+')
 }
 
 /**
  * Register a keyboard shortcut
  */
 export function registerShortcut(shortcut: KeyboardShortcut): void {
-  const existingIndex = shortcuts.value.findIndex(s => s.id === shortcut.id)
+  const existingIndex = shortcuts.value.findIndex((s) => s.id === shortcut.id)
   if (existingIndex !== -1) {
     // Update existing shortcut
     shortcuts.value[existingIndex] = {
@@ -134,7 +136,7 @@ export function registerShortcut(shortcut: KeyboardShortcut): void {
  * Unregister a keyboard shortcut by ID
  */
 export function unregisterShortcut(id: string): void {
-  const index = shortcuts.value.findIndex(s => s.id === id)
+  const index = shortcuts.value.findIndex((s) => s.id === id)
   if (index !== -1) {
     shortcuts.value.splice(index, 1)
   }
@@ -144,7 +146,7 @@ export function unregisterShortcut(id: string): void {
  * Update a shortcut's properties
  */
 export function updateShortcut(id: string, updates: Partial<KeyboardShortcut>): void {
-  const index = shortcuts.value.findIndex(s => s.id === id)
+  const index = shortcuts.value.findIndex((s) => s.id === id)
   if (index !== -1) {
     shortcuts.value[index] = { ...shortcuts.value[index], ...updates }
   }
@@ -155,7 +157,7 @@ export function updateShortcut(id: string, updates: Partial<KeyboardShortcut>): 
  */
 export function getShortcuts(category?: string): KeyboardShortcut[] {
   if (category) {
-    return shortcuts.value.filter(s => s.category === category)
+    return shortcuts.value.filter((s) => s.category === category)
   }
   return shortcuts.value
 }
@@ -186,7 +188,12 @@ export function useKeyboardShortcuts() {
       if (shortcut.enabled === false) continue
 
       // Filter by context
-      if (shortcut.context && shortcut.context !== 'global' && shortcut.context !== currentContext.value) continue
+      if (
+        shortcut.context &&
+        shortcut.context !== 'global' &&
+        shortcut.context !== currentContext.value
+      )
+        continue
 
       const binding = parseShortcut(shortcut.keys)
       if (matchesShortcut(event, binding)) {

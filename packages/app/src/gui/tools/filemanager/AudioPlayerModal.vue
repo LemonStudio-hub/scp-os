@@ -5,14 +5,28 @@
         <!-- Header -->
         <div class="audio-player__header">
           <div class="audio-player__title">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M9 2v12M6 5l10-3v8L6 13V5z"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M9 2v12M6 5l10-3v8L6 13V5z" />
             </svg>
             {{ fileName }}
           </div>
           <button class="audio-player__close-btn" @click="close">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M5 5l10 10M15 5L5 15"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M5 5l10 10M15 5L5 15" />
             </svg>
           </button>
         </div>
@@ -21,10 +35,17 @@
         <div class="audio-player__body">
           <!-- Album Art Placeholder -->
           <div class="audio-player__art">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5">
-              <circle cx="32" cy="32" r="24"/>
-              <circle cx="32" cy="32" r="8"/>
-              <circle cx="32" cy="32" r="2"/>
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 64 64"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <circle cx="32" cy="32" r="24" />
+              <circle cx="32" cy="32" r="8" />
+              <circle cx="32" cy="32" r="2" />
             </svg>
           </div>
 
@@ -87,23 +108,26 @@ const mimeType = computed(() => {
   return 'audio/mpeg'
 })
 
-watch(() => props.visible, async (val) => {
-  if (val && props.file) {
-    await loadAudio()
-    await nextTick()
-  } else {
-    // Stop playback when closing
-    if (audioRef.value) {
-      audioRef.value.pause()
-      audioRef.value.src = ''
+watch(
+  () => props.visible,
+  async (val) => {
+    if (val && props.file) {
+      await loadAudio()
+      await nextTick()
+    } else {
+      // Stop playback when closing
+      if (audioRef.value) {
+        audioRef.value.pause()
+        audioRef.value.src = ''
+      }
+      audioSrc.value = ''
     }
-    audioSrc.value = ''
   }
-})
+)
 
 async function loadAudio() {
   try {
-    const path = props.file.path || ('/' + props.file.name)
+    const path = props.file.path || '/' + props.file.name
     const data = filesystem.readFile(path)
 
     if (typeof data === 'string') {
@@ -145,15 +169,19 @@ function close() {
 .audio-player {
   width: 100%;
   max-width: 500px;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-radius: 16px 16px 0 0;
   overflow: hidden;
   animation: audio-slide-up 0.3s ease;
 }
 
 @keyframes audio-slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -162,7 +190,7 @@ function close() {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .audio-player__title {
@@ -171,7 +199,7 @@ function close() {
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .audio-player__close-btn {
@@ -182,8 +210,8 @@ function close() {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: opacity 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -206,11 +234,15 @@ function close() {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--gui-accent, #007AFF), var(--gui-accent-muted, rgba(0,122,255,0.5)));
+  background: linear-gradient(
+    135deg,
+    var(--gui-accent, #007aff),
+    var(--gui-accent-muted, rgba(0, 122, 255, 0.5))
+  );
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #FFFFFF;
+  color: #ffffff;
   animation: spin-slow 20s linear infinite;
 }
 
@@ -219,7 +251,9 @@ function close() {
 }
 
 @keyframes spin-slow {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .audio-player__native {
@@ -232,7 +266,7 @@ function close() {
 
 /* Custom audio controls styling for WebKit */
 .audio-player__native::-webkit-media-controls-panel {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
 }
 
 /* ── Info ───────────────────────────────────────────────────────────── */
@@ -247,7 +281,7 @@ function close() {
 .audio-player__name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   max-width: 250px;
   overflow: hidden;
   text-overflow: ellipsis;

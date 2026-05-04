@@ -14,22 +14,61 @@
         <h1 class="doc-reader__title">{{ title }}</h1>
         <div class="doc-reader__meta">
           <span v-if="author" class="doc-reader__author">
-            <svg class="doc-reader__meta-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <circle cx="7" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <svg
+              class="doc-reader__meta-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <circle cx="7" cy="5" r="3" stroke="currentColor" stroke-width="1.2" />
+              <path
+                d="M2 12c0-2.76 2.24-5 5-5s5 2.24 5 5"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+              />
             </svg>
             {{ author }}
           </span>
           <span v-if="wordCount !== null" class="doc-reader__word-count">
-            <svg class="doc-reader__meta-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <rect x="2" y="1.5" width="10" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
-              <path d="M5 5h4M5 7.5h3M5 10h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <svg
+              class="doc-reader__meta-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <rect
+                x="2"
+                y="1.5"
+                width="10"
+                height="11"
+                rx="1.5"
+                stroke="currentColor"
+                stroke-width="1.2"
+              />
+              <path
+                d="M5 5h4M5 7.5h3M5 10h2"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+              />
             </svg>
             {{ formattedWordCount }}
           </span>
           <span v-if="rating !== null" class="doc-reader__rating">
-            <svg class="doc-reader__meta-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 1.5l1.5 3.5 3.5.5-2.5 2.5.5 3.5-3-1.5-3 1.5.5-3.5L2 5.5l3.5-.5z" fill="currentColor"/>
+            <svg
+              class="doc-reader__meta-icon"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <path
+                d="M7 1.5l1.5 3.5 3.5.5-2.5 2.5.5 3.5-3-1.5-3 1.5.5-3.5L2 5.5l3.5-.5z"
+                fill="currentColor"
+              />
             </svg>
             {{ rating }}
           </span>
@@ -43,8 +82,13 @@
       <!-- Empty State -->
       <div v-if="!content" class="doc-reader__empty">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-          <rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" stroke-width="2"/>
-          <path d="M16 18h16M16 24h12M16 30h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" stroke-width="2" />
+          <path
+            d="M16 18h16M16 24h12M16 30h8"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
         </svg>
         <p>No content to display</p>
       </div>
@@ -91,12 +135,41 @@ const sanitizedContent = computed(() => {
   try {
     return DOMPurify.sanitize(props.content, {
       ALLOWED_TAGS: [
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'p', 'br', 'hr', 'blockquote', 'pre', 'code',
-        'ul', 'ol', 'li',
-        'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
-        'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins',
-        'span', 'div', 'sup', 'sub',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'p',
+        'br',
+        'hr',
+        'blockquote',
+        'pre',
+        'code',
+        'ul',
+        'ol',
+        'li',
+        'a',
+        'img',
+        'table',
+        'thead',
+        'tbody',
+        'tr',
+        'th',
+        'td',
+        'strong',
+        'b',
+        'em',
+        'i',
+        'u',
+        's',
+        'del',
+        'ins',
+        'span',
+        'div',
+        'sup',
+        'sub',
       ],
       ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
     })
@@ -113,7 +186,7 @@ const sanitizedContent = computed(() => {
   --reader-text: #e0e0e0;
   --reader-text-secondary: #9a9a9a;
   --reader-text-tertiary: #5a5a5a;
-  --reader-accent: #8E8E93;
+  --reader-accent: #8e8e93;
   --reader-border: rgba(255, 255, 255, 0.06);
   --reader-surface: #141416;
   --reader-surface-hover: #1e1e22;
@@ -123,7 +196,7 @@ const sanitizedContent = computed(() => {
   height: 100%;
   background: var(--reader-bg);
   color: var(--reader-text);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
 }
 
 /* ── Loading ────────────────────────────────────────────────────────── */
@@ -143,12 +216,24 @@ const sanitizedContent = computed(() => {
   animation: reader-bounce 1.3s ease-in-out infinite;
 }
 
-.doc-reader__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.doc-reader__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.doc-reader__loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.doc-reader__loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes reader-bounce {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -189,7 +274,7 @@ const sanitizedContent = computed(() => {
 }
 
 .doc-reader__rating {
-  color: #FFCC00;
+  color: #ffcc00;
 }
 
 .doc-reader__divider {
@@ -259,7 +344,7 @@ const sanitizedContent = computed(() => {
 }
 
 .doc-reader__body :deep(code) {
-  font-family: var(--gui-font-mono, "JetBrains Mono", "Fira Code", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', 'Fira Code', monospace);
   font-size: 0.88em;
   padding: 2px 6px;
   border-radius: 4px;

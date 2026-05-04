@@ -17,8 +17,20 @@
             :data-index="i"
           >
             <span>{{ seg.label }}</span>
-            <svg v-if="i < breadcrumbSegments.length - 1" width="10" height="10" viewBox="0 0 12 12" fill="none">
-              <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              v-if="i < breadcrumbSegments.length - 1"
+              width="10"
+              height="10"
+              viewBox="0 0 12 12"
+              fill="none"
+            >
+              <path
+                d="M4 2L8 6L4 10"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -31,24 +43,53 @@
             class="mobile-file-manager__file-input"
             @change="onFileUpload"
           />
-          <button class="mobile-file-manager__action-btn" :title="t('fm.dropFiles')" @click="triggerUpload">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M9 12V3M9 3L6 6M9 3l3 3"/>
-              <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3"/>
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.dropFiles')"
+            @click="triggerUpload"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M9 12V3M9 3L6 6M9 3l3 3" />
+              <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
             </svg>
           </button>
           <button class="mobile-file-manager__action-btn" title="New file" @click="createNewFile">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M10 1H4a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V5z"/>
-              <path d="M10 1v4h4"/>
-              <path d="M9 9v6M6 12h6"/>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M10 1H4a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V5z" />
+              <path d="M10 1v4h4" />
+              <path d="M9 9v6M6 12h6" />
             </svg>
           </button>
-          <button class="mobile-file-manager__action-btn" title="New folder" @click="createNewFolder">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M1 5V15h16V5H1z"/>
-              <path d="M1 5l3-3h6l2 2"/>
-              <path d="M9 9v6M6 12h6"/>
+          <button
+            class="mobile-file-manager__action-btn"
+            title="New folder"
+            @click="createNewFolder"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 5V15h16V5H1z" />
+              <path d="M1 5l3-3h6l2 2" />
+              <path d="M9 9v6M6 12h6" />
             </svg>
           </button>
         </div>
@@ -66,9 +107,16 @@
       >
         <!-- Drag overlay -->
         <div v-if="isDragOver" class="mobile-file-manager__drag-overlay">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M24 32V16M24 16l-8 8M24 16l8 8"/>
-            <path d="M8 36v4a4 4 0 004 4h24a4 4 0 004-4v-4"/>
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 48 48"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M24 32V16M24 16l-8 8M24 16l8 8" />
+            <path d="M8 36v4a4 4 0 004 4h24a4 4 0 004-4v-4" />
           </svg>
           <span>{{ t('fm.dropFiles') }}</span>
         </div>
@@ -85,42 +133,98 @@
           >
             <div class="mobile-file-manager__item-icon" :class="getIconClass(file)">
               <!-- Folder Icon -->
-              <svg v-if="file.isDirectory" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M4 8h10l4-4h10v20H4z"/>
-                <path d="M4 8l4-4h10"/>
+              <svg
+                v-if="file.isDirectory"
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M4 8h10l4-4h10v20H4z" />
+                <path d="M4 8l4-4h10" />
               </svg>
               <!-- Image Icon -->
-              <svg v-else-if="isImageFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="4" y="6" width="24" height="20" rx="2"/>
-                <circle cx="12" cy="14" r="3"/>
-                <path d="M4 22l8-6 4 3 12-9"/>
+              <svg
+                v-else-if="isImageFile(file)"
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <rect x="4" y="6" width="24" height="20" rx="2" />
+                <circle cx="12" cy="14" r="3" />
+                <path d="M4 22l8-6 4 3 12-9" />
               </svg>
               <!-- Text Icon -->
-              <svg v-else-if="isTextFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/>
-                <path d="M20 4v4h4"/>
-                <path d="M10 16h12M10 22h8"/>
+              <svg
+                v-else-if="isTextFile(file)"
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z" />
+                <path d="M20 4v4h4" />
+                <path d="M10 16h12M10 22h8" />
               </svg>
               <!-- Code Icon -->
-              <svg v-else-if="isCodeFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/>
-                <path d="M20 4v4h4"/>
-                <path d="M12 16l-3 3 3 3M20 16l3 3-3 3"/>
+              <svg
+                v-else-if="isCodeFile(file)"
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z" />
+                <path d="M20 4v4h4" />
+                <path d="M12 16l-3 3 3 3M20 16l3 3-3 3" />
               </svg>
               <!-- Audio Icon -->
-              <svg v-else-if="isAudioFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M9 2v12M6 5l20-3v16L6 21V5z"/>
-                <circle cx="9" cy="22" r="4"/>
+              <svg
+                v-else-if="isAudioFile(file)"
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M9 2v12M6 5l20-3v16L6 21V5z" />
+                <circle cx="9" cy="22" r="4" />
               </svg>
               <!-- Video Icon -->
-              <svg v-else-if="isVideoFile(file)" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
-                <rect x="4" y="8" width="24" height="16" rx="2"/>
-                <path d="M14 13l6 3-6 3V13z"/>
+              <svg
+                v-else-if="isVideoFile(file)"
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <rect x="4" y="8" width="24" height="16" rx="2" />
+                <path d="M14 13l6 3-6 3V13z" />
               </svg>
               <!-- Default File Icon -->
-              <svg v-else width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z"/>
-                <path d="M20 4v4h4"/>
+              <svg
+                v-else
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z" />
+                <path d="M20 4v4h4" />
               </svg>
             </div>
             <span class="mobile-file-manager__item-name" :title="file.name">{{ file.name }}</span>
@@ -132,9 +236,16 @@
 
         <!-- Empty State -->
         <div v-if="fmStore.sortedFiles.length === 0" class="mobile-file-manager__empty">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M8 16h14l6-8h20v36H8z"/>
-            <path d="M20 28h16M20 36h10"/>
+          <svg
+            width="56"
+            height="56"
+            viewBox="0 0 56 56"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M8 16h14l6-8h20v36H8z" />
+            <path d="M20 28h16M20 36h10" />
           </svg>
           <p class="mobile-file-manager__empty-title">{{ t('fm.emptyFolder') }}</p>
           <p class="mobile-file-manager__empty-hint">
@@ -177,16 +288,10 @@
     />
 
     <!-- Audio Player Modal -->
-    <AudioPlayerModal
-      v-model:visible="audioPlayerVisible"
-      :file="playingAudioFile"
-    />
+    <AudioPlayerModal v-model:visible="audioPlayerVisible" :file="playingAudioFile" />
 
     <!-- Video Player Modal -->
-    <VideoPlayerModal
-      v-model:visible="videoPlayerVisible"
-      :file="playingVideoFile"
-    />
+    <VideoPlayerModal v-model:visible="videoPlayerVisible" :file="playingVideoFile" />
 
     <!-- Text Editor Modal -->
     <TextEditorModal
@@ -196,10 +301,7 @@
     />
 
     <!-- Image Viewer Modal -->
-    <ImageViewerModal
-      v-model:visible="imageViewerVisible"
-      :file="viewingImageFile"
-    />
+    <ImageViewerModal v-model:visible="imageViewerVisible" :file="viewingImageFile" />
   </MobileWindow>
 </template>
 
@@ -378,12 +480,14 @@ function formatSize(bytes: number): string {
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
 function onFileTap(file: any) {
   if (file.isDirectory) {
-    fmStore.navigateTo(fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name)
+    fmStore.navigateTo(
+      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+    )
   } else {
     const ext = file.name.split('.').pop()?.toLowerCase() || ''
     const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml']
@@ -426,7 +530,8 @@ async function onFileUpload(event: Event) {
 
   for (const file of files) {
     const buffer = await file.arrayBuffer()
-    const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+    const path =
+      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
     const ext = file.name.split('.').pop()?.toLowerCase() || ''
 
     try {
@@ -492,7 +597,7 @@ async function createNewFile() {
     defaultValue: t('fm.untitled'),
     confirmText: t('fm.create'),
   })
-  
+
   if (name && typeof name === 'string' && name.trim()) {
     const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
     try {
@@ -512,7 +617,7 @@ async function createNewFolder() {
     defaultValue: t('fm.newFolderDefault'),
     confirmText: t('fm.create'),
   })
-  
+
   if (name && typeof name === 'string' && name.trim()) {
     const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
     try {
@@ -532,7 +637,20 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
   const isImage = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext)
   const isAudio = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].includes(ext)
   const isVideo = ['mp4', 'webm', 'avi', 'mov', 'mkv'].includes(ext)
-  const isText = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue'].includes(ext)
+  const isText = [
+    'txt',
+    'md',
+    'log',
+    'json',
+    'xml',
+    'yml',
+    'yaml',
+    'js',
+    'ts',
+    'css',
+    'html',
+    'vue',
+  ].includes(ext)
 
   contextActions.value = []
 
@@ -587,7 +705,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
       },
     })
   }
-  
+
   contextActions.value.push(
     {
       id: 'rename',
@@ -601,10 +719,12 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
           defaultValue: file.name,
           confirmText: t('common.rename'),
         })
-        
+
         if (newName && typeof newName === 'string' && newName !== file.name) {
-          const oldPath = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
-          const newPath = fmStore.currentPath === '/' ? '/' + newName : fmStore.currentPath + '/' + newName
+          const oldPath =
+            fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+          const newPath =
+            fmStore.currentPath === '/' ? '/' + newName : fmStore.currentPath + '/' + newName
           try {
             filesystem.moveNode(oldPath, newPath)
             fmStore.loadDirectory(fmStore.currentPath)
@@ -628,9 +748,10 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
           confirmText: t('common.delete'),
           danger: true,
         })
-        
+
         if (confirmed) {
-          const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+          const path =
+            fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
           try {
             filesystem.deleteNode(path)
             fmStore.loadDirectory(fmStore.currentPath)
@@ -642,7 +763,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
       },
     }
   )
-  
+
   contextSheetVisible.value = true
 }
 
@@ -695,14 +816,30 @@ async function onDrop(event: DragEvent) {
   const files = event.dataTransfer?.files
   if (!files || files.length === 0) return
 
-  const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue', 'csv', 'sh']
+  const textExts = [
+    'txt',
+    'md',
+    'log',
+    'json',
+    'xml',
+    'yml',
+    'yaml',
+    'js',
+    'ts',
+    'css',
+    'html',
+    'vue',
+    'csv',
+    'sh',
+  ]
 
   let successCount = 0
   let failCount = 0
 
   for (const file of files) {
     const buffer = await file.arrayBuffer()
-    const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+    const path =
+      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
     const ext = file.name.split('.').pop()?.toLowerCase() || ''
 
     try {
@@ -764,7 +901,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-bg-base, #0A0A0A);
+  background: var(--gui-bg-base, #0a0a0a);
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -777,8 +914,8 @@ onMounted(() => {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 14px;
-  background: var(--gui-bg-surface, #2C2C2E);
-  border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
+  background: var(--gui-bg-surface, #2c2c2e);
+  border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -806,7 +943,7 @@ onMounted(() => {
   padding: 4px 6px;
   background: none;
   border: none;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -818,12 +955,12 @@ onMounted(() => {
 }
 
 .mobile-file-manager__breadcrumb-btn:last-child {
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   font-weight: 600;
 }
 
 .mobile-file-manager__breadcrumb-btn:active {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
 }
 
 .mobile-file-manager__breadcrumb-btn svg {
@@ -848,8 +985,8 @@ onMounted(() => {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -879,15 +1016,19 @@ onMounted(() => {
   background: rgba(0, 122, 255, 0.15);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  color: var(--gui-accent, #007AFF);
+  color: var(--gui-accent, #007aff);
   font-size: 16px;
   font-weight: 600;
   animation: fm-fade-in 0.2s ease;
 }
 
 @keyframes fm-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Grid ───────────────────────────────────────────────────────────── */
@@ -910,7 +1051,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 12px 8px;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-radius: 14px;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -923,8 +1064,8 @@ onMounted(() => {
 }
 
 .mobile-file-manager__item--selected {
-  border-color: var(--gui-accent, #007AFF);
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  border-color: var(--gui-accent, #007aff);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
 }
 
 .mobile-file-manager__item-icon {
@@ -936,34 +1077,34 @@ onMounted(() => {
 }
 
 .mobile-file-manager__item-icon--folder {
-  color: #FF9500;
+  color: #ff9500;
 }
 
 .mobile-file-manager__item-icon--image {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .mobile-file-manager__item-icon--audio {
-  color: #AF52DE;
+  color: #af52de;
 }
 
 .mobile-file-manager__item-icon--video {
-  color: #FF9500;
+  color: #ff9500;
 }
 
 .mobile-file-manager__item-icon--code {
-  color: #5AC8FA;
+  color: #5ac8fa;
 }
 
 .mobile-file-manager__item-icon--file {
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
 }
 
 .mobile-file-manager__item-name {
   width: 100%;
   font-size: 12px;
   font-weight: 500;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -989,7 +1130,7 @@ onMounted(() => {
 .mobile-file-manager__empty-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   margin: 12px 0 8px;
 }
 
@@ -1010,7 +1151,7 @@ onMounted(() => {
   padding: 14px 16px;
   background: none;
   border: none;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   font-size: 15px;
   text-align: left;
   cursor: pointer;
@@ -1019,10 +1160,10 @@ onMounted(() => {
 }
 
 .mobile-file-manager__context-item:active {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
 }
 
 .mobile-file-manager__context-item--danger {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 </style>

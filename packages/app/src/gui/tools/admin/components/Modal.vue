@@ -12,7 +12,12 @@
             <h3 class="admin-modal__title">{{ title }}</h3>
             <button class="admin-modal__close" @click="onClose">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <path
+                  d="M4 4L12 12M12 4L4 12"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
               </svg>
             </button>
           </div>
@@ -67,7 +72,9 @@ function onClose() {
   background: #1a1a1a;
   border: 1px solid #2a2a2a;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.7),
+    0 0 1px rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   max-height: 85vh;
@@ -132,7 +139,9 @@ function onClose() {
 
 .admin-modal-enter-active .admin-modal,
 .admin-modal-leave-active .admin-modal {
-  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 200ms ease;
+  transition:
+    transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 200ms ease;
 }
 
 .admin-modal-enter-from,

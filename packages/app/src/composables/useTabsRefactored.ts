@@ -64,7 +64,7 @@ export function useTabsRefactored() {
       status: 'active',
       icon: options?.icon,
       closable: options?.closable ?? true,
-      data: options?.data ?? {}
+      data: options?.data ?? {},
     })
 
     try {
@@ -93,7 +93,7 @@ export function useTabsRefactored() {
       await tabRepository.close(tabId)
 
       // Update local state
-      const index = tabs.value.findIndex(t => t.id === tabId)
+      const index = tabs.value.findIndex((t) => t.id === tabId)
       if (index !== -1) {
         tabs.value.splice(index, 1)
       }
@@ -137,7 +137,7 @@ export function useTabsRefactored() {
       await tabRepository.updateTitle(tabId, title)
 
       // Update local state
-      const tab = tabs.value.find(t => t.id === tabId)
+      const tab = tabs.value.find((t) => t.id === tabId)
       if (tab) {
         tab.setTitle(title)
       }
@@ -157,7 +157,7 @@ export function useTabsRefactored() {
       await tabRepository.updateData(tabId, key, value)
 
       // Update local state
-      const tab = tabs.value.find(t => t.id === tabId)
+      const tab = tabs.value.find((t) => t.id === tabId)
       if (tab) {
         tab.setData(key, value)
       }
@@ -173,12 +173,12 @@ export function useTabsRefactored() {
 
   // Get tab by ID
   const getTab = (tabId: string): TabEntity | undefined => {
-    return tabs.value.find(t => t.id === tabId)
+    return tabs.value.find((t) => t.id === tabId)
   }
 
   // Get active tab
   const getActiveTab = (): TabEntity | undefined => {
-    return tabs.value.find(t => t.id === activeTabId.value)
+    return tabs.value.find((t) => t.id === activeTabId.value)
   }
 
   // Listen to events
@@ -230,6 +230,6 @@ export function useTabsRefactored() {
     updateTabTitle,
     updateTabData,
     getTab,
-    getActiveTab
+    getActiveTab,
   }
 }

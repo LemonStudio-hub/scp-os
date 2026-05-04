@@ -7,14 +7,23 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { filesystem } from '../../utils/filesystem'
 import type { FileSystemNode } from '../../utils/filesystem'
-import type { ViewMode, SortField, SortOrder, FileItem, ContextMenuIcon, ContextMenuState } from '../types'
+import type {
+  ViewMode,
+  SortField,
+  SortOrder,
+  FileItem,
+  ContextMenuIcon,
+  ContextMenuState,
+} from '../types'
 import logger from '../../utils/logger'
 
 // i18n — set by consuming component via setI18n()
- 
-let _t: ((key: string, params?: Record<string, string | number>) => string) = (key: string) => key
 
-export function setI18n(i18n: { t: (key: string, params?: Record<string, string | number>) => string }): void {
+let _t: (key: string, params?: Record<string, string | number>) => string = (key: string) => key
+
+export function setI18n(i18n: {
+  t: (key: string, params?: Record<string, string | number>) => string
+}): void {
   _t = i18n.t
 }
 
@@ -42,7 +51,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     // Apply search filter
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
-      filtered = filtered.filter(f => f.name.toLowerCase().includes(query))
+      filtered = filtered.filter((f) => f.name.toLowerCase().includes(query))
     }
 
     // Apply sorting
@@ -221,20 +230,40 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   }
 
   function getFileContextItems(fileName: string): FileContextAction[] {
-    const file = files.value.find(f => f.name === fileName)
+    const file = files.value.find((f) => f.name === fileName)
     const isDir = file?.isDirectory ?? false
 
     return [
-      { id: 'open', label: isDir ? _t('fm.open') : _t('fm.edit'), icon: isDir ? 'folder-open' : 'edit', action: () => openFile(fileName) },
-      { id: 'rename', label: _t('common.rename'), icon: 'edit', action: () => promptRename(fileName) },
-      { id: 'delete', label: _t('common.delete'), icon: 'trash', action: () => deleteFile(fileName) },
+      {
+        id: 'open',
+        label: isDir ? _t('fm.open') : _t('fm.edit'),
+        icon: isDir ? 'folder-open' : 'edit',
+        action: () => openFile(fileName),
+      },
+      {
+        id: 'rename',
+        label: _t('common.rename'),
+        icon: 'edit',
+        action: () => promptRename(fileName),
+      },
+      {
+        id: 'delete',
+        label: _t('common.delete'),
+        icon: 'trash',
+        action: () => deleteFile(fileName),
+      },
     ]
   }
 
   function getDirectoryContextItems(): FileContextAction[] {
     return [
       { id: 'new-file', label: _t('fm.newFile'), icon: 'file', action: () => promptNewFile() },
-      { id: 'new-folder', label: _t('fm.newFolder'), icon: 'folder', action: () => promptNewFolder() },
+      {
+        id: 'new-folder',
+        label: _t('fm.newFolder'),
+        icon: 'folder',
+        action: () => promptNewFolder(),
+      },
       { id: 'refresh', label: _t('fm.refresh'), icon: 'refresh', action: () => loadDirectory() },
     ]
   }

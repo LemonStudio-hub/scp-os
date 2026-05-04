@@ -62,7 +62,7 @@ export default [
       'no-debugger': 'warn',
       'prefer-const': 'warn',
       'no-var': 'error',
-      'eqeqeq': ['warn', 'always', { null: 'ignore' }],
+      eqeqeq: ['warn', 'always', { null: 'ignore' }],
       'no-implicit-coercion': 'warn',
     },
   },

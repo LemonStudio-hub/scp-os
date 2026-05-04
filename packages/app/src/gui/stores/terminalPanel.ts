@@ -33,7 +33,7 @@ export const useTerminalPanelStore = defineStore('terminalPanel', () => {
   function setFontSize(size: number): void {
     fontSize.value = size
     // Update all terminal instances
-    terminalInstances.value.forEach(instance => {
+    terminalInstances.value.forEach((instance) => {
       if (instance.options) {
         instance.options.fontSize = size
       }
@@ -41,7 +41,9 @@ export const useTerminalPanelStore = defineStore('terminalPanel', () => {
   }
 
   function clear(): void {
-    const instance = activeTerminalId.value ? terminalInstances.value.get(activeTerminalId.value) : null
+    const instance = activeTerminalId.value
+      ? terminalInstances.value.get(activeTerminalId.value)
+      : null
     if (instance && instance.clear) {
       instance.clear()
     }

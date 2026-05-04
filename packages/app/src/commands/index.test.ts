@@ -19,7 +19,7 @@ describe('commands/index', () => {
   beforeEach(() => {
     writeMock = vi.fn()
     writelnMock = vi.fn()
-    
+
     // Reset all mocks before each test
     vi.clearAllMocks()
   })
@@ -33,12 +33,22 @@ describe('commands/index', () => {
 
     it('should return handler for all known commands', () => {
       const commands: CommandType[] = [
-        'help', 'status', 'clear', 'cls', 'containment',
-        'scp-list', 'info', 'protocol', 'emergency',
-        'version', 'about', 'search', 'logout'
+        'help',
+        'status',
+        'clear',
+        'cls',
+        'containment',
+        'scp-list',
+        'info',
+        'protocol',
+        'emergency',
+        'version',
+        'about',
+        'search',
+        'logout',
       ]
 
-      commands.forEach(cmd => {
+      commands.forEach((cmd) => {
         const handler = getCommandHandler(cmd)
         expect(handler).toBeDefined()
       })
@@ -54,11 +64,11 @@ describe('commands/index', () => {
     it('should display all available commands', () => {
       const handler = commandHandlers.help
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('Available Commands')
       expect(output).toContain('help')
       expect(output).toContain('status')
@@ -69,11 +79,11 @@ describe('commands/index', () => {
     it('should display system status information', () => {
       const handler = commandHandlers.status
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('System Status Report')
       expect(output).toContain('Online')
       expect(output).toContain('Active Containment')
@@ -82,10 +92,10 @@ describe('commands/index', () => {
     it('should display site status', () => {
       const handler = commandHandlers.status
       handler([], writeMock, writelnMock)
-      
+
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('Site-19')
       expect(output).toContain('Site-17')
     })
@@ -95,7 +105,7 @@ describe('commands/index', () => {
     it('should send clear screen command', () => {
       const handler = commandHandlers.clear
       handler([], writeMock, writelnMock)
-      
+
       expect(writeMock).toHaveBeenCalledWith('\x1b[2J\x1b[H')
     })
   })
@@ -104,7 +114,7 @@ describe('commands/index', () => {
     it('should send clear screen command', () => {
       const handler = commandHandlers.cls
       handler([], writeMock, writelnMock)
-      
+
       expect(writeMock).toHaveBeenCalledWith('\x1b[2J\x1b[H')
     })
   })
@@ -113,11 +123,11 @@ describe('commands/index', () => {
     it('should display containment protocol information', () => {
       const handler = commandHandlers.containment
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('Containment Protocols')
       expect(output).toContain('Safe Class')
       expect(output).toContain('Euclid Class')
@@ -129,11 +139,11 @@ describe('commands/index', () => {
     it('should display SCP list', () => {
       const handler = commandHandlers['scp-list']
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('Known SCP Objects')
       expect(output).toContain('SCP-173')
     })
@@ -141,10 +151,10 @@ describe('commands/index', () => {
     it('should display tips', () => {
       const handler = commandHandlers['scp-list']
       handler([], writeMock, writelnMock)
-      
+
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('info <number>')
       expect(output).toContain('search <keyword>')
     })
@@ -166,7 +176,7 @@ describe('commands/index', () => {
           appendix: [],
           references: [],
           author: 'Unknown Author',
-          url: 'https://scp-wiki-cn.wikidot.com/scp-173'
+          url: 'https://scp-wiki-cn.wikidot.com/scp-173',
         },
         cached: false,
       })
@@ -178,21 +188,19 @@ describe('commands/index', () => {
 
       // Need to set window.__terminalController to avoid startup sequence
       await handler(['173'], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('SCP-173')
     })
 
     it('should display prompt when no parameter provided', () => {
       const handler = commandHandlers.info
       handler([], writeMock, writelnMock)
-      
-      expect(writelnMock).toHaveBeenCalledWith(
-        expect.stringContaining('Please specify SCP number')
-      )
+
+      expect(writelnMock).toHaveBeenCalledWith(expect.stringContaining('Please specify SCP number'))
     })
 
     it('should display error when SCP does not exist', async () => {
@@ -202,14 +210,14 @@ describe('commands/index', () => {
         success: false,
         error: 'SCP object does not exist or is inaccessible',
       })
-      
+
       const handler = commandHandlers.info
       await handler(['9999'], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       // Test should display query failure information
       expect(output).toContain('Query failed')
       expect(output).toContain('9999')
@@ -220,11 +228,11 @@ describe('commands/index', () => {
     it('should display security protocol information', () => {
       const handler = commandHandlers.protocol
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('Security Protocols')
       expect(output).toContain('Omega-7')
       expect(output).toContain('Alpha-1')
@@ -235,11 +243,11 @@ describe('commands/index', () => {
     it('should display emergency contact information', () => {
       const handler = commandHandlers.emergency
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('Emergency Contact')
       expect(output).toContain('Containment Breach')
       expect(output).toContain('911')
@@ -250,11 +258,11 @@ describe('commands/index', () => {
     it('should display version information', () => {
       const handler = commandHandlers.version
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('System Version')
       expect(output).toContain('3.0.2')
       expect(output).toContain('Security Level')
@@ -265,11 +273,11 @@ describe('commands/index', () => {
     it('should display about information', () => {
       const handler = commandHandlers.about
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('About SCP-OS')
       expect(output).toContain('Secure. Contain. Protect.')
     })
@@ -277,10 +285,10 @@ describe('commands/index', () => {
     it('should include warning information', () => {
       const handler = commandHandlers.about
       handler([], writeMock, writelnMock)
-      
+
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('authorized personnel only')
     })
   })
@@ -297,15 +305,15 @@ describe('commands/index', () => {
         appendix: [],
         references: [],
         author: 'Unknown',
-        url: 'https://scp-wiki-cn.wikidot.com/scp-173'
+        url: 'https://scp-wiki-cn.wikidot.com/scp-173',
       }
       vi.mocked(scraper.searchSCP).mockResolvedValue({
         success: true,
-        data: mockData
+        data: mockData,
       })
       vi.mocked(scraper.formatForTerminal).mockReturnValue([
         'Formatted output line 1',
-        'Formatted output line 2'
+        'Formatted output line 2',
       ])
 
       const handler = commandHandlers.search
@@ -332,7 +340,7 @@ describe('commands/index', () => {
       const { scraper } = await import('../utils/scraper')
       vi.mocked(scraper.searchSCP).mockResolvedValue({
         success: false,
-        error: '未找到包含 "nonexistent keyword" 的SCP对象'
+        error: '未找到包含 "nonexistent keyword" 的SCP对象',
       })
 
       const handler = commandHandlers.search
@@ -354,11 +362,11 @@ describe('commands/index', () => {
         appendix: [],
         references: [],
         author: 'Unknown',
-        url: ''
+        url: '',
       }
       vi.mocked(scraper.searchSCP).mockResolvedValue({
         success: true,
-        data: mockData
+        data: mockData,
       })
       vi.mocked(scraper.formatForTerminal).mockReturnValue([])
 
@@ -380,11 +388,11 @@ describe('commands/index', () => {
         appendix: [],
         references: [],
         author: 'Unknown',
-        url: ''
+        url: '',
       }
       vi.mocked(scraper.searchSCP).mockResolvedValue({
         success: true,
-        data: mockData
+        data: mockData,
       })
       vi.mocked(scraper.formatForTerminal).mockReturnValue([])
 
@@ -400,17 +408,16 @@ describe('commands/index', () => {
     it('should display logout information', () => {
       const handler = commandHandlers.logout
       handler([], writeMock, writelnMock)
-      
+
       expect(writelnMock).toHaveBeenCalled()
       const calls = writelnMock.mock.calls
       const output = calls.map((call: any) => call[0]).join('\n')
-      
+
       expect(output).toContain('Logging out securely')
       expect(output).toContain('Session terminated')
       expect(output).toContain('Secure. Contain. Protect.')
     })
   })
-
-  })
+})
 
 export { commandHandlers }

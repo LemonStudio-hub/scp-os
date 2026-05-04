@@ -4,7 +4,11 @@
       <!-- Toolbar -->
       <div class="text-editor__toolbar">
         <div class="text-editor__toolbar-left">
-          <button class="text-editor__tool-btn" :title="'New File (Ctrl+N)'" @click="editorStore.openNewFile">
+          <button
+            class="text-editor__tool-btn"
+            :title="'New File (Ctrl+N)'"
+            @click="editorStore.openNewFile"
+          >
             <GUIIcon name="file" :size="14" />
             <span>New</span>
           </button>
@@ -17,29 +21,82 @@
             <span>All</span>
           </button>
           <div class="text-editor__toolbar-divider" />
-          <button class="text-editor__tool-btn" :class="{ 'text-editor__tool-btn--active': showFindReplace }" :title="'Find & Replace (Ctrl+F)'" @click="toggleFindReplace">
+          <button
+            class="text-editor__tool-btn"
+            :class="{ 'text-editor__tool-btn--active': showFindReplace }"
+            :title="'Find & Replace (Ctrl+F)'"
+            @click="toggleFindReplace"
+          >
             <GUIIcon name="search" :size="14" />
             <span>Find</span>
           </button>
-          <button class="text-editor__tool-btn" :title="'Go to Line (Ctrl+G)'" @click="openGoToLine">
+          <button
+            class="text-editor__tool-btn"
+            :title="'Go to Line (Ctrl+G)'"
+            @click="openGoToLine"
+          >
             <GUIIcon name="arrow-right" :size="14" />
             <span>Go</span>
           </button>
           <div class="text-editor__toolbar-divider" />
-          <button class="text-editor__tool-btn" :class="{ 'text-editor__tool-btn--active': editorStore.wordWrap }" :title="'Toggle Word Wrap (Alt+Z)'" @click="toggleWordWrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18"/><path d="M3 12h15a3 3 0 110 6h-4"/><polyline points="14 15 11 18 14 21"/><path d="M3 18h7"/>
+          <button
+            class="text-editor__tool-btn"
+            :class="{ 'text-editor__tool-btn--active': editorStore.wordWrap }"
+            :title="'Toggle Word Wrap (Alt+Z)'"
+            @click="toggleWordWrap"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 6h18" />
+              <path d="M3 12h15a3 3 0 110 6h-4" />
+              <polyline points="14 15 11 18 14 21" />
+              <path d="M3 18h7" />
             </svg>
             <span>Wrap</span>
           </button>
         </div>
         <div class="text-editor__toolbar-right">
-          <button class="text-editor__tool-btn text-editor__tool-btn--icon" :title="'Zoom Out (Ctrl+-)'" @click="zoomOut">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <button
+            class="text-editor__tool-btn text-editor__tool-btn--icon"
+            :title="'Zoom Out (Ctrl+-)'"
+            @click="zoomOut"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
           </button>
           <span class="text-editor__font-size-label">{{ editorStore.fontSize }}px</span>
-          <button class="text-editor__tool-btn text-editor__tool-btn--icon" :title="'Zoom In (Ctrl++)'" @click="zoomIn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <button
+            class="text-editor__tool-btn text-editor__tool-btn--icon"
+            :title="'Zoom In (Ctrl++)'"
+            @click="zoomIn"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
           </button>
         </div>
       </div>
@@ -58,12 +115,24 @@
         <template v-if="editorStore.openFiles.length === 0">
           <div class="text-editor__empty">
             <div class="text-editor__empty-logo">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/>
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
               </svg>
             </div>
             <p class="text-editor__empty-title">Text Editor</p>
-            <p class="text-editor__empty-desc">Create a new file or open one from the File Manager</p>
+            <p class="text-editor__empty-desc">
+              Create a new file or open one from the File Manager
+            </p>
             <div class="text-editor__empty-shortcuts">
               <div class="text-editor__shortcut" @click="editorStore.openNewFile">
                 <kbd>Ctrl</kbd><kbd>N</kbd>
@@ -91,8 +160,17 @@
           <Transition name="find-slide">
             <div v-if="showFindReplace" class="text-editor__find-replace">
               <div class="text-editor__find-row">
-                <svg class="text-editor__find-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/>
+                <svg
+                  class="text-editor__find-icon"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <circle cx="7" cy="7" r="4.5" />
+                  <path d="M10.5 10.5L14 14" />
                 </svg>
                 <input
                   ref="findInputRef"
@@ -103,18 +181,54 @@
                   @keydown.enter="findNext"
                   @keydown.escape="closeFindReplace"
                 />
-                <button class="text-editor__find-btn" title="Previous (Shift+Enter)" @click="findPrev">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 10L8 5L3 10"/></svg>
+                <button
+                  class="text-editor__find-btn"
+                  title="Previous (Shift+Enter)"
+                  @click="findPrev"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path d="M13 10L8 5L3 10" />
+                  </svg>
                 </button>
                 <button class="text-editor__find-btn" title="Next (Enter)" @click="findNext">
-                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6L8 11L13 6"/></svg>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path d="M3 6L8 11L13 6" />
+                  </svg>
                 </button>
-                <span v-if="findCount > 0" class="text-editor__find-count">{{ findCurrentIndex }}/{{ findCount }}</span>
-                <span v-else-if="findText && findCount === 0" class="text-editor__find-count text-editor__find-count--none">No results</span>
+                <span v-if="findCount > 0" class="text-editor__find-count"
+                  >{{ findCurrentIndex }}/{{ findCount }}</span
+                >
+                <span
+                  v-else-if="findText && findCount === 0"
+                  class="text-editor__find-count text-editor__find-count--none"
+                  >No results</span
+                >
               </div>
               <div class="text-editor__find-row">
-                <svg class="text-editor__find-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M3 4h10M3 8h10M3 12h10"/>
+                <svg
+                  class="text-editor__find-icon"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M3 4h10M3 8h10M3 12h10" />
                 </svg>
                 <input
                   v-model="replaceText"
@@ -128,7 +242,16 @@
                 <button class="text-editor__find-btn" @click="replaceAll">All</button>
               </div>
               <button class="text-editor__find-close" @click="closeFindReplace">
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l10 10M12 2L2 12"/></svg>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M2 2l10 10M12 2L2 12" />
+                </svg>
               </button>
             </div>
           </Transition>
@@ -148,7 +271,16 @@
               />
               <button class="text-editor__find-btn" @click="goToLine">Go</button>
               <button class="text-editor__find-close" @click="closeGoToLine">
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l10 10M12 2L2 12"/></svg>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M2 2l10 10M12 2L2 12" />
+                </svg>
               </button>
             </div>
           </Transition>
@@ -156,21 +288,32 @@
       </div>
 
       <!-- Status Bar -->
-      <SCPStatusBar
-        :left-items="statusLeftItems"
-        :right-items="statusRightItems"
-      />
+      <SCPStatusBar :left-items="statusLeftItems" :right-items="statusRightItems" />
     </div>
   </SCPWindow>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, type ViewUpdate } from '@codemirror/view'
+import {
+  EditorView,
+  keymap,
+  lineNumbers,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  type ViewUpdate,
+} from '@codemirror/view'
 import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search'
-import { bracketMatching, foldGutter, foldKeymap, syntaxHighlighting, defaultHighlightStyle, indentOnInput } from '@codemirror/language'
+import {
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+  indentOnInput,
+} from '@codemirror/language'
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
 import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
@@ -225,7 +368,7 @@ const totalLines = computed(() => {
 })
 
 const editorTabs = computed(() => {
-  return editorStore.openFiles.map(f => ({
+  return editorStore.openFiles.map((f) => ({
     id: f.id,
     label: f.name,
     dirty: f.dirty,
@@ -307,7 +450,8 @@ function createTheme(): any {
       backgroundColor: 'var(--gui-editor-bg, #0a0a0a)',
       color: 'var(--gui-text-primary, #f0f0f0)',
       fontSize: `${editorStore.fontSize}px`,
-      fontFamily: 'var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, monospace)',
+      fontFamily:
+        'var(--gui-font-mono, "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, monospace)',
     },
     '&.cm-editor.cm-focused': {
       outline: 'none',
@@ -447,9 +591,11 @@ function initEditor(): void {
     stateCompartment.of([]),
     languageCompartment.of(langExtension ? [langExtension] : []),
     themeCompartment.of(createTheme()),
-    fontSizeCompartment.of(EditorView.theme({
-      '&': { fontSize: `${editorStore.fontSize}px` },
-    })),
+    fontSizeCompartment.of(
+      EditorView.theme({
+        '&': { fontSize: `${editorStore.fontSize}px` },
+      })
+    ),
     wrapCompartment.of(editorStore.wordWrap ? [EditorView.lineWrapping] : []),
     EditorView.updateListener.of((update: ViewUpdate) => {
       if (update.docChanged) {
@@ -487,9 +633,11 @@ function updateLanguage(): void {
 function updateFontSize(): void {
   if (!editorView) return
   editorView.dispatch({
-    effects: fontSizeCompartment.reconfigure(EditorView.theme({
-      '&': { fontSize: `${editorStore.fontSize}px` },
-    })),
+    effects: fontSizeCompartment.reconfigure(
+      EditorView.theme({
+        '&': { fontSize: `${editorStore.fontSize}px` },
+      })
+    ),
   })
 }
 
@@ -520,7 +668,7 @@ function saveAll(): void {
 }
 
 function onCloseFile(fileId: string): void {
-  const file = editorStore.openFiles.find(f => f.id === fileId)
+  const file = editorStore.openFiles.find((f) => f.id === fileId)
   if (file?.dirty) {
     if (!confirm(`"${file.name}" has unsaved changes. Close anyway?`)) {
       return
@@ -712,16 +860,22 @@ function goToLine(): void {
   editorView.focus()
 }
 
-watch(() => editorStore.activeFileId, () => {
-  if (editorStore.openFiles.length > 0) {
-    nextTick(() => initEditor())
-    updateLanguage()
+watch(
+  () => editorStore.activeFileId,
+  () => {
+    if (editorStore.openFiles.length > 0) {
+      nextTick(() => initEditor())
+      updateLanguage()
+    }
   }
-})
+)
 
-watch(() => editorStore.fontSize, () => {
-  updateFontSize()
-})
+watch(
+  () => editorStore.fontSize,
+  () => {
+    updateFontSize()
+  }
+)
 
 onMounted(() => {
   setContext('editor')
@@ -806,7 +960,7 @@ onUnmounted(() => {
   flex-direction: column;
   height: 100%;
   background: var(--gui-window-bg, #0e0e0e);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
 }
 
 /* ── Toolbar ─────────────────────────────────────────────────────────── */
@@ -873,7 +1027,7 @@ onUnmounted(() => {
 .text-editor__font-size-label {
   font-size: 10px;
   color: var(--gui-text-tertiary, #6a6a6a);
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   min-width: 32px;
   text-align: center;
 }
@@ -930,13 +1084,13 @@ onUnmounted(() => {
 
 .text-editor__find-input {
   flex: 1;
-  background: var(--gui-bg-base, #0A0A0A);
+  background: var(--gui-bg-base, #0a0a0a);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
   padding: 5px 8px;
   color: var(--gui-text-primary, #f0f0f0);
   font-size: var(--gui-font-xs, 11px);
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -950,7 +1104,7 @@ onUnmounted(() => {
 }
 
 .text-editor__find-btn {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
   padding: 4px 8px;
@@ -966,7 +1120,7 @@ onUnmounted(() => {
 }
 
 .text-editor__find-btn:hover {
-  background: var(--gui-bg-surface-2, #48484A);
+  background: var(--gui-bg-surface-2, #48484a);
   color: var(--gui-text-primary, #f0f0f0);
 }
 
@@ -987,14 +1141,14 @@ onUnmounted(() => {
 }
 
 .text-editor__find-close:hover {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
   color: var(--gui-text-primary, #f0f0f0);
 }
 
 .text-editor__find-count {
   font-size: 10px;
   color: var(--gui-text-secondary, #a8a8a8);
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   min-width: 40px;
   text-align: right;
 }
@@ -1028,13 +1182,13 @@ onUnmounted(() => {
 
 .text-editor__goto-input {
   width: 80px;
-  background: var(--gui-bg-base, #0A0A0A);
+  background: var(--gui-bg-base, #0a0a0a);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
   padding: 5px 8px;
   color: var(--gui-text-primary, #f0f0f0);
   font-size: var(--gui-font-xs, 11px);
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   outline: none;
   transition: border-color 0.15s ease;
 }
@@ -1106,7 +1260,7 @@ onUnmounted(() => {
   background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.06));
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 3px;
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   font-size: 9px;
   color: var(--gui-text-secondary, #a8a8a8);
   line-height: 1;

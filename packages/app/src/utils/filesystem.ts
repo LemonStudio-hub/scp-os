@@ -55,7 +55,7 @@ export class FileSystem {
       permissions: {
         user: { read: true, write: true, execute: true },
         group: { read: true, write: false, execute: true },
-        others: { read: true, write: false, execute: true }
+        others: { read: true, write: false, execute: true },
       },
       owner: 'root',
       group: 'root',
@@ -68,7 +68,7 @@ export class FileSystem {
           permissions: {
             user: { read: true, write: true, execute: true },
             group: { read: true, write: false, execute: true },
-            others: { read: true, write: false, execute: true }
+            others: { read: true, write: false, execute: true },
           },
           owner: 'root',
           group: 'root',
@@ -81,7 +81,7 @@ export class FileSystem {
               permissions: {
                 user: { read: true, write: true, execute: true },
                 group: { read: true, write: true, execute: true },
-                others: { read: true, write: false, execute: true }
+                others: { read: true, write: false, execute: true },
               },
               owner: 'scp',
               group: 'foundation',
@@ -94,13 +94,13 @@ export class FileSystem {
                   permissions: {
                     user: { read: true, write: true, execute: true },
                     group: { read: true, write: true, execute: true },
-                    others: { read: true, write: false, execute: true }
+                    others: { read: true, write: false, execute: true },
                   },
                   owner: 'scp',
                   group: 'foundation',
                   size: 0,
                   mtime: Date.now(),
-                  children: {}
+                  children: {},
                 },
                 logs: {
                   name: 'logs',
@@ -108,17 +108,17 @@ export class FileSystem {
                   permissions: {
                     user: { read: true, write: true, execute: true },
                     group: { read: true, write: true, execute: true },
-                    others: { read: false, write: false, execute: false }
+                    others: { read: false, write: false, execute: false },
                   },
                   owner: 'scp',
                   group: 'foundation',
                   size: 0,
                   mtime: Date.now(),
-                  children: {}
-                }
-              }
-            }
-          }
+                  children: {},
+                },
+              },
+            },
+          },
         },
         etc: {
           name: 'etc',
@@ -126,7 +126,7 @@ export class FileSystem {
           permissions: {
             user: { read: true, write: true, execute: true },
             group: { read: true, write: false, execute: true },
-            others: { read: true, write: false, execute: false }
+            others: { read: true, write: false, execute: false },
           },
           owner: 'root',
           group: 'root',
@@ -139,13 +139,14 @@ export class FileSystem {
               permissions: {
                 user: { read: true, write: true, execute: false },
                 group: { read: true, write: false, execute: false },
-                others: { read: true, write: false, execute: false }
+                others: { read: true, write: false, execute: false },
               },
               owner: 'root',
               group: 'root',
               size: 120,
               mtime: Date.now(),
-              content: 'root:x:0:0:root:/root:/bin/bash\nscp:x:1000:1000:SCP Foundation:/home/scp:/bin/bash\n'
+              content:
+                'root:x:0:0:root:/root:/bin/bash\nscp:x:1000:1000:SCP Foundation:/home/scp:/bin/bash\n',
             },
             hosts: {
               name: 'hosts',
@@ -153,15 +154,15 @@ export class FileSystem {
               permissions: {
                 user: { read: true, write: true, execute: false },
                 group: { read: true, write: false, execute: false },
-                others: { read: true, write: false, execute: false }
+                others: { read: true, write: false, execute: false },
               },
               owner: 'root',
               group: 'root',
               size: 80,
               mtime: Date.now(),
-              content: '127.0.0.1 localhost\n127.0.1.1 scp-terminal\n'
-            }
-          }
+              content: '127.0.0.1 localhost\n127.0.1.1 scp-terminal\n',
+            },
+          },
         },
         var: {
           name: 'var',
@@ -169,7 +170,7 @@ export class FileSystem {
           permissions: {
             user: { read: true, write: true, execute: true },
             group: { read: true, write: true, execute: true },
-            others: { read: true, write: false, execute: true }
+            others: { read: true, write: false, execute: true },
           },
           owner: 'root',
           group: 'root',
@@ -182,7 +183,7 @@ export class FileSystem {
               permissions: {
                 user: { read: true, write: true, execute: true },
                 group: { read: true, write: true, execute: true },
-                others: { read: false, write: false, execute: false }
+                others: { read: false, write: false, execute: false },
               },
               owner: 'root',
               group: 'root',
@@ -195,19 +196,20 @@ export class FileSystem {
                   permissions: {
                     user: { read: true, write: true, execute: false },
                     group: { read: true, write: false, execute: false },
-                    others: { read: false, write: false, execute: false }
+                    others: { read: false, write: false, execute: false },
                   },
                   owner: 'root',
                   group: 'root',
                   size: 200,
                   mtime: Date.now(),
-                  content: '2026-04-03 00:00:00 [INFO] System started\n2026-04-03 00:00:01 [INFO] Terminal initialized\n2026-04-03 00:00:02 [INFO] File system mounted\n'
-                }
-              }
-            }
-          }
-        }
-      }
+                  content:
+                    '2026-04-03 00:00:00 [INFO] System started\n2026-04-03 00:00:01 [INFO] Terminal initialized\n2026-04-03 00:00:02 [INFO] File system mounted\n',
+                },
+              },
+            },
+          },
+        },
+      },
     }
   }
 
@@ -257,7 +259,7 @@ export class FileSystem {
       newPath = [...this.currentPath]
     }
 
-    const parts = path.split('/').filter(p => p !== '')
+    const parts = path.split('/').filter((p) => p !== '')
 
     for (const part of parts) {
       if (part === '..') {
@@ -305,7 +307,7 @@ export class FileSystem {
       targetPath = [...this.currentPath]
     }
 
-    const parts = path.split('/').filter(p => p !== '')
+    const parts = path.split('/').filter((p) => p !== '')
     for (const part of parts) {
       if (part === '..') {
         if (targetPath.length > 1) {
@@ -330,7 +332,7 @@ export class FileSystem {
   listDirectory(path?: string): FileSystemNode[] {
     const targetPath = path ? this.resolvePath(path) : this.currentPath
     const node = this.getNode(targetPath)
-    
+
     if (!node || node.type !== 'directory' || !node.children) {
       return []
     }
@@ -348,7 +350,7 @@ export class FileSystem {
       resolvedPath = [...this.currentPath]
     }
 
-    const parts = path.split('/').filter(p => p !== '')
+    const parts = path.split('/').filter((p) => p !== '')
     for (const part of parts) {
       if (part === '..') {
         if (resolvedPath.length > 1) {
@@ -393,13 +395,13 @@ export class FileSystem {
       permissions: {
         user: { read: true, write: true, execute: true },
         group: { read: true, write: false, execute: true },
-        others: { read: true, write: false, execute: true }
+        others: { read: true, write: false, execute: true },
       },
       owner: 'scp',
       group: 'foundation',
       size: 0,
       mtime: Date.now(),
-      children: {}
+      children: {},
     }
 
     parentNode.mtime = Date.now()
@@ -432,13 +434,13 @@ export class FileSystem {
       permissions: {
         user: { read: true, write: true, execute: false },
         group: { read: true, write: false, execute: false },
-        others: { read: true, write: false, execute: false }
+        others: { read: true, write: false, execute: false },
       },
       owner: 'scp',
       group: 'foundation',
       size: content.length,
       mtime: Date.now(),
-      content
+      content,
     }
 
     parentNode.mtime = Date.now()
@@ -484,10 +486,10 @@ export class FileSystem {
   // 检查写入权限
   private hasWritePermission(node: FileSystemNode): boolean {
     // 简化的权限检查，假设当前用户是 scp
-    return node.permissions.user.write || node.permissions.group.write || node.permissions.others.write
+    return (
+      node.permissions.user.write || node.permissions.group.write || node.permissions.others.write
+    )
   }
-
-
 
   // 读取文件内容
   readFile(path: string): string | null {
@@ -495,13 +497,13 @@ export class FileSystem {
     if (!node || node.type !== 'file') {
       return null
     }
-    
+
     // 检查读取权限
     if (!this.hasReadPermission(node)) {
       console.warn(`[Filesystem] Permission denied: cannot read '${path}'`)
       return null
     }
-    
+
     return node.content || ''
   }
 
@@ -562,7 +564,9 @@ export class FileSystem {
 
     // 检查目标父目录的写入权限
     if (!this.hasWritePermission(destParentNode)) {
-      console.warn(`[Filesystem] Permission denied: cannot write to destination '${destinationPath}'`)
+      console.warn(
+        `[Filesystem] Permission denied: cannot write to destination '${destinationPath}'`
+      )
       return false
     }
 
@@ -574,7 +578,7 @@ export class FileSystem {
     const copyNode = (node: FileSystemNode): FileSystemNode => {
       const newNode: FileSystemNode = {
         ...node,
-        mtime: Date.now()
+        mtime: Date.now(),
       }
 
       if (node.type === 'directory' && node.children) {
@@ -608,7 +612,7 @@ export class FileSystem {
     const sourceParts = this.resolvePath(sourcePath)
     sourceParts.pop()
     const sourceParentNode = this.getNode(sourceParts)
-    
+
     // 检查源父目录的写入权限（需要写入权限才能删除）
     if (sourceParentNode && !this.hasWritePermission(sourceParentNode)) {
       console.warn(`[Filesystem] Permission denied: cannot delete source '${sourcePath}'`)
@@ -681,14 +685,14 @@ export class FileSystem {
   }
 
   // 搜索文件内容
-  grepContent(pattern: string, files: string[]): { file: string, lines: string[] }[] {
-    const results: { file: string, lines: string[] }[] = []
+  grepContent(pattern: string, files: string[]): { file: string; lines: string[] }[] {
+    const results: { file: string; lines: string[] }[] = []
 
     for (const file of files) {
       const node = this.getNodeByPath(file)
       if (node && node.type === 'file' && node.content) {
         const lines = node.content.split('\n')
-        const matchingLines = lines.filter(line => line.match(pattern))
+        const matchingLines = lines.filter((line) => line.match(pattern))
         if (matchingLines.length > 0) {
           results.push({ file, lines: matchingLines })
         }

@@ -8,7 +8,12 @@
           <SCPButton variant="ghost" size="sm" icon="refresh" title="Restart" @click="onRestart" />
         </div>
         <div class="terminal-panel__toolbar-right">
-          <SCPButton variant="ghost" size="sm" :title="`Font: ${fontSize}px`" @click="onToggleFontSize">
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            :title="`Font: ${fontSize}px`"
+            @click="onToggleFontSize"
+          >
             <span class="terminal-panel__font-size">{{ fontSize > 14 ? 'A-' : 'A+' }}</span>
           </SCPButton>
         </div>
@@ -18,10 +23,7 @@
       <div ref="terminalContainerRef" class="terminal-panel__terminal" />
 
       <!-- Status Bar -->
-      <SCPStatusBar
-        :left-items="['Terminal', 'bash']"
-        :right-items="[`${fontSize}px`]"
-      />
+      <SCPStatusBar :left-items="['Terminal', 'bash']" :right-items="[`${fontSize}px`]" />
     </div>
   </SCPWindow>
 </template>
@@ -133,12 +135,15 @@ function onToggleFontSize(): void {
 }
 
 // Watch for theme changes
-watch(() => themeStore.currentThemeId, () => {
-  if (terminal.value) {
-    terminal.value.options.theme = getTerminalTheme()
-    terminal.value.refresh(0, terminal.value.rows - 1)
+watch(
+  () => themeStore.currentThemeId,
+  () => {
+    if (terminal.value) {
+      terminal.value.options.theme = getTerminalTheme()
+      terminal.value.refresh(0, terminal.value.rows - 1)
+    }
   }
-})
+)
 
 function onClose(): void {
   if (terminal.value) {

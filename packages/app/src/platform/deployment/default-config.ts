@@ -19,42 +19,42 @@ export const DEFAULT_DEV_CONFIG: DeploymentConfiguration = {
       type: 'custom',
       config: {
         port: 5173,
-        host: 'localhost'
-      }
-    }
+        host: 'localhost',
+      },
+    },
   ],
   build: {
     command: 'npm run build:development',
     output: 'dist',
     envVars: {
       NODE_ENV: 'development',
-      VITE_APP_ENV: 'development'
+      VITE_APP_ENV: 'development',
     },
     optimizations: {
       minify: false,
       codeSplitting: true,
       treeShaking: true,
-      sourceMaps: true
-    }
+      sourceMaps: true,
+    },
   },
   strategy: 'manual',
   envVars: {
     VITE_APP_NAME: 'SCP-OS (Dev)',
-    VITE_APP_VERSION: '0.0.0-dev'
+    VITE_APP_VERSION: '0.0.0-dev',
   },
   secrets: {},
   rollback: {
     enabled: false,
     maxAttempts: 3,
-    timeout: 30000
+    timeout: 30000,
   },
   healthCheck: {
     enabled: false,
     endpoint: '/health',
     interval: 30000,
     timeout: 5000,
-    unhealthyThreshold: 3
-  }
+    unhealthyThreshold: 3,
+  },
 }
 
 /**
@@ -76,47 +76,47 @@ export const DEFAULT_STAGING_CONFIG: DeploymentConfiguration = {
         installCommand: 'npm install',
         buildCommand: 'npm run build:production',
         outputDirectory: 'dist',
-        devCommand: 'npm run dev'
-      }
-    }
+        devCommand: 'npm run dev',
+      },
+    },
   ],
   build: {
     command: 'npm run build:production',
     output: 'dist',
     envVars: {
       NODE_ENV: 'production',
-      VITE_APP_ENV: 'staging'
+      VITE_APP_ENV: 'staging',
     },
     optimizations: {
       minify: true,
       codeSplitting: true,
       treeShaking: true,
-      sourceMaps: false
-    }
+      sourceMaps: false,
+    },
   },
   strategy: 'git',
   git: {
     repository: 'https://github.com/LemonStudio-hub/scp-os.git',
     branch: 'main',
-    commitMessagePattern: 'chore(release): v{version}'
+    commitMessagePattern: 'chore(release): v{version}',
   },
   envVars: {
     VITE_APP_NAME: 'SCP-OS (Staging)',
-    VITE_APP_VERSION: '0.0.0-staging'
+    VITE_APP_VERSION: '0.0.0-staging',
   },
   secrets: {},
   rollback: {
     enabled: true,
     maxAttempts: 3,
-    timeout: 60000
+    timeout: 60000,
   },
   healthCheck: {
     enabled: true,
     endpoint: '/health',
     interval: 30000,
     timeout: 10000,
-    unhealthyThreshold: 3
-  }
+    unhealthyThreshold: 3,
+  },
 }
 
 /**
@@ -138,8 +138,8 @@ export const DEFAULT_PROD_CONFIG: DeploymentConfiguration = {
         installCommand: 'npm install',
         buildCommand: 'npm run build:production',
         outputDirectory: 'dist',
-        devCommand: 'npm run dev'
-      }
+        devCommand: 'npm run dev',
+      },
     },
     {
       id: 'cloudflare-workers',
@@ -149,47 +149,47 @@ export const DEFAULT_PROD_CONFIG: DeploymentConfiguration = {
       config: {
         type: 'workers',
         entrypoint: 'worker/index.ts',
-        compatibility_date: '2024-01-01'
-      }
-    }
+        compatibility_date: '2024-01-01',
+      },
+    },
   ],
   build: {
     command: 'npm run build:production',
     output: 'dist',
     envVars: {
       NODE_ENV: 'production',
-      VITE_APP_ENV: 'production'
+      VITE_APP_ENV: 'production',
     },
     optimizations: {
       minify: true,
       codeSplitting: true,
       treeShaking: true,
-      sourceMaps: false
-    }
+      sourceMaps: false,
+    },
   },
   strategy: 'git',
   git: {
     repository: 'https://github.com/LemonStudio-hub/scp-os.git',
     branch: 'main',
-    commitMessagePattern: 'chore(release): v{version}'
+    commitMessagePattern: 'chore(release): v{version}',
   },
   envVars: {
     VITE_APP_NAME: 'SCP-OS',
-    VITE_APP_VERSION: '0.0.0'
+    VITE_APP_VERSION: '0.0.0',
   },
   secrets: {},
   rollback: {
     enabled: true,
     maxAttempts: 5,
-    timeout: 120000
+    timeout: 120000,
   },
   healthCheck: {
     enabled: true,
     endpoint: '/health',
     interval: 60000,
     timeout: 15000,
-    unhealthyThreshold: 5
-  }
+    unhealthyThreshold: 5,
+  },
 }
 
 /**
@@ -197,7 +197,9 @@ export const DEFAULT_PROD_CONFIG: DeploymentConfiguration = {
  * @param environment Environment type
  * @returns Default configuration
  */
-export function getDefaultConfiguration(environment: DeploymentEnvironment): DeploymentConfiguration {
+export function getDefaultConfiguration(
+  environment: DeploymentEnvironment
+): DeploymentConfiguration {
   switch (environment) {
     case 'development':
       return DEFAULT_DEV_CONFIG

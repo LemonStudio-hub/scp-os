@@ -3,9 +3,20 @@
     <div class="user-mgmt__toolbar">
       <div class="user-mgmt__filters">
         <div class="user-mgmt__search">
-          <svg class="user-mgmt__search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/>
-            <path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <svg
+            class="user-mgmt__search-icon"
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+          >
+            <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2" />
+            <path
+              d="M9.5 9.5L12.5 12.5"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            />
           </svg>
           <input
             v-model="searchQuery"
@@ -23,16 +34,29 @@
       </div>
       <div class="user-mgmt__actions-right">
         <div class="user-mgmt__export-wrap">
-          <button class="user-mgmt__btn user-mgmt__btn--secondary" @click="showExportMenu = !showExportMenu">
+          <button
+            class="user-mgmt__btn user-mgmt__btn--secondary"
+            @click="showExportMenu = !showExportMenu"
+          >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 2V9M7 9L4 6M7 9L10 6M3 11H11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M7 2V9M7 9L4 6M7 9L10 6M3 11H11"
+                stroke="currentColor"
+                stroke-width="1.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
             导出
           </button>
           <Transition name="dropdown">
             <div v-if="showExportMenu" class="user-mgmt__dropdown">
-              <button class="user-mgmt__dropdown-item" @click="handleExport('csv')">导出 CSV</button>
-              <button class="user-mgmt__dropdown-item" @click="handleExport('json')">导出 JSON</button>
+              <button class="user-mgmt__dropdown-item" @click="handleExport('csv')">
+                导出 CSV
+              </button>
+              <button class="user-mgmt__dropdown-item" @click="handleExport('json')">
+                导出 JSON
+              </button>
             </div>
           </Transition>
         </div>
@@ -47,7 +71,10 @@
       @select="selectedIds = $event"
     >
       <template #cell-is_banned="{ row }">
-        <span class="user-mgmt__badge" :class="row.is_banned ? 'user-mgmt__badge--banned' : 'user-mgmt__badge--active'">
+        <span
+          class="user-mgmt__badge"
+          :class="row.is_banned ? 'user-mgmt__badge--banned' : 'user-mgmt__badge--active'"
+        >
           {{ row.is_banned ? '已封禁' : '正常' }}
         </span>
       </template>
@@ -95,11 +122,18 @@
       @clear="selectedIds = []"
     />
 
-    <Modal :visible="banModalVisible" title="封禁用户" width="420px" @close="banModalVisible = false">
+    <Modal
+      :visible="banModalVisible"
+      title="封禁用户"
+      width="420px"
+      @close="banModalVisible = false"
+    >
       <div class="user-mgmt__modal-body">
         <div class="user-mgmt__modal-field">
           <label class="user-mgmt__modal-label">用户</label>
-          <span class="user-mgmt__modal-value">{{ banTarget?.nickname }} ({{ banTarget?.user_id }})</span>
+          <span class="user-mgmt__modal-value"
+            >{{ banTarget?.nickname }} ({{ banTarget?.user_id }})</span
+          >
         </div>
         <div class="user-mgmt__modal-field">
           <label class="user-mgmt__modal-label">封禁原因</label>
@@ -112,7 +146,9 @@
         </div>
       </div>
       <template #footer>
-        <button class="user-mgmt__btn user-mgmt__btn--ghost" @click="banModalVisible = false">取消</button>
+        <button class="user-mgmt__btn user-mgmt__btn--ghost" @click="banModalVisible = false">
+          取消
+        </button>
         <button class="user-mgmt__btn user-mgmt__btn--danger" @click="handleBan">确认封禁</button>
       </template>
     </Modal>
@@ -230,7 +266,13 @@ function formatDate(val: string | number) {
   if (!val) return '-'
   const d = new Date(typeof val === 'number' ? val * 1000 : val)
   if (isNaN(d.getTime())) return String(val)
-  return d.toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function openBanModal(row: Record<string, any>) {
@@ -310,7 +352,11 @@ async function executeBatchAction() {
   const token = adminStore.token
   if (!token) return
   try {
-    const res = await adminApi.batchUserOperation(token, pendingBatchAction.value, selectedIds.value)
+    const res = await adminApi.batchUserOperation(
+      token,
+      pendingBatchAction.value,
+      selectedIds.value
+    )
     if (res.success) {
       toast.success('批量操作成功')
       batchConfirmVisible.value = false
@@ -332,7 +378,9 @@ async function handleExport(format: 'csv' | 'json') {
     const res = await adminApi.exportUsers(token, format)
     if (res.success && res.data) {
       const content = format === 'json' ? JSON.stringify(res.data, null, 2) : res.data
-      const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' })
+      const blob = new Blob([content], {
+        type: format === 'json' ? 'application/json' : 'text/csv',
+      })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -398,7 +446,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__search-input:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .user-mgmt__search-input::placeholder {
@@ -418,7 +466,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__select:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .user-mgmt__actions-right {
@@ -504,7 +552,7 @@ onMounted(fetchUsers)
 
 .user-mgmt__btn--danger {
   background: rgba(255, 59, 48, 0.15);
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .user-mgmt__btn--danger:hover {
@@ -532,12 +580,12 @@ onMounted(fetchUsers)
 
 .user-mgmt__badge--active {
   background: rgba(52, 199, 89, 0.12);
-  color: #34C759;
+  color: #34c759;
 }
 
 .user-mgmt__badge--banned {
   background: rgba(255, 59, 48, 0.12);
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .user-mgmt__cell-actions {
@@ -562,7 +610,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__action-btn--warn {
-  color: #FFCC00;
+  color: #ffcc00;
   border-color: rgba(255, 204, 0, 0.2);
 }
 
@@ -571,7 +619,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__action-btn--success {
-  color: #34C759;
+  color: #34c759;
   border-color: rgba(52, 199, 89, 0.2);
 }
 
@@ -580,7 +628,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__action-btn--danger {
-  color: #FF3B30;
+  color: #ff3b30;
   border-color: rgba(255, 59, 48, 0.2);
 }
 
@@ -627,7 +675,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__textarea:focus {
-  border-color: #E94560;
+  border-color: #e94560;
 }
 
 .user-mgmt__textarea::placeholder {

@@ -35,8 +35,17 @@ async function handleLogin() {
     <div class="admin-login__card">
       <div class="admin-login__header">
         <div class="admin-login__icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
         </div>
         <h1 class="admin-login__title">SCP-OS Admin</h1>
@@ -72,11 +81,7 @@ async function handleLogin() {
 
         <div v-if="errorMsg" class="admin-login__error">{{ errorMsg }}</div>
 
-        <button
-          type="submit"
-          class="admin-login__btn"
-          :disabled="isLoading"
-        >
+        <button type="submit" class="admin-login__btn" :disabled="isLoading">
           <span v-if="isLoading" class="admin-login__spinner"></span>
           <span v-else>登录</span>
         </button>
@@ -100,8 +105,12 @@ async function handleLogin() {
 }
 
 @keyframes adminLoginFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .admin-login__card {
@@ -116,8 +125,14 @@ async function handleLogin() {
 }
 
 @keyframes adminLoginCardIn {
-  from { opacity: 0; transform: translateY(20px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .admin-login__header {
@@ -133,7 +148,7 @@ async function handleLogin() {
   height: 56px;
   border-radius: 14px;
   background: rgba(233, 69, 96, 0.1);
-  color: #E94560;
+  color: #e94560;
   margin-bottom: 16px;
 }
 
@@ -180,7 +195,9 @@ async function handleLogin() {
   font-size: 14px;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
   box-sizing: border-box;
 }
 
@@ -189,7 +206,7 @@ async function handleLogin() {
 }
 
 .admin-login__input:focus {
-  border-color: #E94560;
+  border-color: #e94560;
   box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.15);
 }
 
@@ -200,7 +217,7 @@ async function handleLogin() {
 
 .admin-login__error {
   font-size: 12px;
-  color: #E94560;
+  color: #e94560;
   padding: 8px 12px;
   background: rgba(233, 69, 96, 0.08);
   border-radius: 8px;
@@ -208,15 +225,22 @@ async function handleLogin() {
 }
 
 @keyframes adminLoginShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 .admin-login__btn {
   width: 100%;
   padding: 11px 16px;
-  background: #E94560;
+  background: #e94560;
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -254,7 +278,9 @@ async function handleLogin() {
 }
 
 @keyframes adminLoginSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .admin-login__footer {

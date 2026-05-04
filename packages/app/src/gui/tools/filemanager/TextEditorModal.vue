@@ -4,9 +4,13 @@
       <div class="fm-text-editor">
         <!-- Header -->
         <div class="fm-text-editor__header">
-          <button class="fm-text-editor__cancel-btn" @click="close">{{ t('common.cancel') }}</button>
+          <button class="fm-text-editor__cancel-btn" @click="close">
+            {{ t('common.cancel') }}
+          </button>
           <span class="fm-text-editor__title">{{ fileName }}</span>
-          <button class="fm-text-editor__save-btn" :disabled="!canSave" @click="save">{{ t('common.save') }}</button>
+          <button class="fm-text-editor__save-btn" :disabled="!canSave" @click="save">
+            {{ t('common.save') }}
+          </button>
         </div>
 
         <!-- Editor -->
@@ -58,17 +62,20 @@ const canSave = computed(() => content.value.trim().length > 0 || isNewFile.valu
 const charCount = computed(() => content.value.length)
 const lineCount = computed(() => content.value.split('\n').length)
 
-watch(() => props.visible, async (val) => {
-  if (val && props.file) {
-    await loadFile()
-    await nextTick()
-    textareaRef.value?.focus()
+watch(
+  () => props.visible,
+  async (val) => {
+    if (val && props.file) {
+      await loadFile()
+      await nextTick()
+      textareaRef.value?.focus()
+    }
   }
-})
+)
 
 async function loadFile() {
   try {
-    const path = props.file.path || ('/' + props.file.name)
+    const path = props.file.path || '/' + props.file.name
     const data = filesystem.readFile(path)
     if (data !== null) {
       content.value = typeof data === 'string' ? data : ''
@@ -133,7 +140,7 @@ function onKeyDown(event: KeyboardEvent) {
   width: 100%;
   max-width: 600px;
   max-height: 90dvh;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-radius: 16px 16px 0 0;
   display: flex;
   flex-direction: column;
@@ -141,8 +148,12 @@ function onKeyDown(event: KeyboardEvent) {
 }
 
 @keyframes fm-slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -151,7 +162,7 @@ function onKeyDown(event: KeyboardEvent) {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .fm-text-editor__cancel-btn,
@@ -166,13 +177,13 @@ function onKeyDown(event: KeyboardEvent) {
 }
 
 .fm-text-editor__cancel-btn {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .fm-text-editor__save-btn {
-  background: var(--gui-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--gui-accent, #007aff);
+  color: #ffffff;
 }
 
 .fm-text-editor__save-btn:disabled {
@@ -183,7 +194,7 @@ function onKeyDown(event: KeyboardEvent) {
 .fm-text-editor__title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -195,8 +206,8 @@ function onKeyDown(event: KeyboardEvent) {
   min-height: 300px;
   max-height: calc(90dvh - 120px);
   padding: 16px;
-  background: var(--gui-bg-base, #0A0A0A);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-base, #0a0a0a);
+  color: var(--gui-text-primary, #ffffff);
   font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 14px;
   line-height: 1.6;
@@ -215,7 +226,7 @@ function onKeyDown(event: KeyboardEvent) {
   display: flex;
   justify-content: space-between;
   padding: 10px 16px;
-  border-top: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-top: 0.5px solid var(--gui-border-subtle, #38383a);
   font-size: 12px;
   color: var(--gui-text-tertiary, #636366);
 }

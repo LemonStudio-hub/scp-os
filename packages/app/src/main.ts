@@ -8,13 +8,16 @@ import indexedDBService from './utils/indexedDB'
 import logger from './utils/logger'
 
 // Initialize user ID early (before app mounts)
-indexedDBService.getUserId().then(userId => {
-  // Store globally for easy access
-  window.__USER_ID__ = userId
-  logger.info('[App] User ID initialized:', userId)
-}).catch(err => {
-  logger.error('[App] Failed to initialize user ID:', err)
-})
+indexedDBService
+  .getUserId()
+  .then((userId) => {
+    // Store globally for easy access
+    window.__USER_ID__ = userId
+    logger.info('[App] User ID initialized:', userId)
+  })
+  .catch((err) => {
+    logger.error('[App] Failed to initialize user ID:', err)
+  })
 
 // Create Pinia instance
 const pinia = createPinia()

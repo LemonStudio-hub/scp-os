@@ -3,7 +3,12 @@ import type { Ref } from 'vue'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import type { TerminalInstance } from '../types/terminal'
-import { createTerminalConfig, sleep, isPrintableCharacter, isMobileDevice } from '../utils/terminal'
+import {
+  createTerminalConfig,
+  sleep,
+  isPrintableCharacter,
+  isMobileDevice,
+} from '../utils/terminal'
 import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
@@ -70,7 +75,7 @@ const BORDER_DESKTOP = {
   left: '█',
   right: '█',
   bottom: '████████████████████████████████████████████████████████████████████████████████',
-  fill: ' '
+  fill: ' ',
 }
 
 // Border Styles - Mobile (Compact borders)
@@ -79,13 +84,13 @@ const BORDER_MOBILE = {
   left: '│',
   right: '│',
   bottom: '─────────────────────────────────────',
-  fill: ' '
+  fill: ' ',
 }
 
 export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const terminalInstance = ref<TerminalInstance>({
     terminal: null,
-    fitAddon: null
+    fitAddon: null,
   })
 
   const { addToHistory, navigateHistory: navHistory, resetIndex } = useCommandHistory()
@@ -167,7 +172,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         },
         markBootLogShown: () => {
           systemStore.markBootLogShown()
-        }
+        },
       }
     } catch (error) {
       const errorObj = errorHandler.handleError({
@@ -216,73 +221,73 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
 
     const bootLogs = getBootLogs(fastMode || config.app.fastBoot)
-    
+
     // 动态速度配置（已放慢，提供更好的视觉效果）
     const baseDelay = fastMode || config.app.fastBoot ? 5 : 30
-    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.98  // 速度衰减因子
-    const minDelay = fastMode || config.app.fastBoot ? 3 : 15    // 最小延迟
-    const maxDelay = fastMode || config.app.fastBoot ? 10 : 60   // 最大延迟
-    
+    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.98 // 速度衰减因子
+    const minDelay = fastMode || config.app.fastBoot ? 3 : 15 // 最小延迟
+    const maxDelay = fastMode || config.app.fastBoot ? 10 : 60 // 最大延迟
+
     let currentSpeedMultiplier = 1.0
 
     for (const line of bootLogs) {
       try {
         terminal.writeln(line)
-        
+
         // 计算动态延迟
         let dynamicDelay = baseDelay
-        
+
         // 1. 根据行长度调整（更长的行需要更长时间阅读）
-        const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length  // 移除 ANSI 颜色代码
+        const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length // 移除 ANSI 颜色代码
         const lengthMultiplier = Math.min(Math.max(lineLength / 50, 0.8), 1.5)
-        
+
         // 2. 根据是否为空行调整（空行快速滚动）
         const isEmptyLine = line.trim().length === 0
         if (isEmptyLine) {
           dynamicDelay = minDelay
         }
-        
+
         // 3. 根据是否包含重要信息调整（颜色代码、系统状态等）
-        const hasImportantInfo = line.includes('ONLINE') || 
-                                line.includes('Security') ||
-                                line.includes('Established') ||
-                                line.includes('ACTIVE') ||
-                                line.includes('COMPLETE') ||
-                                line.includes('══════════')
+        const hasImportantInfo =
+          line.includes('ONLINE') ||
+          line.includes('Security') ||
+          line.includes('Established') ||
+          line.includes('ACTIVE') ||
+          line.includes('COMPLETE') ||
+          line.includes('══════════')
         if (hasImportantInfo) {
-          dynamicDelay *= 1.3  // 重要信息显示更长时间
+          dynamicDelay *= 1.3 // 重要信息显示更长时间
         }
-        
+
         // 4. 根据是否为ASCII艺术框调整
         const isBoxArt = line.includes('═') || line.includes('█')
         if (isBoxArt) {
           dynamicDelay *= 1.2
         }
-        
+
         // 5. 应用长度倍数
         if (!isEmptyLine) {
           dynamicDelay *= lengthMultiplier
         }
-        
+
         // 6. 应用当前速度倍数（逐渐加快）
         dynamicDelay *= currentSpeedMultiplier
-        
+
         // 7. 确保延迟在合理范围内
         dynamicDelay = Math.max(minDelay, Math.min(maxDelay, dynamicDelay))
-        
+
         // 8. 应用随机变化（避免过于机械）
         if (!fastMode) {
-          dynamicDelay *= (0.9 + Math.random() * 0.2)  // ±10% 的随机变化
+          dynamicDelay *= 0.9 + Math.random() * 0.2 // ±10% 的随机变化
         }
-        
+
         await sleep(Math.round(dynamicDelay))
-        
+
         // 更新速度倍数（逐渐加快）
         if (!fastMode) {
           currentSpeedMultiplier *= speedDecay
-          currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier)  // 最多加快到2倍
+          currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier) // 最多加快到2倍
         }
-        
       } catch (error) {
         errorHandler.handleError({
           type: ErrorType.SYSTEM_ERROR,
@@ -292,7 +297,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         })
       }
     }
-    
+
     try {
       // 最终延迟（让用户有时间阅读最后的信息）
       await sleep(fastMode || config.app.fastBoot ? 100 : 500)
@@ -335,64 +340,62 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
 
     const shutdownLogs = getShutdownLogs(fastMode || config.app.fastBoot)
-    
+
     // Dynamic speed configuration
     const baseDelay = fastMode || config.app.fastBoot ? 50 : 150
     const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.97
     const minDelay = fastMode || config.app.fastBoot ? 20 : 50
     const maxDelay = fastMode || config.app.fastBoot ? 100 : 300
-    
+
     let currentSpeedMultiplier = 1.0
 
     for (const line of shutdownLogs) {
       try {
         terminal.writeln(line)
-        
+
         // Calculate dynamic delay
         let dynamicDelay = baseDelay
-        
+
         // Adjust based on line length
         const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length
         const lengthMultiplier = Math.min(Math.max(lineLength / 50, 0.8), 1.5)
-        
+
         // Adjust based on empty lines
         const isEmptyLine = line.trim().length === 0
         if (isEmptyLine) {
           dynamicDelay = minDelay
         }
-        
+
         // Adjust based on important info
-        const hasImportantInfo = line.includes('[  OK  ]') || 
-                                line.includes('[FAILED]') ||
-                                line.includes('System halted')
+        const hasImportantInfo =
+          line.includes('[  OK  ]') || line.includes('[FAILED]') || line.includes('System halted')
         if (hasImportantInfo) {
           dynamicDelay *= 1.2
         }
-        
+
         // Apply length multiplier
         if (!isEmptyLine) {
           dynamicDelay *= lengthMultiplier
         }
-        
+
         // Apply current speed multiplier
         dynamicDelay *= currentSpeedMultiplier
-        
+
         // Ensure delay is within reasonable range
         dynamicDelay = Math.max(minDelay, Math.min(maxDelay, dynamicDelay))
-        
+
         // Apply random variation
         if (!fastMode) {
-          dynamicDelay *= (0.9 + Math.random() * 0.2)
+          dynamicDelay *= 0.9 + Math.random() * 0.2
         }
-        
+
         await sleep(Math.round(dynamicDelay))
-        
+
         // Update speed multiplier
         if (!fastMode) {
           currentSpeedMultiplier *= speedDecay
           currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier)
         }
-        
       } catch (error) {
         errorHandler.handleError({
           type: ErrorType.SYSTEM_ERROR,
@@ -402,7 +405,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         })
       }
     }
-    
+
     try {
       await sleep(fastMode || config.app.fastBoot ? 200 : 500)
     } catch (error) {
@@ -424,12 +427,12 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     terminal.writeln(`${ANSICode.yellow}Restarting system...${ANSICode.reset}`)
     await sleep(500)
-    
+
     clear()
-    
+
     // Reset first launch flag to show boot log again
     systemStore.markSystemRunning()
-    
+
     // Display boot log and welcome message
     await displayBootLog()
     displayWelcomeMessage()
@@ -443,28 +446,30 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     if (!terminal) return
 
     if (!confirmed) {
-      terminal.writeln(`${ANSICode.yellow}Are you sure you want to shutdown? (yes/no)${ANSICode.reset}`)
+      terminal.writeln(
+        `${ANSICode.yellow}Are you sure you want to shutdown? (yes/no)${ANSICode.reset}`
+      )
       return
     }
 
     terminal.writeln(`${ANSICode.yellow}Shutting down system...${ANSICode.reset}`)
     await sleep(500)
-    
+
     // Clear all tabs
     const tabsStore = useTabsStore()
     tabsStore.clearAllTabs()
-    
+
     // Mark system as shutdown
     systemStore.markSystemShutdown()
-    
+
     terminal.writeln(`${ANSICode.red}System shutdown complete.${ANSICode.reset}`)
     terminal.writeln('')
     terminal.writeln(`${ANSICode.green}Type 'start' to boot the system again.${ANSICode.reset}`)
     terminal.writeln('')
-    
+
     // Clear the terminal
     clear()
-    
+
     // Display startup prompt again
     displayStartupPrompt()
   }
@@ -483,7 +488,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     lines.push(`${ANSICode.green}${border.top}${ANSICode.reset}`)
 
     // Add ASCII art logo
-    logoArt.forEach(line => {
+    logoArt.forEach((line) => {
       lines.push(`${ANSICode.red}${line}${ANSICode.reset}`)
     })
 
@@ -494,20 +499,36 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     if (isMobile) {
       // Mobile version - Compact layout
       lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} System Info${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Ver: ${config.app.version} | Security: 4${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Site-19 | AES-256-GCM${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Status: Online${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset} System Info${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset} Ver: ${config.app.version} | Security: 4${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset} Site-19 | AES-256-GCM${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset} Status: Online${ANSICode.reset}${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
       lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
       lines.push('')
     } else {
       // Desktop version - Full width layout
       lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset}                        System Information                        ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset}                        System Information                        ${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
       lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Version: ${config.app.version}                         Security Level: 4         ${ANSICode.green}${border.right}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Location: Site-19 Main Server          Encryption: AES-256-GCM  ${ANSICode.green}${border.right}${ANSICode.reset}`)
-      lines.push(`${ANSICode.green}${border.left}${ANSICode.reset} Status: Online                           Last Update: 2026-04-01 ${ANSICode.green}${border.right}${ANSICode.reset}`)
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset} Version: ${config.app.version}                         Security Level: 4         ${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset} Location: Site-19 Main Server          Encryption: AES-256-GCM  ${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
+      lines.push(
+        `${ANSICode.green}${border.left}${ANSICode.reset} Status: Online                           Last Update: 2026-04-01 ${ANSICode.green}${border.right}${ANSICode.reset}`
+      )
       lines.push(`${ANSICode.green}${border.bottom}${ANSICode.reset}`)
       lines.push('')
     }
@@ -515,9 +536,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     lines.push(`${ANSICode.green}Type "help" to see available commands${ANSICode.reset}`)
     lines.push('')
 
-    lines.forEach(line => terminal.writeln(line))
+    lines.forEach((line) => terminal.writeln(line))
     writePrompt()
-    
+
     // Mark system as running after welcome message
     systemStore.markSystemRunning()
   }
@@ -531,14 +552,14 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   const replaceCurrentLine = (newInput: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
-    
+
     // 清除当前行并重新写入提示和新内容
-    terminal.write('\r\x1b[K')  // 回车并清除行
+    terminal.write('\r\x1b[K') // 回车并清除行
     terminal.write(`${ANSICode.prompt}SCP-ROOT>${ANSICode.reset} `)
 
     // 检查输入是否是有效命令
     const inputLower = newInput.toLowerCase().trim()
-    const isCommand = AVAILABLE_COMMANDS.some(cmd => cmd === inputLower)
+    const isCommand = AVAILABLE_COMMANDS.some((cmd) => cmd === inputLower)
 
     if (isCommand && newInput.trim() !== '') {
       // 命令高亮：绿色
@@ -591,7 +612,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     } else {
       // 多个匹配
       const formatted = autocompleteService.formatSuggestions(suggestions)
-      
+
       // 如果已经有显示的建议，循环选择
       if (autocompleteSuggestions.value.length > 0) {
         autocompleteIndex.value = autocompleteService.cycleSuggestions(
@@ -606,10 +627,10 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       } else {
         // 第一次显示建议列表
         terminal.writeln('\r\n')
-        formatted.forEach(line => terminal.writeln(line))
+        formatted.forEach((line) => terminal.writeln(line))
         writePrompt()
         replaceCurrentLine(currentInput.value)
-        autocompleteSuggestions.value = suggestions.map(s => s.text)
+        autocompleteSuggestions.value = suggestions.map((s) => s.text)
         autocompleteIndex.value = 0
       }
     }
@@ -678,7 +699,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         logToConsole: true,
       })
       terminal.writeln(`${ANSICode.red}命令执行失败: ${cmd}${ANSICode.reset}`)
-      terminal.writeln(`${ANSICode.yellow}详情: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`)
+      terminal.writeln(
+        `${ANSICode.yellow}详情: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+      )
     }
   }
 
@@ -699,10 +722,14 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
       // If system is not running, only allow 'start' command
       if (!systemStore.isRunning && cmd !== 'start') {
-        terminal.writeln(`${ANSICode.yellow}[!] System is offline. Please boot the system first.${ANSICode.reset}`)
+        terminal.writeln(
+          `${ANSICode.yellow}[!] System is offline. Please boot the system first.${ANSICode.reset}`
+        )
         terminal.writeln('')
         terminal.writeln(`${ANSICode.gray}Usage: Type "start" to boot the system.${ANSICode.reset}`)
-        terminal.writeln(`${ANSICode.gray}       Type "help" after booting to see available commands.${ANSICode.reset}`)
+        terminal.writeln(
+          `${ANSICode.gray}       Type "help" after booting to see available commands.${ANSICode.reset}`
+        )
         terminal.writeln('')
         return
       }
@@ -712,7 +739,9 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       if (handler) {
         executeCommandHandler(handler, args, cmd)
       } else {
-        terminal.writeln(`${ANSICode.red}Unknown command: ${cmd}. Type "help" to see available commands.${ANSICode.reset}`)
+        terminal.writeln(
+          `${ANSICode.red}Unknown command: ${cmd}. Type "help" to see available commands.${ANSICode.reset}`
+        )
       }
     } catch (error) {
       errorHandler.handleError({
@@ -737,22 +766,27 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     commandHandlerSetup = true
 
     terminal.onData((data) => {
-      if (data === '\r') { // Enter
+      if (data === '\r') {
+        // Enter
         terminal.write('\r\n')
         executeCommand()
-      } else if (data === '\x1b[A') { // Arrow Up
+      } else if (data === '\x1b[A') {
+        // Arrow Up
         navigateHistory(-1)
         // 清除补全建议
         autocompleteSuggestions.value = []
         autocompleteIndex.value = 0
-      } else if (data === '\x1b[B') { // Arrow Down
+      } else if (data === '\x1b[B') {
+        // Arrow Down
         navigateHistory(1)
         // 清除补全建议
         autocompleteSuggestions.value = []
         autocompleteIndex.value = 0
-      } else if (data === '\t') { // Tab
+      } else if (data === '\t') {
+        // Tab
         autocomplete()
-      } else if (data === '\x7f') { // Backspace
+      } else if (data === '\x7f') {
+        // Backspace
         if (currentInput.value.length > 0) {
           currentInput.value = currentInput.value.slice(0, -1)
           replaceCurrentLine(currentInput.value)
@@ -762,7 +796,8 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
           autocompleteSuggestions.value = []
           autocompleteIndex.value = 0
         }
-      } else if (data === '\x03') { // Ctrl+C
+      } else if (data === '\x03') {
+        // Ctrl+C
         terminal.write('^C\r\n')
         currentInput.value = ''
         // 清除补全建议
@@ -825,6 +860,6 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     markSystemShutdown: () => systemStore.markSystemShutdown(),
     resetFirstLaunch: () => systemStore.resetFirstLaunch(),
     hasBootLogBeenShown: () => systemStore.bootLogShown,
-    resetBootLogShown: () => systemStore.resetBootLogShown()
+    resetBootLogShown: () => systemStore.resetBootLogShown(),
   }
 }

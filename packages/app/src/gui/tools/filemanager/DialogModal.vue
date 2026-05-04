@@ -3,7 +3,7 @@
     <div v-if="visible" class="fm-dialog-overlay" @click.self="onCancel">
       <div class="fm-dialog">
         <div class="fm-dialog__header">{{ title }}</div>
-        
+
         <!-- Input type -->
         <div v-if="type === 'input'" class="fm-dialog__body">
           <input
@@ -15,7 +15,7 @@
             @keydown.escape="onCancel"
           />
         </div>
-        
+
         <!-- Confirm type -->
         <div v-else-if="type === 'confirm'" class="fm-dialog__body">
           <p class="fm-dialog__message">{{ message }}</p>
@@ -88,14 +88,17 @@ const effectiveCancelText = computed(() => props.cancelText || t('common.cancel'
 const inputRef = ref<HTMLInputElement | null>(null)
 const inputValue = ref(props.defaultValue)
 
-watch(() => props.visible, async (val) => {
-  if (val) {
-    inputValue.value = props.defaultValue
-    await nextTick()
-    inputRef.value?.focus()
-    inputRef.value?.select()
+watch(
+  () => props.visible,
+  async (val) => {
+    if (val) {
+      inputValue.value = props.defaultValue
+      await nextTick()
+      inputRef.value?.focus()
+      inputRef.value?.select()
+    }
   }
-})
+)
 
 function onConfirm() {
   if (props.type === 'input') {
@@ -128,15 +131,21 @@ function onCancel() {
 
 .fm-dialog {
   width: 270px;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-radius: 14px;
   overflow: hidden;
   animation: fm-dialog-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes fm-dialog-pop {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -144,7 +153,7 @@ function onCancel() {
   padding: 16px 16px 8px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   text-align: center;
 }
 
@@ -158,9 +167,9 @@ function onCancel() {
   height: 36px;
   padding: 0 12px;
   border-radius: 8px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
-  background: var(--gui-bg-base, #0A0A0A);
-  color: var(--gui-text-primary, #FFFFFF);
+  border: 0.5px solid var(--gui-border-subtle, #38383a);
+  background: var(--gui-bg-base, #0a0a0a);
+  color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
   box-sizing: border-box;
@@ -168,7 +177,7 @@ function onCancel() {
 }
 
 .fm-dialog__input:focus {
-  border-color: var(--gui-accent, #007AFF);
+  border-color: var(--gui-accent, #007aff);
 }
 
 .fm-dialog__input::placeholder {
@@ -177,7 +186,7 @@ function onCancel() {
 
 .fm-dialog__message {
   font-size: 14px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   text-align: center;
   margin: 0;
   line-height: 1.4;
@@ -186,7 +195,7 @@ function onCancel() {
 /* ── Actions ────────────────────────────────────────────────────────── */
 .fm-dialog__actions {
   display: flex;
-  border-top: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-top: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .fm-dialog__btn {
@@ -194,7 +203,7 @@ function onCancel() {
   height: 44px;
   background: none;
   border: none;
-  color: var(--gui-accent, #007AFF);
+  color: var(--gui-accent, #007aff);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -203,15 +212,15 @@ function onCancel() {
 }
 
 .fm-dialog__btn:active {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
 }
 
 .fm-dialog__btn + .fm-dialog__btn {
-  border-left: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-left: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .fm-dialog__btn--danger {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 /* ── Transition ─────────────────────────────────────────────────────── */

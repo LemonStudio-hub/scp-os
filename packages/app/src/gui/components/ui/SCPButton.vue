@@ -1,18 +1,39 @@
 <template>
   <button
-    :class="['gui-btn', `gui-btn--${variant}`, `gui-btn--${size}`, {
-      'gui-btn--block': block,
-      'gui-btn--disabled': disabled,
-      'gui-btn--loading': loading,
-    }]"
+    :class="[
+      'gui-btn',
+      `gui-btn--${variant}`,
+      `gui-btn--${size}`,
+      {
+        'gui-btn--block': block,
+        'gui-btn--disabled': disabled,
+        'gui-btn--loading': loading,
+      },
+    ]"
     :disabled="disabled || loading"
     :title="title"
     @click="$emit('click', $event)"
   >
     <span v-if="loading" class="gui-btn__spinner">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="17" stroke-dashoffset="5" stroke-linecap="round">
-          <animateTransform attributeName="transform" type="rotate" from="0 7 7" to="360 7 7" dur="0.8s" repeatCount="indefinite"/>
+        <circle
+          cx="7"
+          cy="7"
+          r="5.5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-dasharray="17"
+          stroke-dashoffset="5"
+          stroke-linecap="round"
+        >
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            from="0 7 7"
+            to="360 7 7"
+            dur="0.8s"
+            repeatCount="indefinite"
+          />
         </circle>
       </svg>
     </span>
@@ -47,7 +68,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const iconName = computed<IconName | undefined>(() => props.icon as IconName | undefined)
-const iconSize = computed(() => props.size === 'sm' ? 14 : props.size === 'lg' ? 18 : 16)
+const iconSize = computed(() => (props.size === 'sm' ? 14 : props.size === 'lg' ? 18 : 16))
 
 defineEmits<{
   click: [event: MouseEvent]
@@ -66,10 +87,11 @@ defineEmits<{
   font-family: var(--gui-font-sans);
   font-weight: var(--gui-font-weight-medium, 500);
   cursor: pointer;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              background 120ms ease,
-              box-shadow 120ms ease,
-              opacity 120ms ease;
+  transition:
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    background 120ms ease,
+    box-shadow 120ms ease,
+    opacity 120ms ease;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
@@ -124,7 +146,7 @@ defineEmits<{
 
 /* ── Variants ───────────────────────────────────────────────────────── */
 .gui-btn--primary {
-  background: var(--gui-accent, #8E8E93);
+  background: var(--gui-accent, #8e8e93);
   color: var(--gui-text-inverse, #000000);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
@@ -134,24 +156,24 @@ defineEmits<{
 }
 
 .gui-btn--secondary {
-  background: var(--gui-bg-surface-raised, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
 .gui-btn--danger {
   background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
-  color: var(--gui-error, #FF3B30);
+  color: var(--gui-error, #ff3b30);
 }
 
 .gui-btn--success {
   background: var(--gui-success-bg, rgba(52, 199, 89, 0.12));
-  color: var(--gui-success, #34C759);
+  color: var(--gui-success, #34c759);
 }
 
 .gui-btn--ghost {
   background: transparent;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
 }
 
 .gui-btn--ghost:hover::after {

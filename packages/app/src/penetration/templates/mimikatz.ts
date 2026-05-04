@@ -39,12 +39,20 @@ export function generateMimikatzOutput(): ToolTemplateResult {
     const ntlm = generateRandomHash(32)
     const sha1 = generateRandomHash(40)
 
-    lines.push(`${CYAN}Authentication Id :${R} 0 ; ${randomInt(100000, 999999)} (00000000:0${randomInt(10000, 99999).toString(16)})`)
-    lines.push(`${CYAN}Session           :${R} ${user.rid === 500 ? 'Interactive from' : 'Network from'} ${randomInt(1, 9)}`)
+    lines.push(
+      `${CYAN}Authentication Id :${R} 0 ; ${randomInt(100000, 999999)} (00000000:0${randomInt(10000, 99999).toString(16)})`
+    )
+    lines.push(
+      `${CYAN}Session           :${R} ${user.rid === 500 ? 'Interactive from' : 'Network from'} ${randomInt(1, 9)}`
+    )
     lines.push(`${CYAN}User Name         :${R} ${GREEN}${user.username}${R}`)
     lines.push(`${CYAN}Domain            :${R} ${GREEN}${user.domain}${R}`)
-    lines.push(`${CYAN}Logon Time        :${R} ${new Date(Date.now() - randomInt(60000, 3600000)).toISOString().replace('T', ' ').substring(0, 19)}`)
-    lines.push(`${CYAN}SID               :${R} S-1-5-21-${randomInt(1000000000, 9999999999)}-${randomInt(1000000000, 9999999999)}-${randomInt(1000000000, 9999999999)}-${user.rid}`)
+    lines.push(
+      `${CYAN}Logon Time        :${R} ${new Date(Date.now() - randomInt(60000, 3600000)).toISOString().replace('T', ' ').substring(0, 19)}`
+    )
+    lines.push(
+      `${CYAN}SID               :${R} S-1-5-21-${randomInt(1000000000, 9999999999)}-${randomInt(1000000000, 9999999999)}-${randomInt(1000000000, 9999999999)}-${user.rid}`
+    )
     lines.push(`        ${CYAN}msv :${R}`)
     lines.push(`        ${GRAY}[00000003] Primary${R}`)
     lines.push(`        ${GRAY}* Username :${R} ${GREEN}${user.username}${R}`)

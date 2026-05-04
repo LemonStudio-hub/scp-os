@@ -45,8 +45,19 @@ export interface PhaseConfig {
   availableCommands: string[]
   requiredActions: string[]
   completedActions: string[]
-  onEnter?: (vars: VariablePool, write: (t: string) => void, writeln: (t: string) => void) => Promise<void>
-  handleCommand: (cmd: string, args: string[], vars: VariablePool, write: (t: string) => void, writeln: (t: string) => void, completeAction: (action: string) => void) => Promise<void>
+  onEnter?: (
+    vars: VariablePool,
+    write: (t: string) => void,
+    writeln: (t: string) => void
+  ) => Promise<void>
+  handleCommand: (
+    cmd: string,
+    args: string[],
+    vars: VariablePool,
+    write: (t: string) => void,
+    writeln: (t: string) => void,
+    completeAction: (action: string) => void
+  ) => Promise<void>
 }
 
 export interface SessionState {

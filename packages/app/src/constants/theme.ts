@@ -20,7 +20,7 @@ export const SCP_THEME: TerminalTheme = {
   brightBlue: '#6666ff',
   brightMagenta: '#ff66ff',
   brightCyan: '#66ffff',
-  brightWhite: '#ffffff'
+  brightWhite: '#ffffff',
 }
 
 export const ANSICode = {
@@ -49,10 +49,10 @@ export const ANSICode = {
   brightMagenta: '\x1b[95m',
   brightCyan: '\x1b[96m',
   // 命令高亮配置
-  command: '\x1b[32m',      // 绿色高亮有效命令
+  command: '\x1b[32m', // 绿色高亮有效命令
   commandInvalid: '\x1b[37m', // 白色显示无效输入
-  prompt: '\x1b[31m',        // 红色提示符
-  brightWhite: '\x1b[97m'
+  prompt: '\x1b[31m', // 红色提示符
+  brightWhite: '\x1b[97m',
 }
 
 export const COLORS = {
@@ -64,5 +64,5 @@ export const COLORS = {
   scpWhite: '#ffffff',
   scpGray: '#888888',
   scpBg: '#0a0a0a',
-  scpDarkBg: '#000000'
+  scpDarkBg: '#000000',
 }

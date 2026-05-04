@@ -117,7 +117,7 @@ export const EventType = {
   // App events
   APP_INIT: 'app:init',
   APP_READY: 'app:ready',
-  APP_ERROR: 'app:error'
+  APP_ERROR: 'app:error',
 } as const
 
-export type EventType = typeof EventType[keyof typeof EventType]
+export type EventType = (typeof EventType)[keyof typeof EventType]

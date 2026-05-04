@@ -9,43 +9,45 @@
         <span v-if="unit" class="metric-unit">{{ unit }}</span>
       </div>
     </div>
-    
+
     <div class="metric-value-container">
       <span class="metric-value" :class="valueClass">
         {{ displayValue }}
       </span>
-      <span 
-        v-if="showTrend" 
-        class="metric-trend"
-        :class="trendClass"
-      >
+      <span v-if="showTrend" class="metric-trend" :class="trendClass">
         {{ trendIcon }}
       </span>
     </div>
-    
+
     <div v-if="showMeta" class="metric-meta">
       <span class="metric-label">{{ metaLabel }}</span>
       <span class="metric-detail" :class="statusClass">{{ metaValue }}</span>
     </div>
-    
+
     <div v-if="showProgress" class="metric-progress">
       <div class="progress-bg">
-        <div 
-          class="progress-fill" 
-          :class="statusClass"
-          :style="{ width: `${progressValue}%` }"
-        >
+        <div class="progress-fill" :class="statusClass" :style="{ width: `${progressValue}%` }">
           <div class="progress-glow"></div>
         </div>
       </div>
       <span class="progress-text">{{ progressValue }}%</span>
     </div>
-    
+
     <div v-if="footer" class="metric-footer">
-      <svg class="footer-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/>
-        <line x1="12" y1="16" x2="12" y2="12"/>
-        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      <svg
+        class="footer-icon"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
       <span class="footer-text">{{ footer }}</span>
     </div>
@@ -91,14 +93,14 @@ const showTrend = computed(() => props.type === 'time')
 
 const statusClass = computed(() => {
   if (props.status) return `status-${props.status}`
-  
+
   if (showProgress.value) {
     const p = props.progress || 0
     if (p >= 80) return 'status-poor'
     if (p >= 60) return 'status-medium'
     return 'status-good'
   }
-  
+
   return ''
 })
 
@@ -127,7 +129,7 @@ const trendIcon = computed(() => {
 
 const cardClass = computed(() => ({
   [`type-${props.type}`]: true,
-  [`status-${props.status}`]: Boolean(props.status)
+  [`status-${props.status}`]: Boolean(props.status),
 }))
 
 const metaValue = computed(() => {
@@ -161,13 +163,14 @@ function formatTime(ms: number): string {
 
 <style scoped>
 .metric-card {
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   padding: 18px;
-  transition: transform 150ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              border-color 150ms ease;
+  transition:
+    transform 150ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    border-color 150ms ease;
   position: relative;
   overflow: hidden;
   will-change: transform;
@@ -231,7 +234,7 @@ function formatTime(ms: number): string {
   align-items: center;
   justify-content: center;
   border-radius: var(--gui-radius-md, 10px);
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
@@ -259,7 +262,7 @@ function formatTime(ms: number): string {
 .metric-icon {
   display: flex;
   align-items: center;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .metric-info {
@@ -271,7 +274,7 @@ function formatTime(ms: number): string {
 .metric-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: -0.01em;
 }
 
@@ -292,22 +295,22 @@ function formatTime(ms: number): string {
 .metric-value {
   font-size: 28px;
   font-weight: 700;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: -0.02em;
   transition: color 200ms ease;
   font-variant-numeric: tabular-nums;
 }
 
 .metric-value.value-good {
-  color: var(--gui-success, #34C759);
+  color: var(--gui-success, #34c759);
 }
 
 .metric-value.value-medium {
-  color: var(--gui-warning, #FFCC00);
+  color: var(--gui-warning, #ffcc00);
 }
 
 .metric-value.value-poor {
-  color: var(--gui-error, #FF3B30);
+  color: var(--gui-error, #ff3b30);
 }
 
 .metric-trend {
@@ -324,7 +327,7 @@ function formatTime(ms: number): string {
   align-items: center;
   margin-bottom: 12px;
   padding: 8px 10px;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border-radius: var(--gui-radius-sm, 6px);
 }
 
@@ -339,21 +342,21 @@ function formatTime(ms: number): string {
 .metric-detail {
   font-size: 12px;
   font-weight: 600;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-variant-numeric: tabular-nums;
   transition: color 200ms ease;
 }
 
 .metric-detail.status-good {
-  color: var(--gui-success, #34C759);
+  color: var(--gui-success, #34c759);
 }
 
 .metric-detail.status-medium {
-  color: var(--gui-warning, #FFCC00);
+  color: var(--gui-warning, #ffcc00);
 }
 
 .metric-detail.status-poor {
-  color: var(--gui-error, #FF3B30);
+  color: var(--gui-error, #ff3b30);
 }
 
 .metric-progress {
@@ -379,15 +382,15 @@ function formatTime(ms: number): string {
 }
 
 .progress-fill.status-good {
-  background: var(--gui-success, #34C759);
+  background: var(--gui-success, #34c759);
 }
 
 .progress-fill.status-medium {
-  background: var(--gui-warning, #FFCC00);
+  background: var(--gui-warning, #ffcc00);
 }
 
 .progress-fill.status-poor {
-  background: var(--gui-error, #FF3B30);
+  background: var(--gui-error, #ff3b30);
 }
 
 .progress-glow {
@@ -401,14 +404,18 @@ function formatTime(ms: number): string {
 }
 
 @keyframes progressShimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .progress-text {
   font-size: 12px;
   font-weight: 600;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   min-width: 36px;
   text-align: right;
   font-variant-numeric: tabular-nums;

@@ -1,6 +1,6 @@
 /**
  * Theme Store
- * 
+ *
  * Manages the current theme, persists selection in localStorage,
  * and applies theme colors to CSS custom properties.
  */
@@ -19,7 +19,9 @@ export const useThemeStore = defineStore('theme', () => {
     try {
       const saved = localStorage.getItem(THEME_STORAGE_KEY)
       if (saved && themes[saved]) return saved
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return 'dark'
   }
 
@@ -110,7 +112,9 @@ export const useThemeStore = defineStore('theme', () => {
 
     try {
       localStorage.setItem(THEME_STORAGE_KEY, themeId)
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     applyTheme(theme)
   }

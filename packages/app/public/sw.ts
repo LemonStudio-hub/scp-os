@@ -7,13 +7,7 @@ const CACHE_NAME = 'scp-os-v2'
 const CACHE_VERSION = 2
 
 // 需要缓存的资源 (使用通配符，不缓存带 hash 的 JS/CSS 文件)
-const CACHE_URLS = [
-  '/',
-  '/index.html',
-  '/favicon.ico',
-  '/favicon.svg',
-  '/icon-512x512.png',
-]
+const CACHE_URLS = ['/', '/index.html', '/favicon.ico', '/favicon.svg', '/icon-512x512.png']
 
 // API 请求缓存配置
 const API_CACHE_CONFIG = {
@@ -31,15 +25,18 @@ const DYNAMIC_CACHE = new Map()
  */
 self.addEventListener('install', (event: ExtendableEvent) => {
   console.log('[SW] Installing Service Worker v' + CACHE_VERSION + '...')
-  
+
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-caching app shell')
-      return cache.addAll(CACHE_URLS)
-    }).then(() => {
-      // 跳过等待，立即激活
-      return self.skipWaiting()
-    })
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[SW] Pre-caching app shell')
+        return cache.addAll(CACHE_URLS)
+      })
+      .then(() => {
+        // 跳过等待，立即激活
+        return self.skipWaiting()
+      })
   )
 })
 
@@ -48,7 +45,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
  */
 self.addEventListener('activate', (event: ExtendableEvent) => {
   console.log('[SW] Activating Service Worker v' + CACHE_VERSION + '...')
-  
+
   event.waitUntil(
     Promise.all([
       // 清理旧缓存
@@ -63,7 +60,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
         )
       }),
       // 立即控制所有客户端
-      self.clients.claim()
+      self.clients.claim(),
     ])
   )
 })
@@ -81,10 +78,12 @@ self.addEventListener('fetch', (event: FetchEvent) => {
   }
 
   // 处理 API 请求
-  if (url.pathname.startsWith('/scrape') || 
-      url.pathname.startsWith('/search') || 
-      url.pathname.startsWith('/list') ||
-      url.pathname.startsWith('/stats')) {
+  if (
+    url.pathname.startsWith('/scrape') ||
+    url.pathname.startsWith('/search') ||
+    url.pathname.startsWith('/list') ||
+    url.pathname.startsWith('/stats')
+  ) {
     event.respondWith(handleAPIRequest(request))
     return
   }
@@ -104,7 +103,7 @@ async function handleAPIRequest(request: Request): Promise<Response> {
   const cachedResponse = await caches.match(cacheKey)
   if (cachedResponse && !isCacheExpired(cachedResponse)) {
     console.log('[SW] Cache hit:', cacheKey)
-    
+
     // 显示缓存指示器
     const responseWithCacheFlag = new Response(cachedResponse.body, {
       status: cachedResponse.status,
@@ -114,10 +113,10 @@ async function handleAPIRequest(request: Request): Promise<Response> {
         'X-Cache': 'HIT',
       },
     })
-    
+
     // 后台更新缓存
     updateCache(request, cacheKey)
-    
+
     return responseWithCacheFlag
   }
 
@@ -125,7 +124,7 @@ async function handleAPIRequest(request: Request): Promise<Response> {
   try {
     console.log('[SW] Cache miss, fetching:', cacheKey)
     const response = await fetch(request)
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`)
     }
@@ -133,7 +132,7 @@ async function handleAPIRequest(request: Request): Promise<Response> {
     // 克隆响应并缓存
     const clonedResponse = response.clone()
     const cache = await caches.open(CACHE_NAME)
-    
+
     // 添加缓存过期时间头
     const responseToCache = new Response(clonedResponse.body, {
       status: clonedResponse.status,
@@ -144,16 +143,16 @@ async function handleAPIRequest(request: Request): Promise<Response> {
         'X-Cache': 'MISS',
       },
     })
-    
+
     await cache.put(cacheKey, responseToCache)
-    
+
     // 检查动态缓存大小
     await checkCacheSize()
-    
+
     return response
   } catch (error) {
     console.error('[SW] Fetch error:', error)
-    
+
     // 网络错误，尝试返回过期的缓存
     const expiredCache = await caches.match(cacheKey)
     if (expiredCache) {
@@ -169,9 +168,9 @@ async function handleAPIRequest(request: Request): Promise<Response> {
       })
       return responseWithExpiredFlag
     }
-    
+
     // 返回离线响应
-    return caches.match('/offline.html').then(offlinePage => {
+    return caches.match('/offline.html').then((offlinePage) => {
       if (offlinePage) {
         return offlinePage
       }
@@ -247,7 +246,7 @@ async function updateCache(request: Request, cacheKey: string) {
         'X-Cache-Date': Date.now().toString(),
       },
     })
-    
+
     await cache.put(cacheKey, responseToCache)
   } catch (error) {
     console.error('[SW] Background update failed:', error)
@@ -260,7 +259,7 @@ async function updateCache(request: Request, cacheKey: string) {
 function isCacheExpired(response: Response): boolean {
   const cacheDate = response.headers.get('X-Cache-Date')
   if (!cacheDate) return true
-  
+
   const age = (Date.now() - parseInt(cacheDate)) / 1000
   return age > API_CACHE_CONFIG.cacheTime
 }
@@ -271,11 +270,11 @@ function isCacheExpired(response: Response): boolean {
 async function checkCacheSize() {
   const cache = await caches.open(CACHE_NAME)
   const keys = await cache.keys()
-  
+
   if (keys.length > API_CACHE_CONFIG.maxCacheSize) {
     // 删除最旧的缓存项
     const keysToDelete = keys.slice(0, keys.length - API_CACHE_CONFIG.maxCacheSize)
-    await Promise.all(keysToDelete.map(key => cache.delete(key)))
+    await Promise.all(keysToDelete.map((key) => cache.delete(key)))
     console.log('[SW] Cleaned old cache entries')
   }
 }
@@ -287,17 +286,20 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting()
   }
-  
+
   if (event.data && event.data.type === 'CLEAR_CACHE') {
     event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(cacheNames.map(name => caches.delete(name)))
-      }).then(() => {
-        event.ports[0].postMessage({ success: true, message: 'Cache cleared' })
-      })
+      caches
+        .keys()
+        .then((cacheNames) => {
+          return Promise.all(cacheNames.map((name) => caches.delete(name)))
+        })
+        .then(() => {
+          event.ports[0].postMessage({ success: true, message: 'Cache cleared' })
+        })
     )
   }
-  
+
   if (event.data && event.data.type === 'GET_CACHE_INFO') {
     event.waitUntil(
       caches.open(CACHE_NAME).then((cache) => {
@@ -305,7 +307,7 @@ self.addEventListener('message', (event) => {
           const cacheInfo = {
             name: CACHE_NAME,
             size: keys.length,
-            urls: keys.map(key => key.url)
+            urls: keys.map((key) => key.url),
           }
           event.ports[0].postMessage({ success: true, cacheInfo })
         })

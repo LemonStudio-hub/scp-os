@@ -59,7 +59,7 @@ export abstract class MemoryBaseRepository<T extends Entity> implements IReposit
     return {
       data: entities,
       total,
-      hasMore
+      hasMore,
     }
   }
 

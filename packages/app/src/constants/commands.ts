@@ -38,7 +38,7 @@ export const AVAILABLE_COMMANDS: CommandType[] = [
   'grep',
   'chmod',
   'penetration',
-  'chown'
+  'chown',
 ]
 
 export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
@@ -79,7 +79,7 @@ export const COMMAND_DESCRIPTIONS: Record<CommandType, string> = {
   grep: 'Search file content',
   chmod: 'Change file permissions',
   penetration: 'Launch virtual penetration testing session (SCP Foundation authorized)',
-  chown: 'Change file owner'
+  chown: 'Change file owner',
 }
 
 export const COMMAND_USAGE: Record<CommandType, string> = {
@@ -120,5 +120,5 @@ export const COMMAND_USAGE: Record<CommandType, string> = {
   grep: 'grep <pattern> <file>',
   chmod: 'chmod <permissions> <file>',
   penetration: 'penetration',
-  chown: 'chown <owner>:<group> <file>'
+  chown: 'chown <owner>:<group> <file>',
 }

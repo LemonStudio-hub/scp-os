@@ -21,15 +21,8 @@ export interface UseHammerOptions {
   directions?: ('swipe' | 'pan' | 'pinch' | 'tap' | 'press')[]
 }
 
-export function useHammer(
-  elementRef: Ref<HTMLElement | null>,
-  options: UseHammerOptions = {}
-) {
-  const {
-    swipeThreshold = 50,
-    swipeVelocity = 0.3,
-    directions = ['swipe', 'pan', 'tap'],
-  } = options
+export function useHammer(elementRef: Ref<HTMLElement | null>, options: UseHammerOptions = {}) {
+  const { swipeThreshold = 50, swipeVelocity = 0.3, directions = ['swipe', 'pan', 'tap'] } = options
 
   const gesture = ref<GestureState>({
     isSwiping: false,

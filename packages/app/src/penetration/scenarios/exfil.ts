@@ -39,13 +39,14 @@ export const exfilPhase: PhaseConfig = {
       await typeLines(result.lines, write, writeln)
 
       if (result.variables?.credentials) {
-        vars.credentials = [...vars.credentials, ...(result.variables.credentials as CredentialInfo[])]
+        vars.credentials = [
+          ...vars.credentials,
+          ...(result.variables.credentials as CredentialInfo[]),
+        ]
       }
       completeAction('extract_creds')
       writeln(success(`凭证提取完成，共获取 ${vars.credentials.length} 条凭证`))
-    }
-
-    else if (cmd === 'cat') {
+    } else if (cmd === 'cat') {
       if (args[0] === '/etc/shadow') {
         await typeWithDelay('正在读取 /etc/shadow...', write, 1500)
         const lines = [
@@ -73,9 +74,7 @@ export const exfilPhase: PhaseConfig = {
       } else {
         writeln(error('用法: cat /etc/shadow'))
       }
-    }
-
-    else if (cmd === 'tar') {
+    } else if (cmd === 'tar') {
       await typeWithDelay('正在打包敏感数据...', write, 3000)
       const archiveName = `scp_exfil_${Date.now().toString(36)}.tar.gz`
       const lines = [
@@ -96,10 +95,9 @@ export const exfilPhase: PhaseConfig = {
       ]
       await typeLines(lines, write, writeln)
       vars.exfilArchive = archiveName
-    }
-
-    else if (cmd === 'scp') {
-      const archiveName = (vars.exfilArchive as string) ?? `scp_exfil_${Date.now().toString(36)}.tar.gz`
+    } else if (cmd === 'scp') {
+      const archiveName =
+        (vars.exfilArchive as string) ?? `scp_exfil_${Date.now().toString(36)}.tar.gz`
       await typeWithDelay('正在外发数据...', write, 2000)
       await connectionLostEffect(write, writeln)
       await sleep(500)
@@ -119,9 +117,7 @@ export const exfilPhase: PhaseConfig = {
       ]
       await typeLines(lines, write, writeln)
       completeAction('exfiltrate_data')
-    }
-
-    else if (cmd === 'exfil') {
+    } else if (cmd === 'exfil') {
       await typeWithDelay('正在执行完整数据外发流程...', write, 2000)
 
       writeln('')
@@ -130,7 +126,10 @@ export const exfilPhase: PhaseConfig = {
       const mimikatzResult = generateMimikatzOutput()
       await typeLines(mimikatzResult.lines, write, writeln, { skipEmpty: true })
       if (mimikatzResult.variables?.credentials) {
-        vars.credentials = [...vars.credentials, ...(mimikatzResult.variables.credentials as CredentialInfo[])]
+        vars.credentials = [
+          ...vars.credentials,
+          ...(mimikatzResult.variables.credentials as CredentialInfo[]),
+        ]
       }
       completeAction('extract_creds')
       writeln(success('凭证提取完成'))
@@ -161,9 +160,7 @@ export const exfilPhase: PhaseConfig = {
       writeln('')
       writeln(success('完整数据外发流程执行完毕'))
       writeln(info(`共提取 ${vars.credentials.length} 条凭证`))
-    }
-
-    else {
+    } else {
       writeln(warning(`未知命令: ${cmd}`))
       writeln(info('可用命令: mimikatz, cat /etc/shadow, tar, scp, exfil'))
     }

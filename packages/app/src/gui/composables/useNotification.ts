@@ -20,7 +20,7 @@ export function useNotification() {
       id,
       ...notification,
       duration: notification.duration ?? 5000,
-      removing: false
+      removing: false,
     }
 
     notifications.value.push(newNotification)
@@ -37,7 +37,7 @@ export function useNotification() {
   }
 
   function removeNotification(id: string) {
-    const index = notifications.value.findIndex(n => n.id === id)
+    const index = notifications.value.findIndex((n) => n.id === id)
     if (index !== -1) {
       // Add removing flag for animation
       notifications.value[index].removing = true
@@ -51,18 +51,18 @@ export function useNotification() {
 
       // Remove from array after animation
       setTimeout(() => {
-        notifications.value = notifications.value.filter(n => n.id !== id)
+        notifications.value = notifications.value.filter((n) => n.id !== id)
       }, 300) // Match animation duration
     }
   }
 
   function clearAllNotifications() {
     // Clear all timeouts
-    timeouts.forEach(timeoutId => clearTimeout(timeoutId))
+    timeouts.forEach((timeoutId) => clearTimeout(timeoutId))
     timeouts.clear()
 
     // Remove all notifications with animation
-    notifications.value.forEach(notification => {
+    notifications.value.forEach((notification) => {
       notification.removing = true
     })
 
@@ -76,6 +76,6 @@ export function useNotification() {
     notifications,
     addNotification,
     removeNotification,
-    clearAllNotifications
+    clearAllNotifications,
   }
 }

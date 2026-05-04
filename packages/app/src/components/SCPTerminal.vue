@@ -1,25 +1,40 @@
 <template>
   <div
-class="scp-terminal w-screen h-dvh relative flex flex-col overflow-hidden"
-       :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
+    class="scp-terminal w-screen h-dvh relative flex flex-col overflow-hidden"
+    :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }"
+  >
     <!-- Terminal Header -->
     <div
-class="scp-terminal__header flex items-center justify-between h-11 px-4 border-b flex-shrink-0"
-         :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg, borderColor: themeStore.currentTheme.colors.borderSubtle }"
-         style="padding-top: env(safe-area-inset-top, 0px);">
+      class="scp-terminal__header flex items-center justify-between h-11 px-4 border-b flex-shrink-0"
+      :style="{
+        backgroundColor: themeStore.currentTheme.colors.terminalBg,
+        borderColor: themeStore.currentTheme.colors.borderSubtle,
+      }"
+      style="padding-top: env(safe-area-inset-top, 0px)"
+    >
       <!-- Traffic Lights -->
       <div class="flex items-center gap-1">
-        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FF5F57] shadow-[0_0_4px_rgba(255,95,87,0.4)]" />
-        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FFBD2E] shadow-[0_0_4px_rgba(255,189,46,0.4)]" />
-        <span class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#28C840] shadow-[0_0_4px_rgba(40,200,64,0.4)]" />
+        <span
+          class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FF5F57] shadow-[0_0_4px_rgba(255,95,87,0.4)]"
+        />
+        <span
+          class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#FFBD2E] shadow-[0_0_4px_rgba(255,189,46,0.4)]"
+        />
+        <span
+          class="scp-terminal__dot w-[10px] h-[10px] rounded-full bg-[#28C840] shadow-[0_0_4px_rgba(40,200,64,0.4)]"
+        />
       </div>
       <!-- Title -->
-      <div class="scp-terminal__title absolute left-1/2 -translate-x-1/2 flex items-center gap-1 text-[12px] font-semibold text-[#8E8E93] whitespace-nowrap overflow-hidden text-ellipsis tracking-wide">
+      <div
+        class="scp-terminal__title absolute left-1/2 -translate-x-1/2 flex items-center gap-1 text-[12px] font-semibold text-[#8E8E93] whitespace-nowrap overflow-hidden text-ellipsis tracking-wide"
+      >
         <span class="scp-terminal__title-icon text-[#8E8E93] font-bold">⟩</span>
         SCP Terminal
       </div>
       <!-- Status -->
-      <div class="scp-terminal__status flex items-center gap-1 text-[11px] font-semibold text-[#8E8E93] tracking-widest">
+      <div
+        class="scp-terminal__status flex items-center gap-1 text-[11px] font-semibold text-[#8E8E93] tracking-widest"
+      >
         <span
           class="scp-terminal__status-dot w-[6px] h-[6px] rounded-full animate-ios-pulse"
           :class="statusDotClass"
@@ -30,19 +45,29 @@ class="scp-terminal__header flex items-center justify-between h-11 px-4 border-b
 
     <!-- Terminal Body -->
     <div
-class="scp-terminal__body flex-1 relative overflow-hidden"
-         :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
+      class="scp-terminal__body flex-1 relative overflow-hidden"
+      :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }"
+    >
       <div
-id="terminal-container" ref="terminalContainer" class="w-full h-full"
-           style="touch-action: pan-y; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch;"
-           :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }" />
+        id="terminal-container"
+        ref="terminalContainer"
+        class="w-full h-full"
+        style="
+          touch-action: pan-y;
+          overscroll-behavior-y: contain;
+          -webkit-overflow-scrolling: touch;
+        "
+        :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }"
+      />
     </div>
 
     <!-- Virtual Keyboard (Termux-style) -->
     <Transition name="scp-terminal__keyboard">
       <div
-v-if="isMobile" class="scp-terminal__keyboard"
-           :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }">
+        v-if="isMobile"
+        class="scp-terminal__keyboard"
+        :style="{ backgroundColor: themeStore.currentTheme.colors.terminalBg }"
+      >
         <!-- Extra Keys Row (ESC, TAB, CTRL, ALT, HOME, END, PGUP, PGDN, ←, →, ↑, ↓) -->
         <div class="scp-terminal__extra-keys">
           <button class="scp-terminal__key" @click="handleKey('esc')">ESC</button>
@@ -63,8 +88,20 @@ v-if="isMobile" class="scp-terminal__keyboard"
         <div class="scp-terminal__enter-row">
           <button class="scp-terminal__enter-key" @click="handleKey('enter')">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 14L9 9L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M9 9V4H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M4 14L9 9L14 14"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M9 9V4H15"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </button>
         </div>
@@ -98,7 +135,7 @@ const statusDotClass = computed(() => {
   return 'bg-[#FF3B30] shadow-[0_0_6px_#FF3B30]'
 })
 
-const statusText = computed(() => systemStore.isRunning ? 'ONLINE' : 'OFFLINE')
+const statusText = computed(() => (systemStore.isRunning ? 'ONLINE' : 'OFFLINE'))
 
 const isMobile = computed(() => {
   return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -130,27 +167,55 @@ function handleKey(action: string): void {
   triggerHaptic()
 
   switch (action) {
-    case 'esc': sendKey('\x1b'); break
-    case 'tab': sendKey('\t'); break
-    case 'up': sendKey('\x1b[A'); break
-    case 'down': sendKey('\x1b[B'); break
-    case 'left': sendKey('\x1b[D'); break
-    case 'right': sendKey('\x1b[C'); break
-    case 'home': sendKey('\x1b[H'); break
-    case 'end': sendKey('\x1b[F'); break
-    case 'pageup': terminal.scrollPages(-1); break
-    case 'pagedown': terminal.scrollPages(1); break
+    case 'esc':
+      sendKey('\x1b')
+      break
+    case 'tab':
+      sendKey('\t')
+      break
+    case 'up':
+      sendKey('\x1b[A')
+      break
+    case 'down':
+      sendKey('\x1b[B')
+      break
+    case 'left':
+      sendKey('\x1b[D')
+      break
+    case 'right':
+      sendKey('\x1b[C')
+      break
+    case 'home':
+      sendKey('\x1b[H')
+      break
+    case 'end':
+      sendKey('\x1b[F')
+      break
+    case 'pageup':
+      terminal.scrollPages(-1)
+      break
+    case 'pagedown':
+      terminal.scrollPages(1)
+      break
     case 'clear':
       clear()
       if (!systemStore.isRunning) displayWelcomeMessage()
       break
-    case 'help': sendText('help\n'); break
-    case 'history': navigateHistory(1); break
-    case 'enter': sendKey('\r'); break
+    case 'help':
+      sendText('help\n')
+      break
+    case 'history':
+      navigateHistory(1)
+      break
+    case 'enter':
+      sendKey('\r')
+      break
   }
 
   // Reset modifiers after sending
-  setTimeout(() => { modifiers.value = { ctrl: false, alt: false } }, 100)
+  setTimeout(() => {
+    modifiers.value = { ctrl: false, alt: false }
+  }, 100)
 }
 
 function triggerHaptic(): void {
@@ -236,68 +301,81 @@ function applyTerminalTheme(): void {
 }
 
 // Watch for theme changes and update terminal colors
-watch(() => themeStore.currentThemeId, () => {
-  applyTerminalTheme()
-})
+watch(
+  () => themeStore.currentThemeId,
+  () => {
+    applyTerminalTheme()
+  }
+)
 
 // Tab switching — save and restore terminal state
-watch(() => tabsStore.activeTabId, async (newTabId, oldTabId) => {
-  const terminal = getTerminal()
-  if (!terminal) return
-  if (newTabId === oldTabId) return
+watch(
+  () => tabsStore.activeTabId,
+  async (newTabId, oldTabId) => {
+    const terminal = getTerminal()
+    if (!terminal) return
+    if (newTabId === oldTabId) return
 
-  // Save old tab
-  if (oldTabId) {
-    try {
-      const buffer = terminal.buffer.active
-      if (buffer) {
-        const lines: string[] = []
-        for (let i = 0; i < buffer.length; i++) {
-          const line = buffer.getLine(i)
-          lines.push(line ? line.translateToString(true) : '')
-        }
-        terminalStates.value[oldTabId] = lines
-        indexedDBService.saveTerminalState(oldTabId, lines).catch(() => {})
-      }
-    } catch (error) {
-      console.error('[Terminal] Failed to save state:', error)
-    }
-  }
-
-  // Restore new tab
-  if (newTabId) {
-    let savedLines: string[] | null = null
-
-    if (terminalStates.value[newTabId]) {
-      const cached = terminalStates.value[newTabId]
-      savedLines = Array.isArray(cached) ? cached : null
-    }
-
-    if (!savedLines) {
+    // Save old tab
+    if (oldTabId) {
       try {
-        const savedContent = await indexedDBService.loadTerminalState(newTabId)
-        if (savedContent && Array.isArray(savedContent)) {
-          savedLines = savedContent
-          terminalStates.value[newTabId] = savedLines
+        const buffer = terminal.buffer.active
+        if (buffer) {
+          const lines: string[] = []
+          for (let i = 0; i < buffer.length; i++) {
+            const line = buffer.getLine(i)
+            lines.push(line ? line.translateToString(true) : '')
+          }
+          terminalStates.value[oldTabId] = lines
+          indexedDBService.saveTerminalState(oldTabId, lines).catch(() => {})
         }
-      } catch { /* ignore */ }
-    }
-
-    clear()
-
-    if (savedLines && savedLines.length > 0) {
-      for (const line of savedLines) terminal.writeln(line || '')
-    }
-
-    requestAnimationFrame(() => {
-      if (terminalInstance.value.fitAddon && terminal) {
-        try { terminalInstance.value.fitAddon.fit() } catch { /* ignore */ }
+      } catch (error) {
+        console.error('[Terminal] Failed to save state:', error)
       }
-      terminal.scrollToBottom()
-      window.__terminalInstance = { cols: terminal.cols, rows: terminal.rows }
-    })
-  }
-}, { flush: 'post' })
+    }
+
+    // Restore new tab
+    if (newTabId) {
+      let savedLines: string[] | null = null
+
+      if (terminalStates.value[newTabId]) {
+        const cached = terminalStates.value[newTabId]
+        savedLines = Array.isArray(cached) ? cached : null
+      }
+
+      if (!savedLines) {
+        try {
+          const savedContent = await indexedDBService.loadTerminalState(newTabId)
+          if (savedContent && Array.isArray(savedContent)) {
+            savedLines = savedContent
+            terminalStates.value[newTabId] = savedLines
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+
+      clear()
+
+      if (savedLines && savedLines.length > 0) {
+        for (const line of savedLines) terminal.writeln(line || '')
+      }
+
+      requestAnimationFrame(() => {
+        if (terminalInstance.value.fitAddon && terminal) {
+          try {
+            terminalInstance.value.fitAddon.fit()
+          } catch {
+            /* ignore */
+          }
+        }
+        terminal.scrollToBottom()
+        window.__terminalInstance = { cols: terminal.cols, rows: terminal.rows }
+      })
+    }
+  },
+  { flush: 'post' }
+)
 
 // Cleanup
 onBeforeUnmount(() => {
@@ -310,14 +388,16 @@ onBeforeUnmount(() => {
 <style scoped>
 /* ── Terminal Header ─────────────────────────────────────────────── */
 .scp-terminal__header {
-  transition: background 200ms ease,
-              border-color 200ms ease;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease;
 }
 
 /* Traffic light dots with subtle pulse */
 .scp-terminal__dot {
-  transition: transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 150ms ease;
+  transition:
+    transform 150ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 150ms ease;
 }
 
 .scp-terminal__header:hover .scp-terminal__dot {
@@ -326,8 +406,9 @@ onBeforeUnmount(() => {
 
 /* Status dot with smooth pulse */
 .scp-terminal__status-dot {
-  transition: background 200ms ease,
-              box-shadow 200ms ease;
+  transition:
+    background 200ms ease,
+    box-shadow 200ms ease;
 }
 
 /* ── Terminal Container ──────────────────────────────────────────── */
@@ -360,17 +441,17 @@ onBeforeUnmount(() => {
 }
 
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
-  background: var(--gui-accent, #8E8E93);
+  background: var(--gui-accent, #8e8e93);
   border-radius: 999px;
   transition: background 150ms ease;
 }
 
 #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb:hover {
-  background: var(--gui-accent-hover, #AEAEB2);
+  background: var(--gui-accent-hover, #aeaeb2);
 }
 
 #terminal-container :deep(.xterm-screen) {
-  background-color: var(--gui-terminal-bg, #1C1C1E) !important;
+  background-color: var(--gui-terminal-bg, #1c1c1e) !important;
 }
 
 /* ── Termux-style Virtual Keyboard ─────────────────────────────────── */
@@ -408,9 +489,10 @@ onBeforeUnmount(() => {
   padding: 0 8px;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  transition: background 100ms ease,
-              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
-  color: var(--gui-text-primary, #FFFFFF);
+  transition:
+    background 100ms ease,
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  color: var(--gui-text-primary, #ffffff);
   border-radius: var(--gui-radius-sm, 6px);
 }
 
@@ -432,14 +514,15 @@ onBeforeUnmount(() => {
   background: transparent;
   border: none;
   border-radius: var(--gui-radius-md, 10px);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  transition: background 100ms ease,
-              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  transition:
+    background 100ms ease,
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
 }
 
 .scp-terminal__enter-key:active {

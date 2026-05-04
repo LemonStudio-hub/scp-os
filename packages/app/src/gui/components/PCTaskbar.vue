@@ -2,10 +2,7 @@
   <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-200">
     <div class="pc-taskbar__container">
       <!-- Start Button -->
-      <button
-        class="pc-taskbar__start-btn"
-        @click="$emit('start-click')"
-      >
+      <button class="pc-taskbar__start-btn" @click="$emit('start-click')">
         <GUIIcon :name="'menu'" :size="20" />
         <span class="pc-taskbar__start-label">{{ t('pc.start') }}</span>
       </button>
@@ -31,9 +28,25 @@
 
       <!-- System Tray -->
       <div class="pc-taskbar__tray">
-        <button class="pc-taskbar__tray-item pc-taskbar__notif-btn" :title="t('app.notification')" @click="openNotifications">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-          <span v-if="notifStore.hasUnread" class="pc-taskbar__notif-badge">{{ notifStore.unreadCount }}</span>
+        <button
+          class="pc-taskbar__tray-item pc-taskbar__notif-btn"
+          :title="t('app.notification')"
+          @click="openNotifications"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 01-3.46 0" />
+          </svg>
+          <span v-if="notifStore.hasUnread" class="pc-taskbar__notif-badge">{{
+            notifStore.unreadCount
+          }}</span>
         </button>
         <div class="pc-taskbar__tray-item">
           <GUIIcon :name="'wifi'" :size="16" />
@@ -86,8 +99,18 @@ interface Props {
 // a Temporal Dead Zone error at runtime.
 withDefaults(defineProps<Props>(), {
   items: () => [
-    { id: 'terminal', tool: 'terminal' as ToolType, label: 'app.terminal', iconName: 'terminal' as IconName },
-    { id: 'files', tool: 'filemanager' as ToolType, label: 'app.files', iconName: 'folder' as IconName },
+    {
+      id: 'terminal',
+      tool: 'terminal' as ToolType,
+      label: 'app.terminal',
+      iconName: 'terminal' as IconName,
+    },
+    {
+      id: 'files',
+      tool: 'filemanager' as ToolType,
+      label: 'app.files',
+      iconName: 'folder' as IconName,
+    },
     { id: 'editor', tool: 'editor' as ToolType, label: 'app.editor', iconName: 'edit' as IconName },
   ],
   activeTools: () => [],
@@ -141,21 +164,26 @@ onUnmounted(() => {
 <style scoped>
 /* ── PC Taskbar - iOS Frosted Glass Style ──────────────────────────── */
 .pc-taskbar {
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   background: var(--gui-glass-bg, rgba(44, 44, 46, 0.85));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4), 0 -2px 8px rgba(0, 0, 0, 0.2),
-              inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  transition: background var(--gui-transition-base, 200ms ease),
-              box-shadow var(--gui-transition-base, 200ms ease);
+  box-shadow:
+    0 -8px 32px rgba(0, 0, 0, 0.4),
+    0 -2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    background var(--gui-transition-base, 200ms ease),
+    box-shadow var(--gui-transition-base, 200ms ease);
 }
 
 .pc-taskbar:hover {
   background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.95));
-  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.5), 0 -4px 12px rgba(0, 0, 0, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 -12px 40px rgba(0, 0, 0, 0.5),
+    0 -4px 12px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .pc-taskbar__container {
@@ -177,7 +205,7 @@ onUnmounted(() => {
   background: transparent;
   border: none;
   border-radius: var(--gui-radius-base, 8px);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   user-select: none;
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
@@ -189,7 +217,7 @@ onUnmounted(() => {
 .pc-taskbar__start-label {
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   white-space: nowrap;
   letter-spacing: 0.02em;
 }
@@ -234,7 +262,7 @@ onUnmounted(() => {
   border-radius: var(--gui-radius-lg, 12px);
   cursor: pointer;
   user-select: none;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
@@ -243,7 +271,7 @@ onUnmounted(() => {
 
 .pc-taskbar__app-btn:hover {
   background: var(--gui-dock-item-hover, rgba(255, 255, 255, 0.08));
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   transform: scale(1.08) translateY(-2px);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
@@ -262,7 +290,7 @@ onUnmounted(() => {
 
 .pc-taskbar__app-btn--active {
   background: var(--gui-dock-item-active, rgba(142, 142, 147, 0.15));
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .pc-taskbar__app-btn--active::after {
@@ -273,13 +301,14 @@ onUnmounted(() => {
   transform: translateX(-50%);
   width: 4px;
   height: 4px;
-  background: var(--gui-accent, #8E8E93);
+  background: var(--gui-accent, #8e8e93);
   border-radius: var(--radius-full, 999px);
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -302,14 +331,14 @@ onUnmounted(() => {
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
   border-radius: var(--gui-radius-base, 8px);
   cursor: pointer;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   transition: all var(--gui-transition-base, 200ms ease);
   -webkit-tap-highlight-color: transparent;
 }
 
 .pc-taskbar__tray-item:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .pc-taskbar__tray-item:active {
@@ -349,7 +378,7 @@ onUnmounted(() => {
 .pc-taskbar__time-text {
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
 }

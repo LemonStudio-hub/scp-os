@@ -54,9 +54,7 @@ export function generateMsfSearch(module: string): string[] {
   lines.push(`${CYAN}msf6 >${R} search ${module}`)
   lines.push('')
 
-  const matchingModules = MSF_MODULES.filter(m =>
-    m.toLowerCase().includes(module.toLowerCase())
-  )
+  const matchingModules = MSF_MODULES.filter((m) => m.toLowerCase().includes(module.toLowerCase()))
 
   if (matchingModules.length === 0) {
     lines.push(`${GRAY}[*]${R} No results from search.`)
@@ -77,7 +75,9 @@ export function generateMsfSearch(module: string): string[] {
     const rank = randomChoice(ranks)
     const check = randomChoice(checks)
     const num = (i + 1).toString().padStart(2, ' ')
-    lines.push(`  ${num}  ${GREEN}${matchingModules[i].padEnd(50)}${R} ${YELLOW}${rank.padEnd(10)}${R} ${check}`)
+    lines.push(
+      `  ${num}  ${GREEN}${matchingModules[i].padEnd(50)}${R} ${YELLOW}${rank.padEnd(10)}${R} ${check}`
+    )
   }
 
   lines.push('')
@@ -88,7 +88,9 @@ export function generateMsfUse(exploit: string): string[] {
   const lines: string[] = []
   lines.push('')
   lines.push(`${CYAN}msf6 >${R} use ${exploit}`)
-  lines.push(`${GRAY}[*]${R} Using configured payload ${GREEN}payload/windows/x64/meterpreter/reverse_tcp${R}`)
+  lines.push(
+    `${GRAY}[*]${R} Using configured payload ${GREEN}payload/windows/x64/meterpreter/reverse_tcp${R}`
+  )
   lines.push('')
   lines.push(`${CYAN}msf6 exploit(${exploit}) >${R}`)
   lines.push('')
@@ -134,7 +136,9 @@ export function generateMsfExploit(targetIP: string): ToolTemplateResult {
   lines.push(`${GRAY}[*]${R} ${targetIP}:445 - Sending exploit...`)
   lines.push(`${GRAY}[*]${R} ${targetIP}:445 - Sending stage (200774 bytes) to ${targetIP}`)
   lines.push('')
-  lines.push(`${GREEN}${BOLD}[+]${R} ${GREEN}Meterpreter session ${sessionId} opened (${lhost}:${lport} -> ${targetIP}:${randomInt(49000, 65000)})${R}`)
+  lines.push(
+    `${GREEN}${BOLD}[+]${R} ${GREEN}Meterpreter session ${sessionId} opened (${lhost}:${lport} -> ${targetIP}:${randomInt(49000, 65000)})${R}`
+  )
   lines.push('')
   lines.push(`${CYAN}meterpreter >${R}`)
   lines.push('')

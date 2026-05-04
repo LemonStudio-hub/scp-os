@@ -2,10 +2,10 @@ export const SCPClass = {
   Safe: 'Safe',
   Euclid: 'Euclid',
   Keter: 'Keter',
-  Thaumiel: 'Thaumiel'
+  Thaumiel: 'Thaumiel',
 } as const
 
-export type SCPClass = typeof SCPClass[keyof typeof SCPClass]
+export type SCPClass = (typeof SCPClass)[keyof typeof SCPClass]
 
 export interface SCPObject {
   id: string

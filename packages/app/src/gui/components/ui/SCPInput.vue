@@ -1,5 +1,10 @@
 <template>
-  <div :class="['scp-input-wrapper', { 'scp-input-wrapper--focus': isFocused, 'scp-input-wrapper--disabled': disabled }]">
+  <div
+    :class="[
+      'scp-input-wrapper',
+      { 'scp-input-wrapper--focus': isFocused, 'scp-input-wrapper--disabled': disabled },
+    ]"
+  >
     <label v-if="label" :for="inputId" class="scp-input__label">{{ label }}</label>
     <div v-if="prefix" class="scp-input__prefix">{{ prefix }}</div>
     <input
@@ -19,7 +24,12 @@
     />
     <button v-if="clearable && modelValue" class="scp-input__clear" tabindex="-1" @click="onClear">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M4 4L10 10M10 4L4 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        <path
+          d="M4 4L10 10M10 4L4 10"
+          stroke="currentColor"
+          stroke-width="1.4"
+          stroke-linecap="round"
+        />
       </svg>
     </button>
     <div v-if="suffix" class="scp-input__suffix">{{ suffix }}</div>
@@ -61,8 +71,8 @@ withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  'clear': []
-  'keydown': [event: KeyboardEvent]
+  clear: []
+  keydown: [event: KeyboardEvent]
 }>()
 
 const inputRef = ref<HTMLInputElement>()
@@ -89,21 +99,22 @@ defineExpose({ focus: () => inputRef.value?.focus() })
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);
   padding: 0 var(--gui-spacing-md, 12px);
-  transition: border-color 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              background 150ms ease,
-              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  transition:
+    border-color 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    background 150ms ease,
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   will-change: border-color, box-shadow;
 }
 
 .scp-input-wrapper--focus {
-  border-color: var(--gui-accent, #8E8E93);
+  border-color: var(--gui-accent, #8e8e93);
   box-shadow: 0 0 0 3px var(--gui-accent-soft, rgba(142, 142, 147, 0.12));
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
 }
 
 .scp-input-wrapper:active {
@@ -119,7 +130,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 .scp-input__label {
   font-family: var(--gui-font-sans);
   font-size: var(--gui-font-xs, 11px);
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-weight: var(--gui-font-weight-medium, 500);
   margin-bottom: 4px;
   display: block;
@@ -128,7 +139,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 
 .scp-input-wrapper--focus + .scp-input__label,
 .scp-input-wrapper--focus ~ .scp-input__label {
-  color: var(--gui-accent, #8E8E93);
+  color: var(--gui-accent, #8e8e93);
 }
 
 /* ── Input ─────────────────────────────────────────────────────────── */
@@ -137,7 +148,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
   background: transparent;
   border: none;
   outline: none;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   font-family: var(--gui-font-sans);
   font-size: var(--gui-font-base, 13px);
   padding: var(--gui-spacing-sm, 8px) 0;
@@ -150,7 +161,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 }
 
 .scp-input:focus::placeholder {
-  color: var(--gui-text-disabled, #48484A);
+  color: var(--gui-text-disabled, #48484a);
 }
 
 .scp-input:disabled {
@@ -184,7 +195,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 }
 
 .scp-input__clear:hover {
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 

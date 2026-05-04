@@ -57,7 +57,7 @@ export interface IEventBus {
 const DEFAULT_CONFIG = {
   maxListeners: 10,
   async: false,
-  warnOnMemoryLeak: true
+  warnOnMemoryLeak: true,
 }
 
 /**
@@ -119,17 +119,11 @@ export class EventBus implements IEventBus {
           const result = handler(data)
           if (result instanceof Promise) {
             result.catch((err: unknown) => {
-              logger.error(
-                `Error in async handler for event "${event}":`,
-                err
-              )
+              logger.error(`Error in async handler for event "${event}":`, err)
             })
           }
         } catch (error) {
-          logger.error(
-            `Error in handler for event "${event}":`,
-            error
-          )
+          logger.error(`Error in handler for event "${event}":`, error)
         }
       }
     }

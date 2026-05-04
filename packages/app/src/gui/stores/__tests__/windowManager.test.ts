@@ -88,11 +88,11 @@ describe('WindowManager Store', () => {
     store.openWindow(createWindowConfig({ isFullscreen: false }))
 
     store.maximizeWindow('test-window')
-    const win = store.openWindows.find(w => w.config.id === 'test-window')
+    const win = store.openWindows.find((w) => w.config.id === 'test-window')
     expect(win?.maximized).toBe(true)
 
     store.maximizeWindow('test-window')
-    const restored = store.openWindows.find(w => w.config.id === 'test-window')
+    const restored = store.openWindows.find((w) => w.config.id === 'test-window')
     expect(restored?.maximized).toBe(false)
   })
 
@@ -102,7 +102,7 @@ describe('WindowManager Store', () => {
 
     store.updateWindowPosition('test-window', 100, 200)
 
-    const win = store.openWindows.find(w => w.config.id === 'test-window')
+    const win = store.openWindows.find((w) => w.config.id === 'test-window')
     expect(win?.position.x).toBe(100)
     expect(win?.position.y).toBe(200)
   })
@@ -113,7 +113,7 @@ describe('WindowManager Store', () => {
 
     store.updateWindowDimensions('test-window', { x: 50, y: 75, width: 900, height: 700 })
 
-    const win = store.openWindows.find(w => w.config.id === 'test-window')
+    const win = store.openWindows.find((w) => w.config.id === 'test-window')
     expect(win?.position.x).toBe(50)
     expect(win?.position.y).toBe(75)
     expect(win?.size.width).toBe(900)

@@ -15,11 +15,11 @@ export class CapabilityManagerService {
   private dataCapabilities: Map<string, IDataCapability> = new Map()
   private uiCapabilities: Map<string, IUICapability> = new Map()
   private eventBus: IEventBus | null = null
-  
+
   constructor(eventBus?: IEventBus) {
     this.eventBus = eventBus || null
   }
-  
+
   /**
    * Register a terminal capability
    * @param name Capability name
@@ -27,15 +27,15 @@ export class CapabilityManagerService {
    */
   registerTerminalCapability(name: string, capability: ITerminalCapability): void {
     this.terminalCapabilities.set(name, capability)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('capability:registered', { 
+      this.eventBus.emit('capability:registered', {
         type: 'terminal',
-        name 
+        name,
       })
     }
   }
-  
+
   /**
    * Register a data capability
    * @param name Capability name
@@ -43,15 +43,15 @@ export class CapabilityManagerService {
    */
   registerDataCapability(name: string, capability: IDataCapability): void {
     this.dataCapabilities.set(name, capability)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('capability:registered', { 
+      this.eventBus.emit('capability:registered', {
         type: 'data',
-        name 
+        name,
       })
     }
   }
-  
+
   /**
    * Register a UI capability
    * @param name Capability name
@@ -59,15 +59,15 @@ export class CapabilityManagerService {
    */
   registerUICapability(name: string, capability: IUICapability): void {
     this.uiCapabilities.set(name, capability)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('capability:registered', { 
+      this.eventBus.emit('capability:registered', {
         type: 'ui',
-        name 
+        name,
       })
     }
   }
-  
+
   /**
    * Get terminal capability by name
    * @param name Capability name
@@ -76,7 +76,7 @@ export class CapabilityManagerService {
   getTerminalCapability(name: string): ITerminalCapability | null {
     return this.terminalCapabilities.get(name) || null
   }
-  
+
   /**
    * Get data capability by name
    * @param name Capability name
@@ -85,7 +85,7 @@ export class CapabilityManagerService {
   getDataCapability(name: string): IDataCapability | null {
     return this.dataCapabilities.get(name) || null
   }
-  
+
   /**
    * Get UI capability by name
    * @param name Capability name
@@ -94,7 +94,7 @@ export class CapabilityManagerService {
   getUICapability(name: string): IUICapability | null {
     return this.uiCapabilities.get(name) || null
   }
-  
+
   /**
    * Get default terminal capability
    * @returns Default terminal capability or null
@@ -104,7 +104,7 @@ export class CapabilityManagerService {
     if (names.length === 0) return null
     return this.terminalCapabilities.get(names[0]) || null
   }
-  
+
   /**
    * Get default data capability
    * @returns Default data capability or null
@@ -114,7 +114,7 @@ export class CapabilityManagerService {
     if (names.length === 0) return null
     return this.dataCapabilities.get(names[0]) || null
   }
-  
+
   /**
    * Get default UI capability
    * @returns Default UI capability or null
@@ -124,7 +124,7 @@ export class CapabilityManagerService {
     if (names.length === 0) return null
     return this.uiCapabilities.get(names[0]) || null
   }
-  
+
   /**
    * Get all terminal capability names
    * @returns Array of capability names
@@ -132,7 +132,7 @@ export class CapabilityManagerService {
   getTerminalCapabilityNames(): string[] {
     return Array.from(this.terminalCapabilities.keys())
   }
-  
+
   /**
    * Get all data capability names
    * @returns Array of capability names
@@ -140,7 +140,7 @@ export class CapabilityManagerService {
   getDataCapabilityNames(): string[] {
     return Array.from(this.dataCapabilities.keys())
   }
-  
+
   /**
    * Get all UI capability names
    * @returns Array of capability names
@@ -148,52 +148,52 @@ export class CapabilityManagerService {
   getUICapabilityNames(): string[] {
     return Array.from(this.uiCapabilities.keys())
   }
-  
+
   /**
    * Unregister a terminal capability
    * @param name Capability name
    */
   unregisterTerminalCapability(name: string): void {
     this.terminalCapabilities.delete(name)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('capability:unregistered', { 
+      this.eventBus.emit('capability:unregistered', {
         type: 'terminal',
-        name 
+        name,
       })
     }
   }
-  
+
   /**
    * Unregister a data capability
    * @param name Capability name
    */
   unregisterDataCapability(name: string): void {
     this.dataCapabilities.delete(name)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('capability:unregistered', { 
+      this.eventBus.emit('capability:unregistered', {
         type: 'data',
-        name 
+        name,
       })
     }
   }
-  
+
   /**
    * Unregister a UI capability
    * @param name Capability name
    */
   unregisterUICapability(name: string): void {
     this.uiCapabilities.delete(name)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('capability:unregistered', { 
+      this.eventBus.emit('capability:unregistered', {
         type: 'ui',
-        name 
+        name,
       })
     }
   }
-  
+
   /**
    * Get capability statistics
    * @returns Statistics about registered capabilities
@@ -208,10 +208,11 @@ export class CapabilityManagerService {
       terminalCapabilities: this.terminalCapabilities.size,
       dataCapabilities: this.dataCapabilities.size,
       uiCapabilities: this.uiCapabilities.size,
-      totalCapabilities: this.terminalCapabilities.size + this.dataCapabilities.size + this.uiCapabilities.size
+      totalCapabilities:
+        this.terminalCapabilities.size + this.dataCapabilities.size + this.uiCapabilities.size,
     }
   }
-  
+
   /**
    * Check if a terminal capability exists
    * @param name Capability name
@@ -220,7 +221,7 @@ export class CapabilityManagerService {
   hasTerminalCapability(name: string): boolean {
     return this.terminalCapabilities.has(name)
   }
-  
+
   /**
    * Check if a data capability exists
    * @param name Capability name
@@ -229,7 +230,7 @@ export class CapabilityManagerService {
   hasDataCapability(name: string): boolean {
     return this.dataCapabilities.has(name)
   }
-  
+
   /**
    * Check if a UI capability exists
    * @param name Capability name
@@ -238,7 +239,7 @@ export class CapabilityManagerService {
   hasUICapability(name: string): boolean {
     return this.uiCapabilities.has(name)
   }
-  
+
   /**
    * Clear all capabilities
    */
@@ -246,7 +247,7 @@ export class CapabilityManagerService {
     this.terminalCapabilities.clear()
     this.dataCapabilities.clear()
     this.uiCapabilities.clear()
-    
+
     if (this.eventBus) {
       this.eventBus.emit('capability:registry:cleared', {})
     }

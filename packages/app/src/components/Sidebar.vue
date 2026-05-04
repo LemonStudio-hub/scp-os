@@ -1,39 +1,25 @@
 <template>
-  <div 
-    class="sidebar" 
-    :class="{ 'sidebar-open': isOpen }"
-    @click="handleBackdropClick"
-  >
+  <div class="sidebar" :class="{ 'sidebar-open': isOpen }" @click="handleBackdropClick">
     <div class="sidebar-content" @click.stop>
       <div class="sidebar-header">
         <h2>Tabs</h2>
-        <button 
-          class="btn-icon" 
-          aria-label="Close sidebar" 
-          @click="handleClose"
-        >
-          &times;
-        </button>
+        <button class="btn-icon" aria-label="Close sidebar" @click="handleClose">&times;</button>
       </div>
 
       <div class="sidebar-actions">
-        <button 
-          class="btn-primary" 
-          :disabled="tabs.length >= 10"
-          @click="handleCreateTab"
-        >
+        <button class="btn-primary" :disabled="tabs.length >= 10" @click="handleCreateTab">
           + New Tab
         </button>
       </div>
 
       <div class="tabs-list">
-        <div 
-          v-for="tab in sortedTabs" 
+        <div
+          v-for="tab in sortedTabs"
           :key="tab.id"
           class="tab-item"
-          :class="{ 
-            'tab-active': tab.isActive, 
-            'tab-locked': tab.isLocked 
+          :class="{
+            'tab-active': tab.isActive,
+            'tab-locked': tab.isLocked,
           }"
           @click="handleTabClick(tab.id)"
         >
@@ -57,7 +43,7 @@
           </div>
 
           <div class="tab-actions">
-            <button 
+            <button
               v-if="!tab.isLocked"
               class="btn-icon btn-small"
               aria-label="Close tab"
@@ -70,17 +56,13 @@
 
         <div v-if="tabs.length === 0" class="empty-state">
           <p>No tabs</p>
-          <button class="btn-secondary" @click="handleCreateTab">
-            Create First Tab
-          </button>
+          <button class="btn-secondary" @click="handleCreateTab">Create First Tab</button>
         </div>
       </div>
 
       <div class="sidebar-footer">
-        <div class="tabs-count">
-          {{ tabs.length }} / 10 tabs
-        </div>
-        <button 
+        <div class="tabs-count">{{ tabs.length }} / 10 tabs</div>
+        <button
           class="btn-secondary btn-small"
           title="Clean up unused tabs (7 days)"
           @click="handleCleanup"
@@ -140,7 +122,7 @@ const handleTabClick = (tabId: string) => {
 // Close tab
 const handleCloseTab = async (tabId: string) => {
   const success = tabsStore.closeTab(tabId)
-  
+
   // Delete terminal state from IndexedDB if tab was closed
   if (success) {
     try {
@@ -181,7 +163,7 @@ const handleCleanup = () => {
   const beforeCount = tabs.value.length
   tabsStore.cleanupOldTabs()
   const afterCount = tabs.value.length
-  
+
   if (beforeCount !== afterCount) {
     logger.info(`[Sidebar] Cleaned up ${beforeCount - afterCount} old tabs`)
   }
@@ -227,7 +209,7 @@ const handleCleanup = () => {
   width: 320px;
   max-width: 85vw;
   height: 100%;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
@@ -259,7 +241,7 @@ const handleCleanup = () => {
   margin: 0;
   font-size: 17px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   letter-spacing: -0.01em;
 }
 
@@ -271,15 +253,16 @@ const handleCleanup = () => {
   align-items: center;
   justify-content: center;
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
-  color: var(--gui-accent, #8E8E93);
+  color: var(--gui-accent, #8e8e93);
   border: none;
   border-radius: var(--gui-radius-full, 999px);
   cursor: pointer;
   font-size: 20px;
   font-weight: 400;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              background 120ms ease,
-              opacity 120ms ease;
+  transition:
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    background 120ms ease,
+    opacity 120ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -313,11 +296,12 @@ const handleCleanup = () => {
   align-items: center;
   padding: 12px 14px;
   margin-bottom: 2px;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              background 120ms ease;
+  transition:
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    background 120ms ease;
   border: 1px solid transparent;
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
@@ -351,13 +335,13 @@ const handleCleanup = () => {
 .tab-icon {
   font-size: 14px;
   flex-shrink: 0;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
 }
 
 .tab-title {
   font-size: 15px;
   font-weight: 400;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -366,10 +350,10 @@ const handleCleanup = () => {
 .tab-title-input {
   font-size: 15px;
   padding: 6px 10px;
-  background: var(--gui-bg-base, #1C1C1E);
+  background: var(--gui-bg-base, #1c1c1e);
   border: 1px solid var(--gui-border-strong, rgba(255, 255, 255, 0.12));
   border-radius: var(--gui-radius-sm, 6px);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   width: 100%;
   outline: none;
   font-family: var(--gui-font-sans);
@@ -377,7 +361,7 @@ const handleCleanup = () => {
 }
 
 .tab-title-input:focus {
-  border-color: var(--gui-accent, #8E8E93);
+  border-color: var(--gui-accent, #8e8e93);
 }
 
 .tab-actions {
@@ -403,7 +387,7 @@ const handleCleanup = () => {
 
 .tabs-count {
   font-size: 13px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -411,7 +395,7 @@ const handleCleanup = () => {
 .empty-state {
   text-align: center;
   padding: 48px 20px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
 }
 
 .empty-state p {
@@ -423,20 +407,21 @@ const handleCleanup = () => {
 .btn-primary {
   width: 100%;
   padding: 10px 16px;
-  background: var(--gui-accent, #8E8E93);
+  background: var(--gui-accent, #8e8e93);
   color: var(--gui-text-inverse, #000000);
   border: none;
   border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
   font-size: 15px;
   font-weight: 500;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              opacity 120ms ease;
+  transition:
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    opacity 120ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--gui-accent-hover, #AEAEB2);
+  background: var(--gui-accent-hover, #aeaeb2);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -450,15 +435,16 @@ const handleCleanup = () => {
 
 .btn-secondary {
   padding: 8px 14px;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
-  color: var(--gui-accent, #8E8E93);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
+  color: var(--gui-accent, #8e8e93);
   border: none;
   border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              background 120ms ease;
+  transition:
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    background 120ms ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

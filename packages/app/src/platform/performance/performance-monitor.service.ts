@@ -73,30 +73,30 @@ export interface PerformanceIssue {
  * Web Vitals
  */
 export interface WebVitals {
-  lcp: number | null       // Largest Contentful Paint (ms)
-  cls: number | null       // Cumulative Layout Shift
-  inp: number | null       // Interaction to Next Paint (ms)
-  fcp: number | null       // First Contentful Paint (ms)
-  ttfb: number | null      // Time to First Byte (ms)
+  lcp: number | null // Largest Contentful Paint (ms)
+  cls: number | null // Cumulative Layout Shift
+  inp: number | null // Interaction to Next Paint (ms)
+  fcp: number | null // First Contentful Paint (ms)
+  ttfb: number | null // Time to First Byte (ms)
 }
 
 /**
  * Network Info
  */
 export interface NetworkInfo {
-  effectiveType: string    // 'slow-2g' | '2g' | '3g' | '4g'
-  downlink: number         // Mbps
-  rtt: number              // ms
+  effectiveType: string // 'slow-2g' | '2g' | '3g' | '4g'
+  downlink: number // Mbps
+  rtt: number // ms
   saveData: boolean
-  type: string             // 'wifi' | 'cellular' | 'ethernet' etc.
+  type: string // 'wifi' | 'cellular' | 'ethernet' etc.
 }
 
 /**
  * Storage Info
  */
 export interface StorageInfo {
-  usage: number            // bytes
-  quota: number            // bytes
+  usage: number // bytes
+  quota: number // bytes
   usagePercent: number
 }
 
@@ -155,7 +155,9 @@ export class PerformanceMonitorService {
         }
       })
       observer.observe({ type: 'largest-contentful-paint', buffered: true })
-    } catch { /* LCP not supported */ }
+    } catch {
+      /* LCP not supported */
+    }
 
     // CLS observer
     try {
@@ -171,7 +173,9 @@ export class PerformanceMonitorService {
         this.recordMetric('web-vitals-cls', clsValue, 'score')
       })
       observer.observe({ type: 'layout-shift', buffered: true })
-    } catch { /* CLS not supported */ }
+    } catch {
+      /* CLS not supported */
+    }
 
     // INP observer (formerly FID)
     try {
@@ -187,7 +191,9 @@ export class PerformanceMonitorService {
         }
       })
       observer.observe({ type: 'event', buffered: true })
-    } catch { /* INP not supported */ }
+    } catch {
+      /* INP not supported */
+    }
   }
 
   /**
@@ -301,7 +307,12 @@ export class PerformanceMonitorService {
       this.recordMetric('memory-used', mem.usedJSHeapSize, 'bytes', now)
       this.recordMetric('memory-total', mem.totalJSHeapSize, 'bytes', now)
       this.recordMetric('memory-limit', mem.jsHeapSizeLimit, 'bytes', now)
-      this.recordMetric('memory-percent', (mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100, '%', now)
+      this.recordMetric(
+        'memory-percent',
+        (mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100,
+        '%',
+        now
+      )
     }
 
     // Navigation timing
@@ -332,7 +343,7 @@ export class PerformanceMonitorService {
         for (const entry of resourceEntries) {
           const res = entry as PerformanceResourceTiming
           totalDuration += res.duration
-          totalSize += (res.transferSize || 0)
+          totalSize += res.transferSize || 0
 
           // 暂时注释掉错误检测逻辑，因为PerformanceResourceTiming接口中不存在responseStatus属性
           // if (res.responseStatus && res.responseStatus >= 400) {
@@ -371,7 +382,13 @@ export class PerformanceMonitorService {
   /**
    * Record a metric
    */
-  recordMetric(name: string, value: number, unit: string, timestamp: Date = new Date(), tags?: Record<string, string>): void {
+  recordMetric(
+    name: string,
+    value: number,
+    unit: string,
+    timestamp: Date = new Date(),
+    tags?: Record<string, string>
+  ): void {
     const metric: PerformanceMetric = { name, value, unit, timestamp, tags }
 
     if (!this.metrics.has(name)) {
@@ -553,10 +570,18 @@ export class PerformanceMonitorService {
     let score = 100
     for (const issue of issues) {
       switch (issue.severity) {
-        case 'critical': score -= 25; break
-        case 'high': score -= 15; break
-        case 'medium': score -= 8; break
-        case 'low': score -= 3; break
+        case 'critical':
+          score -= 25
+          break
+        case 'high':
+          score -= 15
+          break
+        case 'medium':
+          score -= 8
+          break
+        case 'low':
+          score -= 3
+          break
       }
     }
     return Math.max(0, Math.min(100, score))

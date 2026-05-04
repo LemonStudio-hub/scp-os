@@ -106,13 +106,15 @@ function handleLogout() {
   width: 32px;
   height: 32px;
   border: 3px solid #1a1a1a;
-  border-top-color: #E94560;
+  border-top-color: #e94560;
   border-radius: 50%;
   animation: adminLayoutSpin 0.8s linear infinite;
 }
 
 @keyframes adminLayoutSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .admin-layout__main {
@@ -141,7 +143,13 @@ function handleLogout() {
 }
 
 @keyframes adminLayoutPageIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

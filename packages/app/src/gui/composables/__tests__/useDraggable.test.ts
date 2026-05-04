@@ -50,7 +50,9 @@ describe('useDraggable', () => {
   it('should ignore right mouse button', () => {
     const { dragState, handleMouseDown } = useDraggable(ref(element))
 
-    handleMouseDown(new MouseEvent('mousedown', { button: 2, clientX: 100, clientY: 100, bubbles: true }))
+    handleMouseDown(
+      new MouseEvent('mousedown', { button: 2, clientX: 100, clientY: 100, bubbles: true })
+    )
 
     expect(dragState.value.isDragging).toBe(false)
   })

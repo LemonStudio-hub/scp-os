@@ -31,7 +31,7 @@ const className = computed(() => `gui-icon--${props.name}`)
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--gui-icon-fg, #FFFFFF);
+  color: var(--gui-icon-fg, #ffffff);
   flex-shrink: 0;
   line-height: 1;
 }
@@ -49,6 +49,6 @@ const className = computed(() => `gui-icon--${props.name}`)
 /* Muted icons for empty states */
 .gui-icon--empty-folder,
 .gui-icon--empty-doc {
-  color: var(--gui-text-disabled, #48484A);
+  color: var(--gui-text-disabled, #48484a);
 }
 </style>

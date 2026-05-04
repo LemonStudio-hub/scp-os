@@ -107,16 +107,21 @@ export const ToolRegistry = new ToolRegistryClass()
  * Open a tool window using the registry's configuration.
  * This is the single entry point for opening any tool window.
  */
-export function openTool(toolId: ToolType, openWindow: (config: {
-  id: string
-  tool: ToolType
-  title: string
-  iconName?: string
-  width: number
-  height: number
-  isFullscreen?: boolean
-  data?: Record<string, any>
-}) => void, data?: Record<string, any>, existingToolIds?: string[]): void {
+export function openTool(
+  toolId: ToolType,
+  openWindow: (config: {
+    id: string
+    tool: ToolType
+    title: string
+    iconName?: string
+    width: number
+    height: number
+    isFullscreen?: boolean
+    data?: Record<string, any>
+  }) => void,
+  data?: Record<string, any>,
+  existingToolIds?: string[]
+): void {
   const tool = ToolRegistry.get(toolId)
   if (!tool) {
     console.warn(`[ToolRegistry] Tool "${toolId}" is not registered`)
@@ -124,7 +129,7 @@ export function openTool(toolId: ToolType, openWindow: (config: {
   }
 
   if (tool.singleton && existingToolIds) {
-    const existing = existingToolIds.find(id => id.startsWith(`${toolId}-`))
+    const existing = existingToolIds.find((id) => id.startsWith(`${toolId}-`))
     if (existing) {
       return
     }

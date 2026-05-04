@@ -6,7 +6,13 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { WindowInstance, WindowConfig, WindowState, ToolType, WindowDimensions } from '../types'
+import type {
+  WindowInstance,
+  WindowConfig,
+  WindowState,
+  ToolType,
+  WindowDimensions,
+} from '../types'
 import { useZIndex } from '../composables/useZIndex'
 import { windowDefaults } from '../design-tokens'
 import indexedDBService from '../../utils/indexedDB'
@@ -42,7 +48,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
   const windowCount = computed(() => windows.value.size)
 
   const minimizedWindows = computed(() => {
-    return openWindows.value.filter(w => w.minimized)
+    return openWindows.value.filter((w) => w.minimized)
   })
 
   // Actions
@@ -152,7 +158,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     })
 
     // Focus next available window
-    const remainingWindows = openWindows.value.filter(w => !w.minimized)
+    const remainingWindows = openWindows.value.filter((w) => !w.minimized)
     if (remainingWindows.length > 0) {
       focusWindow(remainingWindows[remainingWindows.length - 1].config.id)
     } else {
@@ -223,11 +229,11 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
   }
 
   function hasWindow(tool: ToolType): boolean {
-    return Array.from(windows.value.values()).some(w => w.config.tool === tool && !w.minimized)
+    return Array.from(windows.value.values()).some((w) => w.config.tool === tool && !w.minimized)
   }
 
   function getWindowByTool(tool: ToolType): WindowInstance | undefined {
-    return Array.from(windows.value.values()).find(w => w.config.tool === tool && !w.minimized)
+    return Array.from(windows.value.values()).find((w) => w.config.tool === tool && !w.minimized)
   }
 
   // Persistence

@@ -37,8 +37,8 @@ export class TerminalApplicationService implements IApplicationService {
       closable: true,
       data: {
         content: '',
-        cursorPosition: 0
-      }
+        cursorPosition: 0,
+      },
     })
 
     await this.tabRepository.save(tab)

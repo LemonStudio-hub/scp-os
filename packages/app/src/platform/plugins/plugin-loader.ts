@@ -46,7 +46,7 @@ export class PluginLoader {
     this.config = {
       debug: options.debug ?? false,
       pluginManager: options.pluginManager ?? getGlobalPluginManager(),
-      maxFileSize: options.maxFileSize ?? 1024 * 1024 // 1MB
+      maxFileSize: options.maxFileSize ?? 1024 * 1024, // 1MB
     }
 
     this.pluginManager = this.config.pluginManager
@@ -75,7 +75,7 @@ export class PluginLoader {
       if (!plugin) {
         return {
           success: false,
-          error: `No plugin found in file: ${filePath}`
+          error: `No plugin found in file: ${filePath}`,
         }
       }
 
@@ -87,7 +87,7 @@ export class PluginLoader {
         this.loadHistory.set(plugin.name, {
           type: 'file',
           source: filePath,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
 
@@ -98,7 +98,7 @@ export class PluginLoader {
 
       return {
         success: false,
-        error: `Failed to load plugin: ${errorMessage}`
+        error: `Failed to load plugin: ${errorMessage}`,
       }
     }
   }
@@ -146,7 +146,7 @@ export class PluginLoader {
         URL.revokeObjectURL(pluginUrl)
         return {
           success: false,
-          error: `No plugin found at URL: ${url}`
+          error: `No plugin found at URL: ${url}`,
         }
       }
 
@@ -161,7 +161,7 @@ export class PluginLoader {
         this.loadHistory.set(plugin.name, {
           type: 'url',
           source: url,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
 
@@ -172,7 +172,7 @@ export class PluginLoader {
 
       return {
         success: false,
-        error: `Failed to load plugin: ${errorMessage}`
+        error: `Failed to load plugin: ${errorMessage}`,
       }
     }
   }
@@ -195,7 +195,7 @@ export class PluginLoader {
         this.loadHistory.set(plugin.name, {
           type: 'object',
           source: plugin,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         })
       }
 
@@ -206,7 +206,7 @@ export class PluginLoader {
 
       return {
         success: false,
-        error: `Failed to load plugin: ${errorMessage}`
+        error: `Failed to load plugin: ${errorMessage}`,
       }
     }
   }
@@ -215,9 +215,7 @@ export class PluginLoader {
    * Load multiple plugins
    * @param sources - Array of file paths, URLs, or plugin objects
    */
-  async loadMultiple(
-    sources: Array<string | Plugin>
-  ): Promise<PluginLoadResult[]> {
+  async loadMultiple(sources: Array<string | Plugin>): Promise<PluginLoadResult[]> {
     const promises = sources.map((source) => {
       if (typeof source === 'string') {
         if (source.startsWith('http://') || source.startsWith('https://')) {

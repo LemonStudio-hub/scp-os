@@ -103,10 +103,10 @@ export const PluginStatus = {
   /** Plugin failed to load */
   ERROR: 'error',
   /** Plugin is unloaded */
-  UNLOADED: 'unloaded'
+  UNLOADED: 'unloaded',
 } as const
 
-export type PluginStatus = typeof PluginStatus[keyof typeof PluginStatus]
+export type PluginStatus = (typeof PluginStatus)[keyof typeof PluginStatus]
 
 /**
  * Plugin configuration

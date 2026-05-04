@@ -15,7 +15,7 @@ import {
 describe('useKeyboardShortcuts', () => {
   beforeEach(() => {
     const shortcuts = getShortcuts()
-    shortcuts.forEach(s => unregisterShortcut(s.id))
+    shortcuts.forEach((s) => unregisterShortcut(s.id))
     setContext('global')
   })
 
@@ -135,7 +135,7 @@ describe('useKeyboardShortcuts', () => {
       })
 
       const shortcuts = getShortcuts()
-      expect(shortcuts.find(s => s.id === 'test-shortcut')).toBeDefined()
+      expect(shortcuts.find((s) => s.id === 'test-shortcut')).toBeDefined()
     })
 
     it('should update existing shortcut', () => {
@@ -159,7 +159,7 @@ describe('useKeyboardShortcuts', () => {
       })
 
       const shortcuts = getShortcuts()
-      const shortcut = shortcuts.find(s => s.id === 'test-shortcut')
+      const shortcut = shortcuts.find((s) => s.id === 'test-shortcut')
       expect(shortcut?.keys).toBe('Ctrl+Shift+T')
       expect(shortcut?.description).toBe('Updated')
     })
@@ -173,7 +173,7 @@ describe('useKeyboardShortcuts', () => {
         handler: vi.fn(),
       })
 
-      const shortcut = getShortcuts().find(s => s.id === 'test-shortcut')
+      const shortcut = getShortcuts().find((s) => s.id === 'test-shortcut')
       expect(shortcut?.enabled).toBe(true)
       expect(shortcut?.preventDefault).toBe(true)
       expect(shortcut?.context).toBe('global')
@@ -191,7 +191,7 @@ describe('useKeyboardShortcuts', () => {
       })
 
       unregisterShortcut('test-shortcut')
-      expect(getShortcuts().find(s => s.id === 'test-shortcut')).toBeUndefined()
+      expect(getShortcuts().find((s) => s.id === 'test-shortcut')).toBeUndefined()
     })
 
     it('should do nothing for non-existent id', () => {
@@ -211,7 +211,7 @@ describe('useKeyboardShortcuts', () => {
 
       updateShortcut('test-shortcut', { enabled: false, description: 'Disabled' })
 
-      const shortcut = getShortcuts().find(s => s.id === 'test-shortcut')
+      const shortcut = getShortcuts().find((s) => s.id === 'test-shortcut')
       expect(shortcut?.enabled).toBe(false)
       expect(shortcut?.description).toBe('Disabled')
     })
@@ -223,15 +223,39 @@ describe('useKeyboardShortcuts', () => {
 
   describe('getShortcuts', () => {
     it('should return all shortcuts', () => {
-      registerShortcut({ id: 's1', keys: 'Ctrl+1', description: 'S1', category: 'cat1', handler: vi.fn() })
-      registerShortcut({ id: 's2', keys: 'Ctrl+2', description: 'S2', category: 'cat2', handler: vi.fn() })
+      registerShortcut({
+        id: 's1',
+        keys: 'Ctrl+1',
+        description: 'S1',
+        category: 'cat1',
+        handler: vi.fn(),
+      })
+      registerShortcut({
+        id: 's2',
+        keys: 'Ctrl+2',
+        description: 'S2',
+        category: 'cat2',
+        handler: vi.fn(),
+      })
 
       expect(getShortcuts()).toHaveLength(2)
     })
 
     it('should filter by category', () => {
-      registerShortcut({ id: 's1', keys: 'Ctrl+1', description: 'S1', category: 'cat1', handler: vi.fn() })
-      registerShortcut({ id: 's2', keys: 'Ctrl+2', description: 'S2', category: 'cat2', handler: vi.fn() })
+      registerShortcut({
+        id: 's1',
+        keys: 'Ctrl+1',
+        description: 'S1',
+        category: 'cat1',
+        handler: vi.fn(),
+      })
+      registerShortcut({
+        id: 's2',
+        keys: 'Ctrl+2',
+        description: 'S2',
+        category: 'cat2',
+        handler: vi.fn(),
+      })
 
       expect(getShortcuts('cat1')).toHaveLength(1)
     })

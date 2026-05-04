@@ -1,8 +1,8 @@
 <template>
   <div class="tab-bar">
     <div class="tabs-container">
-      <div 
-        v-for="tab in visibleTabs" 
+      <div
+        v-for="tab in visibleTabs"
         :key="tab.id"
         class="tab"
         :class="{ 'tab-active': tab.isActive, 'tab-locked': tab.isLocked }"
@@ -14,7 +14,7 @@
         <span class="tab-title" :title="tab.title">
           {{ tab.title }}
         </span>
-        <button 
+        <button
           v-if="!tab.isLocked"
           class="tab-close-btn"
           aria-label="Close tab"
@@ -24,7 +24,7 @@
         </button>
       </div>
 
-      <button 
+      <button
         v-if="tabs.length < 10"
         class="tab-new-btn"
         aria-label="New tab"
@@ -55,7 +55,7 @@ const activeTabId = computed(() => tabsStore.activeTabId)
 
 // Current active tab index
 const activeTabIndex = computed(() => {
-  return tabs.value.findIndex(tab => tab.id === activeTabId.value)
+  return tabs.value.findIndex((tab) => tab.id === activeTabId.value)
 })
 
 // Visible tabs (max 5, prioritize active tab)
@@ -89,7 +89,7 @@ const handleCreateTab = () => {
 // Close tab
 const handleCloseTab = async (tabId: string) => {
   const success = tabsStore.closeTab(tabId)
-  
+
   // Delete terminal state from IndexedDB if tab was closed
   if (success) {
     try {
@@ -138,14 +138,15 @@ const handleCloseTab = async (tabId: string) => {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   cursor: pointer;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              background 120ms ease,
-              border-color 120ms ease,
-              box-shadow 120ms ease;
+  transition:
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    background 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
   min-width: 0;
   max-width: 160px;
   flex-shrink: 0;
@@ -176,8 +177,9 @@ const handleCloseTab = async (tabId: string) => {
 .tab-active {
   background: var(--gui-accent-soft, rgba(142, 142, 147, 0.15));
   border-color: var(--gui-accent, rgba(142, 142, 147, 0.4));
-  box-shadow: 0 0 0 0.5px var(--gui-accent, rgba(142, 142, 147, 0.3)),
-              0 2px 8px rgba(142, 142, 147, 0.1);
+  box-shadow:
+    0 0 0 0.5px var(--gui-accent, rgba(142, 142, 147, 0.3)),
+    0 2px 8px rgba(142, 142, 147, 0.1);
 }
 
 .tab-active::after {
@@ -196,14 +198,14 @@ const handleCloseTab = async (tabId: string) => {
 }
 
 .tab-active .tab-icon {
-  color: var(--gui-accent, #8E8E93);
+  color: var(--gui-accent, #8e8e93);
   opacity: 1;
 }
 
 .tab-title {
   font-size: 13px;
   font-weight: 400;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -213,7 +215,7 @@ const handleCloseTab = async (tabId: string) => {
 }
 
 .tab-active .tab-title {
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   font-weight: 500;
 }
 
@@ -225,16 +227,17 @@ const handleCloseTab = async (tabId: string) => {
   align-items: center;
   justify-content: center;
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   border: none;
   border-radius: var(--gui-radius-full, 999px);
   cursor: pointer;
   font-size: 11px;
   flex-shrink: 0;
   opacity: 0;
-  transition: opacity 120ms ease,
-              background 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  transition:
+    opacity 120ms ease,
+    background 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -257,17 +260,18 @@ const handleCloseTab = async (tabId: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #3A3A3C);
-  color: var(--gui-accent, #8E8E93);
+  background: var(--gui-bg-surface-raised, #3a3a3c);
+  color: var(--gui-accent, #8e8e93);
   border: 1px dashed var(--gui-border-strong, rgba(255, 255, 255, 0.12));
   border-radius: var(--gui-radius-lg, 12px);
   cursor: pointer;
   font-size: 16px;
   font-weight: 300;
   flex-shrink: 0;
-  transition: transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-              background 120ms ease,
-              border-color 120ms ease;
+  transition:
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    background 120ms ease,
+    border-color 120ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 

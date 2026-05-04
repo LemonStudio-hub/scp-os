@@ -30,7 +30,7 @@ withDefaults(defineProps<Props>(), {
   padding: 0 var(--gui-spacing-md, 12px);
   background: var(--gui-bg-surface, #0c0c0c);
   border-top: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   font-size: var(--gui-font-xs, 11px);
   color: var(--gui-text-tertiary, #6a6a6a);
   flex-shrink: 0;

@@ -72,9 +72,7 @@ export const useCommandStore = defineStore('command', () => {
     }
 
     const lowerQuery = query.toLowerCase()
-    return history.value.filter(cmd => 
-      cmd.toLowerCase().includes(lowerQuery)
-    )
+    return history.value.filter((cmd) => cmd.toLowerCase().includes(lowerQuery))
   }
 
   /**

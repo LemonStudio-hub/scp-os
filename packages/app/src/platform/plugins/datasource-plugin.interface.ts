@@ -78,21 +78,24 @@ export interface DataSourceDefinition {
 export interface IDataSourcePlugin extends Plugin {
   /** Plugin type identifier */
   type: 'datasource'
-  
+
   /** Data source metadata */
   metadata: DataSourceMetadata
-  
+
   /** Data source definitions provided by this plugin */
   dataSources: DataSourceDefinition[]
-  
+
   /**
    * Query data from the data source
    * @param dataSourceId Data source ID
    * @param options Query options
    * @returns Query results
    */
-  query<T = any>(dataSourceId: string, options: DataSourceQueryOptions): Promise<DataSourceQueryResult<T>>
-  
+  query<T = any>(
+    dataSourceId: string,
+    options: DataSourceQueryOptions
+  ): Promise<DataSourceQueryResult<T>>
+
   /**
    * Get a single item by ID
    * @param dataSourceId Data source ID
@@ -100,7 +103,7 @@ export interface IDataSourcePlugin extends Plugin {
    * @returns Item or null
    */
   get<T = any>(dataSourceId: string, id: string): Promise<T | null>
-  
+
   /**
    * Search for items
    * @param dataSourceId Data source ID
@@ -108,35 +111,39 @@ export interface IDataSourcePlugin extends Plugin {
    * @param options Additional query options
    * @returns Search results
    */
-  search<T = any>(dataSourceId: string, keyword: string, options?: DataSourceQueryOptions): Promise<DataSourceQueryResult<T>>
-  
+  search<T = any>(
+    dataSourceId: string,
+    keyword: string,
+    options?: DataSourceQueryOptions
+  ): Promise<DataSourceQueryResult<T>>
+
   /**
    * Get data source by ID
    * @param dataSourceId Data source ID
    * @returns Data source definition or null
    */
   getDataSource(dataSourceId: string): DataSourceDefinition | null
-  
+
   /**
    * Get all data source IDs
    * @returns Array of data source IDs
    */
   getDataSourceIds(): string[]
-  
+
   /**
    * Check if plugin provides a specific data source
    * @param dataSourceId Data source ID
    * @returns True if data source exists
    */
   hasDataSource(dataSourceId: string): boolean
-  
+
   /**
    * Test connection to data source
    * @param dataSourceId Data source ID
    * @returns True if connection successful
    */
   testConnection(dataSourceId: string): Promise<boolean>
-  
+
   /**
    * Get data source statistics
    * @param dataSourceId Data source ID

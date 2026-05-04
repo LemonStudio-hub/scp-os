@@ -9,7 +9,7 @@ import {
   resetGlobalConfigManager,
   config,
   setConfig,
-  hasConfig
+  hasConfig,
 } from '../config-manager'
 import type { ConfigSource } from '../types'
 
@@ -18,7 +18,7 @@ describe('ConfigManager', () => {
 
   beforeEach(() => {
     configManager = new ConfigManager({
-      debug: false
+      debug: false,
     })
     resetGlobalConfigManager()
   })
@@ -27,9 +27,9 @@ describe('ConfigManager', () => {
     it('should have default sources', () => {
       const sources = configManager.getSources()
       expect(sources.length).toBeGreaterThan(0)
-      expect(sources.some(s => s.name === 'default')).toBe(true)
-      expect(sources.some(s => s.name === 'memory')).toBe(true)
-      expect(sources.some(s => s.name === 'environment')).toBe(true)
+      expect(sources.some((s) => s.name === 'default')).toBe(true)
+      expect(sources.some((s) => s.name === 'memory')).toBe(true)
+      expect(sources.some((s) => s.name === 'environment')).toBe(true)
     })
 
     it('should add custom source', () => {
@@ -37,20 +37,20 @@ describe('ConfigManager', () => {
         name: 'custom',
         priority: 100,
         get: (key) => `custom-${key}`,
-        has: () => true
+        has: () => true,
       }
 
       configManager.addSource(customSource)
 
       const sources = configManager.getSources()
-      expect(sources.some(s => s.name === 'custom')).toBe(true)
+      expect(sources.some((s) => s.name === 'custom')).toBe(true)
     })
 
     it('should remove source', () => {
       configManager.removeSource('memory')
 
       const sources = configManager.getSources()
-      expect(sources.some(s => s.name === 'memory')).toBe(false)
+      expect(sources.some((s) => s.name === 'memory')).toBe(false)
     })
 
     it('should prioritize sources correctly', () => {
@@ -58,14 +58,14 @@ describe('ConfigManager', () => {
         name: 'low',
         priority: 10,
         get: () => 'low',
-        has: () => true
+        has: () => true,
       }
 
       const highPrioritySource: ConfigSource = {
         name: 'high',
         priority: 100,
         get: () => 'high',
-        has: () => true
+        has: () => true,
       }
 
       configManager.addSource(lowPrioritySource)
@@ -140,7 +140,7 @@ describe('ConfigManager', () => {
         key: 'test-key',
         type: 'string' as const,
         default: 'default-value',
-        required: true
+        required: true,
       }
 
       configManager.registerSchema(schema)
@@ -153,7 +153,7 @@ describe('ConfigManager', () => {
       const schema = {
         key: 'test-key',
         type: 'string' as const,
-        default: 'default-value'
+        default: 'default-value',
       }
 
       configManager.registerSchema(schema)
@@ -166,7 +166,7 @@ describe('ConfigManager', () => {
       const schema = {
         key: 'required-key',
         type: 'string' as const,
-        required: true
+        required: true,
       }
 
       configManager.registerSchema(schema)
@@ -180,7 +180,7 @@ describe('ConfigManager', () => {
       const schema = {
         key: 'number-key',
         type: 'number' as const,
-        required: true
+        required: true,
       }
 
       configManager.registerSchema(schema)
@@ -188,7 +188,7 @@ describe('ConfigManager', () => {
 
       const result = configManager.validate()
       expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('Invalid type'))).toBe(true)
+      expect(result.errors.some((e) => e.includes('Invalid type'))).toBe(true)
     })
 
     it('should use custom validation', () => {
@@ -196,7 +196,7 @@ describe('ConfigManager', () => {
         key: 'range-key',
         type: 'number' as const,
         required: true,
-        validate: (value: any) => value >= 0 && value <= 100
+        validate: (value: any) => value >= 0 && value <= 100,
       }
 
       configManager.registerSchema(schema)
@@ -204,7 +204,7 @@ describe('ConfigManager', () => {
 
       const result = configManager.validate()
       expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('Validation failed'))).toBe(true)
+      expect(result.errors.some((e) => e.includes('Validation failed'))).toBe(true)
     })
   })
 

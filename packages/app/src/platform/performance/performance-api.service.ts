@@ -114,7 +114,7 @@ export class PerformanceApiService {
     }
 
     logger.info(`Starting auto-send every ${intervalMs}ms`)
-    
+
     this.sendInterval = window.setInterval(async () => {
       const metrics = metricsProvider()
       if (metrics.length > 0) {

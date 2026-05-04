@@ -7,28 +7,16 @@
           <span class="score-label">Overall Score</span>
         </div>
         <div class="score-value-container">
-          <span 
-            class="score-value" 
-            :class="scoreClass"
-          >
-            {{ score }}/100
-          </span>
-          <span 
-            class="score-badge" 
-            :class="scoreClass"
-          >
+          <span class="score-value" :class="scoreClass"> {{ score }}/100 </span>
+          <span class="score-badge" :class="scoreClass">
             {{ scoreGrade }}
           </span>
         </div>
       </div>
-      
+
       <div class="score-bar-container">
         <div class="score-bar-bg">
-          <div 
-            class="score-bar-fill" 
-            :class="scoreClass"
-            :style="{ width: `${score}%` }"
-          >
+          <div class="score-bar-fill" :class="scoreClass" :style="{ width: `${score}%` }">
             <div class="score-bar-glow"></div>
           </div>
         </div>
@@ -36,7 +24,7 @@
           <span v-for="n in 5" :key="n" class="mark"></span>
         </div>
       </div>
-      
+
       <div class="score-details">
         <div class="score-detail-item">
           <span class="detail-label">Status:</span>

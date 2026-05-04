@@ -26,7 +26,7 @@ class GenericExtensionPoint<T = unknown> implements ExtensionPoint<T> {
       name,
       description,
       extensions: [],
-      createdAt: Date.now()
+      createdAt: Date.now(),
     }
   }
 
@@ -41,7 +41,7 @@ class GenericExtensionPoint<T = unknown> implements ExtensionPoint<T> {
       name: extension.name,
       description: extension.description || '',
       version: extension.version || '1.0.0',
-      author: extension.author || 'Unknown'
+      author: extension.author || 'Unknown',
     })
 
     logger.info(`Registered extension ${extension.id} in ${this.id}`)
@@ -107,11 +107,7 @@ export class ExtensionRegistry {
     )
 
     // Theme extension point
-    this.registerExtensionPoint(
-      'theme',
-      'Theme',
-      'Extension point for registering UI themes'
-    )
+    this.registerExtensionPoint('theme', 'Theme', 'Extension point for registering UI themes')
 
     // Data source extension point
     this.registerExtensionPoint(
@@ -131,11 +127,7 @@ export class ExtensionRegistry {
   /**
    * Register an extension point
    */
-  registerExtensionPoint(
-    id: string,
-    name: string,
-    description: string
-  ): ExtensionPoint {
+  registerExtensionPoint(id: string, name: string, description: string): ExtensionPoint {
     if (this.extensionPoints.has(id)) {
       throw new Error(`Extension point ${id} already exists`)
     }
@@ -185,10 +177,7 @@ export class ExtensionRegistry {
   /**
    * Register an extension to an extension point
    */
-  registerExtension<T = unknown>(
-    extensionPointId: string,
-    extension: Extension<T>
-  ): void {
+  registerExtension<T = unknown>(extensionPointId: string, extension: Extension<T>): void {
     const extensionPoint = this.getExtensionPoint<T>(extensionPointId)
 
     if (!extensionPoint) {
@@ -214,10 +203,7 @@ export class ExtensionRegistry {
   /**
    * Get an extension from an extension point
    */
-  getExtension<T = any>(
-    extensionPointId: string,
-    extensionId: string
-  ): Extension<T> | undefined {
+  getExtension<T = any>(extensionPointId: string, extensionId: string): Extension<T> | undefined {
     const extensionPoint = this.getExtensionPoint<T>(extensionPointId)
 
     if (!extensionPoint) {
@@ -270,7 +256,7 @@ export class ExtensionRegistry {
       id: command.name,
       name: command.name,
       description: command.description,
-      data: command
+      data: command,
     })
 
     // Register aliases if they exist
@@ -280,7 +266,7 @@ export class ExtensionRegistry {
           id: alias,
           name: command.name,
           description: command.description,
-          data: command
+          data: command,
         })
       }
     }
@@ -294,7 +280,7 @@ export class ExtensionRegistry {
       id: theme.name,
       name: theme.name,
       description: 'Theme',
-      data: theme
+      data: theme,
     })
   }
 
@@ -306,7 +292,7 @@ export class ExtensionRegistry {
       id: source.name,
       name: source.name,
       description: 'Data source',
-      data: source
+      data: source,
     })
   }
 
@@ -318,7 +304,7 @@ export class ExtensionRegistry {
       id: component.name,
       name: component.name,
       description: 'UI component',
-      data: component
+      data: component,
     })
   }
 

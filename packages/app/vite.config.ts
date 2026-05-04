@@ -26,7 +26,7 @@ export default defineConfig({
             const result = await esbuild.transform(sourceCode, {
               loader: 'ts',
               target: 'es2020',
-              format: 'esm'
+              format: 'esm',
             })
             writeFileSync(swDest, result.code)
             console.log('Service Worker compiled and copied to dist/sw.js')
@@ -55,8 +55,8 @@ export default defineConfig({
           copyFileSync(offlineSource, offlineDest)
           console.log('Offline page copied to dist/offline.html')
         }
-      }
-    }
+      },
+    },
   ],
   publicDir: 'public',
   build: {
@@ -69,7 +69,7 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
-      }
+      },
     },
     rollupOptions: {
       output: {
@@ -88,14 +88,14 @@ export default defineConfig({
               return 'gestures'
             }
           }
-        }
-      }
+        },
+      },
     },
-    chunkSizeWarningLimit: 500
+    chunkSizeWarningLimit: 500,
   },
   server: {
     headers: {
-      'Cache-Control': 'public, max-age=31536000'
-    }
-  }
+      'Cache-Control': 'public, max-age=31536000',
+    },
+  },
 })

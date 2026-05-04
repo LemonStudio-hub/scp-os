@@ -3,25 +3,43 @@ import { useI18n } from '../composables/useI18n'
 import { defineAsyncComponent, h } from 'vue'
 
 const AsyncTerminalPanel = defineAsyncComponent(() => import('../tools/terminal/TerminalPanel.vue'))
-const AsyncMobileTerminal = defineAsyncComponent(() => import('../tools/terminal/MobileTerminal.vue'))
-const AsyncFileManagerWindow = defineAsyncComponent(() => import('../tools/filemanager/FileManagerWindow.vue'))
-const AsyncMobileFileManager = defineAsyncComponent(() => import('../tools/filemanager/MobileFileManager.vue'))
+const AsyncMobileTerminal = defineAsyncComponent(
+  () => import('../tools/terminal/MobileTerminal.vue')
+)
+const AsyncFileManagerWindow = defineAsyncComponent(
+  () => import('../tools/filemanager/FileManagerWindow.vue')
+)
+const AsyncMobileFileManager = defineAsyncComponent(
+  () => import('../tools/filemanager/MobileFileManager.vue')
+)
 const AsyncEditorWindow = defineAsyncComponent(() => import('../tools/editor/EditorWindow.vue'))
 const AsyncMobileEditor = defineAsyncComponent(() => import('../tools/editor/MobileEditor.vue'))
-const AsyncSettingsWindow = defineAsyncComponent(() => import('../tools/settings/SettingsWindow.vue'))
-const AsyncMobileSettings = defineAsyncComponent(() => import('../tools/settings/MobileSettings.vue'))
+const AsyncSettingsWindow = defineAsyncComponent(
+  () => import('../tools/settings/SettingsWindow.vue')
+)
+const AsyncMobileSettings = defineAsyncComponent(
+  () => import('../tools/settings/MobileSettings.vue')
+)
 const AsyncChatWindow = defineAsyncComponent(() => import('../tools/chat/ChatWindow.vue'))
 const AsyncPCChatWindow = defineAsyncComponent(() => import('../tools/chat/PCChatWindow.vue'))
 const AsyncMobileDash = defineAsyncComponent(() => import('../tools/dash/MobileDash.vue'))
 const AsyncPCDashboard = defineAsyncComponent(() => import('../tools/dash/PCDashboard.vue'))
-const AsyncMobileFeedback = defineAsyncComponent(() => import('../tools/feedback/MobileFeedback.vue'))
-const AsyncPCFeedbackWindow = defineAsyncComponent(() => import('../tools/feedback/PCFeedbackWindow.vue'))
+const AsyncMobileFeedback = defineAsyncComponent(
+  () => import('../tools/feedback/MobileFeedback.vue')
+)
+const AsyncPCFeedbackWindow = defineAsyncComponent(
+  () => import('../tools/feedback/PCFeedbackWindow.vue')
+)
 const AsyncPCDocsWindow = defineAsyncComponent(() => import('../tools/docs/PCDocsWindow.vue'))
 const AsyncMobileDocs = defineAsyncComponent(() => import('../tools/docs/MobileDocs.vue'))
 const AsyncPCProxyWindow = defineAsyncComponent(() => import('../tools/proxy/PCProxyWindow.vue'))
 const AsyncMobileProxy = defineAsyncComponent(() => import('../tools/proxy/MobileProxy.vue'))
-const AsyncPCNotificationCenter = defineAsyncComponent(() => import('../tools/notification/PCNotificationCenter.vue'))
-const AsyncMobileNotificationCenter = defineAsyncComponent(() => import('../tools/notification/MobileNotificationCenter.vue'))
+const AsyncPCNotificationCenter = defineAsyncComponent(
+  () => import('../tools/notification/PCNotificationCenter.vue')
+)
+const AsyncMobileNotificationCenter = defineAsyncComponent(
+  () => import('../tools/notification/MobileNotificationCenter.vue')
+)
 const AsyncAdminLayout = defineAsyncComponent(() => import('../tools/admin/AdminLayout.vue'))
 
 function lbl(key: string): () => string {

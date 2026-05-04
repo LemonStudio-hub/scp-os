@@ -5,11 +5,11 @@
       <div class="login-screen__gradient" />
       <div class="login-screen__pattern">
         <svg width="100%" height="100%" viewBox="0 0 400 800" fill="none">
-          <circle cx="200" cy="400" r="180" :stroke="patternColor1" stroke-width="1"/>
-          <circle cx="200" cy="400" r="120" :stroke="patternColor2" stroke-width="1"/>
-          <circle cx="200" cy="400" r="60" :stroke="patternColor3" stroke-width="1"/>
-          <line x1="0" y1="400" x2="400" y2="400" :stroke="patternColor3" stroke-width="0.5"/>
-          <line x1="200" y1="0" x2="200" y2="800" :stroke="patternColor3" stroke-width="0.5"/>
+          <circle cx="200" cy="400" r="180" :stroke="patternColor1" stroke-width="1" />
+          <circle cx="200" cy="400" r="120" :stroke="patternColor2" stroke-width="1" />
+          <circle cx="200" cy="400" r="60" :stroke="patternColor3" stroke-width="1" />
+          <line x1="0" y1="400" x2="400" y2="400" :stroke="patternColor3" stroke-width="0.5" />
+          <line x1="200" y1="0" x2="200" y2="800" :stroke="patternColor3" stroke-width="0.5" />
         </svg>
       </div>
     </div>
@@ -21,9 +21,9 @@
         <div class="login-screen__logo-container">
           <!-- SCP Foundation Logo -->
           <svg class="login-screen__logo" width="80" height="80" viewBox="0 0 80 80" fill="none">
-            <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="2" opacity="0.6"/>
-            <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
-            <circle cx="40" cy="40" r="20" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+            <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="2" opacity="0.6" />
+            <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
+            <circle cx="40" cy="40" r="20" stroke="currentColor" stroke-width="1" opacity="0.2" />
             <text
               x="40"
               y="48"
@@ -33,7 +33,9 @@
               font-weight="900"
               fill="currentColor"
               letter-spacing="2"
-            >SCP</text>
+            >
+              SCP
+            </text>
           </svg>
         </div>
       </div>
@@ -51,7 +53,10 @@
             v-model="nickname"
             type="text"
             class="login-screen__input"
-            :class="{ 'login-screen__input--error': error, 'login-screen__input--focused': isFocused }"
+            :class="{
+              'login-screen__input--error': error,
+              'login-screen__input--focused': isFocused,
+            }"
             placeholder="工作代号 / 昵称"
             maxlength="20"
             autocomplete="off"
@@ -64,7 +69,12 @@
           />
           <div v-if="nickname && !error" class="login-screen__input-clear" @click="clearInput">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path
+                d="M12 4L4 12M4 4l8 8"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
           </div>
         </div>
@@ -75,7 +85,10 @@
         </transition>
 
         <!-- Character Count -->
-        <div class="login-screen__char-count" :class="{ 'login-screen__char-count--warning': nickname.length >= 18 }">
+        <div
+          class="login-screen__char-count"
+          :class="{ 'login-screen__char-count--warning': nickname.length >= 18 }"
+        >
           {{ nickname.length }}/20
         </div>
 
@@ -83,14 +96,36 @@
         <button
           type="submit"
           class="login-screen__button"
-          :class="{ 'login-screen__button--loading': isLoading, 'login-screen__button--disabled': !isValid || isLoading }"
+          :class="{
+            'login-screen__button--loading': isLoading,
+            'login-screen__button--disabled': !isValid || isLoading,
+          }"
           :disabled="!isValid || isLoading"
         >
           <span v-if="!isLoading" class="login-screen__button-text">进入系统</span>
           <span v-else class="login-screen__button-loading">
-            <svg class="login-screen__spinner" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
-              <path d="M10 2a8 8 0 0 1 8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <svg
+              class="login-screen__spinner"
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+            >
+              <circle
+                cx="10"
+                cy="10"
+                r="8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                opacity="0.25"
+              />
+              <path
+                d="M10 2a8 8 0 0 1 8 8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
             验证中...
           </span>
@@ -208,8 +243,8 @@ onMounted(() => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: var(--gui-bg-base, #1C1C1E);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-base, #1c1c1e);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 /* ── Background Layer ───────────────────────────────────────────── */
@@ -217,7 +252,7 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: var(--gui-bg-base, #1C1C1E);
+  background: var(--gui-bg-base, #1c1c1e);
   overflow: hidden;
 }
 
@@ -225,9 +260,21 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 50% 30%, var(--gui-wallpaper-gradient1, rgba(142, 142, 147, 0.08)) 0%, transparent 60%),
-    radial-gradient(ellipse at 30% 70%, var(--gui-wallpaper-gradient2, rgba(142, 142, 147, 0.05)) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 80%, var(--gui-wallpaper-gradient3, rgba(63, 63, 66, 0.03)) 0%, transparent 40%);
+    radial-gradient(
+      ellipse at 50% 30%,
+      var(--gui-wallpaper-gradient1, rgba(142, 142, 147, 0.08)) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 30% 70%,
+      var(--gui-wallpaper-gradient2, rgba(142, 142, 147, 0.05)) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at 70% 80%,
+      var(--gui-wallpaper-gradient3, rgba(63, 63, 66, 0.03)) 0%,
+      transparent 40%
+    );
 }
 
 .login-screen__pattern {
@@ -285,13 +332,14 @@ onMounted(() => {
 }
 
 .login-screen__logo {
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   filter: drop-shadow(0 0 20px rgba(142, 142, 147, 0.3));
   animation: subtle-glow 3s ease-in-out infinite;
 }
 
 @keyframes subtle-glow {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 20px rgba(142, 142, 147, 0.3));
   }
   50% {
@@ -302,15 +350,22 @@ onMounted(() => {
 /* ── Typography ─────────────────────────────────────────────────── */
 .login-screen__title {
   margin: 0 0 var(--gui-spacing-sm, 8px);
-  font-family: var(--gui-font-sans, -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif);
+  font-family: var(
+    --gui-font-sans,
+    -apple-system,
+    'SF Pro Display',
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
   font-size: var(--gui-font-3xl, 28px);
   font-weight: var(--gui-font-weight-bold, 700);
   letter-spacing: 0.02em;
   text-align: center;
   background: linear-gradient(
     135deg,
-    var(--gui-text-primary, #FFFFFF) 0%,
-    var(--gui-text-secondary, #8E8E93) 100%
+    var(--gui-text-primary, #ffffff) 0%,
+    var(--gui-text-secondary, #8e8e93) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -320,7 +375,8 @@ onMounted(() => {
 }
 
 @keyframes title-shimmer {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {
@@ -332,7 +388,7 @@ onMounted(() => {
   margin: 0 0 var(--gui-spacing-3xl, 48px);
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   text-align: center;
   letter-spacing: 0.02em;
   animation: subtitle-fade-in 0.5s ease 0.3s both;
@@ -356,7 +412,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: var(--gui-spacing-md, 12px);
-  animation: form-slide-up 0.5s var(--ease-ios-gentle, cubic-bezier(0.25, 0.46, 0.45, 0.94)) 0.35s both;
+  animation: form-slide-up 0.5s var(--ease-ios-gentle, cubic-bezier(0.25, 0.46, 0.45, 0.94)) 0.35s
+    both;
 }
 
 @keyframes form-slide-up {
@@ -381,10 +438,17 @@ onMounted(() => {
   height: 52px;
   padding: 0 var(--gui-spacing-lg, 20px);
   padding-right: 44px; /* Space for clear button */
-  font-family: var(--gui-font-sans, -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif);
+  font-family: var(
+    --gui-font-sans,
+    -apple-system,
+    'SF Pro Display',
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   background: rgba(255, 255, 255, 0.06);
   border: 1.5px solid transparent;
   border-radius: var(--gui-radius-lg, 12px);
@@ -406,19 +470,19 @@ onMounted(() => {
 .login-screen__input--focused,
 .login-screen__input:focus {
   background: rgba(255, 255, 255, 0.09);
-  border-color: var(--gui-accent, #8E8E93);
+  border-color: var(--gui-accent, #8e8e93);
   box-shadow:
     0 0 0 3px rgba(142, 142, 147, 0.15),
     0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .login-screen__input--error {
-  border-color: var(--gui-error, #FF3B30);
+  border-color: var(--gui-error, #ff3b30);
   background: rgba(255, 59, 48, 0.05);
 }
 
 .login-screen__input--error:focus {
-  border-color: var(--gui-error, #FF3B30);
+  border-color: var(--gui-error, #ff3b30);
   box-shadow:
     0 0 0 3px rgba(255, 59, 48, 0.15),
     0 4px 16px rgba(0, 0, 0, 0.2);
@@ -443,7 +507,7 @@ onMounted(() => {
 }
 
 .login-screen__input-clear:hover {
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -457,7 +521,7 @@ onMounted(() => {
   padding: 0 var(--gui-spacing-sm, 8px);
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-error, #FF3B30);
+  color: var(--gui-error, #ff3b30);
   line-height: var(--gui-line-height-tight, 1.3);
 }
 
@@ -489,7 +553,7 @@ onMounted(() => {
 }
 
 .login-screen__char-count--warning {
-  color: var(--gui-warning, #FFCC00);
+  color: var(--gui-warning, #ffcc00);
 }
 
 /* ── Submit Button ──────────────────────────────────────────────── */
@@ -498,14 +562,21 @@ onMounted(() => {
   width: 100%;
   height: 52px;
   margin-top: var(--gui-spacing-md, 12px);
-  font-family: var(--gui-font-sans, -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif);
+  font-family: var(
+    --gui-font-sans,
+    -apple-system,
+    'SF Pro Display',
+    'Segoe UI',
+    Roboto,
+    sans-serif
+  );
   font-size: var(--gui-font-lg, 15px);
   font-weight: var(--gui-font-weight-semibold, 600);
   color: var(--gui-text-inverse, #000000);
   background: linear-gradient(
     135deg,
-    var(--gui-accent-hover, #AEAEB2) 0%,
-    var(--gui-accent, #8E8E93) 100%
+    var(--gui-accent-hover, #aeaeb2) 0%,
+    var(--gui-accent, #8e8e93) 100%
   );
   border: none;
   border-radius: var(--gui-radius-lg, 12px);
@@ -520,27 +591,29 @@ onMounted(() => {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.2) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
   opacity: 0;
   transition: opacity var(--gui-transition-fast, 120ms ease);
 }
 
-.login-screen__button:hover:not(.login-screen__button--disabled):not(.login-screen__button--loading) {
+.login-screen__button:hover:not(.login-screen__button--disabled):not(
+    .login-screen__button--loading
+  ) {
   transform: translateY(-2px);
   box-shadow:
     0 8px 24px rgba(142, 142, 147, 0.4),
     0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.login-screen__button:hover:not(.login-screen__button--disabled):not(.login-screen__button--loading)::before {
+.login-screen__button:hover:not(.login-screen__button--disabled):not(
+    .login-screen__button--loading
+  )::before {
   opacity: 1;
 }
 
-.login-screen__button:active:not(.login-screen__button--disabled):not(.login-screen__button--loading) {
+.login-screen__button:active:not(.login-screen__button--disabled):not(
+    .login-screen__button--loading
+  ) {
   transform: translateY(0) scale(0.98);
   box-shadow:
     0 4px 12px rgba(142, 142, 147, 0.3),
@@ -581,8 +654,12 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Footer ─────────────────────────────────────────────────────── */
@@ -597,8 +674,12 @@ onMounted(() => {
 }
 
 @keyframes footer-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .login-screen__copyright {

@@ -11,10 +11,7 @@ import { MemoryBaseRepository } from './memory-base.repository'
 /**
  * Tab Memory Repository
  */
-export class TabMemoryRepository
-  extends MemoryBaseRepository<TabEntity>
-  implements ITabRepository
-{
+export class TabMemoryRepository extends MemoryBaseRepository<TabEntity> implements ITabRepository {
   private collection = new TabCollection()
   private activeTabId: string | null = null
 
@@ -25,7 +22,7 @@ export class TabMemoryRepository
     // Rebuild collection from current entities
     const entities = await this.findAll()
     this.collection = new TabCollection()
-    entities.forEach(entity => this.collection.add(entity))
+    entities.forEach((entity) => this.collection.add(entity))
 
     // Set active tab
     if (this.activeTabId) {
@@ -61,7 +58,7 @@ export class TabMemoryRepository
    */
   async findByType(type: TabType): Promise<TabEntity[]> {
     const result = await this.find({
-      filter: entity => entity.type === type
+      filter: (entity) => entity.type === type,
     })
     return result.data
   }
@@ -71,7 +68,7 @@ export class TabMemoryRepository
    */
   async findByStatus(status: TabStatus): Promise<TabEntity[]> {
     const result = await this.find({
-      filter: entity => entity.status === status
+      filter: (entity) => entity.status === status,
     })
     return result.data
   }
@@ -87,20 +84,19 @@ export class TabMemoryRepository
     }
 
     if (options.type) {
-      filters.push(entity => entity.type === options.type)
+      filters.push((entity) => entity.type === options.type)
     }
 
     if (options.status) {
-      filters.push(entity => entity.status === options.status)
+      filters.push((entity) => entity.status === options.status)
     }
 
-    const combinedFilter = filters.length > 0
-      ? (entity: TabEntity) => filters.every(f => f(entity))
-      : undefined
+    const combinedFilter =
+      filters.length > 0 ? (entity: TabEntity) => filters.every((f) => f(entity)) : undefined
 
     const result = await super.find({
       ...options,
-      filter: combinedFilter
+      filter: combinedFilter,
     })
     return result.data
   }
@@ -112,7 +108,7 @@ export class TabMemoryRepository
     const entities = await this.findAll()
     const counts: Record<string, number> = {}
 
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       counts[entity.type] = (counts[entity.type] || 0) + 1
     })
 
@@ -126,7 +122,7 @@ export class TabMemoryRepository
     const entities = await this.findAll()
     const counts: Record<string, number> = {}
 
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       counts[entity.status] = (counts[entity.status] || 0) + 1
     })
 
@@ -201,7 +197,7 @@ export class TabMemoryRepository
       ...json,
       status,
       createdAt: new Date(json.createdAt),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
 
     await this.save(updated)
@@ -221,7 +217,7 @@ export class TabMemoryRepository
       ...json,
       title,
       createdAt: new Date(json.createdAt),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
 
     await this.save(updated)
@@ -241,10 +237,10 @@ export class TabMemoryRepository
       ...json,
       data: {
         ...tab.data,
-        [key]: value
+        [key]: value,
       },
       createdAt: new Date(json.createdAt),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
 
     await this.save(updated)

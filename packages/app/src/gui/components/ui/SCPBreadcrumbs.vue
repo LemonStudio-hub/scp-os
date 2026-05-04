@@ -2,13 +2,29 @@
   <nav class="scp-breadcrumbs">
     <template v-for="(segment, index) in segments" :key="index">
       <button
-        :class="['scp-breadcrumbs__segment', { 'scp-breadcrumbs__segment--active': index === segments.length - 1 }]"
+        :class="[
+          'scp-breadcrumbs__segment',
+          { 'scp-breadcrumbs__segment--active': index === segments.length - 1 },
+        ]"
         @click="$emit('navigate', segment.path)"
       >
         <span class="scp-breadcrumbs__label">{{ segment.label }}</span>
       </button>
-      <svg v-if="index < segments.length - 1" class="scp-breadcrumbs__chevron" width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M5 3L9 7L5 11" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg
+        v-if="index < segments.length - 1"
+        class="scp-breadcrumbs__chevron"
+        width="14"
+        height="14"
+        viewBox="0 0 14 14"
+        fill="none"
+      >
+        <path
+          d="M5 3L9 7L5 11"
+          stroke="currentColor"
+          stroke-width="1.3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
     </template>
   </nav>
@@ -36,7 +52,7 @@ defineEmits<{
   align-items: center;
   gap: var(--gui-spacing-xxs, 2px);
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   font-size: var(--gui-font-xs, 11px);
 }
 

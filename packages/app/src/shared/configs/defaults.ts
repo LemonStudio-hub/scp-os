@@ -76,7 +76,7 @@ export const configSchemas: ConfigSchema[] = [
     type: 'string',
     default: defaultConfig['api.worker-url'],
     required: true,
-    description: 'Worker API URL'
+    description: 'Worker API URL',
   },
   {
     key: 'api.timeout',
@@ -84,7 +84,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['api.timeout'],
     required: true,
     validate: (value) => typeof value === 'number' && value > 0,
-    description: 'API timeout in milliseconds'
+    description: 'API timeout in milliseconds',
   },
 
   // Cache Configuration
@@ -94,7 +94,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['cache.duration'],
     required: true,
     validate: (value) => typeof value === 'number' && value >= 0,
-    description: 'Cache duration in milliseconds'
+    description: 'Cache duration in milliseconds',
   },
   {
     key: 'cache.max-size',
@@ -102,7 +102,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['cache.max-size'],
     required: true,
     validate: (value) => typeof value === 'number' && value > 0,
-    description: 'Maximum cache size'
+    description: 'Maximum cache size',
   },
 
   // Scraper Configuration
@@ -112,7 +112,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['scraper.retry-attempts'],
     required: true,
     validate: (value) => typeof value === 'number' && value >= 0,
-    description: 'Number of retry attempts'
+    description: 'Number of retry attempts',
   },
   {
     key: 'scraper.retry-delay',
@@ -120,7 +120,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['scraper.retry-delay'],
     required: true,
     validate: (value) => typeof value === 'number' && value >= 0,
-    description: 'Retry delay in milliseconds'
+    description: 'Retry delay in milliseconds',
   },
 
   // Terminal Configuration
@@ -130,7 +130,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['terminal.scrollback'],
     required: true,
     validate: (value) => typeof value === 'number' && value >= 0,
-    description: 'Terminal scrollback buffer size'
+    description: 'Terminal scrollback buffer size',
   },
   {
     key: 'terminal.tab-stop-width',
@@ -138,7 +138,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['terminal.tab-stop-width'],
     required: true,
     validate: (value) => typeof value === 'number' && value > 0,
-    description: 'Terminal tab stop width'
+    description: 'Terminal tab stop width',
   },
   {
     key: 'terminal.font-size',
@@ -146,7 +146,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['terminal.font-size'],
     required: true,
     validate: (value) => typeof value === 'number' && value > 0,
-    description: 'Terminal font size'
+    description: 'Terminal font size',
   },
 
   // Application Configuration
@@ -155,21 +155,21 @@ export const configSchemas: ConfigSchema[] = [
     type: 'string',
     default: defaultConfig['app.version'],
     required: true,
-    description: 'Application version'
+    description: 'Application version',
   },
   {
     key: 'app.name',
     type: 'string',
     default: defaultConfig['app.name'],
     required: true,
-    description: 'Application name'
+    description: 'Application name',
   },
   {
     key: 'app.fast-boot',
     type: 'boolean',
     default: defaultConfig['app.fast-boot'],
     required: false,
-    description: 'Enable fast boot mode'
+    description: 'Enable fast boot mode',
   },
 
   // Command Configuration
@@ -179,7 +179,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['command.history-limit'],
     required: true,
     validate: (value) => typeof value === 'number' && value >= 0,
-    description: 'Command history limit'
+    description: 'Command history limit',
   },
 
   // Tab Configuration
@@ -189,7 +189,7 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['tab.max-count'],
     required: true,
     validate: (value) => typeof value === 'number' && value > 0,
-    description: 'Maximum number of tabs'
+    description: 'Maximum number of tabs',
   },
 
   // Plugin Configuration
@@ -198,7 +198,7 @@ export const configSchemas: ConfigSchema[] = [
     type: 'boolean',
     default: defaultConfig['plugin.enable'],
     required: false,
-    description: 'Enable plugin system'
+    description: 'Enable plugin system',
   },
   {
     key: 'plugin.max-size',
@@ -206,6 +206,6 @@ export const configSchemas: ConfigSchema[] = [
     default: defaultConfig['plugin.max-size'],
     required: true,
     validate: (value) => typeof value === 'number' && value > 0,
-    description: 'Maximum plugin file size'
+    description: 'Maximum plugin file size',
   },
 ]

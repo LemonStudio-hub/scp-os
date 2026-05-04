@@ -41,7 +41,14 @@ export interface SCPListResult {
   error?: string
 }
 
-export type ObjectClass = 'SAFE' | 'EUCLID' | 'KETER' | 'THAUMIEL' | 'NEUTRALIZED' | 'PENDING' | 'UNKNOWN'
+export type ObjectClass =
+  | 'SAFE'
+  | 'EUCLID'
+  | 'KETER'
+  | 'THAUMIEL'
+  | 'NEUTRALIZED'
+  | 'PENDING'
+  | 'UNKNOWN'
 
 export interface ObjectClassInfo {
   class: ObjectClass

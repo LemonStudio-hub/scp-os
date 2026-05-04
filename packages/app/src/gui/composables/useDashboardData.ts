@@ -69,7 +69,12 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
   const storageUsed = ref(0)
   const storageQuota = ref(0)
   const storagePercent = ref(0)
-  const battery = ref<BatteryInfo>({ charging: false, level: 0, chargingTime: 0, dischargingTime: 0 })
+  const battery = ref<BatteryInfo>({
+    charging: false,
+    level: 0,
+    chargingTime: 0,
+    dischargingTime: 0,
+  })
   const longTaskCount = ref(0)
   const longTaskDuration = ref(0)
   const uptime = ref(0)
@@ -153,11 +158,36 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
 
       const knownEvents = new Set([
         ...eventProps,
-        'click', 'mousedown', 'mouseup', 'mousemove', 'mouseover', 'mouseout',
-        'keydown', 'keyup', 'keypress', 'input', 'change', 'focus', 'blur',
-        'scroll', 'resize', 'load', 'unload', 'submit', 'touchstart', 'touchend',
-        'touchmove', 'pointerdown', 'pointerup', 'pointermove', 'wheel',
-        'animationend', 'transitionend', 'dragstart', 'dragend', 'drop',
+        'click',
+        'mousedown',
+        'mouseup',
+        'mousemove',
+        'mouseover',
+        'mouseout',
+        'keydown',
+        'keyup',
+        'keypress',
+        'input',
+        'change',
+        'focus',
+        'blur',
+        'scroll',
+        'resize',
+        'load',
+        'unload',
+        'submit',
+        'touchstart',
+        'touchend',
+        'touchmove',
+        'pointerdown',
+        'pointerup',
+        'pointermove',
+        'wheel',
+        'animationend',
+        'transitionend',
+        'dragstart',
+        'dragend',
+        'drop',
       ])
 
       for (const el of allElements) {
@@ -292,12 +322,14 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     if (navigator.onLine) {
       const conn = (navigator as NavigatorWithConnection).connection
       if (conn) {
-        connectionType.value = conn.effectiveType?.toUpperCase() || conn.type?.toUpperCase() || 'Unknown'
+        connectionType.value =
+          conn.effectiveType?.toUpperCase() || conn.type?.toUpperCase() || 'Unknown'
         downlinkSpeed.value = conn.downlink || 0
       } else {
         connectionType.value = 'Unknown'
       }
-      networkStatus.value = latency.value > 150 ? 'Slow' : latency.value > 500 ? 'Unstable' : 'Online'
+      networkStatus.value =
+        latency.value > 150 ? 'Slow' : latency.value > 500 ? 'Unstable' : 'Online'
     } else {
       networkStatus.value = 'Offline'
       connectionType.value = 'None'
@@ -316,10 +348,11 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
         const est = await navigator.storage.estimate()
         storageUsed.value = est.usage || 0
         storageQuota.value = est.quota || 0
-        storagePercent.value = storageQuota.value > 0
-          ? Math.round((storageUsed.value / storageQuota.value) * 100)
-          : 0
-      } catch { /* storage API not available */ }
+        storagePercent.value =
+          storageQuota.value > 0 ? Math.round((storageUsed.value / storageQuota.value) * 100) : 0
+      } catch {
+        /* storage API not available */
+      }
     }
 
     uptime.value = Math.floor((Date.now() - startTime) / 1000)
@@ -335,7 +368,12 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     isRefreshing.value = false
   }
 
-  function dataToPoints(data: HistoryPoint[], width: number, height: number, maxVal: number = 100): ChartPoint[] {
+  function dataToPoints(
+    data: HistoryPoint[],
+    width: number,
+    height: number,
+    maxVal: number = 100
+  ): ChartPoint[] {
     if (data.length === 0) return []
     const stepX = width / (maxDataPoints - 1)
     const offset = Math.max(0, maxDataPoints - data.length)
@@ -345,10 +383,16 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     }))
   }
 
-  function generateSmoothPath(data: HistoryPoint[], width: number, height: number, maxVal: number = 100): string {
+  function generateSmoothPath(
+    data: HistoryPoint[],
+    width: number,
+    height: number,
+    maxVal: number = 100
+  ): string {
     const pts = dataToPoints(data, width, height, maxVal)
     if (pts.length < 2) return ''
-    if (pts.length === 2) return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L ${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`
+    if (pts.length === 2)
+      return `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)} L ${pts[1].x.toFixed(1)} ${pts[1].y.toFixed(1)}`
 
     let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`
     for (let i = 0; i < pts.length - 1; i++) {
@@ -368,7 +412,12 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     return d
   }
 
-  function generateSmoothAreaPath(data: HistoryPoint[], width: number, height: number, maxVal: number = 100): string {
+  function generateSmoothAreaPath(
+    data: HistoryPoint[],
+    width: number,
+    height: number,
+    maxVal: number = 100
+  ): string {
     if (data.length < 2) return ''
     const linePath = generateSmoothPath(data, width, height, maxVal)
     const pts = dataToPoints(data, width, height, maxVal)
@@ -377,7 +426,12 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     return `${linePath} L ${lastX.toFixed(1)} ${height} L ${firstX.toFixed(1)} ${height} Z`
   }
 
-  function getLastPoint(data: HistoryPoint[], width: number, height: number, maxVal: number = 100): ChartPoint | null {
+  function getLastPoint(
+    data: HistoryPoint[],
+    width: number,
+    height: number,
+    maxVal: number = 100
+  ): ChartPoint | null {
     const pts = dataToPoints(data, width, height, maxVal)
     return pts.length > 0 ? pts[pts.length - 1] : null
   }
@@ -415,7 +469,9 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
         longTaskDuration.value = entries.reduce((sum, e) => sum + e.duration, 0)
       })
       longTaskObserver.observe({ type: 'longtask', buffered: true })
-    } catch { /* longtask not supported */ }
+    } catch {
+      /* longtask not supported */
+    }
 
     try {
       const paintObserver = new PerformanceObserver((list) => {
@@ -425,7 +481,9 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
         }
       })
       paintObserver.observe({ type: 'paint', buffered: true })
-    } catch { /* paint timing not supported */ }
+    } catch {
+      /* paint timing not supported */
+    }
 
     try {
       const layoutShiftObserver = new PerformanceObserver((list) => {
@@ -438,7 +496,9 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
         layoutShiftScore.value = cumulative
       })
       layoutShiftObserver.observe({ type: 'layout-shift', buffered: true })
-    } catch { /* CLS not supported */ }
+    } catch {
+      /* CLS not supported */
+    }
   }
 
   async function initBattery() {
@@ -458,7 +518,9 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
           battery.value.level = bat.level
         })
       }
-    } catch { /* battery API not supported */ }
+    } catch {
+      /* battery API not supported */
+    }
   }
 
   let refreshIntervalId: number | null = null

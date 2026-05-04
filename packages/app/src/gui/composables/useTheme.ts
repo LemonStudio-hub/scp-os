@@ -16,14 +16,54 @@ export interface AccentTheme {
 }
 
 const accentThemes: Record<string, AccentTheme> = {
-  '#e94560': { accent: '#e94560', accentHover: '#ff5a73', accentSoft: 'rgba(233, 69, 96, 0.08)', accentGlow: 'rgba(233, 69, 96, 0.25)' },
-  '#60a5fa': { accent: '#60a5fa', accentHover: '#93c5fd', accentSoft: 'rgba(96, 165, 250, 0.08)', accentGlow: 'rgba(96, 165, 250, 0.25)' },
-  '#34d399': { accent: '#34d399', accentHover: '#6ee7b7', accentSoft: 'rgba(52, 211, 153, 0.08)', accentGlow: 'rgba(52, 211, 153, 0.25)' },
-  '#fbbf24': { accent: '#fbbf24', accentHover: '#fcd34d', accentSoft: 'rgba(251, 191, 36, 0.08)', accentGlow: 'rgba(251, 191, 36, 0.25)' },
-  '#c084fc': { accent: '#c084fc', accentHover: '#d8b4fe', accentSoft: 'rgba(192, 132, 252, 0.08)', accentGlow: 'rgba(192, 132, 252, 0.25)' },
-  '#f87171': { accent: '#f87171', accentHover: '#fca5a5', accentSoft: 'rgba(248, 113, 113, 0.08)', accentGlow: 'rgba(248, 113, 113, 0.25)' },
-  '#22d3ee': { accent: '#22d3ee', accentHover: '#67e8f9', accentSoft: 'rgba(34, 211, 238, 0.08)', accentGlow: 'rgba(34, 211, 238, 0.25)' },
-  '#a0a0a0': { accent: '#a0a0a0', accentHover: '#d0d0d0', accentSoft: 'rgba(160, 160, 160, 0.08)', accentGlow: 'rgba(160, 160, 160, 0.25)' },
+  '#e94560': {
+    accent: '#e94560',
+    accentHover: '#ff5a73',
+    accentSoft: 'rgba(233, 69, 96, 0.08)',
+    accentGlow: 'rgba(233, 69, 96, 0.25)',
+  },
+  '#60a5fa': {
+    accent: '#60a5fa',
+    accentHover: '#93c5fd',
+    accentSoft: 'rgba(96, 165, 250, 0.08)',
+    accentGlow: 'rgba(96, 165, 250, 0.25)',
+  },
+  '#34d399': {
+    accent: '#34d399',
+    accentHover: '#6ee7b7',
+    accentSoft: 'rgba(52, 211, 153, 0.08)',
+    accentGlow: 'rgba(52, 211, 153, 0.25)',
+  },
+  '#fbbf24': {
+    accent: '#fbbf24',
+    accentHover: '#fcd34d',
+    accentSoft: 'rgba(251, 191, 36, 0.08)',
+    accentGlow: 'rgba(251, 191, 36, 0.25)',
+  },
+  '#c084fc': {
+    accent: '#c084fc',
+    accentHover: '#d8b4fe',
+    accentSoft: 'rgba(192, 132, 252, 0.08)',
+    accentGlow: 'rgba(192, 132, 252, 0.25)',
+  },
+  '#f87171': {
+    accent: '#f87171',
+    accentHover: '#fca5a5',
+    accentSoft: 'rgba(248, 113, 113, 0.08)',
+    accentGlow: 'rgba(248, 113, 113, 0.25)',
+  },
+  '#22d3ee': {
+    accent: '#22d3ee',
+    accentHover: '#67e8f9',
+    accentSoft: 'rgba(34, 211, 238, 0.08)',
+    accentGlow: 'rgba(34, 211, 238, 0.25)',
+  },
+  '#a0a0a0': {
+    accent: '#a0a0a0',
+    accentHover: '#d0d0d0',
+    accentSoft: 'rgba(160, 160, 160, 0.08)',
+    accentGlow: 'rgba(160, 160, 160, 0.25)',
+  },
 }
 
 export function useTheme() {
@@ -36,7 +76,9 @@ export function useTheme() {
         const parsed = JSON.parse(raw)
         return parsed.accent || '#e94560'
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return '#e94560'
   }
 
@@ -54,7 +96,8 @@ export function useTheme() {
       root.style.setProperty('--gui-accent-glow', theme.accentGlow)
 
       // Update scrollbar color to match accent
-      const styleEl = document.getElementById('dynamic-theme-style') || document.createElement('style')
+      const styleEl =
+        document.getElementById('dynamic-theme-style') || document.createElement('style')
       styleEl.id = 'dynamic-theme-style'
       styleEl.textContent = `
         .xterm-viewport::-webkit-scrollbar-thumb {

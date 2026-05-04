@@ -24,14 +24,14 @@ export function proxyImageUrl(src: string): string {
     if (!isAbsolute) {
       for (const origin of Object.values(WIKIDOT_ORIGINS)) {
         const resolved = new URL(src, origin)
-        if (ALLOWED_IMAGE_HOSTS.some(host => resolved.hostname.endsWith(host))) {
+        if (ALLOWED_IMAGE_HOSTS.some((host) => resolved.hostname.endsWith(host))) {
           return `${config.api.workerUrl}/image-proxy?url=${encodeURIComponent(resolved.href)}`
         }
       }
       return src
     }
     const url = new URL(src)
-    if (ALLOWED_IMAGE_HOSTS.some(host => url.hostname.endsWith(host))) {
+    if (ALLOWED_IMAGE_HOSTS.some((host) => url.hostname.endsWith(host))) {
       return `${config.api.workerUrl}/image-proxy?url=${encodeURIComponent(src)}`
     }
   } catch {
@@ -41,9 +41,12 @@ export function proxyImageUrl(src: string): string {
 }
 
 export function applyImageProxyHook(): void {
-  DOMPurify.addHook('uponSanitizeAttribute', (node: Element, data: { attrName: string; attrValue: string | null }) => {
-    if (data.attrName === 'src' && data.attrValue && node.nodeName === 'IMG') {
-      data.attrValue = proxyImageUrl(data.attrValue)
+  DOMPurify.addHook(
+    'uponSanitizeAttribute',
+    (node: Element, data: { attrName: string; attrValue: string | null }) => {
+      if (data.attrName === 'src' && data.attrValue && node.nodeName === 'IMG') {
+        data.attrValue = proxyImageUrl(data.attrValue)
+      }
     }
-  })
+  )
 }

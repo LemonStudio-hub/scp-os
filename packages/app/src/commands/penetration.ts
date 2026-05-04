@@ -14,9 +14,13 @@ export const penetrationHandler: CommandHandler = async (args, write, writeln) =
     writeln(`${ANSICode.red}═════════════════════════════════════════════${ANSICode.reset}`)
     writeln(`${ANSICode.red}SCP FOUNDATION - AUTHORIZED PENETRATION TEST${ANSICode.reset}`)
     writeln(`${ANSICode.red}═════════════════════════════════════════════${ANSICode.reset}`)
-    writeln(`${ANSICode.yellow}[!] This session is authorized under Protocol Omega-7${ANSICode.reset}`)
+    writeln(
+      `${ANSICode.yellow}[!] This session is authorized under Protocol Omega-7${ANSICode.reset}`
+    )
     writeln(`${ANSICode.yellow}[!] All activities are monitored and logged${ANSICode.reset}`)
-    writeln(`${ANSICode.yellow}[!] Unauthorized access will be terminated immediately${ANSICode.reset}`)
+    writeln(
+      `${ANSICode.yellow}[!] Unauthorized access will be terminated immediately${ANSICode.reset}`
+    )
     writeln('')
     writeln(`Type 'confirm' to proceed or 'abort' to cancel:`)
     return

@@ -34,20 +34,16 @@ export const privescPhase: PhaseConfig = {
     if (cmd === 'whoami') {
       await sleep(300)
       writeln('www-data')
-    }
-
-    else if (cmd === 'id') {
+    } else if (cmd === 'id') {
       await sleep(300)
       writeln('uid=33(www-data) gid=33(www-data) groups=33(www-data)')
-    }
-
-    else if (cmd === 'uname') {
+    } else if (cmd === 'uname') {
       await sleep(300)
-      writeln('Linux scp-server-017 5.15.0-58-generic #64-Ubuntu SMP Fri Jul 7 20:16:44 UTC 2023 x86_64 GNU/Linux')
+      writeln(
+        'Linux scp-server-017 5.15.0-58-generic #64-Ubuntu SMP Fri Jul 7 20:16:44 UTC 2023 x86_64 GNU/Linux'
+      )
       completeAction('enum_system')
-    }
-
-    else if (cmd === 'find') {
+    } else if (cmd === 'find') {
       await typeWithDelay('正在搜索 SUID 文件...', write, 2000)
       const suidFiles = [
         '/usr/bin/passwd',
@@ -64,19 +60,21 @@ export const privescPhase: PhaseConfig = {
         '/usr/lib/dbus-1.0/dbus-daemon-launch-helper',
       ]
       for (const f of suidFiles) {
-        writeln(`-rwsr-xr-x 1 root root ${randomInt(30000, 150000)} ${new Date().getFullYear() - randomInt(0, 3)}-0${randomInt(1, 9)}-0${randomInt(1, 9)} ${f}`)
+        writeln(
+          `-rwsr-xr-x 1 root root ${randomInt(30000, 150000)} ${new Date().getFullYear() - randomInt(0, 3)}-0${randomInt(1, 9)}-0${randomInt(1, 9)} ${f}`
+        )
         await sleep(50)
       }
       writeln('')
       writeln(warning('发现 pkexec SUID - 可能存在 CVE-2021-4034 (PwnKit)'))
       completeAction('enum_system')
-    }
-
-    else if (cmd === 'sudo') {
+    } else if (cmd === 'sudo') {
       if (args[0] === '-l') {
         await sleep(500)
         writeln('Matching Defaults entries for www-data on scp-server-017:')
-        writeln('    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin')
+        writeln(
+          '    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin'
+        )
         writeln('')
         writeln('User www-data may run the following commands on scp-server-017:')
         writeln('    (ALL : ALL) NOPASSWD: /usr/bin/find')
@@ -87,9 +85,7 @@ export const privescPhase: PhaseConfig = {
       } else {
         writeln(error('用法: sudo -l'))
       }
-    }
-
-    else if (cmd === 'linpeas') {
+    } else if (cmd === 'linpeas') {
       await typeWithDelay('正在运行 LinPEAS 枚举脚本...', write, 5000)
       const lines = [
         '',
@@ -128,9 +124,7 @@ export const privescPhase: PhaseConfig = {
       ]
       await typeLines(lines, write, writeln)
       completeAction('enum_system')
-    }
-
-    else if (cmd === 'dirty-pipe' || cmd === 'CVE-2022-0847') {
+    } else if (cmd === 'dirty-pipe' || cmd === 'CVE-2022-0847') {
       await typeWithDelay('正在编译 Dirty Pipe 提权 exploit...', write, 2000)
       writeln('')
       writeln('\x1b[90mgcc -o /tmp/dpipe /tmp/dirty-pipe.c\x1b[0m')
@@ -160,11 +154,11 @@ export const privescPhase: PhaseConfig = {
       vars.currentAccess = 'root'
       completeAction('privesc_execute')
       writeln(success('权限提升成功！已获得 root 权限'))
-    }
-
-    else {
+    } else {
       writeln(warning(`未知命令: ${cmd}`))
-      writeln(info('可用命令: whoami, id, uname -a, sudo -l, find / -perm -4000, linpeas, dirty-pipe'))
+      writeln(
+        info('可用命令: whoami, id, uname -a, sudo -l, find / -perm -4000, linpeas, dirty-pipe')
+      )
     }
   },
 }

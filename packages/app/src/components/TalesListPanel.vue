@@ -6,9 +6,20 @@
     <template v-if="view === 'list'">
       <!-- Search Bar -->
       <div class="tales-panel__search">
-        <svg class="tales-panel__search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <svg
+          class="tales-panel__search-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+        >
+          <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+          <path
+            d="M10.5 10.5L14 14"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
         </svg>
         <input
           v-model="searchQuery"
@@ -23,14 +34,21 @@
           @click="clearSearch"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path
+              d="M3 3l8 8M11 3l-8 8"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
         </button>
       </div>
 
       <!-- Info Bar -->
       <div class="tales-panel__info-bar">
-        <span class="tales-panel__info-count">{{ filteredTales.length }} tale{{ filteredTales.length !== 1 ? 's' : '' }}</span>
+        <span class="tales-panel__info-count"
+          >{{ filteredTales.length }} tale{{ filteredTales.length !== 1 ? 's' : '' }}</span
+        >
         <span v-if="error" class="tales-panel__info-error">{{ error }}</span>
       </div>
 
@@ -44,8 +62,13 @@
       <!-- Error State (no data) -->
       <div v-else-if="error && tales.length === 0" class="tales-panel__error-state">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-          <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="2"/>
-          <path d="M24 14v14M24 34v1.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="24" cy="24" r="18" stroke="currentColor" stroke-width="2" />
+          <path
+            d="M24 14v14M24 34v1.5"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
         </svg>
         <p>Failed to load tales</p>
         <button class="tales-panel__retry-btn" @click="fetchTales">Retry</button>
@@ -54,8 +77,13 @@
       <!-- Empty State -->
       <div v-else-if="filteredTales.length === 0" class="tales-panel__empty">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-          <rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" stroke-width="2"/>
-          <path d="M16 18h16M16 24h12M16 30h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" stroke-width="2" />
+          <path
+            d="M16 18h16M16 24h12M16 30h8"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
         </svg>
         <p v-if="searchQuery">No tales match "{{ searchQuery }}"</p>
         <p v-else>No tales available</p>
@@ -76,8 +104,20 @@
           </div>
           <div class="tales-panel__item-meta">
             <span v-if="tale.year" class="tales-panel__item-year">{{ tale.year }}</span>
-            <svg class="tales-panel__item-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M5 2.5L9.5 7L5 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg
+              class="tales-panel__item-chevron"
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <path
+                d="M5 2.5L9.5 7L5 11.5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </div>
         </div>
@@ -92,7 +132,13 @@
       <div class="tales-panel__toolbar">
         <button class="tales-panel__toolbar-btn" title="Back to list" @click="backToList">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M10 3L5 8L10 13"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
           <span class="tales-panel__toolbar-label">Back</span>
         </button>
@@ -115,8 +161,13 @@
       <!-- Detail Error Overlay -->
       <div v-if="detailError && !loadingDetail && !taleContent" class="tales-panel__detail-error">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2"/>
-          <path d="M16 10v8M16 22v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2" />
+          <path
+            d="M16 10v8M16 22v1"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
         </svg>
         <p>{{ detailError }}</p>
         <button class="tales-panel__retry-btn" @click="retryLoadDetail">Retry</button>
@@ -170,9 +221,7 @@ const filteredTales = computed(() => {
     return tales.value
   }
   const query = searchQuery.value.trim().toLowerCase()
-  return tales.value.filter((tale) =>
-    tale.title.toLowerCase().includes(query)
-  )
+  return tales.value.filter((tale) => tale.title.toLowerCase().includes(query))
 })
 
 // ── HTTP Helper ────────────────────────────────────────────────────────
@@ -262,10 +311,7 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
 
     // Normalize content - handle various API response shapes
     const rawContent: string =
-      contentData.data?.content ||
-      contentData.content ||
-      contentData.data ||
-      ''
+      contentData.data?.content || contentData.content || contentData.data || ''
 
     const wordCountValue: number | null =
       metaData?.data?.word_count ??
@@ -273,7 +319,10 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
       contentData.data?.word_count ??
       contentData.wordCount ??
       (rawContent
-        ? rawContent.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length
+        ? rawContent
+            .replace(/<[^>]*>/g, '')
+            .split(/\s+/)
+            .filter(Boolean).length
         : null)
 
     taleContent.value = rawContent
@@ -357,7 +406,7 @@ onMounted(() => {
   --tp-text-primary: #e0e0e0;
   --tp-text-secondary: #9a9a9a;
   --tp-text-tertiary: #5a5a5a;
-  --tp-accent: #8E8E93;
+  --tp-accent: #8e8e93;
   --tp-accent-soft: rgba(142, 142, 147, 0.12);
   --tp-radius: 10px;
   --tp-radius-sm: 6px;
@@ -366,7 +415,7 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   background: var(--tp-bg);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   color: var(--tp-text-primary);
 }
 
@@ -425,7 +474,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .tales-panel__search-clear:hover {
@@ -451,7 +502,7 @@ onMounted(() => {
 
 .tales-panel__info-error {
   font-size: 12px;
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 /* ── Loading ────────────────────────────────────────────────────────── */
@@ -472,12 +523,24 @@ onMounted(() => {
   animation: tp-bounce 1.3s ease-in-out infinite;
 }
 
-.tales-panel__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.tales-panel__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.tales-panel__loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.tales-panel__loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes tp-bounce {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-  40% { transform: scale(1); opacity: 1; }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ── Error / Empty States ───────────────────────────────────────────── */
@@ -530,9 +593,16 @@ onMounted(() => {
   -webkit-overflow-scrolling: touch;
 }
 
-.tales-panel__list::-webkit-scrollbar { width: 6px; }
-.tales-panel__list::-webkit-scrollbar-track { background: transparent; }
-.tales-panel__list::-webkit-scrollbar-thumb { background-color: var(--tp-border); border-radius: 3px; }
+.tales-panel__list::-webkit-scrollbar {
+  width: 6px;
+}
+.tales-panel__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tales-panel__list::-webkit-scrollbar-thumb {
+  background-color: var(--tp-border);
+  border-radius: 3px;
+}
 
 .tales-panel__item {
   display: flex;
@@ -596,7 +666,7 @@ onMounted(() => {
   font-size: 12px;
   color: var(--tp-text-tertiary);
   font-variant-numeric: tabular-nums;
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
 }
 
 .tales-panel__item-chevron {

@@ -11,10 +11,18 @@ const BOLD = '\x1b[1m'
 
 const COMMON_PORTS: { port: number; service: string; versions: string[] }[] = [
   { port: 21, service: 'ftp', versions: ['vsftpd 3.0.3', 'ProFTPD 1.3.5e', 'Pure-FTPd'] },
-  { port: 22, service: 'ssh', versions: ['OpenSSH 8.9p1 Ubuntu 3ubuntu0.1', 'OpenSSH 7.4', 'OpenSSH 9.0p1'] },
+  {
+    port: 22,
+    service: 'ssh',
+    versions: ['OpenSSH 8.9p1 Ubuntu 3ubuntu0.1', 'OpenSSH 7.4', 'OpenSSH 9.0p1'],
+  },
   { port: 25, service: 'smtp', versions: ['Postfix smtpd', 'Exim 4.94.2'] },
   { port: 53, service: 'domain', versions: ['ISC BIND 9.18.1', 'PowerDNS 4.3.1'] },
-  { port: 80, service: 'http', versions: ['Apache httpd 2.4.52', 'nginx 1.24.0', 'lighttpd 1.4.67'] },
+  {
+    port: 80,
+    service: 'http',
+    versions: ['Apache httpd 2.4.52', 'nginx 1.24.0', 'lighttpd 1.4.67'],
+  },
   { port: 110, service: 'pop3', versions: ['Dovecot pop3d', 'Courier Pop3'] },
   { port: 111, service: 'rpcbind', versions: ['2-4 RPC #100000'] },
   { port: 139, service: 'netbios-ssn', versions: ['Samba smbd 4.15.5'] },
@@ -32,20 +40,52 @@ const COMMON_PORTS: { port: number; service: string; versions: string[] }[] = [
   { port: 27017, service: 'mongodb', versions: ['MongoDB 6.0.4'] },
 ]
 
-const VULN_ENTRIES: { cve: string; severity: 'critical' | 'high' | 'medium' | 'low'; description: string }[] = [
+const VULN_ENTRIES: {
+  cve: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  description: string
+}[] = [
   { cve: 'CVE-2023-44487', severity: 'high', description: 'HTTP/2 Rapid Reset Attack' },
   { cve: 'CVE-2023-38408', severity: 'high', description: 'OpenSSH ssh-agent PKCS#11 bypass' },
-  { cve: 'CVE-2023-27522', severity: 'medium', description: 'Apache mod_proxy HTTP request smuggling' },
+  {
+    cve: 'CVE-2023-27522',
+    severity: 'medium',
+    description: 'Apache mod_proxy HTTP request smuggling',
+  },
   { cve: 'CVE-2022-26134', severity: 'critical', description: 'OGNL injection in Confluence' },
-  { cve: 'CVE-2021-41773', severity: 'critical', description: 'Apache path traversal and file disclosure' },
-  { cve: 'CVE-2023-22515', severity: 'critical', description: 'Broken access control in Atlassian Confluence' },
-  { cve: 'CVE-2022-0847', severity: 'high', description: 'Dirty Pipe - Linux kernel pipe buffer flag overwrite' },
-  { cve: 'CVE-2021-3449', severity: 'medium', description: 'OpenSSL TLS server crash via signature algorithms' },
+  {
+    cve: 'CVE-2021-41773',
+    severity: 'critical',
+    description: 'Apache path traversal and file disclosure',
+  },
+  {
+    cve: 'CVE-2023-22515',
+    severity: 'critical',
+    description: 'Broken access control in Atlassian Confluence',
+  },
+  {
+    cve: 'CVE-2022-0847',
+    severity: 'high',
+    description: 'Dirty Pipe - Linux kernel pipe buffer flag overwrite',
+  },
+  {
+    cve: 'CVE-2021-3449',
+    severity: 'medium',
+    description: 'OpenSSL TLS server crash via signature algorithms',
+  },
   { cve: 'CVE-2023-46604', severity: 'critical', description: 'Apache ActiveMQ RCE via OpenWire' },
-  { cve: 'CVE-2022-22965', severity: 'critical', description: 'Spring4Shell - RCE via data binding' },
+  {
+    cve: 'CVE-2022-22965',
+    severity: 'critical',
+    description: 'Spring4Shell - RCE via data binding',
+  },
 ]
 
-export function generateNmapOutput(targetIP: string, ports: PortInfo[], scanType: 'quick' | 'full' | 'vuln'): ToolTemplateResult {
+export function generateNmapOutput(
+  targetIP: string,
+  ports: PortInfo[],
+  scanType: 'quick' | 'full' | 'vuln'
+): ToolTemplateResult {
   const lines: string[] = []
   const hostname = 'scp-server-017.foundation.local'
   const latency = randomFloat(0.001, 0.01).toFixed(4)
@@ -144,11 +184,16 @@ export function generateNmapOutput(targetIP: string, ports: PortInfo[], scanType
 }
 
 function generateDefaultPorts(scanType: 'quick' | 'full' | 'vuln'): PortInfo[] {
-  const count = scanType === 'quick' ? randomInt(3, 6) : scanType === 'full' ? randomInt(6, 12) : randomInt(4, 8)
+  const count =
+    scanType === 'quick'
+      ? randomInt(3, 6)
+      : scanType === 'full'
+        ? randomInt(6, 12)
+        : randomInt(4, 8)
   const shuffled = [...COMMON_PORTS].sort(() => Math.random() - 0.5)
   const selected = shuffled.slice(0, count)
 
-  return selected.map(p => ({
+  return selected.map((p) => ({
     port: p.port,
     protocol: 'tcp' as const,
     service: p.service,

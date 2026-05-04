@@ -2,11 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, shallowRef, computed } from 'vue'
 import axios from 'axios'
 import { config } from '../config'
-import type {
-  DownloadProgress,
-  DownloadHistoryItem,
-  DownloadInitResponse,
-} from './downloadTypes'
+import type { DownloadProgress, DownloadHistoryItem, DownloadInitResponse } from './downloadTypes'
 
 interface SpeedSample {
   timestamp: number
@@ -43,8 +39,12 @@ export const useDownloadStore = defineStore('download', () => {
 
   const downloadStats = computed<DownloadStats>(() => {
     const items = history.value
-    let completed = 0, failed = 0, cancelled = 0
-    let totalBytes = 0, totalDuration = 0, completedBytes = 0
+    let completed = 0,
+      failed = 0,
+      cancelled = 0
+    let totalBytes = 0,
+      totalDuration = 0,
+      completedBytes = 0
 
     for (const item of items) {
       const bytes = item.totalBytes || item.downloadedBytes
@@ -83,12 +83,12 @@ export const useDownloadStore = defineStore('download', () => {
   const recentSpeedHistory = computed(() => {
     const now = Date.now()
     const thirtySecAgo = now - 30000
-    return speedHistory.value.filter(s => s.timestamp >= thirtySecAgo)
+    return speedHistory.value.filter((s) => s.timestamp >= thirtySecAgo)
   })
 
   const peakSpeed = computed(() => {
     if (speedHistory.value.length === 0) return 0
-    return Math.max(...speedHistory.value.map(s => s.speed))
+    return Math.max(...speedHistory.value.map((s) => s.speed))
   })
 
   function clearError() {
@@ -124,23 +124,37 @@ export const useDownloadStore = defineStore('download', () => {
     downloadProgress.value = Object.assign({}, current, patch)
   }
 
-  async function initDownload(url: string, filename?: string, rateLimit?: number): Promise<DownloadInitResponse | null> {
+  async function initDownload(
+    url: string,
+    filename?: string,
+    rateLimit?: number
+  ): Promise<DownloadInitResponse | null> {
     clearError()
     try {
       const response = await axios.post<DownloadInitResponse>(
         `${config.api.workerUrl}/download/init`,
         { url, filename, rateLimit },
-        { timeout: 20000 },
+        { timeout: 20000 }
       )
       return response.data
     } catch (e: any) {
-      const msg = e?.response?.data?.error?.message || e?.message || '\u521d\u59cb\u5316\u4e0b\u8f7d\u5931\u8d25'
+      const msg =
+        e?.response?.data?.error?.message ||
+        e?.message ||
+        '\u521d\u59cb\u5316\u4e0b\u8f7d\u5931\u8d25'
       error.value = msg
       return null
     }
   }
 
-  async function startStreamDownload(downloadId: string, downloadUrl: string, filename: string, contentType: string, rateLimit?: number, totalBytes?: number) {
+  async function startStreamDownload(
+    downloadId: string,
+    downloadUrl: string,
+    filename: string,
+    contentType: string,
+    rateLimit?: number,
+    totalBytes?: number
+  ) {
     clearError()
     isDownloading.value = true
     downloadProgress.value = {
@@ -246,9 +260,10 @@ export const useDownloadStore = defineStore('download', () => {
             status: 'downloading',
             downloadedBytes: totalChunkBytes,
             speed: Math.round(speed),
-            progress: currentTotal > 0
-              ? Math.min(99, Math.round((totalChunkBytes / currentTotal) * 100))
-              : Math.min(99, Math.round(totalChunkBytes / 1024)),
+            progress:
+              currentTotal > 0
+                ? Math.min(99, Math.round((totalChunkBytes / currentTotal) * 100))
+                : Math.min(99, Math.round(totalChunkBytes / 1024)),
           })
           lastProgressTime = now
           lastBytesCount = totalChunkBytes
@@ -299,10 +314,7 @@ export const useDownloadStore = defineStore('download', () => {
         success: boolean
         data: DownloadHistoryItem[]
         total: number
-      }>(
-        `${config.api.workerUrl}/download/history`,
-        { params: { limit, offset }, timeout: 10000 },
-      )
+      }>(`${config.api.workerUrl}/download/history`, { params: { limit, offset }, timeout: 10000 })
       if (response.data.success) {
         if (offset === 0) {
           history.value = response.data.data
@@ -323,7 +335,7 @@ export const useDownloadStore = defineStore('download', () => {
         params: { id: downloadId },
         timeout: 10000,
       })
-      history.value = history.value.filter(item => item.id !== downloadId)
+      history.value = history.value.filter((item) => item.id !== downloadId)
       historyTotal.value = Math.max(0, historyTotal.value - 1)
     } catch (e: any) {
       error.value = e?.response?.data?.error?.message || '\u5220\u9664\u5931\u8d25'

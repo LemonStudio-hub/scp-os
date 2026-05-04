@@ -20,37 +20,37 @@ export interface PluginConfig {
 export interface Plugin {
   /** Plugin name (unique identifier) */
   name: string
-  
+
   /** Plugin version (semver) */
   version: string
-  
+
   /** Plugin description */
   description?: string
-  
+
   /** Plugin author/maintainer */
   author?: string
-  
+
   /** Plugin configuration */
   config?: PluginConfig
-  
+
   /** Plugin dependencies (other plugins) */
   dependencies?: string[]
-  
+
   /**
    * Called when plugin is loaded
    */
   onLoad?(): Promise<void> | void
-  
+
   /**
    * Called when plugin is unloaded
    */
   onUnload?(): Promise<void> | void
-  
+
   /**
    * Called when plugin is enabled
    */
   onEnable?(): Promise<void> | void
-  
+
   /**
    * Called when plugin is disabled
    */

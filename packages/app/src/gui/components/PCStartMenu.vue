@@ -16,7 +16,10 @@
         </div>
         <!-- Search Results -->
         <Transition name="search-fade">
-          <div v-if="showSearchResults && filteredItems.length > 0" class="pc-start-menu__search-results">
+          <div
+            v-if="showSearchResults && filteredItems.length > 0"
+            class="pc-start-menu__search-results"
+          >
             <div
               v-for="item in filteredItems"
               :key="item.id"
@@ -179,19 +182,13 @@ const powerOptions: PowerOption[] = [
 ]
 
 // Combined items for search
-const allItems = computed(() => [
-  ...apps,
-  ...systemOptions,
-  ...powerOptions,
-])
+const allItems = computed(() => [...apps, ...systemOptions, ...powerOptions])
 
 // Filtered items based on search query
 const filteredItems = computed(() => {
   if (!searchQuery.value) return []
   const query = searchQuery.value.toLowerCase()
-  return allItems.value.filter(item => 
-    item.label.toLowerCase().includes(query)
-  )
+  return allItems.value.filter((item) => item.label.toLowerCase().includes(query))
 })
 
 function onAppClick(app: StartMenuApp) {
@@ -224,9 +221,13 @@ function onItemClick(item: any) {
 function handleClickOutside(event: MouseEvent) {
   const startMenu = document.querySelector('.pc-start-menu')
   const startButton = document.querySelector('.pc-taskbar__start-btn')
-  
-  if (startMenu && !startMenu.contains(event.target as Node) && 
-      startButton && !startButton.contains(event.target as Node)) {
+
+  if (
+    startMenu &&
+    !startMenu.contains(event.target as Node) &&
+    startButton &&
+    !startButton.contains(event.target as Node)
+  ) {
     // Emit close event (would be handled by parent component)
   }
 }
@@ -256,17 +257,22 @@ onUnmounted(() => {
   border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
   border-bottom: none;
   border-radius: var(--gui-radius-xl, 14px) var(--gui-radius-xl, 14px) 0 0;
-  box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.5), 0 -4px 16px rgba(0, 0, 0, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow:
+    0 -16px 48px rgba(0, 0, 0, 0.5),
+    0 -4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
   overflow: hidden;
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
-  animation: menuSlideUp 0.35s var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  animation: menuSlideUp 0.35s
+    var(--gui-transition-ios-spring, 400ms cubic-bezier(0.32, 0.72, 0, 1)) both;
   transition: all var(--gui-transition-base, 200ms ease);
 }
 
 .pc-start-menu:hover {
-  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6), 0 -6px 20px rgba(0, 0, 0, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 -20px 60px rgba(0, 0, 0, 0.6),
+    0 -6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   background: var(--gui-glass-bg-strong, rgba(32, 32, 34, 0.98));
 }
 
@@ -314,7 +320,7 @@ onUnmounted(() => {
   background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-base, 8px);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
   outline: none;
@@ -375,13 +381,13 @@ onUnmounted(() => {
   justify-content: center;
   width: 32px;
   height: 32px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
 }
 
 .pc-start-menu__search-item-label {
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */
@@ -402,7 +408,7 @@ onUnmounted(() => {
 .pc-start-menu__section-title {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-semibold, 600);
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: var(--gui-spacing-sm, 8px);
@@ -452,23 +458,25 @@ onUnmounted(() => {
   height: 48px;
   background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-lg, 12px);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   transition: all var(--gui-transition-base, 200ms ease);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .pc-start-menu__app:hover .pc-start-menu__app-icon {
   background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4),
-              inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transform: scale(1.05);
 }
 
 .pc-start-menu__app-label {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -478,7 +486,7 @@ onUnmounted(() => {
 }
 
 .pc-start-menu__app:hover .pc-start-menu__app-label {
-  color: var(--gui-accent, #8E8E93);
+  color: var(--gui-accent, #8e8e93);
   font-weight: var(--gui-font-weight-semibold, 600);
   transform: translateY(-1px);
 }
@@ -527,13 +535,13 @@ onUnmounted(() => {
   height: 40px;
   background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-base, 8px);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .pc-start-menu__system-item-label {
   font-size: var(--gui-font-sm, 12px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 /* ── Power Options ─────────────────────────────────────────────────── */
@@ -576,13 +584,13 @@ onUnmounted(() => {
   height: 48px;
   background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.08));
   border-radius: var(--gui-radius-lg, 12px);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .pc-start-menu__power-item-label {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   text-align: center;
 }
 

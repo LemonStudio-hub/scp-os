@@ -163,13 +163,15 @@ onMounted(fetchDashboard)
   width: 32px;
   height: 32px;
   border: 3px solid #1a1a1a;
-  border-top-color: #E94560;
+  border-top-color: #e94560;
   border-radius: 50%;
   animation: dashboardSpin 0.8s linear infinite;
 }
 
 @keyframes dashboardSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .dashboard-page__stats {

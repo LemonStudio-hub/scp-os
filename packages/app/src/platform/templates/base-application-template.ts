@@ -3,7 +3,11 @@
  * Base implementation for application templates
  */
 
-import type { IApplicationTemplate, ApplicationTemplateMetadata, ApplicationTemplateConfig } from './application-template.interface'
+import type {
+  IApplicationTemplate,
+  ApplicationTemplateMetadata,
+  ApplicationTemplateConfig,
+} from './application-template.interface'
 
 /**
  * Base Application Template
@@ -12,23 +16,23 @@ import type { IApplicationTemplate, ApplicationTemplateMetadata, ApplicationTemp
 export abstract class BaseApplicationTemplate implements IApplicationTemplate {
   metadata!: ApplicationTemplateMetadata
   config!: ApplicationTemplateConfig
-  
+
   /**
    * Validate template configuration
    */
   validate(): { valid: boolean; errors: string[] } {
     const errors: string[] = []
-    
+
     // Validate app name
     if (!this.config.appName || this.config.appName.trim() === '') {
       errors.push('Application name is required')
     }
-    
+
     // Validate app version
     if (!this.config.appVersion || this.config.appVersion.trim() === '') {
       errors.push('Application version is required')
     }
-    
+
     // Validate plugins
     if (!Array.isArray(this.config.plugins)) {
       errors.push('Plugins must be an array')
@@ -39,13 +43,13 @@ export abstract class BaseApplicationTemplate implements IApplicationTemplate {
         }
       })
     }
-    
+
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     }
   }
-  
+
   /**
    * Get template summary
    */
@@ -56,30 +60,34 @@ export abstract class BaseApplicationTemplate implements IApplicationTemplate {
     features: string[]
   } {
     const features: string[] = []
-    
+
     if (this.config.features.multiTab) features.push('Multi-tab support')
     if (this.config.features.gestureSupport) features.push('Gesture controls')
     if (this.config.features.voiceControl) features.push('Voice control')
     if (this.config.features.accessibility) features.push('Accessibility features')
-    
+
     return {
       name: this.metadata.name,
       description: this.metadata.description,
       category: this.metadata.category,
-      features
+      features,
     }
   }
-  
+
   /**
    * Export template to JSON
    */
   toJSON(): string {
-    return JSON.stringify({
-      metadata: this.metadata,
-      config: this.config
-    }, null, 2)
+    return JSON.stringify(
+      {
+        metadata: this.metadata,
+        config: this.config,
+      },
+      null,
+      2
+    )
   }
-  
+
   /**
    * Clone template
    */
@@ -99,11 +107,8 @@ export abstract class BaseApplicationTemplate implements IApplicationTemplate {
 export class SimpleApplicationTemplate extends BaseApplicationTemplate {
   metadata: ApplicationTemplateMetadata
   config: ApplicationTemplateConfig
-  
-  constructor(
-    metadata: ApplicationTemplateMetadata,
-    config: ApplicationTemplateConfig
-  ) {
+
+  constructor(metadata: ApplicationTemplateMetadata, config: ApplicationTemplateConfig) {
     super()
     this.metadata = metadata
     this.config = config

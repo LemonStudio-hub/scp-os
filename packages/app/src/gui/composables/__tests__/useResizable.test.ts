@@ -21,7 +21,10 @@ describe('useResizable', () => {
   it('should start resizing on handleMouseDown', () => {
     const { resizeState, handleMouseDown } = useResizable(ref(element))
 
-    handleMouseDown('se', new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true }))
+    handleMouseDown(
+      'se',
+      new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true })
+    )
 
     expect(resizeState.value.isResizing).toBe(true)
     expect(resizeState.value.direction).toBe('se')
@@ -32,7 +35,10 @@ describe('useResizable', () => {
   it('should not start resizing when disabled', () => {
     const { resizeState, handleMouseDown } = useResizable(ref(element), { disabled: true })
 
-    handleMouseDown('se', new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true }))
+    handleMouseDown(
+      'se',
+      new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true })
+    )
 
     expect(resizeState.value.isResizing).toBe(false)
   })
@@ -87,7 +93,10 @@ describe('useResizable', () => {
     const onResize = vi.fn()
     const { handleMouseDown } = useResizable(ref(element), { onResize })
 
-    handleMouseDown('se', new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true }))
+    handleMouseDown(
+      'se',
+      new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true })
+    )
     document.dispatchEvent(new MouseEvent('mousemove', { clientX: 200, clientY: 200 }))
 
     expect(onResize).toHaveBeenCalled()
@@ -97,7 +106,10 @@ describe('useResizable', () => {
     const onStart = vi.fn()
     const { handleMouseDown } = useResizable(ref(element), { onStart })
 
-    handleMouseDown('se', new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true }))
+    handleMouseDown(
+      'se',
+      new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true })
+    )
 
     expect(onStart).toHaveBeenCalled()
   })
@@ -105,7 +117,10 @@ describe('useResizable', () => {
   it('should stop resizing on stop call', () => {
     const { resizeState, handleMouseDown, stop } = useResizable(ref(element))
 
-    handleMouseDown('se', new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true }))
+    handleMouseDown(
+      'se',
+      new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true })
+    )
     expect(resizeState.value.isResizing).toBe(true)
 
     stop()

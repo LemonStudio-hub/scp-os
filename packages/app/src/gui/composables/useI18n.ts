@@ -14,11 +14,14 @@ function detectLocale(): Locale {
   try {
     const saved = localStorage.getItem(LOCALE_STORAGE_KEY)
     if (saved && (saved === 'en' || saved === 'zh-CN')) return saved
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // 2. Check browser language
   if (typeof navigator !== 'undefined') {
-    const lang = navigator.language || (navigator as Navigator & { userLanguage?: string }).userLanguage || ''
+    const lang =
+      navigator.language || (navigator as Navigator & { userLanguage?: string }).userLanguage || ''
     if (lang.toLowerCase().startsWith('zh')) return 'zh-CN'
   }
 
@@ -36,7 +39,9 @@ export function useI18n() {
       currentLocale.value = val
       try {
         localStorage.setItem(LOCALE_STORAGE_KEY, val)
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     },
   })
 
@@ -60,7 +65,10 @@ export function useI18n() {
   const localeName = computed(() => localeNames[currentLocale.value] || 'English')
 
   // Helper for date formatting with current locale
-  const formatDate = (date: Date | string | number, options?: Intl.DateTimeFormatOptions): string => {
+  const formatDate = (
+    date: Date | string | number,
+    options?: Intl.DateTimeFormatOptions
+  ): string => {
     const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
     return d.toLocaleString(currentLocale.value === 'zh-CN' ? 'zh-CN' : 'en-US', {
       hour: '2-digit',

@@ -29,7 +29,7 @@ function getTerminalWidth(): number {
     const screenWidth = window.innerWidth
     const isMobile = screenWidth < 768
     const fontSize = screenWidth < 480 ? 10 : screenWidth < 768 ? 12 : screenWidth < 1200 ? 14 : 16
-    
+
     if (isMobile) {
       // 移动端：使用更精确的计算
       // 移动端通常使用 10-12px 字体，字符宽度约 6px
@@ -39,7 +39,7 @@ function getTerminalWidth(): number {
       const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
       return Math.max(25, Math.min(50, estimatedCols)) // 移动端限制在 25-50 列
     }
-    
+
     // 桌面端：根据屏幕宽度估算
     const charWidth = fontSize * 0.6
     const padding = 20
@@ -60,16 +60,16 @@ function getDisplayWidth(str: string): number {
     const code = char.codePointAt(0) || 0
     // CJK 字符（中日韩统一表意文字）通常占 2 列
     if (
-      (code >= 0x4E00 && code <= 0x9FFF) ||
-      (code >= 0x3400 && code <= 0x4DBF) ||
-      (code >= 0xF900 && code <= 0xFAFF) ||
-      (code >= 0x20000 && code <= 0x2A6DF) ||
-      (code >= 0x2A700 && code <= 0x2B73F) ||
-      (code >= 0x2B740 && code <= 0x2B81F) ||
-      (code >= 0x2B820 && code <= 0x2CEAF) ||
-      (code >= 0x2F00 && code <= 0x2FDF) ||
-      (code >= 0x3000 && code <= 0x303F) ||
-      (code >= 0xFF00 && code <= 0xFFEF)
+      (code >= 0x4e00 && code <= 0x9fff) ||
+      (code >= 0x3400 && code <= 0x4dbf) ||
+      (code >= 0xf900 && code <= 0xfaff) ||
+      (code >= 0x20000 && code <= 0x2a6df) ||
+      (code >= 0x2a700 && code <= 0x2b73f) ||
+      (code >= 0x2b740 && code <= 0x2b81f) ||
+      (code >= 0x2b820 && code <= 0x2ceaf) ||
+      (code >= 0x2f00 && code <= 0x2fdf) ||
+      (code >= 0x3000 && code <= 0x303f) ||
+      (code >= 0xff00 && code <= 0xffef)
     ) {
       width += 2
     } else {
@@ -149,7 +149,7 @@ class BorderGenerator {
 }
 
 class SCPScraper {
-  private cache: Map<string, { data: SCPWikiData, timestamp: number }> = new Map()
+  private cache: Map<string, { data: SCPWikiData; timestamp: number }> = new Map()
   private readonly CACHE_DURATION = config.cache.duration
   private readonly API_TIMEOUT = WORKER_CONFIG.timeout // 使用 Worker 配置
 
@@ -172,14 +172,16 @@ class SCPScraper {
     for (let attempt = 1; attempt <= WORKER_CONFIG.retryAttempts; attempt++) {
       try {
         const apiUrl = `${config.api.workerUrl}/scrape`
-        logger.info(`[尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`)
+        logger.info(
+          `[尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`
+        )
 
         // 调用Cloudflare Worker API
         const response = await axios.get(apiUrl, {
           params: { number: scpNumber, branch },
           timeout: this.API_TIMEOUT,
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'Content-Type': 'application/json',
           },
           withCredentials: false,
@@ -198,7 +200,7 @@ class SCPScraper {
         } else {
           return {
             success: false,
-            error: response.data.error || '爬取失败'
+            error: response.data.error || '爬取失败',
           }
         }
       } catch (error) {
@@ -216,7 +218,7 @@ class SCPScraper {
             if (error.response.status >= 400 && error.response.status < 500) {
               return {
                 success: false,
-                error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
+                error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`,
               }
             }
             // 5xx 错误可以重试
@@ -233,7 +235,7 @@ class SCPScraper {
               const errorCode = error.code || 'NETWORK_ERROR'
               return {
                 success: false,
-                error: `网络错误: 无法连接到服务器 (${errorCode})`
+                error: `网络错误: 无法连接到服务器 (${errorCode})`,
               }
             }
 
@@ -244,7 +246,7 @@ class SCPScraper {
             logger.error(`请求配置错误:`, error.message)
             return {
               success: false,
-              error: `请求配置错误: ${error.message}`
+              error: `请求配置错误: ${error.message}`,
             }
           }
         } else {
@@ -252,7 +254,7 @@ class SCPScraper {
           logger.error(`未知错误:`, error)
           return {
             success: false,
-            error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
+            error: `未知错误: ${error instanceof Error ? error.message : String(error)}`,
           }
         }
       }
@@ -261,7 +263,7 @@ class SCPScraper {
     // 所有重试都失败了
     return {
       success: false,
-      error: `网络错误: 无法连接到服务器 (已重试 ${WORKER_CONFIG.retryAttempts} 次)`
+      error: `网络错误: 无法连接到服务器 (已重试 ${WORKER_CONFIG.retryAttempts} 次)`,
     }
   }
 
@@ -269,7 +271,7 @@ class SCPScraper {
    * 延迟函数
    */
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   /**
@@ -287,7 +289,7 @@ class SCPScraper {
         params: { keyword },
         timeout: this.API_TIMEOUT,
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       })
 
@@ -300,7 +302,7 @@ class SCPScraper {
           if (response.data.data.length === 0) {
             return {
               success: false,
-              error: `未找到包含 "${keyword}" 的SCP对象`
+              error: `未找到包含 "${keyword}" 的SCP对象`,
             }
           }
 
@@ -325,7 +327,7 @@ class SCPScraper {
 
       return {
         success: false,
-        error: `未找到包含 "${keyword}" 的SCP对象`
+        error: `未找到包含 "${keyword}" 的SCP对象`,
       }
     } catch (error) {
       // 详细的错误处理
@@ -338,7 +340,7 @@ class SCPScraper {
           })
           return {
             success: false,
-            error: `搜索错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
+            error: `搜索错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`,
           }
         } else if (error.request) {
           // 请求已发出但没有收到响应
@@ -348,14 +350,14 @@ class SCPScraper {
           })
           return {
             success: false,
-            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`
+            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`,
           }
         } else {
           // 请求配置错误
           logger.error(`搜索配置错误:`, error.message)
           return {
             success: false,
-            error: `请求配置错误: ${error.message}`
+            error: `请求配置错误: ${error.message}`,
           }
         }
       } else {
@@ -363,7 +365,7 @@ class SCPScraper {
         logger.error(`搜索未知错误:`, error)
         return {
           success: false,
-          error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
+          error: `未知错误: ${error instanceof Error ? error.message : String(error)}`,
         }
       }
     }
@@ -382,7 +384,7 @@ class SCPScraper {
       appendix: Array.isArray(data.appendix) ? data.appendix : [],
       references: Array.isArray(data.references) ? data.references : [],
       author: data.author || '未知作者',
-      url: data.url || ''
+      url: data.url || '',
     }
   }
 
@@ -434,9 +436,9 @@ class SCPScraper {
       lines.push(border.boxContent(' 收容协议'))
       lines.push(border.boxSeparator)
 
-      data.containment.forEach(text => {
+      data.containment.forEach((text) => {
         const wrapped = this.wrapText(text, terminalWidth - 4)
-        wrapped.forEach(line => {
+        wrapped.forEach((line) => {
           lines.push(border.boxContent(` ${line}`))
         })
       })
@@ -451,9 +453,9 @@ class SCPScraper {
       lines.push(border.boxContent(' 描述'))
       lines.push(border.boxSeparator)
 
-      data.description.forEach(text => {
+      data.description.forEach((text) => {
         const wrapped = this.wrapText(text, terminalWidth - 4)
-        wrapped.forEach(line => {
+        wrapped.forEach((line) => {
           lines.push(border.boxContent(` ${line}`))
         })
       })
@@ -468,9 +470,9 @@ class SCPScraper {
       lines.push(border.boxContent(' 附录'))
       lines.push(border.boxSeparator)
 
-      data.appendix.forEach(text => {
+      data.appendix.forEach((text) => {
         const wrapped = this.wrapText(text, terminalWidth - 4)
-        wrapped.forEach(line => {
+        wrapped.forEach((line) => {
           lines.push(border.boxContent(` ${line}`))
         })
       })
@@ -503,9 +505,9 @@ class SCPScraper {
       lines.push(`${padding}收容协议`)
       lines.push('─'.repeat(terminalWidth))
 
-      data.containment.forEach(text => {
+      data.containment.forEach((text) => {
         const wrapped = this.wrapText(text, terminalWidth - 2)
-        wrapped.forEach(line => {
+        wrapped.forEach((line) => {
           lines.push(`${padding}${line}`)
         })
       })
@@ -518,9 +520,9 @@ class SCPScraper {
       lines.push(`${padding}描述`)
       lines.push('─'.repeat(terminalWidth))
 
-      data.description.forEach(text => {
+      data.description.forEach((text) => {
         const wrapped = this.wrapText(text, terminalWidth - 2)
-        wrapped.forEach(line => {
+        wrapped.forEach((line) => {
           lines.push(`${padding}${line}`)
         })
       })
@@ -533,9 +535,9 @@ class SCPScraper {
       lines.push(`${padding}附录`)
       lines.push('─'.repeat(terminalWidth))
 
-      data.appendix.forEach(text => {
+      data.appendix.forEach((text) => {
         const wrapped = this.wrapText(text, terminalWidth - 2)
-        wrapped.forEach(line => {
+        wrapped.forEach((line) => {
           lines.push(`${padding}${line}`)
         })
       })
@@ -612,7 +614,7 @@ class SCPScraper {
   private saveToCache(key: string, data: SCPWikiData): void {
     this.cache.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -633,7 +635,7 @@ class SCPScraper {
       const response = await axios.get(`${config.api.workerUrl}/`, {
         timeout: 10000,
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       })
 
@@ -642,7 +644,7 @@ class SCPScraper {
       return {
         success: true,
         message: 'API 连接正常',
-        details: response.data
+        details: response.data,
       }
     } catch (error) {
       logger.error('API 连接测试失败:', error)
@@ -655,7 +657,7 @@ class SCPScraper {
             details: {
               status: error.response.status,
               data: error.response.data,
-            }
+            },
           }
         } else if (error.request) {
           return {
@@ -665,7 +667,7 @@ class SCPScraper {
               code: error.code,
               message: error.message,
               url: config.api.workerUrl,
-            }
+            },
           }
         } else {
           return {
@@ -673,7 +675,7 @@ class SCPScraper {
             message: `请求配置错误: ${error.message}`,
             details: {
               message: error.message,
-            }
+            },
           }
         }
       }
@@ -692,7 +694,11 @@ class SCPScraper {
    * @param clearanceLevel 权限等级筛选（可选）
    * @returns SCP 列表
    */
-  async listSCPs(limit: number = 100, offset: number = 0, clearanceLevel?: number): Promise<{
+  async listSCPs(
+    limit: number = 100,
+    offset: number = 0,
+    clearanceLevel?: number
+  ): Promise<{
     success: boolean
     data?: Array<{
       scp_id: number
@@ -719,7 +725,7 @@ class SCPScraper {
         params,
         timeout: this.API_TIMEOUT,
         headers: {
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       })
 
@@ -734,7 +740,7 @@ class SCPScraper {
       } else {
         return {
           success: false,
-          error: response.data.error || '获取列表失败'
+          error: response.data.error || '获取列表失败',
         }
       }
     } catch (error) {
@@ -742,23 +748,23 @@ class SCPScraper {
         if (error.response) {
           return {
             success: false,
-            error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`
+            error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`,
           }
         } else if (error.request) {
           return {
             success: false,
-            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`
+            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`,
           }
         } else {
           return {
             success: false,
-            error: `请求配置错误: ${error.message}`
+            error: `请求配置错误: ${error.message}`,
           }
         }
       } else {
         return {
           success: false,
-          error: `未知错误: ${error instanceof Error ? error.message : String(error)}`
+          error: `未知错误: ${error instanceof Error ? error.message : String(error)}`,
         }
       }
     }

@@ -155,7 +155,7 @@ export class TabEntity implements Entity {
       closable: this.closable,
       data: this.data,
       createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString()
+      updatedAt: this.updatedAt.toISOString(),
     }
   }
 
@@ -176,7 +176,7 @@ export class TabEntity implements Entity {
     return new TabEntity({
       ...data,
       createdAt: data.createdAt ? new Date(data.createdAt) : undefined,
-      updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : undefined,
     })
   }
 }

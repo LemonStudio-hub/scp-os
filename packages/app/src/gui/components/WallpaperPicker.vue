@@ -6,15 +6,33 @@
         <div class="wallpaper-picker__header">
           <span class="wallpaper-picker__title">{{ t('wp.title') }}</span>
           <div class="wallpaper-picker__actions">
-            <button class="wallpaper-picker__action-btn" :title="t('wp.upload')" @click="triggerUpload">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M9 12V3M9 3L6 6M9 3l3 3"/>
-                <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3"/>
+            <button
+              class="wallpaper-picker__action-btn"
+              :title="t('wp.upload')"
+              @click="triggerUpload"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M9 12V3M9 3L6 6M9 3l3 3" />
+                <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
               </svg>
             </button>
             <button class="wallpaper-picker__close-btn" @click="close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M5 5l10 10M15 5L5 15"/>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path d="M5 5l10 10M15 5L5 15" />
               </svg>
             </button>
           </div>
@@ -31,10 +49,17 @@
 
         <!-- Upload hint -->
         <div v-if="wallpapers.length === 0 && !isUploading" class="wallpaper-picker__empty">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="8" y="8" width="32" height="32" rx="4"/>
-            <circle cx="18" cy="18" r="4"/>
-            <path d="M8 32l10-10 6 6 16-16"/>
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 48 48"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <rect x="8" y="8" width="32" height="32" rx="4" />
+            <circle cx="18" cy="18" r="4" />
+            <path d="M8 32l10-10 6 6 16-16" />
           </svg>
           <p class="wallpaper-picker__empty-title">{{ t('wp.emptyTitle') }}</p>
           <p class="wallpaper-picker__empty-hint">{{ t('wp.emptyHint') }}</p>
@@ -70,12 +95,18 @@
               <img :src="wp.thumbnailUrl" :alt="wp.name" />
             </div>
             <span class="wallpaper-picker__item-name">{{ wp.name }}</span>
-            <button
-              class="wallpaper-picker__item-delete"
-              @click.stop="confirmDelete(wp)"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M2 4h10M5 4V3a1 1 0 011-1h2a1 1 0 011 1v1M11 4v7a1 1 0 01-1 1H4a1 1 0 01-1-1V4"/>
+            <button class="wallpaper-picker__item-delete" @click.stop="confirmDelete(wp)">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  d="M2 4h10M5 4V3a1 1 0 011-1h2a1 1 0 011 1v1M11 4v7a1 1 0 01-1 1H4a1 1 0 01-1-1V4"
+                />
               </svg>
             </button>
           </button>
@@ -86,7 +117,9 @@
           <p>{{ t('wp.deleteConfirm', { name: deleteTarget?.name ?? '' }) }}</p>
           <div class="wallpaper-picker__delete-actions">
             <button @click="showDeleteConfirm = false">{{ t('common.cancel') }}</button>
-            <button class="wallpaper-picker__delete-btn" @click="doDelete">{{ t('common.delete') }}</button>
+            <button class="wallpaper-picker__delete-btn" @click="doDelete">
+              {{ t('common.delete') }}
+            </button>
           </div>
         </div>
       </div>
@@ -122,9 +155,12 @@ const showDeleteConfirm = ref(false)
 const deleteTarget = ref<WallpaperInfo | null>(null)
 
 // Refresh data whenever picker opens
-watch(() => props.visible, (val) => {
-  if (val) refreshData()
-})
+watch(
+  () => props.visible,
+  (val) => {
+    if (val) refreshData()
+  }
+)
 
 onMounted(async () => {
   try {
@@ -235,7 +271,7 @@ function close() {
   width: 100%;
   max-width: 600px;
   max-height: 80dvh;
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-radius: 16px 16px 0 0;
   display: flex;
   flex-direction: column;
@@ -243,8 +279,12 @@ function close() {
 }
 
 @keyframes wallpaper-slide-up {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 /* ── Header ─────────────────────────────────────────────────────────── */
@@ -253,13 +293,13 @@ function close() {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .wallpaper-picker__title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .wallpaper-picker__actions {
@@ -277,8 +317,8 @@ function close() {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: opacity 0.2s ease;
   -webkit-tap-highlight-color: transparent;
@@ -307,7 +347,7 @@ function close() {
 .wallpaper-picker__empty-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   margin: 12px 0 4px;
 }
 
@@ -323,7 +363,7 @@ function close() {
   justify-content: center;
   padding: 40px;
   gap: 12px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-size: 14px;
 }
 
@@ -331,13 +371,15 @@ function close() {
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.2);
-  border-top-color: var(--gui-accent, #007AFF);
+  border-top-color: var(--gui-accent, #007aff);
   border-radius: 50%;
   animation: wallpaper-spin 0.8s linear infinite;
 }
 
 @keyframes wallpaper-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ── Gallery ────────────────────────────────────────────────────────── */
@@ -368,7 +410,7 @@ function close() {
 }
 
 .wallpaper-picker__item--active .wallpaper-picker__item-preview {
-  box-shadow: 0 0 0 2px var(--gui-accent, #007AFF);
+  box-shadow: 0 0 0 2px var(--gui-accent, #007aff);
 }
 
 .wallpaper-picker__item-preview {
@@ -376,11 +418,11 @@ function close() {
   aspect-ratio: 3 / 4;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
 }
 
 .wallpaper-picker__item-preview--default {
-  background: linear-gradient(135deg, var(--gui-bg-base, #0A0A0A), var(--gui-bg-surface, #2C2C2E));
+  background: linear-gradient(135deg, var(--gui-bg-base, #0a0a0a), var(--gui-bg-surface, #2c2c2e));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -402,7 +444,7 @@ function close() {
 
 .wallpaper-picker__item-name {
   font-size: 11px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -418,7 +460,7 @@ function close() {
   border-radius: 50%;
   border: none;
   background: rgba(0, 0, 0, 0.5);
-  color: #FF3B30;
+  color: #ff3b30;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -435,13 +477,13 @@ function close() {
 /* ── Delete Confirmation ────────────────────────────────────────────── */
 .wallpaper-picker__delete-confirm {
   padding: 16px;
-  border-top: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-top: 0.5px solid var(--gui-border-subtle, #38383a);
   text-align: center;
 }
 
 .wallpaper-picker__delete-confirm p {
   font-size: 14px;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   margin: 0 0 12px;
 }
 
@@ -461,13 +503,13 @@ function close() {
 }
 
 .wallpaper-picker__delete-actions button:first-child {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .wallpaper-picker__delete-actions button:last-child {
-  background: #FF3B30;
-  color: #FFFFFF;
+  background: #ff3b30;
+  color: #ffffff;
 }
 
 /* ── Transition ─────────────────────────────────────────────────────── */

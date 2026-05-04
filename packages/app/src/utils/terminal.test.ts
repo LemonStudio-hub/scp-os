@@ -5,7 +5,7 @@ import {
   updateTerminalFontSize,
   sleep,
   randomDelay,
-  isPrintableCharacter
+  isPrintableCharacter,
 } from './terminal'
 
 describe('terminal utils', () => {
@@ -39,7 +39,7 @@ describe('terminal utils', () => {
   describe('createTerminalConfig', () => {
     it('应该返回有效的终端配置', () => {
       const config = createTerminalConfig()
-      
+
       expect(config).toHaveProperty('theme')
       expect(config).toHaveProperty('fontSize')
       expect(config).toHaveProperty('lineHeight')
@@ -85,11 +85,11 @@ describe('terminal utils', () => {
       const mockTerminal = {
         options: { fontSize: 14 },
         refresh: vi.fn(),
-        rows: 10
+        rows: 10,
       }
-      
+
       updateTerminalFontSize(mockTerminal)
-      
+
       expect(mockTerminal.options.fontSize).toBe(getResponsiveFontSize())
       expect(mockTerminal.refresh).toHaveBeenCalledWith(0, mockTerminal.rows - 1)
     })
@@ -109,7 +109,7 @@ describe('terminal utils', () => {
       const min = 10
       const max = 20
       const result = randomDelay(min, max)
-      
+
       expect(result).toBeGreaterThanOrEqual(min)
       expect(result).toBeLessThanOrEqual(max)
     })

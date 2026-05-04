@@ -1,5 +1,12 @@
 import type { ToolTemplateResult } from '../types'
-import { randomInt, randomChoice, generateTimestamp, generateRandomHash, generateRandomIP, getToolDelay } from '../randomizer'
+import {
+  randomInt,
+  randomChoice,
+  generateTimestamp,
+  generateRandomHash,
+  generateRandomIP,
+  getToolDelay,
+} from '../randomizer'
 
 const R = '\x1b[0m'
 const GREEN = '\x1b[32m'
@@ -14,7 +21,9 @@ export function generateWhoisOutput(targetIP: string): ToolTemplateResult {
   lines.push(`% WHOIS query for ${targetIP}`)
   lines.push(`% Querying WHOIS server: whois.iana.org`)
   lines.push('')
-  lines.push(`${BOLD}inetnum:${R}        ${targetIP.substring(0, targetIP.lastIndexOf('.'))}.0 - ${targetIP.substring(0, targetIP.lastIndexOf('.'))}.255`)
+  lines.push(
+    `${BOLD}inetnum:${R}        ${targetIP.substring(0, targetIP.lastIndexOf('.'))}.0 - ${targetIP.substring(0, targetIP.lastIndexOf('.'))}.255`
+  )
   lines.push(`${BOLD}netname:${R}        SCP-FOUNDATION-NET`)
   lines.push(`${BOLD}descr:${R}          SCP Foundation Secure Network`)
   lines.push(`${BOLD}descr:${R}          Classified Infrastructure Division`)
@@ -25,8 +34,12 @@ export function generateWhoisOutput(targetIP: string): ToolTemplateResult {
   lines.push(`${BOLD}admin-c:${R}        O5-1`)
   lines.push(`${BOLD}tech-c:${R}         TECH-${randomInt(100, 999)}`)
   lines.push(`${BOLD}mnt-by:${R}         SCP-MNT`)
-  lines.push(`${BOLD}created:${R}        200${randomInt(5, 9)}-${randomInt(1, 12).toString().padStart(2, '0')}-${randomInt(1, 28).toString().padStart(2, '0')}`)
-  lines.push(`${BOLD}last-modified:${R}  2024-${randomInt(1, 12).toString().padStart(2, '0')}-${randomInt(1, 28).toString().padStart(2, '0')}`)
+  lines.push(
+    `${BOLD}created:${R}        200${randomInt(5, 9)}-${randomInt(1, 12).toString().padStart(2, '0')}-${randomInt(1, 28).toString().padStart(2, '0')}`
+  )
+  lines.push(
+    `${BOLD}last-modified:${R}  2024-${randomInt(1, 12).toString().padStart(2, '0')}-${randomInt(1, 28).toString().padStart(2, '0')}`
+  )
   lines.push(`${BOLD}source:${R}         ARIN`)
   lines.push('')
   lines.push(`${BOLD}route:${R}          ${targetIP.substring(0, targetIP.lastIndexOf('.'))}.0/24`)
@@ -58,11 +71,15 @@ export function generateDigOutput(hostname: string): ToolTemplateResult {
   lines.push('')
   lines.push(`;; ANSWER SECTION:`)
   lines.push(`${hostname}.     ${randomInt(300, 3600)}   IN      A       ${ip}`)
-  lines.push(`${hostname}.     ${randomInt(300, 3600)}   IN      AAAA    2001:db8::${generateRandomHash(4)}`)
+  lines.push(
+    `${hostname}.     ${randomInt(300, 3600)}   IN      AAAA    2001:db8::${generateRandomHash(4)}`
+  )
   lines.push(`${hostname}.     ${randomInt(300, 3600)}   IN      MX      10 mail.${hostname}.`)
   lines.push(`${hostname}.     ${randomInt(300, 3600)}   IN      NS      ns1.${hostname}.`)
   lines.push(`${hostname}.     ${randomInt(300, 3600)}   IN      NS      ns2.${hostname}.`)
-  lines.push(`${hostname}.     ${randomInt(300, 3600)}   IN      TXT     "v=spf1 include:_spf.${hostname} ~all"`)
+  lines.push(
+    `${hostname}.     ${randomInt(300, 3600)}   IN      TXT     "v=spf1 include:_spf.${hostname} ~all"`
+  )
   lines.push('')
   lines.push(`;; ADDITIONAL SECTION:`)
   lines.push(`ns1.${hostname}.  ${randomInt(300, 3600)}   IN      A       ${generateRandomIP()}`)
@@ -111,18 +128,26 @@ export function generateNetcatShell(targetIP: string, port: number): ToolTemplat
 
 export function generateCurlOutput(url: string): ToolTemplateResult {
   const lines: string[] = []
-  const serverVersion = randomChoice(['Apache/2.4.52 (Ubuntu)', 'nginx/1.24.0', 'Apache/2.4.54 (Debian)'])
+  const serverVersion = randomChoice([
+    'Apache/2.4.52 (Ubuntu)',
+    'nginx/1.24.0',
+    'Apache/2.4.54 (Debian)',
+  ])
   const statusCode = randomChoice([200, 200, 200, 301, 403, 404])
 
   lines.push('')
   lines.push(`${GRAY}$${R} curl -I ${url}`)
-  lines.push(`HTTP/1.1 ${statusCode} ${statusCode === 200 ? 'OK' : statusCode === 301 ? 'Moved Permanently' : statusCode === 403 ? 'Forbidden' : 'Not Found'}`)
+  lines.push(
+    `HTTP/1.1 ${statusCode} ${statusCode === 200 ? 'OK' : statusCode === 301 ? 'Moved Permanently' : statusCode === 403 ? 'Forbidden' : 'Not Found'}`
+  )
   lines.push(`Date: ${new Date().toUTCString()}`)
   lines.push(`Server: ${serverVersion}`)
   lines.push(`X-Powered-By: ${randomChoice(['PHP/8.1.13', 'Express', 'Next.js'])}`)
   lines.push(`Content-Type: text/html; charset=UTF-8`)
   lines.push(`Connection: keep-alive`)
-  lines.push(`Set-Cookie: ${randomChoice(['PHPSESSID', 'sessionid', '_sid'])}=${generateRandomHash(26)}; path=/; HttpOnly`)
+  lines.push(
+    `Set-Cookie: ${randomChoice(['PHPSESSID', 'sessionid', '_sid'])}=${generateRandomHash(26)}; path=/; HttpOnly`
+  )
   lines.push(`X-Frame-Options: SAMEORIGIN`)
   lines.push(`X-Content-Type-Options: nosniff`)
   lines.push(`Content-Length: ${randomInt(1000, 50000)}`)

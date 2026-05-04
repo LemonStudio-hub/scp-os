@@ -2,10 +2,7 @@
   <!-- Mobile Layout -->
   <div v-if="mobile.isMobile.value" class="mobile-app">
     <!-- Home Screen (default view) -->
-    <HomeScreen
-      v-if="!activeTool"
-      @launch="onHomeLaunch"
-    />
+    <HomeScreen v-if="!activeTool" @launch="onHomeLaunch" />
 
     <!-- Active Tool Overlay (full-screen) — rendered via ToolRegistry -->
     <template v-if="activeTool && activeToolModule">
@@ -21,9 +18,7 @@
   <!-- Desktop Layout -->
   <div v-else class="desktop-app">
     <!-- Desktop Screen (always rendered as background) -->
-    <DesktopScreen
-      @launch="onHomeLaunch"
-    />
+    <DesktopScreen @launch="onHomeLaunch" />
 
     <!-- Desktop Windows (rendered on top of DesktopScreen) -->
     <slot />

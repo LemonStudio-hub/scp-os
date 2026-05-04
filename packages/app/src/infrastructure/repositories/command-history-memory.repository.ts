@@ -5,7 +5,7 @@
 
 import type {
   ICommandHistoryRepository,
-  CommandHistoryQueryOptions
+  CommandHistoryQueryOptions,
 } from '../../domain/repositories'
 import { CommandHistoryEntity, CommandHistoryCollection } from '../../domain/entities'
 import type { QueryResult } from '../../domain/repositories'
@@ -27,7 +27,7 @@ export class CommandHistoryMemoryRepository
     // Rebuild collection from current entities
     const entities = await this.findAll()
     this.collection = new CommandHistoryCollection()
-    entities.forEach(entity => this.collection.add(entity))
+    entities.forEach((entity) => this.collection.add(entity))
     return this.collection
   }
 
@@ -45,7 +45,7 @@ export class CommandHistoryMemoryRepository
   async getRecent(limit: number = 10): Promise<CommandHistoryEntity[]> {
     const result = await this.find({
       sort: (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
-      limit
+      limit,
     })
     return result.data
   }
@@ -55,7 +55,7 @@ export class CommandHistoryMemoryRepository
    */
   async findByCommand(command: string): Promise<CommandHistoryEntity[]> {
     const result = await this.find({
-      filter: entity => entity.command === command
+      filter: (entity) => entity.command === command,
     })
     return result.data
   }
@@ -65,7 +65,7 @@ export class CommandHistoryMemoryRepository
    */
   async findByCommandName(name: string): Promise<CommandHistoryEntity[]> {
     const result = await this.find({
-      filter: entity => entity.getCommandName() === name
+      filter: (entity) => entity.getCommandName() === name,
     })
     return result.data
   }
@@ -75,7 +75,7 @@ export class CommandHistoryMemoryRepository
    */
   async findByDateRange(startDate: Date, endDate: Date): Promise<CommandHistoryEntity[]> {
     const result = await this.find({
-      filter: entity => entity.timestamp >= startDate && entity.timestamp <= endDate
+      filter: (entity) => entity.timestamp >= startDate && entity.timestamp <= endDate,
     })
     return result.data
   }
@@ -85,7 +85,7 @@ export class CommandHistoryMemoryRepository
    */
   async findSuccessful(): Promise<CommandHistoryEntity[]> {
     const result = await this.find({
-      filter: entity => entity.success
+      filter: (entity) => entity.success,
     })
     return result.data
   }
@@ -95,7 +95,7 @@ export class CommandHistoryMemoryRepository
    */
   async findFailed(): Promise<CommandHistoryEntity[]> {
     const result = await this.find({
-      filter: entity => !entity.success
+      filter: (entity) => !entity.success,
     })
     return result.data
   }
@@ -113,15 +113,17 @@ export class CommandHistoryMemoryRepository
     const entities = await this.findAll()
 
     const total = entities.length
-    const successful = entities.filter(e => e.success).length
+    const successful = entities.filter((e) => e.success).length
     const failed = total - successful
 
-    const durations = entities.filter(e => e.duration !== undefined).map(e => e.duration as number)
+    const durations = entities
+      .filter((e) => e.duration !== undefined)
+      .map((e) => e.duration as number)
     const averageDuration =
       durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0
 
     const commandCounts = new Map<string, number>()
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       const name = entity.getCommandName()
       commandCounts.set(name, (commandCounts.get(name) || 0) + 1)
     })
@@ -136,7 +138,7 @@ export class CommandHistoryMemoryRepository
       successful,
       failed,
       averageDuration,
-      mostUsedCommands
+      mostUsedCommands,
     }
   }
 
@@ -154,7 +156,7 @@ export class CommandHistoryMemoryRepository
   async search(query: string): Promise<CommandHistoryEntity[]> {
     const lowerQuery = query.toLowerCase()
     const result = await this.find({
-      filter: entity => entity.command.toLowerCase().includes(lowerQuery)
+      filter: (entity) => entity.command.toLowerCase().includes(lowerQuery),
     })
     return result.data
   }
@@ -170,11 +172,11 @@ export class CommandHistoryMemoryRepository
     }
 
     if (options.command) {
-      filters.push(entity => entity.command === options.command)
+      filters.push((entity) => entity.command === options.command)
     }
 
     if (options.startDate || options.endDate) {
-      filters.push(entity => {
+      filters.push((entity) => {
         if (options.startDate && entity.timestamp < options.startDate) return false
         if (options.endDate && entity.timestamp > options.endDate) return false
         return true
@@ -182,16 +184,17 @@ export class CommandHistoryMemoryRepository
     }
 
     if (options.success !== undefined) {
-      filters.push(entity => entity.success === options.success)
+      filters.push((entity) => entity.success === options.success)
     }
 
-    const combinedFilter = filters.length > 0
-      ? (entity: CommandHistoryEntity) => filters.every(f => f(entity))
-      : undefined
+    const combinedFilter =
+      filters.length > 0
+        ? (entity: CommandHistoryEntity) => filters.every((f) => f(entity))
+        : undefined
 
     return super.find({
       ...options,
-      filter: combinedFilter
+      filter: combinedFilter,
     })
   }
 

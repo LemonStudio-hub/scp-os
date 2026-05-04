@@ -3,12 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import {
-  EventBus,
-  getGlobalEventBus,
-  resetGlobalEventBus,
-  subscribe
-} from '../event-bus'
+import { EventBus, getGlobalEventBus, resetGlobalEventBus, subscribe } from '../event-bus'
 
 describe('EventBus', () => {
   let eventBus: EventBus
@@ -100,7 +95,7 @@ describe('EventBus', () => {
       // Should not throw, but log error
       expect(() => eventBus.emit('test-event', 'data')).not.toThrow()
       // Wait for async handlers to complete
-      await new Promise(resolve => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10))
     })
   })
 
@@ -166,7 +161,7 @@ describe('EventBus', () => {
       const customBus = new EventBus({
         maxListeners: 20,
         async: true,
-        warnOnMemoryLeak: false
+        warnOnMemoryLeak: false,
       })
 
       const config = customBus['config']
@@ -258,9 +253,15 @@ describe('EventBus', () => {
 
     it('should preserve handler order', () => {
       const order: number[] = []
-      const handler1 = vi.fn(() => { order.push(1) })
-      const handler2 = vi.fn(() => { order.push(2) })
-      const handler3 = vi.fn(() => { order.push(3) })
+      const handler1 = vi.fn(() => {
+        order.push(1)
+      })
+      const handler2 = vi.fn(() => {
+        order.push(2)
+      })
+      const handler3 = vi.fn(() => {
+        order.push(3)
+      })
 
       eventBus.on('test-event', handler1)
       eventBus.on('test-event', handler2)

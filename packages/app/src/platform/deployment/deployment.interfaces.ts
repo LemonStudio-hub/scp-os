@@ -164,13 +164,13 @@ export interface IDeploymentService {
    * @returns Deployment configuration
    */
   getConfiguration(): DeploymentConfiguration
-  
+
   /**
    * Set deployment configuration
    * @param config New configuration
    */
   setConfiguration(config: DeploymentConfiguration): void
-  
+
   /**
    * Validate deployment configuration
    * @returns Validation result
@@ -180,7 +180,7 @@ export interface IDeploymentService {
     errors: string[]
     warnings: string[]
   }
-  
+
   /**
    * Build application
    * @returns Build result
@@ -191,7 +191,7 @@ export interface IDeploymentService {
     logs: DeploymentLog[]
     error?: string
   }>
-  
+
   /**
    * Deploy application
    * @param targetId Target ID
@@ -199,21 +199,21 @@ export interface IDeploymentService {
    * @returns Deployment result
    */
   deploy(targetId: string, buildOutput: string): Promise<DeploymentResult>
-  
+
   /**
    * Rollback deployment
    * @param deploymentId Deployment ID
    * @returns Rollback result
    */
   rollback(deploymentId: string): Promise<DeploymentResult>
-  
+
   /**
    * Get deployment status
    * @param deploymentId Deployment ID
    * @returns Deployment status
    */
   getStatus(deploymentId: string): Promise<DeploymentStatus>
-  
+
   /**
    * List deployments
    * @param limit Maximum number of deployments
@@ -221,14 +221,14 @@ export interface IDeploymentService {
    * @returns Array of deployment statuses
    */
   listDeployments(limit?: number, offset?: number): Promise<DeploymentStatus[]>
-  
+
   /**
    * Get deployment logs
    * @param deploymentId Deployment ID
    * @returns Array of log entries
    */
   getLogs(deploymentId: string): Promise<DeploymentLog[]>
-  
+
   /**
    * Cancel deployment
    * @param deploymentId Deployment ID

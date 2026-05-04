@@ -35,7 +35,10 @@ export const useAuthStore = defineStore('auth', () => {
       if (savedNickname) {
         nickname.value = savedNickname
         isLoggedIn.value = true
-        logger.info('[Auth] Auto-login with existing user:', { userId: savedUserId, nickname: savedNickname })
+        logger.info('[Auth] Auto-login with existing user:', {
+          userId: savedUserId,
+          nickname: savedNickname,
+        })
       } else {
         isLoggedIn.value = false
         logger.info('[Auth] No saved nickname found, user not logged in')
@@ -110,7 +113,10 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       isLoggedIn.value = true
-      logger.info('[Auth] User logged in successfully:', { userId: currentUserId, nickname: trimmedNickname })
+      logger.info('[Auth] User logged in successfully:', {
+        userId: currentUserId,
+        nickname: trimmedNickname,
+      })
       return { success: true }
     } catch (error) {
       logger.error('[Auth] Login failed:', error)
@@ -143,7 +149,9 @@ export const useAuthStore = defineStore('auth', () => {
     return isLoggedIn.value
   }
 
-  async function checkNicknameAvailability(nicknameInput: string): Promise<{ available: boolean; error?: string }> {
+  async function checkNicknameAvailability(
+    nicknameInput: string
+  ): Promise<{ available: boolean; error?: string }> {
     const trimmed = nicknameInput.trim()
     if (!trimmed) {
       return { available: false, error: 'Nickname cannot be empty' }
@@ -153,7 +161,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/user/check-nickname?nickname=${encodeURIComponent(trimmed)}&excludeUserId=${encodeURIComponent(userId.value || '')}`)
+      const response = await fetch(
+        `${API_BASE}/api/user/check-nickname?nickname=${encodeURIComponent(trimmed)}&excludeUserId=${encodeURIComponent(userId.value || '')}`
+      )
       const data = await response.json()
       if (data.success && data.available) {
         return { available: true }
@@ -165,7 +175,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function updateNickname(newNickname: string): Promise<{ success: boolean; error?: string }> {
+  async function updateNickname(
+    newNickname: string
+  ): Promise<{ success: boolean; error?: string }> {
     const trimmed = newNickname.trim()
     if (!trimmed) {
       return { success: false, error: 'Nickname cannot be empty' }

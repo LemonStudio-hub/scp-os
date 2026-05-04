@@ -45,7 +45,7 @@ export function useDownload() {
       url,
       initResult.filename,
       initResult.contentType,
-      rateLimit,
+      rateLimit
     )
   }
 

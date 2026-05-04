@@ -1,6 +1,6 @@
 /**
  * Theme Definitions
- * 
+ *
  * Each theme defines a complete set of colors for:
  * - Background layers
  * - Text hierarchy
@@ -451,9 +451,4 @@ export const themes: Record<string, Theme> = {
   hacker: hackerTheme,
 }
 
-export const availableThemes: Theme[] = [
-  darkTheme,
-  lightTheme,
-  scpTheme,
-  hackerTheme,
-]
+export const availableThemes: Theme[] = [darkTheme, lightTheme, scpTheme, hackerTheme]

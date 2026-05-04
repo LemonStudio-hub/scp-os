@@ -55,6 +55,6 @@ export const useSystemStore = defineStore('system', () => {
     markSystemShutdown,
     markBootLogShown,
     resetBootLogShown,
-    resetFirstLaunch
+    resetFirstLaunch,
   }
 })

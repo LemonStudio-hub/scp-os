@@ -22,11 +22,11 @@ const DATABASE_NAMES = [
 ]
 
 const INJECTION_TYPES = [
-  { type: "Boolean-based blind", title: "AND 2634=2634" },
-  { type: "Time-based blind", title: "AND SLEEP(5)" },
-  { type: "UNION query", title: "UNION ALL SELECT NULL,CONCAT(...)--" },
-  { type: "Error-based", title: "AND EXTRACTVALUE(1,CONCAT(...))" },
-  { type: "Stacked queries", title: "; SELECT SLEEP(5)--" },
+  { type: 'Boolean-based blind', title: 'AND 2634=2634' },
+  { type: 'Time-based blind', title: 'AND SLEEP(5)' },
+  { type: 'UNION query', title: 'UNION ALL SELECT NULL,CONCAT(...)--' },
+  { type: 'Error-based', title: 'AND EXTRACTVALUE(1,CONCAT(...))' },
+  { type: 'Stacked queries', title: '; SELECT SLEEP(5)--' },
 ]
 
 const PARAMETERS = ['id', 'user', 'page', 'search', 'item', 'category', 'doc']
@@ -37,16 +37,30 @@ export function generateSqlmapOutput(targetURL: string): ToolTemplateResult {
 
   lines.push('')
   lines.push(`        ${CYAN}${BOLD}___${R}`)
-  lines.push(`       ${CYAN}__H__${R} ${GREEN} ___${R}  ${YELLOW}_____${R} ${GREEN}___${R}  ${YELLOW}___${R}  ${GREEN}___${R}         ${GRAY}__${R}`)
-  lines.push(`      {_____}${R} ${GREEN}|___${R} ${YELLOW}|___ ${R}${GREEN}|___${R} ${YELLOW}|___${R} ${GREEN}|___${R}  |___'  ${GRAY}|___${R}`)
-  lines.push(`       ${CYAN}/  _  \\${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}`)
-  lines.push(`      ${CYAN}| / \\ |${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}`)
-  lines.push(`      ${CYAN}| \\_/ |${R}  ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R}`)
-  lines.push(`      ${CYAN}||___||${R}  ${GREEN}${randomChoice(['v1.7.12', 'v1.7.10', 'v1.8.0'])}${R}  ${GRAY}#stable${R}`)
+  lines.push(
+    `       ${CYAN}__H__${R} ${GREEN} ___${R}  ${YELLOW}_____${R} ${GREEN}___${R}  ${YELLOW}___${R}  ${GREEN}___${R}         ${GRAY}__${R}`
+  )
+  lines.push(
+    `      {_____}${R} ${GREEN}|___${R} ${YELLOW}|___ ${R}${GREEN}|___${R} ${YELLOW}|___${R} ${GREEN}|___${R}  |___'  ${GRAY}|___${R}`
+  )
+  lines.push(
+    `       ${CYAN}/  _  \\${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}  ${GRAY}|___${R}`
+  )
+  lines.push(
+    `      ${CYAN}| / \\ |${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}  ${YELLOW}___${R}`
+  )
+  lines.push(
+    `      ${CYAN}| \\_/ |${R}  ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R} ${GRAY}|___${R}`
+  )
+  lines.push(
+    `      ${CYAN}||___||${R}  ${GREEN}${randomChoice(['v1.7.12', 'v1.7.10', 'v1.8.0'])}${R}  ${GRAY}#stable${R}`
+  )
   lines.push(`      ${CYAN}\\_____/${R}`)
   lines.push('')
 
-  lines.push(`${GRAY}[*]${R} starting @ ${new Date().toISOString().replace('T', ' ').substring(0, 19)}`)
+  lines.push(
+    `${GRAY}[*]${R} starting @ ${new Date().toISOString().replace('T', ' ').substring(0, 19)}`
+  )
   lines.push('')
 
   lines.push(`${GRAY}[*]${R} testing connection to the target URL`)
@@ -63,13 +77,17 @@ export function generateSqlmapOutput(targetURL: string): ToolTemplateResult {
   const injection = randomChoice(INJECTION_TYPES)
   const param = randomChoice(PARAMETERS)
 
-  lines.push(`${GREEN}${BOLD}[+]${R} ${GREEN}${param} parameter appears to be '${injection.type}' injectable`)
+  lines.push(
+    `${GREEN}${BOLD}[+]${R} ${GREEN}${param} parameter appears to be '${injection.type}' injectable`
+  )
   lines.push(`    Payload: ${param}=${YELLOW}${injection.title}${R}`)
   lines.push('')
 
   lines.push(`${GRAY}[*]${R} testing 'Generic UNION query (NULL) - 1 to 20 columns'`)
   lines.push(`${GREEN}[+]${R} '${param}' is 'UNION query' injectable`)
-  lines.push(`    ${GRAY}-- [${R}${GREEN}START${R}${GRAY}]${R} ${targetURL}?${param}=1 ${YELLOW}UNION ALL SELECT NULL,NULL,NULL--${R}`)
+  lines.push(
+    `    ${GRAY}-- [${R}${GREEN}START${R}${GRAY}]${R} ${targetURL}?${param}=1 ${YELLOW}UNION ALL SELECT NULL,NULL,NULL--${R}`
+  )
   lines.push('')
 
   lines.push(`${CYAN}${BOLD}back-end DBMS:${R} ${GREEN}MySQL >= 5.6${R}`)
@@ -94,9 +112,18 @@ export function generateSqlmapOutput(targetURL: string): ToolTemplateResult {
   lines.push('')
 
   const tableNames = [
-    'users', 'sessions', 'access_logs', 'personnel', 'documents',
-    'containment_cells', 'scp_items', 'incident_reports', 'auth_tokens',
-    'clearance_levels', 'research_projects', 'audit_trail',
+    'users',
+    'sessions',
+    'access_logs',
+    'personnel',
+    'documents',
+    'containment_cells',
+    'scp_items',
+    'incident_reports',
+    'auth_tokens',
+    'clearance_levels',
+    'research_projects',
+    'audit_trail',
   ]
   const selectedTables = tableNames.sort(() => Math.random() - 0.5).slice(0, tableCount)
   for (const t of selectedTables) {
@@ -114,7 +141,9 @@ export function generateSqlmapOutput(targetURL: string): ToolTemplateResult {
     exploitable: true,
   })
 
-  lines.push(`${GRAY}[*]${R} ending @ ${new Date().toISOString().replace('T', ' ').substring(0, 19)}`)
+  lines.push(
+    `${GRAY}[*]${R} ending @ ${new Date().toISOString().replace('T', ' ').substring(0, 19)}`
+  )
   lines.push('')
 
   return {

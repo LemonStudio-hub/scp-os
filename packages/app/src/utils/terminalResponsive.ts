@@ -19,7 +19,7 @@ export function getTerminalWidth(): number {
   if (typeof window !== 'undefined') {
     const screenWidth = window.innerWidth
     const isMobile = screenWidth < 768
-    
+
     if (isMobile) {
       // 移动端：10-12px 字体，字符宽度约 6-7px
       const charWidth = 6.5
@@ -27,7 +27,7 @@ export function getTerminalWidth(): number {
       const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
       return Math.max(25, Math.min(50, estimatedCols))
     }
-    
+
     // 桌面端
     const charWidth = 9.6
     const padding = 20
@@ -52,7 +52,11 @@ export function isNarrowTerminal(): boolean {
  * @param minWidth 最小宽度（默认 20）
  * @param maxWidth 最大宽度（默认 120）
  */
-export function createBorderLine(char: string = '═', minWidth: number = 20, maxWidth: number = 120): string {
+export function createBorderLine(
+  char: string = '═',
+  minWidth: number = 20,
+  maxWidth: number = 120
+): string {
   const width = getTerminalWidth()
   const lineWidth = Math.max(minWidth, Math.min(width, maxWidth))
   return char.repeat(lineWidth)
@@ -68,16 +72,16 @@ export function createBorderedTitle(text: string, borderChar: string = '═'): s
   const width = getTerminalWidth()
   const padding = 2 // 文本左右各留空格
   const availableWidth = width - padding
-  
+
   if (text.length >= availableWidth) {
     // 文本太长，直接返回边框线
     return createBorderLine(borderChar)
   }
-  
+
   const remainingWidth = availableWidth - text.length
   const leftCount = Math.floor(remainingWidth / 2)
   const rightCount = remainingWidth - leftCount
-  
+
   return borderChar.repeat(leftCount) + text + borderChar.repeat(rightCount)
 }
 
@@ -90,7 +94,7 @@ export function createBorderedTitle(text: string, borderChar: string = '═'): s
 export function createBlock(title: string, contentLines: string[]): string[] {
   const lines: string[] = []
   const borderLine = createBorderLine()
-  
+
   lines.push(borderLine)
   lines.push(createBorderedTitle(title))
   lines.push(borderLine)
@@ -98,7 +102,7 @@ export function createBlock(title: string, contentLines: string[]): string[] {
   lines.push(...contentLines)
   lines.push('')
   lines.push(borderLine)
-  
+
   return lines
 }
 
@@ -110,18 +114,18 @@ export function createBlock(title: string, contentLines: string[]): string[] {
  */
 export function truncateText(text: string, maxWidth?: number): string {
   const width = maxWidth || getTerminalWidth()
-  
+
   // 移除 ANSI 颜色代码后计算长度
   const cleanText = text.replace(/\x1b\[[0-9;]*m/g, '')
-  
+
   if (cleanText.length <= width) {
     return text
   }
-  
+
   // 找到最后一个 ANSI 代码的位置
   const lastAnsiMatch = text.match(/\x1b\[[0-9;]*m/g)
   const resetCode = lastAnsiMatch ? lastAnsiMatch[lastAnsiMatch.length - 1] : ''
-  
+
   // 截断并添加重置代码
   return text.substring(0, width - 3) + '...' + resetCode
 }
@@ -135,18 +139,18 @@ export function truncateText(text: string, maxWidth?: number): string {
 export function wrapText(text: string, maxWidth?: number): string[] {
   const width = maxWidth || getTerminalWidth()
   const lines: string[] = []
-  
+
   // 移除 ANSI 代码以便计算
   const cleanText = text.replace(/\x1b\[[0-9;]*m/g, '')
-  
+
   if (cleanText.length <= width) {
     return [text]
   }
-  
+
   // 按单词分割并重新组合
   const words = cleanText.split(' ')
   let currentLine = ''
-  
+
   for (const word of words) {
     if ((currentLine + word).length <= width) {
       currentLine += (currentLine ? ' ' : '') + word
@@ -157,10 +161,10 @@ export function wrapText(text: string, maxWidth?: number): string[] {
       currentLine = word
     }
   }
-  
+
   if (currentLine) {
     lines.push(currentLine)
   }
-  
+
   return lines
 }

@@ -2,12 +2,16 @@ import { config } from '../../../../config'
 
 const API_BASE = config.api.workerUrl
 
-async function adminFetch(url: string, token: string, options: RequestInit = {}): Promise<Response> {
+async function adminFetch(
+  url: string,
+  token: string,
+  options: RequestInit = {}
+): Promise<Response> {
   return fetch(`${API_BASE}${url}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      Authorization: `Bearer ${token}`,
       ...options.headers,
     },
   })
@@ -27,7 +31,17 @@ export async function verifyAdminToken(token: string) {
   return response.json()
 }
 
-export async function getAdminUsers(token: string, params: { limit?: number; offset?: number; search?: string; sort?: string; order?: string; is_banned?: number } = {}) {
+export async function getAdminUsers(
+  token: string,
+  params: {
+    limit?: number
+    offset?: number
+    search?: string
+    sort?: string
+    order?: string
+    is_banned?: number
+  } = {}
+) {
   const query = new URLSearchParams()
   if (params.limit !== undefined) query.set('limit', String(params.limit))
   if (params.offset !== undefined) query.set('offset', String(params.offset))
@@ -80,7 +94,11 @@ export async function exportUsers(token: string, format: 'csv' | 'json') {
   return response.json()
 }
 
-export async function getAdminContent(token: string, type: string, params: { limit?: number; offset?: number; search?: string } = {}) {
+export async function getAdminContent(
+  token: string,
+  type: string,
+  params: { limit?: number; offset?: number; search?: string } = {}
+) {
   const query = new URLSearchParams()
   if (params.limit !== undefined) query.set('limit', String(params.limit))
   if (params.offset !== undefined) query.set('offset', String(params.offset))
@@ -90,7 +108,12 @@ export async function getAdminContent(token: string, type: string, params: { lim
   return response.json()
 }
 
-export async function updateAdminContent(token: string, type: string, id: number, data: Record<string, unknown>) {
+export async function updateAdminContent(
+  token: string,
+  type: string,
+  id: number,
+  data: Record<string, unknown>
+) {
   const response = await adminFetch(`/api/admin/content/${type}/${id}`, token, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -105,7 +128,12 @@ export async function deleteAdminContent(token: string, type: string, id: number
   return response.json()
 }
 
-export async function batchContentOperation(token: string, type: string, action: string, ids: number[]) {
+export async function batchContentOperation(
+  token: string,
+  type: string,
+  action: string,
+  ids: number[]
+) {
   const response = await adminFetch(`/api/admin/content/${type}/batch`, token, {
     method: 'POST',
     body: JSON.stringify({ action, ids }),
@@ -126,7 +154,16 @@ export async function importContent(token: string, type: string, data: unknown[]
   return response.json()
 }
 
-export async function getAdminChatMessages(token: string, params: { limit?: number; offset?: number; room_id?: number; start_date?: string; end_date?: string } = {}) {
+export async function getAdminChatMessages(
+  token: string,
+  params: {
+    limit?: number
+    offset?: number
+    room_id?: number
+    start_date?: string
+    end_date?: string
+  } = {}
+) {
   const query = new URLSearchParams()
   if (params.limit !== undefined) query.set('limit', String(params.limit))
   if (params.offset !== undefined) query.set('offset', String(params.offset))
@@ -150,7 +187,11 @@ export async function getAdminChatRooms(token: string) {
   return response.json()
 }
 
-export async function updateAdminChatRoom(token: string, id: number, data: { name?: string; description?: string; is_public?: number }) {
+export async function updateAdminChatRoom(
+  token: string,
+  id: number,
+  data: { name?: string; description?: string; is_public?: number }
+) {
   const response = await adminFetch(`/api/admin/chat/rooms/${id}`, token, {
     method: 'PUT',
     body: JSON.stringify(data),
@@ -165,7 +206,10 @@ export async function deleteAdminChatRoom(token: string, id: number) {
   return response.json()
 }
 
-export async function getAdminFeedback(token: string, params: { limit?: number; offset?: number; status?: string; category?: string } = {}) {
+export async function getAdminFeedback(
+  token: string,
+  params: { limit?: number; offset?: number; status?: string; category?: string } = {}
+) {
   const query = new URLSearchParams()
   if (params.limit !== undefined) query.set('limit', String(params.limit))
   if (params.offset !== undefined) query.set('offset', String(params.offset))
@@ -215,7 +259,17 @@ export async function getTrendData(token: string, days?: number) {
   return response.json()
 }
 
-export async function getAdminLogs(token: string, params: { limit?: number; offset?: number; admin_id?: number; action?: string; start_date?: string; end_date?: string } = {}) {
+export async function getAdminLogs(
+  token: string,
+  params: {
+    limit?: number
+    offset?: number
+    admin_id?: number
+    action?: string
+    start_date?: string
+    end_date?: string
+  } = {}
+) {
   const query = new URLSearchParams()
   if (params.limit !== undefined) query.set('limit', String(params.limit))
   if (params.offset !== undefined) query.set('offset', String(params.offset))

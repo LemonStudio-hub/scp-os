@@ -77,31 +77,27 @@ export class TenantContext {
   private config: TenantConfig
   private eventBus: IEventBus | null
   private isolatedData: Map<string, any> = new Map()
-  
-  constructor(
-    metadata: TenantMetadata,
-    config: TenantConfig,
-    eventBus?: IEventBus
-  ) {
+
+  constructor(metadata: TenantMetadata, config: TenantConfig, eventBus?: IEventBus) {
     this.metadata = metadata
     this.config = config
     this.eventBus = eventBus || null
   }
-  
+
   /**
    * Get tenant metadata
    */
   getMetadata(): TenantMetadata {
     return this.metadata
   }
-  
+
   /**
    * Get tenant configuration
    */
   getConfig(): TenantConfig {
     return this.config
   }
-  
+
   /**
    * Update tenant configuration
    * @param config New configuration
@@ -112,16 +108,16 @@ export class TenantContext {
       ...config,
       features: { ...this.config.features, ...config.features },
       limits: { ...this.config.limits, ...config.limits },
-      settings: { ...this.config.settings, ...config.settings }
+      settings: { ...this.config.settings, ...config.settings },
     }
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('tenant:config-updated', { 
-        tenantId: this.metadata.id 
+      this.eventBus.emit('tenant:config-updated', {
+        tenantId: this.metadata.id,
       })
     }
   }
-  
+
   /**
    * Store isolated data
    * @param key Data key
@@ -130,7 +126,7 @@ export class TenantContext {
   set(key: string, value: any): void {
     this.isolatedData.set(key, value)
   }
-  
+
   /**
    * Get isolated data
    * @param key Data key
@@ -139,7 +135,7 @@ export class TenantContext {
   get(key: string): any {
     return this.isolatedData.get(key)
   }
-  
+
   /**
    * Delete isolated data
    * @param key Data key
@@ -147,14 +143,14 @@ export class TenantContext {
   delete(key: string): void {
     this.isolatedData.delete(key)
   }
-  
+
   /**
    * Clear all isolated data
    */
   clear(): void {
     this.isolatedData.clear()
   }
-  
+
   /**
    * Check if feature is enabled
    * @param feature Feature name
@@ -163,7 +159,7 @@ export class TenantContext {
   hasFeature(feature: keyof TenantConfig['features']): boolean {
     return this.config.features[feature] === true
   }
-  
+
   /**
    * Get resource limit
    * @param limit Limit name
@@ -172,14 +168,14 @@ export class TenantContext {
   getLimit(limit: keyof TenantConfig['limits']): number {
     return this.config.limits[limit]
   }
-  
+
   /**
    * Check if tenant is active
    */
   isActive(): boolean {
     return this.metadata.status === 'active'
   }
-  
+
   /**
    * Serialize tenant context
    * @returns Serialized context
@@ -192,19 +188,22 @@ export class TenantContext {
     return {
       metadata: this.metadata,
       config: this.config,
-      data: Object.fromEntries(this.isolatedData)
+      data: Object.fromEntries(this.isolatedData),
     }
   }
-  
+
   /**
    * Deserialize tenant context
    * @param data Serialized context data
    */
-  static deserialize(data: {
-    metadata: TenantMetadata
-    config: TenantConfig
-    data: Record<string, any>
-  }, eventBus?: IEventBus): TenantContext {
+  static deserialize(
+    data: {
+      metadata: TenantMetadata
+      config: TenantConfig
+      data: Record<string, any>
+    },
+    eventBus?: IEventBus
+  ): TenantContext {
     const context = new TenantContext(data.metadata, data.config, eventBus)
     Object.entries(data.data).forEach(([key, value]) => {
       context.set(key, value)
@@ -221,11 +220,11 @@ export class TenantManager {
   private tenants: Map<string, TenantContext> = new Map()
   private currentTenantId: string | null = null
   private eventBus: IEventBus | null = null
-  
+
   constructor(eventBus?: IEventBus) {
     this.eventBus = eventBus || null
   }
-  
+
   /**
    * Register a tenant
    * @param metadata Tenant metadata
@@ -236,20 +235,20 @@ export class TenantManager {
     if (this.tenants.has(metadata.id)) {
       throw new Error(`Tenant ${metadata.id} already exists`)
     }
-    
+
     const context = new TenantContext(metadata, config, this.eventBus ?? undefined)
     this.tenants.set(metadata.id, context)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('tenant:registered', { 
+      this.eventBus.emit('tenant:registered', {
         tenantId: metadata.id,
-        tenantName: metadata.name
+        tenantName: metadata.name,
       })
     }
-    
+
     return context
   }
-  
+
   /**
    * Unregister a tenant
    * @param tenantId Tenant ID
@@ -259,21 +258,21 @@ export class TenantManager {
     if (this.currentTenantId === tenantId) {
       this.currentTenantId = null
     }
-    
+
     const context = this.tenants.get(tenantId)
     if (context) {
       context.clear()
     }
-    
+
     this.tenants.delete(tenantId)
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('tenant:unregistered', { 
-        tenantId 
+      this.eventBus.emit('tenant:unregistered', {
+        tenantId,
       })
     }
   }
-  
+
   /**
    * Get tenant context by ID
    * @param tenantId Tenant ID
@@ -282,7 +281,7 @@ export class TenantManager {
   getTenant(tenantId: string): TenantContext | null {
     return this.tenants.get(tenantId) || null
   }
-  
+
   /**
    * Get all tenants
    * @returns Array of tenant contexts
@@ -290,7 +289,7 @@ export class TenantManager {
   getAllTenants(): TenantContext[] {
     return Array.from(this.tenants.values())
   }
-  
+
   /**
    * Get current tenant context
    * @returns Current tenant context or null
@@ -301,7 +300,7 @@ export class TenantManager {
     }
     return this.tenants.get(this.currentTenantId) || null
   }
-  
+
   /**
    * Set current tenant
    * @param tenantId Tenant ID
@@ -311,43 +310,39 @@ export class TenantManager {
     if (!context) {
       throw new Error(`Tenant ${tenantId} not found`)
     }
-    
+
     if (!context.isActive()) {
       throw new Error(`Tenant ${tenantId} is not active`)
     }
-    
+
     this.currentTenantId = tenantId
-    
+
     if (this.eventBus) {
-      this.eventBus.emit('tenant:changed', { 
+      this.eventBus.emit('tenant:changed', {
         tenantId,
-        tenantName: context.getMetadata().name
+        tenantName: context.getMetadata().name,
       })
     }
   }
-  
+
   /**
    * Get tenants by plan
    * @param plan Tenant plan
    * @returns Array of tenant contexts
    */
   getTenantsByPlan(plan: string): TenantContext[] {
-    return this.getAllTenants().filter(context => 
-      context.getMetadata().plan === plan
-    )
+    return this.getAllTenants().filter((context) => context.getMetadata().plan === plan)
   }
-  
+
   /**
    * Get tenants by status
    * @param status Tenant status
    * @returns Array of tenant contexts
    */
   getTenantsByStatus(status: string): TenantContext[] {
-    return this.getAllTenants().filter(context => 
-      context.getMetadata().status === status
-    )
+    return this.getAllTenants().filter((context) => context.getMetadata().status === status)
   }
-  
+
   /**
    * Update tenant configuration
    * @param tenantId Tenant ID
@@ -358,10 +353,10 @@ export class TenantManager {
     if (!context) {
       throw new Error(`Tenant ${tenantId} not found`)
     }
-    
+
     context.updateConfig(config)
   }
-  
+
   /**
    * Get statistics
    * @returns Statistics about registered tenants
@@ -375,23 +370,23 @@ export class TenantManager {
   } {
     const planCounts: Record<string, number> = {}
     const statusCounts: Record<string, number> = {}
-    
+
     for (const context of this.tenants.values()) {
       const metadata = context.getMetadata()
-      
+
       planCounts[metadata.plan] = (planCounts[metadata.plan] || 0) + 1
       statusCounts[metadata.status] = (statusCounts[metadata.status] || 0) + 1
     }
-    
+
     return {
       totalTenants: this.tenants.size,
       activeTenants: this.getTenantsByStatus('active').length,
       currentTenant: this.currentTenantId,
       planCounts,
-      statusCounts
+      statusCounts,
     }
   }
-  
+
   /**
    * Clear all tenants
    */
@@ -399,7 +394,7 @@ export class TenantManager {
     this.tenants.forEach((context) => context.clear())
     this.tenants.clear()
     this.currentTenantId = null
-    
+
     if (this.eventBus) {
       this.eventBus.emit('tenant:registry:cleared', {})
     }

@@ -11,7 +11,7 @@ Object.defineProperty(window, 'scpTerminalActions', {
     focus: vi.fn(),
   },
   writable: true,
- configurable: true,
+  configurable: true,
 })
 
 // Mock scraper module
@@ -74,9 +74,9 @@ vi.mock('../utils/scraper', () => ({
         containment: ['测试收容协议'],
         description: ['测试描述'],
         appendix: [],
-        url: 'https://test.com'
+        url: 'https://test.com',
       },
-      cached: false
+      cached: false,
     }),
     searchSCP: vi.fn().mockResolvedValue({
       success: true,
@@ -87,16 +87,18 @@ vi.mock('../utils/scraper', () => ({
         containment: ['测试收容协议'],
         description: ['测试描述'],
         appendix: [],
-        url: 'https://test.com'
+        url: 'https://test.com',
       },
-      cached: false
+      cached: false,
     }),
-    formatForTerminal: vi.fn().mockReturnValue([
-      '═══════════════════════════════════════════════════════════════',
-      '          SCP-999 - 测试SCP - 安全级',
-      '═══════════════════════════════════════════════════════════════',
-    ])
-  }
+    formatForTerminal: vi
+      .fn()
+      .mockReturnValue([
+        '═══════════════════════════════════════════════════════════════',
+        '          SCP-999 - 测试SCP - 安全级',
+        '═══════════════════════════════════════════════════════════════',
+      ]),
+  },
 }))
 
 // Mock ResizeObserver
@@ -142,7 +144,9 @@ const originalClearInterval = globalThis.clearInterval
 
 globalThis.setInterval = vi.fn((callback: () => void, delay: number): number => {
   const id = ++mockIntervalId
-  const intervalId = originalSetInterval(callback, delay) as unknown as ReturnType<typeof setTimeout>
+  const intervalId = originalSetInterval(callback, delay) as unknown as ReturnType<
+    typeof setTimeout
+  >
   mockIntervals.set(id, intervalId)
   return id
 }) as unknown as typeof setInterval

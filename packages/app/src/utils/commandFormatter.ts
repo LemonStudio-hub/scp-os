@@ -8,21 +8,19 @@ import { ANSICode } from '../constants/theme'
  */
 export function createBox(lines: string[], title?: string): string[] {
   const separator = '═══════════════════════════════════════════════════════════════'
-  const result: string[] = [
-    `${ANSICode.red}${separator}${ANSICode.reset}`,
-  ]
-  
+  const result: string[] = [`${ANSICode.red}${separator}${ANSICode.reset}`]
+
   if (title) {
     const centeredTitle = title.padStart(51 + Math.floor(title.length / 2)).padEnd(63)
     result.push(`${ANSICode.green}${centeredTitle}${ANSICode.reset}`)
   }
-  
+
   result.push(
     `${ANSICode.red}${separator}${ANSICode.reset}`,
     ...lines,
     `${ANSICode.red}${separator}${ANSICode.reset}`
   )
-  
+
   return result
 }
 

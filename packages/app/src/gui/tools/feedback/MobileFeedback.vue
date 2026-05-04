@@ -1,13 +1,7 @@
 <template>
-  <MobileWindow
-    :visible="visible"
-    :title="t('fb.title')"
-    :show-back="true"
-    @close="$emit('close')"
-  >
+  <MobileWindow :visible="visible" :title="t('fb.title')" :show-back="true" @close="$emit('close')">
     <div class="mobile-feedback">
       <div class="mobile-feedback__content">
-        
         <!-- Tab Bar -->
         <div class="mobile-feedback__tabs">
           <button
@@ -81,65 +75,91 @@
 
           <!-- Empty State -->
           <div v-else-if="feedbacks.length === 0" class="mobile-feedback__empty">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z"/>
-              <path d="M16 20h16M16 26h10"/>
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 48 48"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z" />
+              <path d="M16 20h16M16 26h10" />
             </svg>
             <p>{{ t('fb.emptyTitle') }}</p>
           </div>
 
           <!-- Feedback Items -->
           <div v-else class="mobile-feedback__items">
-            <div
-              v-for="item in feedbacks"
-              :key="item.id"
-              class="mobile-feedback__item"
-            >
+            <div v-for="item in feedbacks" :key="item.id" class="mobile-feedback__item">
               <div class="mobile-feedback__item-header">
                 <div class="mobile-feedback__item-user">
-                  <div class="mobile-feedback__avatar">{{ item.nickname.charAt(0).toUpperCase() }}</div>
+                  <div class="mobile-feedback__avatar">
+                    {{ item.nickname.charAt(0).toUpperCase() }}
+                  </div>
                   <div class="mobile-feedback__item-info">
                     <span class="mobile-feedback__item-name">{{ item.nickname }}</span>
-                    <span class="mobile-feedback__item-time">{{ formatTime(item.created_at) }}</span>
+                    <span class="mobile-feedback__item-time">{{
+                      formatTime(item.created_at)
+                    }}</span>
                   </div>
                 </div>
-                <span class="mobile-feedback__item-category">{{ getCategoryIcon(item.category) }}</span>
+                <span class="mobile-feedback__item-category">{{
+                  getCategoryIcon(item.category)
+                }}</span>
               </div>
               <h3 class="mobile-feedback__item-title">{{ item.title }}</h3>
               <p class="mobile-feedback__item-content">{{ item.content }}</p>
               <div class="mobile-feedback__item-footer">
                 <div class="mobile-feedback__votes">
-                  <button 
+                  <button
                     class="mobile-feedback__vote-btn"
                     :class="{ 'mobile-feedback__vote-btn--up': item.userVote === 'up' }"
                     :disabled="isVoting[item.id]"
                     @click="voteFeedback(item, 'up')"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M2 9h2.5V15H2V9z" fill="currentColor"/>
-                      <path d="M5.5 9l2.5-5.5V2a1 1 0 011-1h.5L11 4.5V7h3a1 1 0 011 1.1l-1.2 5.5a1 1 0 01-1 .9H5.5V9z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                      <path d="M2 9h2.5V15H2V9z" fill="currentColor" />
+                      <path
+                        d="M5.5 9l2.5-5.5V2a1 1 0 011-1h.5L11 4.5V7h3a1 1 0 011 1.1l-1.2 5.5a1 1 0 01-1 .9H5.5V9z"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                        stroke-linejoin="round"
+                      />
                     </svg>
                     <span>{{ item.upvotes || 0 }}</span>
                   </button>
-                  <button 
+                  <button
                     class="mobile-feedback__vote-btn"
                     :class="{ 'mobile-feedback__vote-btn--down': item.userVote === 'down' }"
                     :disabled="isVoting[item.id]"
                     @click="voteFeedback(item, 'down')"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M2 7h2.5V1H2v6z" fill="currentColor"/>
-                      <path d="M5.5 7l2.5 5.5V14a1 1 0 001 1h.5L11 11.5V9h3a1 1 0 011-1.1l-1.2-5.5a1 1 0 00-1-.9H5.5V7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                      <path d="M2 7h2.5V1H2v6z" fill="currentColor" />
+                      <path
+                        d="M5.5 7l2.5 5.5V14a1 1 0 001 1h.5L11 11.5V9h3a1 1 0 011-1.1l-1.2-5.5a1 1 0 00-1-.9H5.5V7z"
+                        stroke="currentColor"
+                        stroke-width="1.2"
+                        stroke-linejoin="round"
+                      />
                     </svg>
                     <span>{{ item.downvotes || 0 }}</span>
                   </button>
                 </div>
-                <button 
-                  class="mobile-feedback__comment-btn"
-                  @click="toggleComments(item)"
-                >
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round">
-                    <path d="M14 10a1.5 1.5 0 01-1.5 1.5H5L2 14V3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5V10z"/>
+                <button class="mobile-feedback__comment-btn" @click="toggleComments(item)">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M14 10a1.5 1.5 0 01-1.5 1.5H5L2 14V3.5A1.5 1.5 0 013.5 2h9A1.5 1.5 0 0114 3.5V10z"
+                    />
                   </svg>
                   <span>{{ item.commentsCount || 0 }}</span>
                 </button>
@@ -156,16 +176,20 @@
                   {{ t('fb.noComments') }}
                 </div>
                 <div v-else class="mobile-feedback__comments-list">
-                  <div 
-                    v-for="comment in item.comments" 
+                  <div
+                    v-for="comment in item.comments"
                     :key="comment.id"
                     class="mobile-feedback__comment"
                   >
                     <div class="mobile-feedback__comment-header">
-                      <div class="mobile-feedback__comment-avatar">{{ comment.nickname.charAt(0).toUpperCase() }}</div>
+                      <div class="mobile-feedback__comment-avatar">
+                        {{ comment.nickname.charAt(0).toUpperCase() }}
+                      </div>
                       <div class="mobile-feedback__comment-info">
                         <span class="mobile-feedback__comment-name">{{ comment.nickname }}</span>
-                        <span class="mobile-feedback__comment-time">{{ formatTime(comment.created_at) }}</span>
+                        <span class="mobile-feedback__comment-time">{{
+                          formatTime(comment.created_at)
+                        }}</span>
                       </div>
                     </div>
                     <p class="mobile-feedback__comment-content">{{ comment.content }}</p>
@@ -300,7 +324,7 @@ const isVoting = ref<Record<string, boolean>>({})
 const expandedComments = ref<Record<number, boolean>>({})
 
 onMounted(async () => {
-  userId = authStore.userId || await indexedDBService.getUserId()
+  userId = authStore.userId || (await indexedDBService.getUserId())
   loadFeedbacks()
 })
 
@@ -325,7 +349,7 @@ async function submitFeedback() {
       form.title = ''
       form.content = ''
       form.category = 'general'
-      
+
       // Switch to list and reload
       activeTab.value = 'list'
       offset.value = 0
@@ -365,7 +389,7 @@ async function loadFeedbacks() {
       `${API_BASE}/feedback/list-with-votes?limit=${limit}&offset=${offset.value}&user_id=${encodeURIComponent(userId)}`
     )
     const data = await response.json()
-    
+
     if (data.success && data.data) {
       const items = (data.data as Record<string, unknown>[]).map(normalizeFeedback)
       if (offset.value === 0) {
@@ -373,7 +397,7 @@ async function loadFeedbacks() {
       } else {
         feedbacks.value.push(...items)
       }
-      
+
       hasMore.value = data.count > offset.value + limit
     }
   } catch (error) {
@@ -400,13 +424,13 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         id: item.id,
-        vote: voteType
+        vote: voteType,
       }),
     })
 
     const data = await response.json()
     if (data.success) {
-      const idx = feedbacks.value.findIndex(f => f.id === item.id)
+      const idx = feedbacks.value.findIndex((f) => f.id === item.id)
       if (idx === -1) return
 
       const feedback = feedbacks.value[idx]
@@ -467,7 +491,7 @@ async function loadComments(item: FeedbackItem) {
     const data = await response.json()
 
     if (data.success) {
-      const idx = feedbacks.value.findIndex(f => f.id === item.id)
+      const idx = feedbacks.value.findIndex((f) => f.id === item.id)
       if (idx !== -1) {
         feedbacks.value[idx].comments = (data.data as CommentItem[]) || []
       }
@@ -490,13 +514,13 @@ async function submitComment(feedbackId: number) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         feedback_id: feedbackId,
-        content: content
+        content: content,
       }),
     })
 
     const data = await response.json()
     if (data.success) {
-      const idx = feedbacks.value.findIndex(f => f.id === feedbackId)
+      const idx = feedbacks.value.findIndex((f) => f.id === feedbackId)
       if (idx !== -1) {
         const feedback = feedbacks.value[idx]
         feedback.comments.push(data.data as CommentItem)
@@ -523,7 +547,7 @@ function formatTime(dateStr: string): string {
 }
 
 function getCategoryIcon(category: string): string {
-  return categories.value.find(c => c.id === category)?.icon || 'Msg'
+  return categories.value.find((c) => c.id === category)?.icon || 'Msg'
 }
 </script>
 
@@ -533,7 +557,7 @@ function getCategoryIcon(category: string): string {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-bg-base, #0A0A0A);
+  background: var(--gui-bg-base, #0a0a0a);
 }
 
 .mobile-feedback__content {
@@ -548,8 +572,8 @@ function getCategoryIcon(category: string): string {
   top: 0;
   z-index: 10;
   display: flex;
-  background: var(--gui-bg-surface, #2C2C2E);
-  border-bottom: 0.5px solid var(--gui-border-subtle, #38383A);
+  background: var(--gui-bg-surface, #2c2c2e);
+  border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -559,7 +583,7 @@ function getCategoryIcon(category: string): string {
   padding: 14px 0;
   background: none;
   border: none;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -568,8 +592,8 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__tab--active {
-  color: var(--gui-accent, #007AFF);
-  border-bottom-color: var(--gui-accent, #007AFF);
+  color: var(--gui-accent, #007aff);
+  border-bottom-color: var(--gui-accent, #007aff);
 }
 
 /* ── Form ───────────────────────────────────────────────────────────── */
@@ -585,7 +609,7 @@ function getCategoryIcon(category: string): string {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   margin-bottom: 8px;
 }
 
@@ -594,9 +618,9 @@ function getCategoryIcon(category: string): string {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  border: 0.5px solid var(--gui-border-subtle, #38383a);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
   box-sizing: border-box;
@@ -605,7 +629,7 @@ function getCategoryIcon(category: string): string {
 
 .mobile-feedback__input:focus,
 .mobile-feedback__textarea:focus {
-  border-color: var(--gui-accent, #007AFF);
+  border-color: var(--gui-accent, #007aff);
 }
 
 .mobile-feedback__textarea {
@@ -631,18 +655,18 @@ function getCategoryIcon(category: string): string {
 .mobile-feedback__category {
   padding: 8px 14px;
   border-radius: 16px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
-  background: var(--gui-bg-surface, #2C2C2E);
-  color: var(--gui-text-secondary, #8E8E93);
+  border: 0.5px solid var(--gui-border-subtle, #38383a);
+  background: var(--gui-bg-surface, #2c2c2e);
+  color: var(--gui-text-secondary, #8e8e93);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .mobile-feedback__category--active {
-  background: var(--gui-accent, #007AFF);
-  color: #FFFFFF;
-  border-color: var(--gui-accent, #007AFF);
+  background: var(--gui-accent, #007aff);
+  color: #ffffff;
+  border-color: var(--gui-accent, #007aff);
 }
 
 /* ── Submit Button ──────────────────────────────────────────────────── */
@@ -651,12 +675,14 @@ function getCategoryIcon(category: string): string {
   height: 48px;
   border-radius: 12px;
   border: none;
-  background: var(--gui-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--gui-accent, #007aff);
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s ease, transform 0.1s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.1s ease;
 }
 
 .mobile-feedback__submit-btn:disabled {
@@ -684,16 +710,26 @@ function getCategoryIcon(category: string): string {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--gui-accent, #007AFF);
+  background: var(--gui-accent, #007aff);
   animation: feedback-bounce 1.2s ease-in-out infinite;
 }
 
-.mobile-feedback__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.mobile-feedback__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.mobile-feedback__loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.mobile-feedback__loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes feedback-bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 .mobile-feedback__empty {
@@ -715,16 +751,22 @@ function getCategoryIcon(category: string): string {
 
 /* ── Feedback Item ──────────────────────────────────────────────────── */
 .mobile-feedback__item {
-  background: var(--gui-bg-surface, #2C2C2E);
+  background: var(--gui-bg-surface, #2c2c2e);
   border-radius: 14px;
   padding: 14px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
+  border: 0.5px solid var(--gui-border-subtle, #38383a);
   animation: feedback-fade-in 0.3s ease;
 }
 
 @keyframes feedback-fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mobile-feedback__item-header {
@@ -744,8 +786,8 @@ function getCategoryIcon(category: string): string {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--gui-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--gui-accent, #007aff);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -763,7 +805,7 @@ function getCategoryIcon(category: string): string {
 .mobile-feedback__item-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .mobile-feedback__item-time {
@@ -778,13 +820,13 @@ function getCategoryIcon(category: string): string {
 .mobile-feedback__item-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
   margin: 0 0 8px;
 }
 
 .mobile-feedback__item-content {
   font-size: 14px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   line-height: 1.5;
   margin: 0 0 12px;
   word-wrap: break-word;
@@ -795,7 +837,7 @@ function getCategoryIcon(category: string): string {
   justify-content: space-between;
   align-items: center;
   padding-top: 12px;
-  border-top: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-top: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .mobile-feedback__votes {
@@ -809,7 +851,7 @@ function getCategoryIcon(category: string): string {
   gap: 4px;
   background: none;
   border: none;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-size: 13px;
   cursor: pointer;
   padding: 6px 10px;
@@ -818,17 +860,17 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__vote-btn:hover {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .mobile-feedback__vote-btn--up {
-  color: #34C759;
+  color: #34c759;
   background: rgba(52, 199, 89, 0.1);
 }
 
 .mobile-feedback__vote-btn--down {
-  color: #FF3B30;
+  color: #ff3b30;
   background: rgba(255, 59, 48, 0.1);
 }
 
@@ -842,7 +884,7 @@ function getCategoryIcon(category: string): string {
   gap: 4px;
   background: none;
   border: none;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   font-size: 13px;
   cursor: pointer;
   padding: 6px 10px;
@@ -851,8 +893,8 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__comment-btn:hover {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
-  color: var(--gui-text-primary, #FFFFFF);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .mobile-feedback__comment-btn:active {
@@ -863,7 +905,7 @@ function getCategoryIcon(category: string): string {
 .mobile-feedback__comments {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 0.5px solid var(--gui-border-subtle, #38383A);
+  border-top: 0.5px solid var(--gui-border-subtle, #38383a);
 }
 
 .mobile-feedback__comments-loading {
@@ -888,7 +930,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__comment {
-  background: var(--gui-bg-surface-hover, #3A3A3C);
+  background: var(--gui-bg-surface-hover, #3a3a3c);
   border-radius: 12px;
   padding: 12px;
 }
@@ -904,8 +946,8 @@ function getCategoryIcon(category: string): string {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--gui-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--gui-accent, #007aff);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -923,7 +965,7 @@ function getCategoryIcon(category: string): string {
 .mobile-feedback__comment-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--gui-text-primary, #FFFFFF);
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .mobile-feedback__comment-time {
@@ -933,7 +975,7 @@ function getCategoryIcon(category: string): string {
 
 .mobile-feedback__comment-content {
   font-size: 14px;
-  color: var(--gui-text-secondary, #8E8E93);
+  color: var(--gui-text-secondary, #8e8e93);
   line-height: 1.4;
   margin: 0;
   word-wrap: break-word;
@@ -949,9 +991,9 @@ function getCategoryIcon(category: string): string {
   flex: 1;
   padding: 10px;
   border-radius: 10px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
-  background: var(--gui-bg-surface, #2C2C2E);
-  color: var(--gui-text-primary, #FFFFFF);
+  border: 0.5px solid var(--gui-border-subtle, #38383a);
+  background: var(--gui-bg-surface, #2c2c2e);
+  color: var(--gui-text-primary, #ffffff);
   font-size: 13px;
   outline: none;
   resize: none;
@@ -960,15 +1002,15 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__comment-input:focus {
-  border-color: var(--gui-accent, #007AFF);
+  border-color: var(--gui-accent, #007aff);
 }
 
 .mobile-feedback__comment-submit {
   padding: 0 14px;
   border-radius: 10px;
   border: none;
-  background: var(--gui-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--gui-accent, #007aff);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -992,9 +1034,9 @@ function getCategoryIcon(category: string): string {
   height: 44px;
   margin-top: 16px;
   border-radius: 12px;
-  border: 0.5px solid var(--gui-border-subtle, #38383A);
-  background: var(--gui-bg-surface, #2C2C2E);
-  color: var(--gui-text-primary, #FFFFFF);
+  border: 0.5px solid var(--gui-border-subtle, #38383a);
+  background: var(--gui-bg-surface, #2c2c2e);
+  color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;

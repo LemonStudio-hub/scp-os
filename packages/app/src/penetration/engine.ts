@@ -3,7 +3,14 @@ import type { PenetrationPhase, VariablePool, SessionState, PhaseConfig } from '
 export class PenetrationEngine {
   private state: SessionState
   private phases: Map<PenetrationPhase, PhaseConfig>
-  private phaseOrder: PenetrationPhase[] = ['recon', 'vulnscan', 'exploit', 'privesc', 'persist', 'exfil']
+  private phaseOrder: PenetrationPhase[] = [
+    'recon',
+    'vulnscan',
+    'exploit',
+    'privesc',
+    'persist',
+    'exfil',
+  ]
 
   constructor() {
     this.state = {
@@ -47,7 +54,12 @@ export class PenetrationEngine {
     }
   }
 
-  async handleCommand(cmd: string, args: string[], write: (t: string) => void, writeln: (t: string) => void): Promise<void> {
+  async handleCommand(
+    cmd: string,
+    args: string[],
+    write: (t: string) => void,
+    writeln: (t: string) => void
+  ): Promise<void> {
     if (!this.state.active) return
 
     if (cmd === 'exit' || cmd === 'abort') {
@@ -84,15 +96,21 @@ export class PenetrationEngine {
 
     const phaseIndex = this.phaseOrder.indexOf(this.state.currentPhase)
     const totalPhases = this.phaseOrder.length
-    const progress = Math.round(((phaseIndex + phase.completedActions.length / Math.max(phase.requiredActions.length, 1)) / totalPhases) * 100)
+    const progress = Math.round(
+      ((phaseIndex + phase.completedActions.length / Math.max(phase.requiredActions.length, 1)) /
+        totalPhases) *
+        100
+    )
 
     writeln(`\x1b[36m━━━ 阶段信息 ━━━\x1b[0m`)
     writeln(`\x1b[33m当前阶段:\x1b[0m ${phase.name}`)
     writeln(`\x1b[33m描述:\x1b[0m ${phase.description}`)
     writeln(`\x1b[33m总进度:\x1b[0m ${progress}%`)
-    writeln(`\x1b[33m已完成操作:\x1b[0m ${phase.completedActions.length}/${phase.requiredActions.length}`)
+    writeln(
+      `\x1b[33m已完成操作:\x1b[0m ${phase.completedActions.length}/${phase.requiredActions.length}`
+    )
     if (phase.completedActions.length < phase.requiredActions.length) {
-      const remaining = phase.requiredActions.filter(a => !phase.completedActions.includes(a))
+      const remaining = phase.requiredActions.filter((a) => !phase.completedActions.includes(a))
       writeln(`\x1b[33m待完成:\x1b[0m ${remaining.join(', ')}`)
     }
     writeln('')
@@ -108,11 +126,14 @@ export class PenetrationEngine {
     writeln('')
   }
 
-  private async checkPhaseCompletion(write: (t: string) => void, writeln: (t: string) => void): Promise<void> {
+  private async checkPhaseCompletion(
+    write: (t: string) => void,
+    writeln: (t: string) => void
+  ): Promise<void> {
     const phase = this.phases.get(this.state.currentPhase)
     if (!phase) return
 
-    const allCompleted = phase.requiredActions.every(a => phase.completedActions.includes(a))
+    const allCompleted = phase.requiredActions.every((a) => phase.completedActions.includes(a))
     if (!allCompleted) return
 
     this.state.completedPhases.push(this.state.currentPhase)
@@ -139,7 +160,10 @@ export class PenetrationEngine {
     }
   }
 
-  private async completeMission(_write: (t: string) => void, writeln: (t: string) => void): Promise<void> {
+  private async completeMission(
+    _write: (t: string) => void,
+    writeln: (t: string) => void
+  ): Promise<void> {
     const duration = Math.round((Date.now() - this.state.startTime) / 1000)
     const mins = Math.floor(duration / 60)
     const secs = duration % 60
@@ -149,7 +173,9 @@ export class PenetrationEngine {
     writeln(`\x1b[32m║     任务完成 - 渗透测试报告              ║\x1b[0m`)
     writeln(`\x1b[32m╚══════════════════════════════════════════╝\x1b[0m`)
     writeln(`\x1b[33m会话ID:\x1b[0m ${this.state.variables.sessionId}`)
-    writeln(`\x1b[33m目标:\x1b[0m ${this.state.variables.targetIP} (${this.state.variables.targetHostname})`)
+    writeln(
+      `\x1b[33m目标:\x1b[0m ${this.state.variables.targetIP} (${this.state.variables.targetHostname})`
+    )
     writeln(`\x1b[33m耗时:\x1b[0m ${mins}m ${secs}s`)
     writeln(`\x1b[33m获得权限:\x1b[0m ${this.state.variables.currentAccess}`)
     writeln(`\x1b[33m提取凭证:\x1b[0m ${this.state.variables.credentials.length} 条`)
@@ -186,6 +212,8 @@ export class PenetrationEngine {
       completedPhases: [],
       startTime: 0,
     }
-    this.phases.forEach(p => { p.completedActions = [] })
+    this.phases.forEach((p) => {
+      p.completedActions = []
+    })
   }
 }

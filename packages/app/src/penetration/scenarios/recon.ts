@@ -37,7 +37,7 @@ export const reconPhase: PhaseConfig = {
     if (cmd === 'nmap') {
       const hasScriptVuln = args.includes('--script') && args.includes('vuln')
       const hasSV = args.includes('-sV')
-      const ipArg = args.find(a => !a.startsWith('-'))
+      const ipArg = args.find((a) => !a.startsWith('-'))
 
       if (!ipArg) {
         writeln(error('用法: nmap [-sV] [--script vuln] <ip>'))
@@ -68,9 +68,7 @@ export const reconPhase: PhaseConfig = {
         completeAction('service_detect')
       }
       writeln(success('端口扫描完成'))
-    }
-
-    else if (cmd === 'whois') {
+    } else if (cmd === 'whois') {
       const ipArg = args[0]
       if (!ipArg) {
         writeln(error('用法: whois <ip>'))
@@ -79,9 +77,7 @@ export const reconPhase: PhaseConfig = {
       await typeWithDelay(`正在查询 WHOIS ${ipArg}...`, write, 1500)
       const result = generateWhoisOutput(ipArg)
       await typeLines(result.lines, write, writeln)
-    }
-
-    else if (cmd === 'dig') {
+    } else if (cmd === 'dig') {
       const domain = args[0]
       if (!domain) {
         writeln(error('用法: dig <domain>'))
@@ -90,9 +86,7 @@ export const reconPhase: PhaseConfig = {
       await typeWithDelay(`正在解析 DNS ${domain}...`, write, 800)
       const result = generateDigOutput(domain)
       await typeLines(result.lines, write, writeln)
-    }
-
-    else if (cmd === 'curl') {
+    } else if (cmd === 'curl') {
       const url = args[0]
       if (!url) {
         writeln(error('用法: curl <url>'))
@@ -101,27 +95,26 @@ export const reconPhase: PhaseConfig = {
       await typeWithDelay(`正在请求 ${url}...`, write, 1000)
       const result = generateCurlOutput(url)
       await typeLines(result.lines, write, writeln)
-    }
-
-    else if (cmd === 'nikto') {
+    } else if (cmd === 'nikto') {
       const hFlag = args.indexOf('-h')
       const ipArg = hFlag !== -1 ? args[hFlag + 1] : args[0]
       if (!ipArg) {
         writeln(error('用法: nikto -h <ip>'))
         return
       }
-      const port = vars.openPorts.find(p => p.service === 'http')?.port ?? 80
+      const port = vars.openPorts.find((p) => p.service === 'http')?.port ?? 80
       await typeWithDelay(`正在运行 Nikto 扫描 ${ipArg}:${port}...`, write, 4000)
       const result = generateNiktoOutput(ipArg, port)
       await typeLines(result.lines, write, writeln)
 
       if (result.variables?.vulnerabilities) {
-        vars.vulnerabilities = [...vars.vulnerabilities, ...(result.variables.vulnerabilities as VariablePool['vulnerabilities'])]
+        vars.vulnerabilities = [
+          ...vars.vulnerabilities,
+          ...(result.variables.vulnerabilities as VariablePool['vulnerabilities']),
+        ]
       }
       writeln(success('Web 漏洞扫描完成'))
-    }
-
-    else {
+    } else {
       writeln(warning(`未知命令: ${cmd}`))
       writeln(info('可用命令: nmap, whois, dig, curl, nikto'))
     }

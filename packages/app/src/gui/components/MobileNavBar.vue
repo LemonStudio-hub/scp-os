@@ -4,7 +4,13 @@
       <slot name="left">
         <button v-if="showBack" class="mobile-nav-bar__btn" @click="$emit('back')">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M14 4L7 11L14 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path
+              d="M14 4L7 11L14 18"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
           </svg>
           <span v-if="backLabel" class="mobile-nav-bar__btn-label">{{ backLabel }}</span>
         </button>
@@ -90,13 +96,14 @@ defineEmits<{
   gap: var(--gui-spacing-xxs, 2px);
   background: none;
   border: none;
-  color: var(--gui-accent, #8E8E93);
+  color: var(--gui-accent, #8e8e93);
   cursor: pointer;
   padding: var(--gui-spacing-xs, 4px);
   margin-left: calc(-1 * var(--gui-spacing-sm, 8px));
   border-radius: var(--gui-radius-sm, 6px);
-  transition: opacity 100ms ease,
-              transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  transition:
+    opacity 100ms ease,
+    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
 }

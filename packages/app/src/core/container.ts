@@ -8,7 +8,7 @@ import type {
   ServiceRegistrationOptions,
   ServiceRegistration,
   ContainerScope,
-  ContainerConfig
+  ContainerConfig,
 } from './types'
 import { ServiceLifetime as Lifetime } from './types'
 
@@ -29,7 +29,7 @@ export class DIContainer {
       debug: config.debug ?? false,
       autoRegister: config.autoRegister ?? false,
       detectCircularDependencies: config.detectCircularDependencies ?? true,
-      defaultLifetime: config.defaultLifetime ?? Lifetime.SINGLETON
+      defaultLifetime: config.defaultLifetime ?? Lifetime.SINGLETON,
     }
 
     // Register the container itself
@@ -61,7 +61,7 @@ export class DIContainer {
       token,
       factory,
       lifetime: options.lifetime ?? this.config.defaultLifetime,
-      dependencies: options.dependencies ?? []
+      dependencies: options.dependencies ?? [],
     }
 
     this.registrations.set(token, registration)
@@ -69,7 +69,7 @@ export class DIContainer {
     if (this.config.debug) {
       console.log(`[DIContainer] Registered service: ${token}`, {
         lifetime: registration.lifetime,
-        dependencies: registration.dependencies
+        dependencies: registration.dependencies,
       })
     }
   }
@@ -136,10 +136,7 @@ export class DIContainer {
     try {
       return registration.factory(this)
     } catch (error) {
-      console.error(
-        `[DIContainer] Failed to create instance for ${registration.token}:`,
-        error
-      )
+      console.error(`[DIContainer] Failed to create instance for ${registration.token}:`, error)
       throw error
     }
   }
@@ -186,7 +183,7 @@ export class DIContainer {
     const scope: ContainerScope = {
       id: scopeId,
       instances: new Map(),
-      parent: this.currentScope ?? undefined
+      parent: this.currentScope ?? undefined,
     }
     this.scopes.set(scopeId, scope)
     this.currentScope = scope

@@ -7,7 +7,7 @@ import { config } from '../config'
  * API cache and request state management
  */
 export const useScraperStore = defineStore('scraper', () => {
-  const cache = ref<Map<string, { data: SCPWikiData, timestamp: number }>>(new Map())
+  const cache = ref<Map<string, { data: SCPWikiData; timestamp: number }>>(new Map())
   const isLoading = ref(false)
   const lastError = ref<string | null>(null)
 
@@ -32,7 +32,7 @@ export const useScraperStore = defineStore('scraper', () => {
   function saveToCache(key: string, data: SCPWikiData): void {
     cache.value.set(key, {
       data,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     })
   }
 
@@ -56,7 +56,7 @@ export const useScraperStore = defineStore('scraper', () => {
       }
     })
 
-    expiredKeys.forEach(key => cache.value.delete(key))
+    expiredKeys.forEach((key) => cache.value.delete(key))
   }
 
   /**

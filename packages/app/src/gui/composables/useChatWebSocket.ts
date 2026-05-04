@@ -24,7 +24,17 @@ export interface WSUser {
 export type WSConnectionState = 'connecting' | 'connected' | 'disconnected' | 'reconnecting'
 
 interface WSIncomingMessage {
-  type: 'auth' | 'chat_message' | 'message' | 'history' | 'users' | 'heartbeat' | 'error' | 'room_info' | 'user_joined' | 'user_left'
+  type:
+    | 'auth'
+    | 'chat_message'
+    | 'message'
+    | 'history'
+    | 'users'
+    | 'heartbeat'
+    | 'error'
+    | 'room_info'
+    | 'user_joined'
+    | 'user_left'
   data?: any
 }
 
@@ -166,10 +176,12 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     }
 
     try {
-      ws.send(JSON.stringify({
-        type: 'chat_message',
-        data: { content: content.trim() },
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'chat_message',
+          data: { content: content.trim() },
+        })
+      )
       return true
     } catch {
       lastError.value = 'Failed to send message'
@@ -181,10 +193,12 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     currentUsername = newUsername
     if (!ws || ws.readyState !== WebSocket.OPEN) return
     try {
-      ws.send(JSON.stringify({
-        type: 'auth',
-        data: { username: newUsername },
-      }))
+      ws.send(
+        JSON.stringify({
+          type: 'auth',
+          data: { username: newUsername },
+        })
+      )
     } catch {}
   }
 

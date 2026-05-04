@@ -11,7 +11,10 @@
           <div v-if="item.divider" class="scp-context-menu__divider" />
           <button
             v-else
-            :class="['scp-context-menu__item', { 'scp-context-menu__item--disabled': item.disabled }]"
+            :class="[
+              'scp-context-menu__item',
+              { 'scp-context-menu__item--disabled': item.disabled },
+            ]"
             :disabled="item.disabled"
             @click="onItemClick(item)"
           >
@@ -39,7 +42,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:visible': [value: boolean]
-  'select': [item: ContextMenuItem]
+  select: [item: ContextMenuItem]
 }>()
 
 function onItemClick(item: ContextMenuItem) {
@@ -92,7 +95,7 @@ onBeforeUnmount(() => {
   border: none;
   border-radius: var(--gui-radius-sm, 6px);
   color: var(--gui-text-primary, #f0f0f0);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   font-size: var(--gui-font-sm, 12px);
   cursor: pointer;
   transition: background var(--gui-transition-fast, 120ms ease);

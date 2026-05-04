@@ -8,19 +8,54 @@ const YELLOW = '\x1b[33m'
 const CYAN = '\x1b[36m'
 const GRAY = '\x1b[90m'
 
-const NIKTO_FINDINGS: { osvdb: string; path: string; description: string; severity: 'critical' | 'high' | 'medium' | 'low' }[] = [
+const NIKTO_FINDINGS: {
+  osvdb: string
+  path: string
+  description: string
+  severity: 'critical' | 'high' | 'medium' | 'low'
+}[] = [
   { osvdb: '383', path: '/admin/', description: 'Directory indexing found.', severity: 'medium' },
   { osvdb: '3268', path: '/icons/', description: 'Default directory found.', severity: 'low' },
-  { osvdb: '3092', path: '/phpmyadmin/', description: 'phpMyAdmin directory found.', severity: 'high' },
-  { osvdb: '3967', path: '/wp-login.php', description: 'WordPress login page found.', severity: 'medium' },
-  { osvdb: '3233', path: '/server-status', description: 'Apache server-status found.', severity: 'medium' },
+  {
+    osvdb: '3092',
+    path: '/phpmyadmin/',
+    description: 'phpMyAdmin directory found.',
+    severity: 'high',
+  },
+  {
+    osvdb: '3967',
+    path: '/wp-login.php',
+    description: 'WordPress login page found.',
+    severity: 'medium',
+  },
+  {
+    osvdb: '3233',
+    path: '/server-status',
+    description: 'Apache server-status found.',
+    severity: 'medium',
+  },
   { osvdb: '4030', path: '/cgi-bin/', description: 'CGI directory found.', severity: 'medium' },
   { osvdb: '3268', path: '/.git/', description: 'Git repository found.', severity: 'critical' },
   { osvdb: '3268', path: '/.env', description: 'Environment file exposed.', severity: 'critical' },
   { osvdb: '3092', path: '/backup/', description: 'Backup directory found.', severity: 'high' },
-  { osvdb: '383', path: '/config.php.bak', description: 'Config backup file found.', severity: 'high' },
-  { osvdb: '3268', path: '/wp-config.php.bak', description: 'WordPress config backup found.', severity: 'critical' },
-  { osvdb: '3233', path: '/server-info', description: 'Apache server-info found.', severity: 'medium' },
+  {
+    osvdb: '383',
+    path: '/config.php.bak',
+    description: 'Config backup file found.',
+    severity: 'high',
+  },
+  {
+    osvdb: '3268',
+    path: '/wp-config.php.bak',
+    description: 'WordPress config backup found.',
+    severity: 'critical',
+  },
+  {
+    osvdb: '3233',
+    path: '/server-info',
+    description: 'Apache server-info found.',
+    severity: 'medium',
+  },
 ]
 
 const SERVER_VERSIONS = [

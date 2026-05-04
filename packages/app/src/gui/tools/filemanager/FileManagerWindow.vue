@@ -5,8 +5,20 @@
       <div class="file-manager__toolbar">
         <SCPBreadcrumbs :segments="fmStore.breadcrumbs" @navigate="fmStore.navigateTo" />
         <div class="file-manager__toolbar-actions">
-          <SCPButton variant="ghost" size="sm" icon="file" :title="t('fm.newFile')" @click="fmStore.promptNewFile" />
-          <SCPButton variant="ghost" size="sm" icon="folder" :title="t('fm.newFolder')" @click="fmStore.promptNewFolder" />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="file"
+            :title="t('fm.newFile')"
+            @click="fmStore.promptNewFile"
+          />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="folder"
+            :title="t('fm.newFolder')"
+            @click="fmStore.promptNewFolder"
+          />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
             size="sm"
@@ -26,12 +38,7 @@
 
       <!-- Search Bar -->
       <div class="file-manager__search">
-        <SCPInput
-          v-model="searchText"
-          :placeholder="t('pc.searchFiles')"
-          size="sm"
-          clearable
-        />
+        <SCPInput v-model="searchText" :placeholder="t('pc.searchFiles')" size="sm" clearable />
       </div>
 
       <!-- File Grid/List View -->
@@ -45,7 +52,10 @@
           <div
             v-for="file in fmStore.sortedFiles"
             :key="file.name"
-            :class="['file-grid-item', { 'file-grid-item--selected': fmStore.selectedFiles.has(file.name) }]"
+            :class="[
+              'file-grid-item',
+              { 'file-grid-item--selected': fmStore.selectedFiles.has(file.name) },
+            ]"
             @click.stop="onFileClick(file, $event)"
             @dblclick.stop="onFileDblClick(file)"
             @contextmenu.prevent.stop="onFileContextMenu($event, file.name)"
@@ -57,7 +67,10 @@
         </div>
 
         <!-- Empty state for grid -->
-        <div v-if="fmStore.viewMode === 'grid' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
+        <div
+          v-if="fmStore.viewMode === 'grid' && fmStore.sortedFiles.length === 0"
+          class="file-manager__empty"
+        >
           <GUIIcon name="empty-folder" :size="48" class="file-manager__empty-icon" />
           <p>{{ t('fm.emptyFolder') }}</p>
         </div>
@@ -88,14 +101,21 @@
                 </div>
               </td>
               <td>{{ file.isDirectory ? '—' : formatSize(file.size) }}</td>
-              <td>{{ file.isDirectory ? t('fm.folder') : (file.type || t('common.file')).toUpperCase() }}</td>
+              <td>
+                {{
+                  file.isDirectory ? t('fm.folder') : (file.type || t('common.file')).toUpperCase()
+                }}
+              </td>
               <td>{{ formatDate(file.modifiedAt) }}</td>
             </tr>
           </tbody>
         </table>
 
         <!-- Empty state for list -->
-        <div v-if="fmStore.viewMode === 'list' && fmStore.sortedFiles.length === 0" class="file-manager__empty">
+        <div
+          v-if="fmStore.viewMode === 'list' && fmStore.sortedFiles.length === 0"
+          class="file-manager__empty"
+        >
           <GUIIcon name="empty-folder" :size="48" class="file-manager__empty-icon" />
           <p>{{ t('fm.emptyFolder') }}</p>
         </div>
@@ -198,7 +218,7 @@ function openInEditor(file: FileItem): void {
     iconName: 'edit',
     width: 700,
     height: 450,
-    data: { filePath: file.path }
+    data: { filePath: file.path },
   })
 }
 

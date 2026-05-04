@@ -24,22 +24,12 @@
           stroke="#2a2a2a"
           stroke-width="0.5"
         />
-        <text
-          :x="padding.left - 8"
-          :y="y + 4"
-          text-anchor="end"
-          fill="#4a4a4a"
-          font-size="10"
-        >
+        <text :x="padding.left - 8" :y="y + 4" text-anchor="end" fill="#4a4a4a" font-size="10">
           {{ gridLabels[i] }}
         </text>
       </g>
 
-      <path
-        v-if="areaPath"
-        :d="areaPath"
-        :fill="`url(#${gradientId})`"
-      />
+      <path v-if="areaPath" :d="areaPath" :fill="`url(#${gradientId})`" />
 
       <path
         v-if="linePath"
@@ -80,7 +70,9 @@
       :style="{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }"
     >
       <div class="admin-trend-chart__tooltip-date">{{ data[hoverIndex].date }}</div>
-      <div class="admin-trend-chart__tooltip-value">{{ data[hoverIndex].value.toLocaleString() }}</div>
+      <div class="admin-trend-chart__tooltip-value">
+        {{ data[hoverIndex].value.toLocaleString() }}
+      </div>
     </div>
   </div>
 </template>
@@ -121,14 +113,14 @@ const chartHeight = computed(() => svgHeight.value - padding.top - padding.botto
 
 const maxValue = computed(() => {
   if (props.data.length === 0) return 100
-  const max = Math.max(...props.data.map(d => d.value))
-  return Math.ceil(max * 1.1 / 10) * 10 || 100
+  const max = Math.max(...props.data.map((d) => d.value))
+  return Math.ceil((max * 1.1) / 10) * 10 || 100
 })
 
 const minValue = computed(() => {
   if (props.data.length === 0) return 0
-  const min = Math.min(...props.data.map(d => d.value))
-  return Math.max(0, Math.floor(min * 0.9 / 10) * 10)
+  const min = Math.min(...props.data.map((d) => d.value))
+  return Math.max(0, Math.floor((min * 0.9) / 10) * 10)
 })
 
 const gridYPositions = computed(() => {
