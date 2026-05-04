@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0](https://github.com/LemonStudio-hub/scp-os/compare/v0.4.0...v0.5.0) (2026-05-04)
+
+
+### Features
+
+* add download proxy, penetration simulation and notification features ([6f0b137](https://github.com/LemonStudio-hub/scp-os/commit/6f0b137d1b246998b4507f0f12a3dbf3bc3fa5da))
+* **admin:** 新增管理后台功能模块 ([bbad6b4](https://github.com/LemonStudio-hub/scp-os/commit/bbad6b4382de5ee407c7c1cbcd270e187275d7e1))
+
+
+### Bug Fixes
+
+* add prettier-ignore for multi-statement Vue click handlers ([9564343](https://github.com/LemonStudio-hub/scp-os/commit/9564343f6d7b5c7eb1660447d463743fa8087cb2))
+* add semicolons in Vue template multi-statement click handlers ([7f37744](https://github.com/LemonStudio-hub/scp-os/commit/7f3774472befd90ad8a480105b77dc575bdfdba5))
+* handle unknown catch variables and type casts in worker admin API ([103c1d3](https://github.com/LemonStudio-hub/scp-os/commit/103c1d33c177e0440e85b3e0082b3fba2449064d))
+* resolve CI type errors in frontend composables and worker types ([604a927](https://github.com/LemonStudio-hub/scp-os/commit/604a927cf3e95173770b7f3141eee8c0082b664d))
+* update trivy-action to v0.36.0 ([0edb27f](https://github.com/LemonStudio-hub/scp-os/commit/0edb27f1b9f2583413087fbbad988d691f4b260c))
+
 ## [0.4.0](https://github.com/LemonStudio-hub/scp-os/compare/v0.3.0...v0.4.0) (2026-05-03)
 
 
