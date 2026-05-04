@@ -1,25 +1,35 @@
 <template>
-  <PCWindow
-    :visible="visible"
-    :title="t('chat.title')"
-    @close="$emit('close')"
-  >
+  <PCWindow :visible="visible" :title="t('chat.title')" @close="$emit('close')">
     <div class="pc-chat" :style="chatThemeStyles">
       <!-- Sidebar: Room List -->
       <div class="pc-chat__sidebar">
         <div class="pc-chat__sidebar-header">
           <h2 class="pc-chat__sidebar-title">{{ t('chat.title') }}</h2>
-          <button class="pc-chat__add-room-btn" :title="t('chat.createRoom')" @click="showCreateRoom = true">
+          <button
+            class="pc-chat__add-room-btn"
+            :title="t('chat.createRoom')"
+            @click="showCreateRoom = true"
+          >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path
+                d="M9 3v12M3 9h12"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
           </button>
         </div>
 
         <div class="pc-chat__search">
           <svg class="pc-chat__search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+            <path
+              d="M10.5 10.5L14 14"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
           <input
             v-model="roomSearchQuery"
@@ -47,7 +57,9 @@
               <div class="pc-chat__room-body">
                 <div class="pc-chat__room-top">
                   <span class="pc-chat__room-name">{{ room.name }}</span>
-                  <span class="pc-chat__room-time">{{ formatRoomTime(room.last_message_time) }}</span>
+                  <span class="pc-chat__room-time">{{
+                    formatRoomTime(room.last_message_time)
+                  }}</span>
                 </div>
                 <div class="pc-chat__room-bottom">
                   <span class="pc-chat__room-preview">
@@ -57,7 +69,9 @@
                     </template>
                     <template v-else>{{ t('chat.emptyState') }}</template>
                   </span>
-                  <span v-if="getUnreadCount(room.id) > 0" class="pc-chat__room-badge">{{ getUnreadCount(room.id) }}</span>
+                  <span v-if="getUnreadCount(room.id) > 0" class="pc-chat__room-badge">{{
+                    getUnreadCount(room.id)
+                  }}</span>
                 </div>
               </div>
               <button
@@ -66,8 +80,17 @@
                 @click.stop="openRoomSettings(room)"
               >
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 9.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.2"/>
-                  <path d="M7 1.5v1M7 11.5v1M1.5 7h1M11.5 7h1M3.1 3.1l.7.7M10.2 10.2l.7.7M3.1 10.9l.7-.7M10.2 3.8l.7-.7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                  <path
+                    d="M7 9.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                  <path
+                    d="M7 1.5v1M7 11.5v1M1.5 7h1M11.5 7h1M3.1 3.1l.7.7M10.2 10.2l.7.7M3.1 10.9l.7-.7M10.2 3.8l.7-.7"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             </div>
@@ -76,10 +99,17 @@
 
         <button class="pc-chat__nickname-btn" @click="openNicknameDialog">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
-            <path d="M2 14c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <circle cx="8" cy="6" r="4" stroke="currentColor" stroke-width="1.3" />
+            <path
+              d="M2 14c0-3 2.5-5 6-5s6 2 6 5"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+            />
           </svg>
-          <span class="pc-chat__nickname-text">{{ authStore.nickname || t('chat.setNickname') }}</span>
+          <span class="pc-chat__nickname-text">{{
+            authStore.nickname || t('chat.setNickname')
+          }}</span>
         </button>
       </div>
 
@@ -89,17 +119,23 @@
           <div class="pc-chat__chat-header">
             <div class="pc-chat__chat-room-info">
               <span class="pc-chat__chat-room-name">{{ currentRoom.name }}</span>
-              <span class="pc-chat__chat-room-members">{{ currentRoom.member_count || 0 }} members</span>
+              <span class="pc-chat__chat-room-members"
+                >{{ currentRoom.member_count || 0 }} members</span
+              >
             </div>
           </div>
 
           <div ref="messagesRef" class="pc-chat__messages">
             <div v-if="messages.length === 0 && !loading" class="pc-chat__empty">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                <path d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z" stroke="currentColor" stroke-width="2"/>
-                <circle cx="16" cy="24" r="2" fill="currentColor"/>
-                <circle cx="24" cy="24" r="2" fill="currentColor"/>
-                <circle cx="32" cy="24" r="2" fill="currentColor"/>
+                <path
+                  d="M24 44c11 0 20-8 20-18S35 8 24 8 4 16 4 26s9 18 20 18z"
+                  stroke="currentColor"
+                  stroke-width="2"
+                />
+                <circle cx="16" cy="24" r="2" fill="currentColor" />
+                <circle cx="24" cy="24" r="2" fill="currentColor" />
+                <circle cx="32" cy="24" r="2" fill="currentColor" />
               </svg>
               <p>{{ t('chat.emptyState') }}</p>
             </div>
@@ -123,8 +159,13 @@
                 <span class="chat-bubble__status-dot" />
                 {{ t('chat.sending') }}
               </div>
-              <div v-else-if="msg.error" class="chat-bubble__status chat-bubble__status--error" @click="retryMessage(msg)">
-                {{ msg.error }} · <span class="chat-bubble__retry">{{ t('chat.retry') || 'Retry' }}</span>
+              <div
+                v-else-if="msg.error"
+                class="chat-bubble__status chat-bubble__status--error"
+                @click="retryMessage(msg)"
+              >
+                {{ msg.error }} ·
+                <span class="chat-bubble__retry">{{ t('chat.retry') || 'Retry' }}</span>
               </div>
             </div>
 
@@ -139,7 +180,10 @@
             {{ rateLimitWarning }}
           </div>
 
-          <div class="pc-chat__ws-status" :class="`pc-chat__ws-status--${ws.connectionState.value}`">
+          <div
+            class="pc-chat__ws-status"
+            :class="`pc-chat__ws-status--${ws.connectionState.value}`"
+          >
             <span class="pc-chat__ws-dot" />
             <span class="pc-chat__ws-text">{{ wsStatusLabel }}</span>
           </div>
@@ -161,7 +205,7 @@
               @click="sendMessage"
             >
               <svg v-if="!sending" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M3 10L17 3L10 17L9 11L3 10Z" fill="currentColor"/>
+                <path d="M3 10L17 3L10 17L9 11L3 10Z" fill="currentColor" />
               </svg>
               <div v-else class="pc-chat__spinner" />
             </button>
@@ -170,8 +214,21 @@
 
         <div v-else class="pc-chat__no-room">
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <rect x="8" y="12" width="48" height="36" rx="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M20 28h24M20 36h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <rect
+              x="8"
+              y="12"
+              width="48"
+              height="36"
+              rx="4"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <path
+              d="M20 28h24M20 36h16"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
           <p>{{ t('chat.selectRoom') || 'Select a room to start chatting' }}</p>
         </div>
@@ -179,7 +236,11 @@
 
       <!-- Create Room Dialog -->
       <Transition name="gui-ios-fade">
-        <div v-if="showCreateRoom" class="pc-chat__dialog-overlay" @click.self="showCreateRoom = false">
+        <div
+          v-if="showCreateRoom"
+          class="pc-chat__dialog-overlay"
+          @click.self="showCreateRoom = false"
+        >
           <div class="pc-chat__dialog">
             <h3 class="pc-chat__dialog-title">{{ t('chat.createRoom') }}</h3>
             <input
@@ -198,12 +259,27 @@
               rows="3"
             />
             <div class="pc-chat__dialog-checkbox">
-              <input id="room-public" v-model="newRoomPublic" type="checkbox" class="pc-chat__dialog-checkbox-input" />
+              <input
+                id="room-public"
+                v-model="newRoomPublic"
+                type="checkbox"
+                class="pc-chat__dialog-checkbox-input"
+              />
               <label for="room-public" class="pc-chat__dialog-checkbox-label">Public Room</label>
             </div>
             <div class="pc-chat__dialog-actions">
-              <button class="pc-chat__dialog-btn" :disabled="creatingRoom" @click="showCreateRoom = false">{{ t('common.cancel') }}</button>
-              <button class="pc-chat__dialog-btn pc-chat__dialog-btn--primary" :disabled="creatingRoom" @click="createRoom">
+              <button
+                class="pc-chat__dialog-btn"
+                :disabled="creatingRoom"
+                @click="showCreateRoom = false"
+              >
+                {{ t('common.cancel') }}
+              </button>
+              <button
+                class="pc-chat__dialog-btn pc-chat__dialog-btn--primary"
+                :disabled="creatingRoom"
+                @click="createRoom"
+              >
                 <div v-if="creatingRoom" class="pc-chat__dialog-spinner" />
                 <span v-else>{{ t('common.create') }}</span>
               </button>
@@ -214,28 +290,70 @@
 
       <!-- Room Settings Dialog -->
       <Transition name="gui-ios-fade">
-        <div v-if="showRoomSettings" class="pc-chat__dialog-overlay" @click.self="showRoomSettings = false">
+        <div
+          v-if="showRoomSettings"
+          class="pc-chat__dialog-overlay"
+          @click.self="showRoomSettings = false"
+        >
           <div class="pc-chat__dialog pc-chat__dialog--settings">
             <h3 class="pc-chat__dialog-title">Room Settings</h3>
             <div class="pc-chat__dialog-section">
-              <input v-model="editRoomName" type="text" class="pc-chat__dialog-input" placeholder="Room name" maxlength="50" />
-              <textarea v-model="editRoomDescription" class="pc-chat__dialog-textarea" placeholder="Description" maxlength="200" rows="3" />
+              <input
+                v-model="editRoomName"
+                type="text"
+                class="pc-chat__dialog-input"
+                placeholder="Room name"
+                maxlength="50"
+              />
+              <textarea
+                v-model="editRoomDescription"
+                class="pc-chat__dialog-textarea"
+                placeholder="Description"
+                maxlength="200"
+                rows="3"
+              />
               <div class="pc-chat__dialog-checkbox">
-                <input id="edit-room-public" v-model="editRoomPublic" type="checkbox" class="pc-chat__dialog-checkbox-input" />
-                <label for="edit-room-public" class="pc-chat__dialog-checkbox-label">Public Room</label>
+                <input
+                  id="edit-room-public"
+                  v-model="editRoomPublic"
+                  type="checkbox"
+                  class="pc-chat__dialog-checkbox-input"
+                />
+                <label for="edit-room-public" class="pc-chat__dialog-checkbox-label"
+                  >Public Room</label
+                >
               </div>
             </div>
             <div class="pc-chat__dialog-section">
-              <button class="pc-chat__dialog-danger-btn" :disabled="deletingRoom || savingSettings" @click="deleteRoom">
+              <button
+                class="pc-chat__dialog-danger-btn"
+                :disabled="deletingRoom || savingSettings"
+                @click="deleteRoom"
+              >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3.5 3.5h9M3.5 3.5v9.5a.5.5 0 00.5.5h8a.5.5 0 00.5-.5V3.5m-10-1a.5.5 0 01.5-.5h10a.5.5 0 01.5.5M7.5 7.5v3M8.5 7.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path
+                    d="M3.5 3.5h9M3.5 3.5v9.5a.5.5 0 00.5.5h8a.5.5 0 00.5-.5V3.5m-10-1a.5.5 0 01.5-.5h10a.5.5 0 01.5.5M7.5 7.5v3M8.5 7.5v3"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
                 </svg>
                 <span>Delete Room</span>
               </button>
             </div>
             <div class="pc-chat__dialog-actions">
-              <button class="pc-chat__dialog-btn" :disabled="savingSettings || deletingRoom" @click="showRoomSettings = false">Cancel</button>
-              <button class="pc-chat__dialog-btn pc-chat__dialog-btn--primary" :disabled="savingSettings || deletingRoom" @click="saveRoomSettings">
+              <button
+                class="pc-chat__dialog-btn"
+                :disabled="savingSettings || deletingRoom"
+                @click="showRoomSettings = false"
+              >
+                Cancel
+              </button>
+              <button
+                class="pc-chat__dialog-btn pc-chat__dialog-btn--primary"
+                :disabled="savingSettings || deletingRoom"
+                @click="saveRoomSettings"
+              >
                 <div v-if="savingSettings" class="pc-chat__dialog-spinner" />
                 <span v-else>Save</span>
               </button>
@@ -246,7 +364,11 @@
 
       <!-- Nickname Dialog -->
       <Transition name="gui-ios-fade">
-        <div v-if="showNicknameDialog" class="pc-chat__dialog-overlay" @click.self="showNicknameDialog = false">
+        <div
+          v-if="showNicknameDialog"
+          class="pc-chat__dialog-overlay"
+          @click.self="showNicknameDialog = false"
+        >
           <div class="pc-chat__dialog">
             <h3 class="pc-chat__dialog-title">{{ t('chat.setNickname') }}</h3>
             <input
@@ -258,13 +380,36 @@
               @input="onNicknameInput"
               @keyup.enter="saveNickname"
             />
-            <div v-if="nicknameCheckStatus === 'taken'" class="pc-chat__dialog-error">Nickname already taken</div>
-            <div v-if="nicknameCheckStatus === 'checking'" class="pc-chat__dialog-hint">Checking...</div>
-            <div v-if="nicknameCheckStatus === 'available'" class="pc-chat__dialog-success">Available</div>
-            <div v-if="nicknameSaveError" class="pc-chat__dialog-error">{{ nicknameSaveError }}</div>
+            <div v-if="nicknameCheckStatus === 'taken'" class="pc-chat__dialog-error">
+              Nickname already taken
+            </div>
+            <div v-if="nicknameCheckStatus === 'checking'" class="pc-chat__dialog-hint">
+              Checking...
+            </div>
+            <div v-if="nicknameCheckStatus === 'available'" class="pc-chat__dialog-success">
+              Available
+            </div>
+            <div v-if="nicknameSaveError" class="pc-chat__dialog-error">
+              {{ nicknameSaveError }}
+            </div>
             <div class="pc-chat__dialog-actions">
-              <button class="pc-chat__dialog-btn" :disabled="savingNickname" @click="showNicknameDialog = false">{{ t('common.cancel') }}</button>
-              <button class="pc-chat__dialog-btn pc-chat__dialog-btn--primary" :disabled="!newNickname.trim() || savingNickname || nicknameCheckStatus === 'taken' || nicknameCheckStatus === 'checking'" @click="saveNickname">
+              <button
+                class="pc-chat__dialog-btn"
+                :disabled="savingNickname"
+                @click="showNicknameDialog = false"
+              >
+                {{ t('common.cancel') }}
+              </button>
+              <button
+                class="pc-chat__dialog-btn pc-chat__dialog-btn--primary"
+                :disabled="
+                  !newNickname.trim() ||
+                  savingNickname ||
+                  nicknameCheckStatus === 'taken' ||
+                  nicknameCheckStatus === 'checking'
+                "
+                @click="saveNickname"
+              >
                 <div v-if="savingNickname" class="pc-chat__dialog-spinner" />
                 <span v-else>{{ t('common.save') }}</span>
               </button>
@@ -380,9 +525,7 @@ const ws = useChatWebSocket({
     if (existingIdx !== -1) {
       messages[existingIdx] = chatMsg
     } else {
-      const alreadyExists = messages.some(
-        (m) => m.id === msg.id && !m.tempId
-      )
+      const alreadyExists = messages.some((m) => m.id === msg.id && !m.tempId)
       if (!alreadyExists) {
         messages.push(chatMsg)
       }
@@ -432,10 +575,10 @@ const displayMessages = computed(() => messages)
 const filteredRooms = computed(() => {
   const query = roomSearchQuery.value.trim().toLowerCase()
   if (!query) return rooms
-  return rooms.filter(r => r.name.toLowerCase().includes(query))
+  return rooms.filter((r) => r.name.toLowerCase().includes(query))
 })
 
-const currentRoom = computed(() => rooms.find(r => r.id === currentRoomId.value) || null)
+const currentRoom = computed(() => rooms.find((r) => r.id === currentRoomId.value) || null)
 
 const wsStatusLabel = computed(() => {
   const state = ws.connectionState.value
@@ -471,7 +614,7 @@ const chatThemeStyles = computed(() => ({
 }))
 
 onMounted(async () => {
-  userId = authStore.userId || await indexedDBService.getUserId()
+  userId = authStore.userId || (await indexedDBService.getUserId())
   await loadRooms()
   await loadUnreadCounts()
   if (rooms.length > 0) {
@@ -488,9 +631,12 @@ onUnmounted(() => {
   ws.disconnect()
 })
 
-watch(() => authStore.userId, (newUserId) => {
-  if (newUserId) userId = newUserId
-})
+watch(
+  () => authStore.userId,
+  (newUserId) => {
+    if (newUserId) userId = newUserId
+  }
+)
 
 async function loadUnreadCounts() {
   try {
@@ -505,11 +651,15 @@ async function loadRooms() {
     const response = await fetch(`${API_BASE}/chat/rooms`)
     const data = await response.json()
     if (data.success && data.data) {
-      const oldRooms = new Map(rooms.map(r => [r.id, r]))
+      const oldRooms = new Map(rooms.map((r) => [r.id, r]))
       rooms.length = 0
       for (const room of data.data) {
         const oldRoom = oldRooms.get(room.id)
-        if (oldRoom && room.message_count > oldRoom.message_count && room.id !== currentRoomId.value) {
+        if (
+          oldRoom &&
+          room.message_count > oldRoom.message_count &&
+          room.id !== currentRoomId.value
+        ) {
           const delta = room.message_count - oldRoom.message_count
           setUnreadCount(room.id, getUnreadCount(room.id) + delta)
         }
@@ -620,13 +770,13 @@ async function sendMessage() {
 
   const sent = ws.sendMessage(content)
   if (!sent) {
-    const idx = messages.findIndex(m => m.tempId === tempId)
+    const idx = messages.findIndex((m) => m.tempId === tempId)
     if (idx !== -1) {
       messages[idx].sending = false
       messages[idx].error = 'Failed to send (not connected)'
     }
   } else {
-    const idx = messages.findIndex(m => m.tempId === tempId)
+    const idx = messages.findIndex((m) => m.tempId === tempId)
     if (idx !== -1) {
       messages[idx].sending = false
     }
@@ -638,7 +788,7 @@ async function retryMessage(msg: ChatMessage) {
   if (!msg.tempId || !msg.error) return
   if ((msg.retryCount || 0) >= MAX_RETRY) return
 
-  const idx = messages.findIndex(m => m.tempId === msg.tempId)
+  const idx = messages.findIndex((m) => m.tempId === msg.tempId)
   if (idx === -1) return
 
   messages[idx].sending = true
@@ -702,7 +852,7 @@ async function saveRoomSettings() {
   if (!currentRoom.value) return
   savingSettings.value = true
   try {
-    const roomIndex = rooms.findIndex(r => r.id === currentRoom.value?.id)
+    const roomIndex = rooms.findIndex((r) => r.id === currentRoom.value?.id)
     if (roomIndex !== -1) {
       rooms[roomIndex] = {
         ...rooms[roomIndex],
@@ -724,7 +874,7 @@ async function deleteRoom() {
   if (!confirm('Are you sure you want to delete this room?')) return
   deletingRoom.value = true
   try {
-    const roomIndex = rooms.findIndex(r => r.id === currentRoom.value?.id)
+    const roomIndex = rooms.findIndex((r) => r.id === currentRoom.value?.id)
     if (roomIndex !== -1) {
       rooms.splice(roomIndex, 1)
       if (currentRoomId.value === currentRoom.value?.id && rooms.length > 0) {
@@ -797,7 +947,7 @@ async function saveNickname() {
 .pc-chat {
   display: flex;
   height: 100%;
-  background: var(--chat-bg, #1C1C1E);
+  background: var(--chat-bg, #1c1c1e);
   position: relative;
 }
 
@@ -807,8 +957,8 @@ async function saveNickname() {
   min-width: 280px;
   display: flex;
   flex-direction: column;
-  background: var(--chat-surface, #2C2C2E);
-  border-right: 0.5px solid var(--chat-border, #38383A);
+  background: var(--chat-surface, #2c2c2e);
+  border-right: 0.5px solid var(--chat-border, #38383a);
 }
 
 .pc-chat__sidebar-header {
@@ -816,13 +966,13 @@ async function saveNickname() {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 0.5px solid var(--chat-border, #38383A);
+  border-bottom: 0.5px solid var(--chat-border, #38383a);
 }
 
 .pc-chat__sidebar-title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--chat-text-primary, #FFFFFF);
+  color: var(--chat-text-primary, #ffffff);
   margin: 0;
 }
 
@@ -831,8 +981,8 @@ async function saveNickname() {
   height: 32px;
   border-radius: 8px;
   border: none;
-  background: var(--chat-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--chat-accent, #007aff);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -840,7 +990,9 @@ async function saveNickname() {
   transition: opacity 0.2s;
 }
 
-.pc-chat__add-room-btn:hover { opacity: 0.85; }
+.pc-chat__add-room-btn:hover {
+  opacity: 0.85;
+}
 
 /* ── Search ───────────────────────────────────────────────────────── */
 .pc-chat__search {
@@ -863,8 +1015,8 @@ async function saveNickname() {
   padding: 0 12px 0 36px;
   border-radius: 10px;
   border: none;
-  background: var(--chat-bg, #1C1C1E);
-  color: var(--chat-text-primary, #FFFFFF);
+  background: var(--chat-bg, #1c1c1e);
+  color: var(--chat-text-primary, #ffffff);
   font-size: 13px;
   outline: none;
   box-sizing: border-box;
@@ -879,12 +1031,19 @@ async function saveNickname() {
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--chat-border, #38383A) transparent;
+  scrollbar-color: var(--chat-border, #38383a) transparent;
 }
 
-.pc-chat__room-list::-webkit-scrollbar { width: 4px; }
-.pc-chat__room-list::-webkit-scrollbar-track { background: transparent; }
-.pc-chat__room-list::-webkit-scrollbar-thumb { background-color: var(--chat-border, #38383A); border-radius: 2px; }
+.pc-chat__room-list::-webkit-scrollbar {
+  width: 4px;
+}
+.pc-chat__room-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pc-chat__room-list::-webkit-scrollbar-thumb {
+  background-color: var(--chat-border, #38383a);
+  border-radius: 2px;
+}
 
 .pc-chat__room-item {
   display: flex;
@@ -897,15 +1056,15 @@ async function saveNickname() {
 }
 
 .pc-chat__room-item:hover {
-  background: var(--chat-surface-hover, #3A3A3C);
+  background: var(--chat-surface-hover, #3a3a3c);
 }
 
 .pc-chat__room-item--active {
-  background: var(--chat-accent, #007AFF);
+  background: var(--chat-accent, #007aff);
 }
 
 .pc-chat__room-item--active:hover {
-  background: var(--chat-accent, #007AFF);
+  background: var(--chat-accent, #007aff);
   opacity: 0.9;
 }
 
@@ -913,8 +1072,8 @@ async function saveNickname() {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  background: var(--chat-surface-hover, #3A3A3C);
-  color: var(--chat-text-primary, #FFFFFF);
+  background: var(--chat-surface-hover, #3a3a3c);
+  color: var(--chat-text-primary, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -945,13 +1104,15 @@ async function saveNickname() {
 .pc-chat__room-name {
   font-size: 14px;
   font-weight: 600;
-  color: var(--chat-text-primary, #FFFFFF);
+  color: var(--chat-text-primary, #ffffff);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.pc-chat__room-item--active .pc-chat__room-name { color: #FFFFFF; }
+.pc-chat__room-item--active .pc-chat__room-name {
+  color: #ffffff;
+}
 
 .pc-chat__room-time {
   font-size: 11px;
@@ -959,7 +1120,9 @@ async function saveNickname() {
   flex-shrink: 0;
 }
 
-.pc-chat__room-item--active .pc-chat__room-time { color: rgba(255, 255, 255, 0.7); }
+.pc-chat__room-item--active .pc-chat__room-time {
+  color: rgba(255, 255, 255, 0.7);
+}
 
 .pc-chat__room-bottom {
   display: flex;
@@ -970,14 +1133,16 @@ async function saveNickname() {
 
 .pc-chat__room-preview {
   font-size: 12px;
-  color: var(--chat-text-secondary, #8E8E93);
+  color: var(--chat-text-secondary, #8e8e93);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
 }
 
-.pc-chat__room-item--active .pc-chat__room-preview { color: rgba(255, 255, 255, 0.8); }
+.pc-chat__room-item--active .pc-chat__room-preview {
+  color: rgba(255, 255, 255, 0.8);
+}
 
 .pc-chat__room-sender {
   font-weight: 600;
@@ -988,8 +1153,8 @@ async function saveNickname() {
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: var(--chat-error, #FF3B30);
-  color: #FFFFFF;
+  background: var(--chat-error, #ff3b30);
+  color: #ffffff;
   font-size: 11px;
   font-weight: 600;
   display: flex;
@@ -1013,11 +1178,17 @@ async function saveNickname() {
   justify-content: center;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
 }
 
-.pc-chat__room-item:hover .pc-chat__room-settings { opacity: 1; }
-.pc-chat__room-settings:hover { background: rgba(255, 255, 255, 0.1); }
+.pc-chat__room-item:hover .pc-chat__room-settings {
+  opacity: 1;
+}
+.pc-chat__room-settings:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
 
 .pc-chat__room-loading {
   display: flex;
@@ -1034,15 +1205,17 @@ async function saveNickname() {
   padding: 12px 16px;
   border: none;
   background: transparent;
-  color: var(--chat-text-secondary, #8E8E93);
+  color: var(--chat-text-secondary, #8e8e93);
   cursor: pointer;
-  border-top: 0.5px solid var(--chat-border, #38383A);
+  border-top: 0.5px solid var(--chat-border, #38383a);
   transition: background 0.15s;
   width: 100%;
   text-align: left;
 }
 
-.pc-chat__nickname-btn:hover { background: var(--chat-surface-hover, #3A3A3C); }
+.pc-chat__nickname-btn:hover {
+  background: var(--chat-surface-hover, #3a3a3c);
+}
 
 .pc-chat__nickname-text {
   font-size: 13px;
@@ -1063,8 +1236,8 @@ async function saveNickname() {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: var(--chat-surface, #2C2C2E);
-  border-bottom: 0.5px solid var(--chat-border, #38383A);
+  background: var(--chat-surface, #2c2c2e);
+  border-bottom: 0.5px solid var(--chat-border, #38383a);
 }
 
 .pc-chat__chat-room-info {
@@ -1076,7 +1249,7 @@ async function saveNickname() {
 .pc-chat__chat-room-name {
   font-size: 16px;
   font-weight: 600;
-  color: var(--chat-text-primary, #FFFFFF);
+  color: var(--chat-text-primary, #ffffff);
 }
 
 .pc-chat__chat-room-members {
@@ -1090,12 +1263,19 @@ async function saveNickname() {
   padding: 16px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--chat-border, #38383A) var(--chat-bg, #1C1C1E);
+  scrollbar-color: var(--chat-border, #38383a) var(--chat-bg, #1c1c1e);
 }
 
-.pc-chat__messages::-webkit-scrollbar { width: 8px; }
-.pc-chat__messages::-webkit-scrollbar-track { background: var(--chat-bg, #1C1C1E); }
-.pc-chat__messages::-webkit-scrollbar-thumb { background-color: var(--chat-border, #38383A); border-radius: 4px; }
+.pc-chat__messages::-webkit-scrollbar {
+  width: 8px;
+}
+.pc-chat__messages::-webkit-scrollbar-track {
+  background: var(--chat-bg, #1c1c1e);
+}
+.pc-chat__messages::-webkit-scrollbar-thumb {
+  background-color: var(--chat-border, #38383a);
+  border-radius: 4px;
+}
 
 .pc-chat__empty {
   display: flex;
@@ -1107,7 +1287,10 @@ async function saveNickname() {
   gap: 12px;
 }
 
-.pc-chat__empty p { font-size: 14px; margin: 0; }
+.pc-chat__empty p {
+  font-size: 14px;
+  margin: 0;
+}
 
 .chat-bubble {
   margin-bottom: 12px;
@@ -1131,7 +1314,7 @@ async function saveNickname() {
 .chat-bubble__username {
   font-size: 11px;
   font-weight: 600;
-  color: var(--chat-text-secondary, #8E8E93);
+  color: var(--chat-text-secondary, #8e8e93);
 }
 
 .chat-bubble__time {
@@ -1146,13 +1329,13 @@ async function saveNickname() {
   font-size: 14px;
   line-height: 1.4;
   word-wrap: break-word;
-  background: var(--chat-surface, #2C2C2E);
-  color: var(--chat-text-primary, #FFFFFF);
+  background: var(--chat-surface, #2c2c2e);
+  color: var(--chat-text-primary, #ffffff);
 }
 
 .chat-bubble--self .chat-bubble__content {
-  background: var(--chat-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--chat-accent, #007aff);
+  color: #ffffff;
   border-bottom-right-radius: 4px;
 }
 
@@ -1160,10 +1343,12 @@ async function saveNickname() {
   border-bottom-left-radius: 4px;
 }
 
-.chat-bubble--sending { opacity: 0.7; }
+.chat-bubble--sending {
+  opacity: 0.7;
+}
 
 .chat-bubble--error .chat-bubble__content {
-  border: 1px solid var(--chat-error, #FF3B30);
+  border: 1px solid var(--chat-error, #ff3b30);
 }
 
 .chat-bubble__status {
@@ -1180,12 +1365,12 @@ async function saveNickname() {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--chat-accent, #007AFF);
+  background: var(--chat-accent, #007aff);
   animation: chat-pulse 1.5s ease-in-out infinite;
 }
 
 .chat-bubble__status--error {
-  color: var(--chat-error, #FF3B30);
+  color: var(--chat-error, #ff3b30);
   cursor: pointer;
 }
 
@@ -1195,20 +1380,31 @@ async function saveNickname() {
 }
 
 @keyframes chat-fade-in {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes chat-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ── Rate Warning ─────────────────────────────────────────────────── */
 .pc-chat__rate-warning {
   padding: 8px 12px;
-  background: var(--chat-error, #FF3B30);
-  color: #FFFFFF;
+  background: var(--chat-error, #ff3b30);
+  color: #ffffff;
   font-size: 12px;
   text-align: center;
 }
@@ -1220,8 +1416,8 @@ async function saveNickname() {
   gap: 6px;
   padding: 4px 12px;
   font-size: 11px;
-  background: rgba(255,255,255,0.03);
-  border-top: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.03);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .pc-chat__ws-dot {
@@ -1231,22 +1427,42 @@ async function saveNickname() {
   transition: all 0.3s ease;
 }
 
-.pc-chat__ws-status--connected .pc-chat__ws-dot { background: #34C759; box-shadow: 0 0 6px rgba(52,199,89,0.5); }
-.pc-chat__ws-status--connecting .pc-chat__ws-dot { background: #FF9500; animation: wsPulse 1s ease-in-out infinite; }
-.pc-chat__ws-status--reconnecting .pc-chat__ws-dot { background: #FF9500; animation: wsPulse 1s ease-in-out infinite; }
-.pc-chat__ws-status--disconnected .pc-chat__ws-dot { background: #FF3B30; }
+.pc-chat__ws-status--connected .pc-chat__ws-dot {
+  background: #34c759;
+  box-shadow: 0 0 6px rgba(52, 199, 89, 0.5);
+}
+.pc-chat__ws-status--connecting .pc-chat__ws-dot {
+  background: #ff9500;
+  animation: wsPulse 1s ease-in-out infinite;
+}
+.pc-chat__ws-status--reconnecting .pc-chat__ws-dot {
+  background: #ff9500;
+  animation: wsPulse 1s ease-in-out infinite;
+}
+.pc-chat__ws-status--disconnected .pc-chat__ws-dot {
+  background: #ff3b30;
+}
 
 .pc-chat__ws-text {
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.4);
   font-family: 'SF Mono', 'JetBrains Mono', monospace;
 }
 
-.pc-chat__ws-status--connected .pc-chat__ws-text { color: rgba(52,199,89,0.7); }
-.pc-chat__ws-status--disconnected .pc-chat__ws-text { color: rgba(255,59,48,0.7); }
+.pc-chat__ws-status--connected .pc-chat__ws-text {
+  color: rgba(52, 199, 89, 0.7);
+}
+.pc-chat__ws-status--disconnected .pc-chat__ws-text {
+  color: rgba(255, 59, 48, 0.7);
+}
 
 @keyframes wsPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 /* ── Loading ──────────────────────────────────────────────────────── */
@@ -1261,16 +1477,26 @@ async function saveNickname() {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--chat-accent, #007AFF);
+  background: var(--chat-accent, #007aff);
   animation: chat-bounce 1.2s ease-in-out infinite;
 }
 
-.pc-chat__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.pc-chat__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.pc-chat__loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.pc-chat__loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes chat-bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 /* ── No Room Selected ─────────────────────────────────────────────── */
@@ -1284,7 +1510,10 @@ async function saveNickname() {
   gap: 16px;
 }
 
-.pc-chat__no-room p { font-size: 14px; margin: 0; }
+.pc-chat__no-room p {
+  font-size: 14px;
+  margin: 0;
+}
 
 /* ── Input Bar ────────────────────────────────────────────────────── */
 .pc-chat__input-bar {
@@ -1292,8 +1521,8 @@ async function saveNickname() {
   align-items: flex-end;
   gap: 8px;
   padding: 12px 16px;
-  background: var(--chat-surface, #2C2C2E);
-  border-top: 0.5px solid var(--chat-border, #38383A);
+  background: var(--chat-surface, #2c2c2e);
+  border-top: 0.5px solid var(--chat-border, #38383a);
 }
 
 .pc-chat__input {
@@ -1301,8 +1530,8 @@ async function saveNickname() {
   padding: 10px 14px;
   border-radius: 20px;
   border: none;
-  background: var(--chat-bg, #1C1C1E);
-  color: var(--chat-text-primary, #FFFFFF);
+  background: var(--chat-bg, #1c1c1e);
+  color: var(--chat-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
   resize: none;
@@ -1322,30 +1551,43 @@ async function saveNickname() {
   height: 40px;
   border-radius: 50%;
   border: none;
-  background: var(--chat-accent, #007AFF);
-  color: #FFFFFF;
+  background: var(--chat-accent, #007aff);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
   flex-shrink: 0;
 }
 
-.pc-chat__send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.pc-chat__send-btn:not(:disabled):hover { opacity: 0.9; }
-.pc-chat__send-btn:not(:disabled):active { transform: scale(0.95); }
+.pc-chat__send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pc-chat__send-btn:not(:disabled):hover {
+  opacity: 0.9;
+}
+.pc-chat__send-btn:not(:disabled):active {
+  transform: scale(0.95);
+}
 
 .pc-chat__spinner {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #FFFFFF;
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* ── Dialogs ──────────────────────────────────────────────────────── */
 .pc-chat__dialog-overlay {
@@ -1362,18 +1604,20 @@ async function saveNickname() {
 .pc-chat__dialog {
   width: 100%;
   max-width: 320px;
-  background: var(--chat-surface, #2C2C2E);
+  background: var(--chat-surface, #2c2c2e);
   border-radius: 14px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-.pc-chat__dialog--settings { max-width: 400px; }
+.pc-chat__dialog--settings {
+  max-width: 400px;
+}
 
 .pc-chat__dialog-title {
   font-size: 17px;
   font-weight: 600;
-  color: var(--chat-text-primary, #FFFFFF);
+  color: var(--chat-text-primary, #ffffff);
   margin: 0 0 16px;
 }
 
@@ -1382,9 +1626,9 @@ async function saveNickname() {
   height: 40px;
   padding: 0 12px;
   border-radius: 10px;
-  border: 0.5px solid var(--chat-border, #38383A);
-  background: var(--chat-bg, #1C1C1E);
-  color: var(--chat-text-primary, #FFFFFF);
+  border: 0.5px solid var(--chat-border, #38383a);
+  background: var(--chat-bg, #1c1c1e);
+  color: var(--chat-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
   box-sizing: border-box;
@@ -1395,9 +1639,9 @@ async function saveNickname() {
   width: 100%;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 0.5px solid var(--chat-border, #38383A);
-  background: var(--chat-bg, #1C1C1E);
-  color: var(--chat-text-primary, #FFFFFF);
+  border: 0.5px solid var(--chat-border, #38383a);
+  background: var(--chat-bg, #1c1c1e);
+  color: var(--chat-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
   resize: none;
@@ -1413,26 +1657,28 @@ async function saveNickname() {
   margin-bottom: 16px;
 }
 
-.pc-chat__dialog-checkbox-input { accent-color: var(--chat-accent, #007AFF); }
+.pc-chat__dialog-checkbox-input {
+  accent-color: var(--chat-accent, #007aff);
+}
 
 .pc-chat__dialog-checkbox-label {
   font-size: 14px;
-  color: var(--chat-text-secondary, #8E8E93);
+  color: var(--chat-text-secondary, #8e8e93);
 }
 
 .pc-chat__dialog-section {
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 0.5px solid var(--chat-border, #38383A);
+  border-bottom: 0.5px solid var(--chat-border, #38383a);
 }
 
 .pc-chat__dialog-danger-btn {
   width: 100%;
   height: 40px;
   border-radius: 10px;
-  border: 0.5px solid var(--chat-error, #FF3B30);
+  border: 0.5px solid var(--chat-error, #ff3b30);
   background: transparent;
-  color: var(--chat-error, #FF3B30);
+  color: var(--chat-error, #ff3b30);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1443,7 +1689,9 @@ async function saveNickname() {
   transition: background 0.15s;
 }
 
-.pc-chat__dialog-danger-btn:hover { background: rgba(255, 59, 48, 0.1); }
+.pc-chat__dialog-danger-btn:hover {
+  background: rgba(255, 59, 48, 0.1);
+}
 
 .pc-chat__dialog-actions {
   display: flex;
@@ -1456,20 +1704,25 @@ async function saveNickname() {
   height: 40px;
   border-radius: 10px;
   border: none;
-  background: var(--chat-surface-hover, #3A3A3C);
-  color: var(--chat-text-primary, #FFFFFF);
+  background: var(--chat-surface-hover, #3a3a3c);
+  color: var(--chat-text-primary, #ffffff);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.15s;
 }
 
-.pc-chat__dialog-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.pc-chat__dialog-btn--primary { background: var(--chat-accent, #007AFF); }
+.pc-chat__dialog-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pc-chat__dialog-btn--primary {
+  background: var(--chat-accent, #007aff);
+}
 
 .pc-chat__dialog-error {
   font-size: 12px;
-  color: var(--chat-error, #FF3B30);
+  color: var(--chat-error, #ff3b30);
   margin-bottom: 8px;
 }
 
@@ -1481,7 +1734,7 @@ async function saveNickname() {
 
 .pc-chat__dialog-success {
   font-size: 12px;
-  color: #34C759;
+  color: #34c759;
   margin-bottom: 8px;
 }
 
@@ -1489,7 +1742,7 @@ async function saveNickname() {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #FFFFFF;
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto;

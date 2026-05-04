@@ -1,23 +1,32 @@
 <template>
   <MobileWindow
     :visible="visible"
-    :title="view === 'list' ? 'SCP Docs' : (reader.currentArticle.value?.scpNumber || '')"
+    :title="view === 'list' ? 'SCP Docs' : reader.currentArticle.value?.scpNumber || ''"
     :show-back="true"
     @close="$emit('close')"
     @back="view === 'detail' ? onBack() : $emit('close')"
   >
     <div class="mobile-docs" :class="`mobile-docs--${reader.readerTheme.value}`">
-
       <!-- ═══════════════════════════════════════════════════════════════ -->
       <!-- LIST VIEW                                                      -->
       <!-- ═══════════════════════════════════════════════════════════════ -->
       <div v-if="view === 'list'" class="mobile-docs__list-view">
-
         <!-- Search Bar -->
         <div class="mobile-docs__search-bar">
-          <svg class="mobile-docs__search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <svg
+            class="mobile-docs__search-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+          >
+            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+            <path
+              d="M10.5 10.5L14 14"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
           <input
             v-model="reader.searchQuery.value"
@@ -33,41 +42,87 @@
           <div class="mobile-docs__filter-tags">
             <button
               class="mobile-docs__filter-tag"
-              :class="{ 'mobile-docs__filter-tag--active': reader.selectedSeries.value === null && reader.selectedClass.value === null }"
+              :class="{
+                'mobile-docs__filter-tag--active':
+                  reader.selectedSeries.value === null && reader.selectedClass.value === null,
+              }"
               @click="clearFilters"
-            >All</button>
+            >
+              All
+            </button>
             <button
               v-for="s in reader.SERIES_OPTIONS.slice(0, 6)"
               :key="s.value"
               class="mobile-docs__filter-tag"
-              :class="{ 'mobile-docs__filter-tag--active': reader.selectedSeries.value === s.value }"
+              :class="{
+                'mobile-docs__filter-tag--active': reader.selectedSeries.value === s.value,
+              }"
               @click="reader.setSeries(reader.selectedSeries.value === s.value ? null : s.value)"
-            >{{ s.label }}</button>
+            >
+              {{ s.label }}
+            </button>
             <button
               v-for="c in reader.CLASS_OPTIONS"
               :key="c.value"
               class="mobile-docs__filter-tag mobile-docs__filter-tag--class"
               :class="{ 'mobile-docs__filter-tag--active': reader.selectedClass.value === c.value }"
-              :style="reader.selectedClass.value === c.value ? { borderColor: reader.OBJECT_CLASS_COLORS[c.value], color: reader.OBJECT_CLASS_COLORS[c.value] } : {}"
-              @click="reader.setObjectClass(reader.selectedClass.value === c.value ? null : c.value)"
-            >{{ c.label }}</button>
+              :style="
+                reader.selectedClass.value === c.value
+                  ? {
+                      borderColor: reader.OBJECT_CLASS_COLORS[c.value],
+                      color: reader.OBJECT_CLASS_COLORS[c.value],
+                    }
+                  : {}
+              "
+              @click="
+                reader.setObjectClass(reader.selectedClass.value === c.value ? null : c.value)
+              "
+            >
+              {{ c.label }}
+            </button>
           </div>
         </div>
 
         <!-- Offline Indicator -->
         <div v-if="!reader.isOnline.value" class="mobile-docs__offline-bar">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-            <path d="M1 1l12 12M7 12a5 5 0 10-5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path
+              d="M1 1l12 12M7 12a5 5 0 10-5-5"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
           <span>Offline Mode</span>
         </div>
 
         <!-- Card List -->
-        <div class="mobile-docs__cards" @touchstart.passive="onCardsTouchStart" @touchmove.passive="onCardsTouchMove" @touchend="onCardsTouchEnd">
+        <div
+          class="mobile-docs__cards"
+          @touchstart.passive="onCardsTouchStart"
+          @touchmove.passive="onCardsTouchMove"
+          @touchend="onCardsTouchEnd"
+        >
           <!-- Pull-to-refresh indicator -->
-          <div v-if="pullDistance > 0" class="mobile-docs__pull-indicator" :style="{ height: `${Math.min(pullDistance, 60)}px` }">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" :style="{ transform: `rotate(${pullDistance * 3}deg)` }">
-              <path d="M10 4v12M4 10l6 6 6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <div
+            v-if="pullDistance > 0"
+            class="mobile-docs__pull-indicator"
+            :style="{ height: `${Math.min(pullDistance, 60)}px` }"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              :style="{ transform: `rotate(${pullDistance * 3}deg)` }"
+            >
+              <path
+                d="M10 4v12M4 10l6 6 6-6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </div>
 
@@ -79,33 +134,58 @@
           </div>
 
           <!-- Error -->
-          <div v-else-if="reader.error.value" class="mobile-docs__cards-empty mobile-docs__cards-error">
+          <div
+            v-else-if="reader.error.value"
+            class="mobile-docs__cards-empty mobile-docs__cards-error"
+          >
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2"/>
-              <path d="M16 10v8M16 22v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2" />
+              <path
+                d="M16 10v8M16 22v1"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
             <p>{{ reader.error.value }}</p>
             <button class="mobile-docs__retry-btn" @click="reader.fetchArticles(1)">Retry</button>
           </div>
 
           <!-- Empty -->
-          <div v-else-if="reader.filteredArticles.value.length === 0" class="mobile-docs__cards-empty">
+          <div
+            v-else-if="reader.filteredArticles.value.length === 0"
+            class="mobile-docs__cards-empty"
+          >
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <rect x="8" y="4" width="32" height="40" rx="4" stroke="currentColor" stroke-width="2"/>
-              <path d="M16 18h16M16 24h12M16 30h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <rect
+                x="8"
+                y="4"
+                width="32"
+                height="40"
+                rx="4"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M16 18h16M16 24h12M16 30h8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
             <p>No articles found</p>
           </div>
 
           <!-- Cards -->
           <template v-else>
-            <div
-              class="mobile-docs__card mobile-docs__card--guide"
-              @click="openGuide"
-            >
+            <div class="mobile-docs__card mobile-docs__card--guide" @click="openGuide">
               <div class="mobile-docs__card-header">
                 <span class="mobile-docs__card-number mobile-docs__card-number--guide">📖</span>
-                <span class="mobile-docs__card-class" style="background: rgba(88, 166, 255, 0.15); color: #58a6ff;">使用指南</span>
+                <span
+                  class="mobile-docs__card-class"
+                  style="background: rgba(88, 166, 255, 0.15); color: #58a6ff"
+                  >使用指南</span
+                >
               </div>
               <div class="mobile-docs__card-title">{{ reader.GUIDE_ARTICLE.title }}</div>
             </div>
@@ -119,13 +199,20 @@
                 <span class="mobile-docs__card-number">{{ article.scpNumber }}</span>
                 <span
                   class="mobile-docs__card-class"
-                  :style="{ background: reader.OBJECT_CLASS_COLORS[article.objectClass] + '20', color: reader.OBJECT_CLASS_COLORS[article.objectClass] }"
-                >{{ article.objectClass }}</span>
+                  :style="{
+                    background: reader.OBJECT_CLASS_COLORS[article.objectClass] + '20',
+                    color: reader.OBJECT_CLASS_COLORS[article.objectClass],
+                  }"
+                  >{{ article.objectClass }}</span
+                >
               </div>
               <div class="mobile-docs__card-title">{{ article.title }}</div>
               <div v-if="article.rating" class="mobile-docs__card-rating">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M6 1l1.5 3.5L11 5l-2.5 2.5L9 11l-3-1.5L3 11l.5-3.5L1 5l3.5-.5z" fill="currentColor"/>
+                  <path
+                    d="M6 1l1.5 3.5L11 5l-2.5 2.5L9 11l-3-1.5L3 11l.5-3.5L1 5l3.5-.5z"
+                    fill="currentColor"
+                  />
                 </svg>
                 {{ article.rating }}
               </div>
@@ -137,7 +224,11 @@
               <div class="mobile-docs__loading-dot" />
               <div class="mobile-docs__loading-dot" />
             </div>
-            <div v-else-if="reader.hasMore.value" class="mobile-docs__load-more" @click="reader.loadMore()">
+            <div
+              v-else-if="reader.hasMore.value"
+              class="mobile-docs__load-more"
+              @click="reader.loadMore()"
+            >
               Load more
             </div>
           </template>
@@ -157,7 +248,12 @@
         <!-- Offline indicator in detail view -->
         <div v-if="!reader.isOnline.value" class="mobile-docs__detail-offline">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M1 1l10 10M6 10a4 4 0 10-4-4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+            <path
+              d="M1 1l10 10M6 10a4 4 0 10-4-4"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            />
           </svg>
           Offline
         </div>
@@ -178,34 +274,65 @@
           <!-- Error -->
           <div v-else-if="reader.error.value" class="mobile-docs__detail-error">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2"/>
-              <path d="M16 10v8M16 22v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2" />
+              <path
+                d="M16 10v8M16 22v1"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
             <p>{{ reader.error.value }}</p>
-            <button class="mobile-docs__retry-btn" @click="reader.selectArticle(reader.currentArticle.value!.scpNumber)">Retry</button>
+            <button
+              class="mobile-docs__retry-btn"
+              @click="reader.selectArticle(reader.currentArticle.value!.scpNumber)"
+            >
+              Retry
+            </button>
           </div>
 
           <!-- Article Content -->
-          <div v-else-if="reader.currentArticle.value" class="mobile-docs__article" v-html="sanitizedContent" />
+          <div
+            v-else-if="reader.currentArticle.value"
+            class="mobile-docs__article"
+            v-html="sanitizedContent"
+          />
         </div>
 
         <!-- Bottom Navigation Bar -->
         <div class="mobile-docs__bottom-bar">
           <button class="mobile-docs__bottom-btn" @click="showMobileTOC = true">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M3 5h14M3 10h10M3 15h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path
+                d="M3 5h14M3 10h10M3 15h12"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
             <span>TOC</span>
           </button>
           <button class="mobile-docs__bottom-btn" @click="showFontSettings = !showFontSettings">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M4 4l3 12M13 4l-3 12M6 9h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M4 4l3 12M13 4l-3 12M6 9h6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
             <span>Font</span>
           </button>
           <button class="mobile-docs__bottom-btn" @click="scrollToTop">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 16V4M4 10l6-6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path
+                d="M10 16V4M4 10l6-6 6 6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
             <span>Top</span>
           </button>
@@ -218,7 +345,12 @@
               <span>Reading Settings</span>
               <button class="mobile-docs__font-panel-close" @click="showFontSettings = false">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path
+                    d="M4 4l8 8M12 4l-8 8"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             </div>
@@ -226,9 +358,16 @@
               <div class="mobile-docs__font-row">
                 <span class="mobile-docs__font-label">Font Size</span>
                 <div class="mobile-docs__font-controls">
-                  <button class="mobile-docs__font-btn" @click="reader.decreaseFontSize()">A-</button>
+                  <button class="mobile-docs__font-btn" @click="reader.decreaseFontSize()">
+                    A-
+                  </button>
                   <span class="mobile-docs__font-value">{{ reader.fontSize.value }}px</span>
-                  <button class="mobile-docs__font-btn mobile-docs__font-btn--large" @click="reader.increaseFontSize()">A+</button>
+                  <button
+                    class="mobile-docs__font-btn mobile-docs__font-btn--large"
+                    @click="reader.increaseFontSize()"
+                  >
+                    A+
+                  </button>
                 </div>
               </div>
               <div class="mobile-docs__font-row">
@@ -236,22 +375,41 @@
                 <div class="mobile-docs__theme-toggle">
                   <button
                     class="mobile-docs__theme-btn"
-                    :class="{ 'mobile-docs__theme-btn--active': reader.readerTheme.value === 'dark' }"
-                    @click="reader.readerTheme.value = 'dark'; reader.toggleTheme()"
+                    :class="{
+                      'mobile-docs__theme-btn--active': reader.readerTheme.value === 'dark',
+                    }"
+                    @click="
+                      reader.readerTheme.value = 'dark'
+                      reader.toggleTheme()
+                    "
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z" stroke="currentColor" stroke-width="1.3"/>
+                      <path
+                        d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z"
+                        stroke="currentColor"
+                        stroke-width="1.3"
+                      />
                     </svg>
                     Dark
                   </button>
                   <button
                     class="mobile-docs__theme-btn"
-                    :class="{ 'mobile-docs__theme-btn--active': reader.readerTheme.value === 'light' }"
-                    @click="reader.readerTheme.value = 'light'; reader.toggleTheme()"
+                    :class="{
+                      'mobile-docs__theme-btn--active': reader.readerTheme.value === 'light',
+                    }"
+                    @click="
+                      reader.readerTheme.value = 'light'
+                      reader.toggleTheme()
+                    "
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/>
-                      <path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                      <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3" />
+                      <path
+                        d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"
+                        stroke="currentColor"
+                        stroke-width="1.1"
+                        stroke-linecap="round"
+                      />
                     </svg>
                     Light
                   </button>
@@ -268,18 +426,25 @@
               <span>Table of Contents</span>
               <button class="mobile-docs__toc-panel-close" @click="showMobileTOC = false">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path
+                    d="M4 4l8 8M12 4l-8 8"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </button>
             </div>
             <div class="mobile-docs__toc-panel-list">
               <button
-                v-for="item in (reader.currentArticle.value?.toc || [])"
+                v-for="item in reader.currentArticle.value?.toc || []"
                 :key="item.id"
                 class="mobile-docs__toc-item"
                 :style="{ paddingLeft: `${16 + (item.level - 1) * 16}px` }"
                 @click="onTOCItemClick(item)"
-              >{{ item.text }}</button>
+              >
+                {{ item.text }}
+              </button>
               <div v-if="!reader.currentArticle.value?.toc.length" class="mobile-docs__toc-empty">
                 No headings found
               </div>
@@ -313,7 +478,43 @@ const sanitizedContent = computed(() => {
   applyImageProxyHook()
   try {
     return DOMPurify.sanitize(content, {
-      ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
+      ALLOWED_TAGS: [
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'p',
+        'br',
+        'hr',
+        'blockquote',
+        'pre',
+        'code',
+        'ul',
+        'ol',
+        'li',
+        'a',
+        'img',
+        'table',
+        'thead',
+        'tbody',
+        'tr',
+        'th',
+        'td',
+        'strong',
+        'b',
+        'em',
+        'i',
+        'u',
+        's',
+        'del',
+        'ins',
+        'span',
+        'div',
+        'sup',
+        'sub',
+      ],
       ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
     })
   } finally {
@@ -427,16 +628,19 @@ function getDetailScrollPosition(): number {
 
 // ── Scroll Restoration ───────────────────────────────────────────────
 
-watch(() => reader.currentArticle.value, (article) => {
-  if (article && detailContentRef.value) {
-    const scrollPos = (article as any)._scrollPosition as number | undefined
-    if (scrollPos) {
-      nextTick(() => {
-        detailContentRef.value?.scrollTo({ top: scrollPos })
-      })
+watch(
+  () => reader.currentArticle.value,
+  (article) => {
+    if (article && detailContentRef.value) {
+      const scrollPos = (article as any)._scrollPosition as number | undefined
+      if (scrollPos) {
+        nextTick(() => {
+          detailContentRef.value?.scrollTo({ top: scrollPos })
+        })
+      }
     }
   }
-})
+)
 
 // ── Lifecycle ────────────────────────────────────────────────────────
 
@@ -460,7 +664,7 @@ onBeforeUnmount(() => {
   --docs-text-primary: #f0f0f0;
   --docs-text-secondary: #a8a8a8;
   --docs-text-tertiary: #6a6a6a;
-  --docs-accent: #8E8E93;
+  --docs-accent: #8e8e93;
   --docs-content-bg: #111113;
   --docs-content-text: #e0e0e0;
   --docs-card-bg: #1c1c1e;
@@ -470,7 +674,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   height: 100%;
   background: var(--docs-bg);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   position: relative;
 }
 
@@ -483,7 +687,7 @@ onBeforeUnmount(() => {
   --docs-text-primary: #1d1d1f;
   --docs-text-secondary: #6e6e73;
   --docs-text-tertiary: #86868b;
-  --docs-accent: #007AFF;
+  --docs-accent: #007aff;
   --docs-content-bg: #ffffff;
   --docs-content-text: #1d1d1f;
   --docs-card-bg: #ffffff;
@@ -589,7 +793,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   padding: 6px 12px;
   background: rgba(255, 149, 0, 0.15);
-  color: #FF9500;
+  color: #ff9500;
   font-size: 12px;
   font-weight: 500;
 }
@@ -636,7 +840,7 @@ onBeforeUnmount(() => {
 }
 
 .mobile-docs__card-number {
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   font-size: 13px;
   font-weight: 600;
   color: var(--docs-text-primary);
@@ -687,12 +891,22 @@ onBeforeUnmount(() => {
   animation: docs-bounce 1.2s ease-in-out infinite;
 }
 
-.mobile-docs__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.mobile-docs__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.mobile-docs__loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.mobile-docs__loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes docs-bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 .mobile-docs__cards-empty {
@@ -711,7 +925,7 @@ onBeforeUnmount(() => {
 }
 
 .mobile-docs__cards-error {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .mobile-docs__cards-error p {
@@ -748,7 +962,7 @@ onBeforeUnmount(() => {
   gap: 4px;
   padding: 4px 10px;
   background: rgba(255, 149, 0, 0.12);
-  color: #FF9500;
+  color: #ff9500;
   font-size: 11px;
   font-weight: 500;
 }
@@ -842,7 +1056,7 @@ onBeforeUnmount(() => {
 }
 
 .mobile-docs__article :deep(code) {
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   font-size: 0.88em;
   padding: 2px 6px;
   border-radius: 4px;
@@ -1131,7 +1345,9 @@ onBeforeUnmount(() => {
 /* ── Transitions ────────────────────────────────────────────────────── */
 .mobile-slide-up-enter-active,
 .mobile-slide-up-leave-active {
-  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease;
+  transition:
+    transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.3s ease;
 }
 
 .mobile-slide-up-enter-from,

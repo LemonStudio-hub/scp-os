@@ -1,14 +1,18 @@
 <template>
   <SCPWindow :window-instance="windowInstance" @close="onClose">
     <div class="pc-docs" :class="`pc-docs--${reader.readerTheme.value}`">
-
       <!-- Left Sidebar -->
       <div class="pc-docs__sidebar">
         <!-- Search -->
         <div class="pc-docs__search">
           <svg class="pc-docs__search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5" />
+            <path
+              d="M10.5 10.5L14 14"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
           </svg>
           <input
             v-model="reader.searchQuery.value"
@@ -28,11 +32,9 @@
               @change="onSeriesChange"
             >
               <option value="">All Series</option>
-              <option
-                v-for="s in reader.SERIES_OPTIONS"
-                :key="s.value"
-                :value="s.value"
-              >{{ s.label }} ({{ s.range }})</option>
+              <option v-for="s in reader.SERIES_OPTIONS" :key="s.value" :value="s.value">
+                {{ s.label }} ({{ s.range }})
+              </option>
             </select>
           </div>
           <div class="pc-docs__filter-group">
@@ -42,11 +44,9 @@
               @change="onClassChange"
             >
               <option value="">All Classes</option>
-              <option
-                v-for="c in reader.CLASS_OPTIONS"
-                :key="c.value"
-                :value="c.value"
-              >{{ c.label }}</option>
+              <option v-for="c in reader.CLASS_OPTIONS" :key="c.value" :value="c.value">
+                {{ c.label }}
+              </option>
             </select>
           </div>
         </div>
@@ -63,8 +63,13 @@
           <!-- Error State -->
           <div v-else-if="reader.error.value" class="pc-docs__list-empty pc-docs__list-error">
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M20 12v12M20 28v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="20" cy="20" r="16" stroke="currentColor" stroke-width="1.5" />
+              <path
+                d="M20 12v12M20 28v1"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
             <p>{{ reader.error.value }}</p>
             <button class="pc-docs__retry-btn" @click="reader.fetchArticles(1)">Retry</button>
@@ -73,8 +78,21 @@
           <!-- Empty State -->
           <div v-else-if="reader.filteredArticles.value.length === 0" class="pc-docs__list-empty">
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <rect x="6" y="4" width="28" height="32" rx="3" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M12 14h16M12 20h12M12 26h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <rect
+                x="6"
+                y="4"
+                width="28"
+                height="32"
+                rx="3"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <path
+                d="M12 14h16M12 20h12M12 26h8"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
             <p>No articles found</p>
           </div>
@@ -83,20 +101,26 @@
           <template v-else>
             <div
               class="pc-docs__item pc-docs__item--guide"
-              :class="{ 'pc-docs__item--active': reader.currentArticle.value?.scpNumber === reader.GUIDE_SCP_NUMBER }"
+              :class="{
+                'pc-docs__item--active':
+                  reader.currentArticle.value?.scpNumber === reader.GUIDE_SCP_NUMBER,
+              }"
               @click="reader.selectGuide()"
             >
               <div class="pc-docs__item-number pc-docs__item-number--guide">📖</div>
               <div class="pc-docs__item-body">
                 <span class="pc-docs__item-title">{{ reader.GUIDE_ARTICLE.title }}</span>
-                <span class="pc-docs__item-class" style="color: #58a6ff;">使用指南</span>
+                <span class="pc-docs__item-class" style="color: #58a6ff">使用指南</span>
               </div>
             </div>
             <div
               v-for="article in reader.filteredArticles.value"
               :key="article.scpNumber"
               class="pc-docs__item"
-              :class="{ 'pc-docs__item--active': reader.currentArticle.value?.scpNumber === article.scpNumber }"
+              :class="{
+                'pc-docs__item--active':
+                  reader.currentArticle.value?.scpNumber === article.scpNumber,
+              }"
               @click="reader.selectArticle(article.scpNumber)"
             >
               <div class="pc-docs__item-number">{{ article.scpNumber }}</div>
@@ -105,7 +129,8 @@
                 <span
                   class="pc-docs__item-class"
                   :style="{ color: reader.OBJECT_CLASS_COLORS[article.objectClass] }"
-                >{{ article.objectClass }}</span>
+                  >{{ article.objectClass }}</span
+                >
               </div>
             </div>
 
@@ -115,7 +140,11 @@
               <div class="pc-docs__loading-dot" />
               <div class="pc-docs__loading-dot" />
             </div>
-            <div v-else-if="reader.hasMore.value" class="pc-docs__load-more" @click="reader.loadMore()">
+            <div
+              v-else-if="reader.hasMore.value"
+              class="pc-docs__load-more"
+              @click="reader.loadMore()"
+            >
               Load more
             </div>
           </template>
@@ -127,8 +156,21 @@
         <!-- No Article Selected -->
         <div v-if="!reader.currentArticle.value" class="pc-docs__empty">
           <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <rect x="10" y="6" width="44" height="52" rx="4" stroke="currentColor" stroke-width="2"/>
-            <path d="M20 20h24M20 28h20M20 36h16M20 44h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <rect
+              x="10"
+              y="6"
+              width="44"
+              height="52"
+              rx="4"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+            <path
+              d="M20 20h24M20 28h20M20 36h16M20 44h12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
           </svg>
           <p>Select an SCP article to read</p>
         </div>
@@ -137,9 +179,19 @@
         <template v-else>
           <!-- Toolbar -->
           <div class="pc-docs__toolbar">
-            <button class="pc-docs__toolbar-btn" title="Back to list" @click="reader.clearArticle()">
+            <button
+              class="pc-docs__toolbar-btn"
+              title="Back to list"
+              @click="reader.clearArticle()"
+            >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M10 3L5 8L10 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path
+                  d="M10 3L5 8L10 13"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </button>
             <div class="pc-docs__toolbar-title">
@@ -147,20 +199,49 @@
             </div>
             <div class="pc-docs__toolbar-actions">
               <!-- Font Size -->
-              <button class="pc-docs__toolbar-btn" title="Decrease font size" @click="reader.decreaseFontSize()">
+              <button
+                class="pc-docs__toolbar-btn"
+                title="Decrease font size"
+                @click="reader.decreaseFontSize()"
+              >
                 <span class="pc-docs__font-label">A-</span>
               </button>
-              <button class="pc-docs__toolbar-btn" title="Increase font size" @click="reader.increaseFontSize()">
+              <button
+                class="pc-docs__toolbar-btn"
+                title="Increase font size"
+                @click="reader.increaseFontSize()"
+              >
                 <span class="pc-docs__font-label pc-docs__font-label--large">A+</span>
               </button>
               <!-- Theme Toggle -->
-              <button class="pc-docs__toolbar-btn" :title="reader.readerTheme.value === 'dark' ? 'Light mode' : 'Dark mode'" @click="reader.toggleTheme()">
-                <svg v-if="reader.readerTheme.value === 'dark'" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <button
+                class="pc-docs__toolbar-btn"
+                :title="reader.readerTheme.value === 'dark' ? 'Light mode' : 'Dark mode'"
+                @click="reader.toggleTheme()"
+              >
+                <svg
+                  v-if="reader.readerTheme.value === 'dark'"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                >
+                  <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5" />
+                  <path
+                    d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                  />
                 </svg>
                 <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path
+                    d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </button>
               <!-- Favorite -->
@@ -174,12 +255,16 @@
                   <path
                     d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 018 4.5 3.5 3.5 0 0113.5 7C13.5 10.5 8 14 8 14z"
                     :fill="reader.isFavorited.value ? 'currentColor' : 'none'"
-                    stroke="currentColor" stroke-width="1.3"
+                    stroke="currentColor"
+                    stroke-width="1.3"
                   />
                 </svg>
               </button>
               <!-- Cache Status -->
-              <div class="pc-docs__cache-status" :class="`pc-docs__cache-status--${reader.cacheStatus.value}`">
+              <div
+                class="pc-docs__cache-status"
+                :class="`pc-docs__cache-status--${reader.cacheStatus.value}`"
+              >
                 <span class="pc-docs__cache-dot" />
               </div>
             </div>
@@ -192,7 +277,12 @@
                 <span>Contents</span>
                 <button class="pc-docs__toc-close" @click="showTOC = false">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path
+                      d="M2 2l10 10M12 2L2 12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 </button>
               </div>
@@ -203,7 +293,9 @@
                   class="pc-docs__toc-item"
                   :style="{ paddingLeft: `${12 + (item.level - 1) * 16}px` }"
                   @click="reader.scrollToTOCItem(item)"
-                >{{ item.text }}</button>
+                >
+                  {{ item.text }}
+                </button>
               </div>
             </div>
           </Transition>
@@ -224,11 +316,21 @@
             <!-- Error -->
             <div v-else-if="reader.error.value" class="pc-docs__content-error">
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2"/>
-                <path d="M16 10v8M16 22v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="16" cy="16" r="12" stroke="currentColor" stroke-width="2" />
+                <path
+                  d="M16 10v8M16 22v1"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
               </svg>
               <p>{{ reader.error.value }}</p>
-              <button class="pc-docs__retry-btn" @click="reader.selectArticle(reader.currentArticle.value!.scpNumber)">Retry</button>
+              <button
+                class="pc-docs__retry-btn"
+                @click="reader.selectArticle(reader.currentArticle.value!.scpNumber)"
+              >
+                Retry
+              </button>
             </div>
 
             <!-- Article Content -->
@@ -244,7 +346,12 @@
             @click="showTOC = !showTOC"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 3h12M2 7h8M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              <path
+                d="M2 3h12M2 7h8M2 11h10"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
             </svg>
           </button>
         </template>
@@ -275,7 +382,43 @@ const sanitizedContent = computed(() => {
   applyImageProxyHook()
   try {
     return DOMPurify.sanitize(content, {
-      ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr', 'blockquote', 'pre', 'code', 'ul', 'ol', 'li', 'a', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'strong', 'b', 'em', 'i', 'u', 's', 'del', 'ins', 'span', 'div', 'sup', 'sub'],
+      ALLOWED_TAGS: [
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'p',
+        'br',
+        'hr',
+        'blockquote',
+        'pre',
+        'code',
+        'ul',
+        'ol',
+        'li',
+        'a',
+        'img',
+        'table',
+        'thead',
+        'tbody',
+        'tr',
+        'th',
+        'td',
+        'strong',
+        'b',
+        'em',
+        'i',
+        'u',
+        's',
+        'del',
+        'ins',
+        'span',
+        'div',
+        'sup',
+        'sub',
+      ],
       ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
     })
   } finally {
@@ -317,16 +460,19 @@ function getContentScrollPosition(): number {
 
 // ── Scroll Restoration ───────────────────────────────────────────────
 
-watch(() => reader.currentArticle.value, (article) => {
-  if (article && contentRef.value) {
-    const scrollPos = (article as any)._scrollPosition as number | undefined
-    if (scrollPos) {
-      nextTick(() => {
-        contentRef.value?.scrollTo({ top: scrollPos })
-      })
+watch(
+  () => reader.currentArticle.value,
+  (article) => {
+    if (article && contentRef.value) {
+      const scrollPos = (article as any)._scrollPosition as number | undefined
+      if (scrollPos) {
+        nextTick(() => {
+          contentRef.value?.scrollTo({ top: scrollPos })
+        })
+      }
     }
   }
-})
+)
 
 // ── Window Close ─────────────────────────────────────────────────────
 
@@ -357,14 +503,14 @@ onBeforeUnmount(() => {
   --docs-text-primary: #f0f0f0;
   --docs-text-secondary: #a8a8a8;
   --docs-text-tertiary: #6a6a6a;
-  --docs-accent: #8E8E93;
+  --docs-accent: #8e8e93;
   --docs-content-bg: #111113;
   --docs-content-text: #e0e0e0;
 
   display: flex;
   height: 100%;
   background: var(--docs-bg);
-  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   position: relative;
 }
 
@@ -377,7 +523,7 @@ onBeforeUnmount(() => {
   --docs-text-primary: #1d1d1f;
   --docs-text-secondary: #6e6e73;
   --docs-text-tertiary: #86868b;
-  --docs-accent: #007AFF;
+  --docs-accent: #007aff;
   --docs-content-bg: #ffffff;
   --docs-content-text: #1d1d1f;
 }
@@ -473,9 +619,16 @@ onBeforeUnmount(() => {
   scrollbar-color: var(--docs-border) transparent;
 }
 
-.pc-docs__list::-webkit-scrollbar { width: 4px; }
-.pc-docs__list::-webkit-scrollbar-track { background: transparent; }
-.pc-docs__list::-webkit-scrollbar-thumb { background-color: var(--docs-border); border-radius: 2px; }
+.pc-docs__list::-webkit-scrollbar {
+  width: 4px;
+}
+.pc-docs__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pc-docs__list::-webkit-scrollbar-thumb {
+  background-color: var(--docs-border);
+  border-radius: 2px;
+}
 
 .pc-docs__item {
   display: flex;
@@ -501,7 +654,7 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__item-number {
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   font-size: 12px;
   font-weight: 600;
   color: var(--docs-text-secondary);
@@ -561,12 +714,22 @@ onBeforeUnmount(() => {
   animation: docs-bounce 1.2s ease-in-out infinite;
 }
 
-.pc-docs__loading-dot:nth-child(2) { animation-delay: 0.2s; }
-.pc-docs__loading-dot:nth-child(3) { animation-delay: 0.4s; }
+.pc-docs__loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.pc-docs__loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
 
 @keyframes docs-bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1); }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 .pc-docs__list-empty {
@@ -585,7 +748,7 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__list-error {
-  color: var(--gui-error, #FF3B30);
+  color: var(--gui-error, #ff3b30);
 }
 
 .pc-docs__list-error p {
@@ -681,7 +844,7 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__toolbar-btn--active {
-  color: #FF3B30;
+  color: #ff3b30;
 }
 
 .pc-docs__font-label {
@@ -710,18 +873,23 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__cache-status--loading .pc-docs__cache-dot {
-  background: #FF9500;
+  background: #ff9500;
   animation: cache-pulse 1s ease-in-out infinite;
 }
 
 .pc-docs__cache-status--cached .pc-docs__cache-dot {
-  background: #34C759;
+  background: #34c759;
   box-shadow: 0 0 4px rgba(52, 199, 89, 0.5);
 }
 
 @keyframes cache-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
 }
 
 /* ── Table of Contents ──────────────────────────────────────────────── */
@@ -841,9 +1009,16 @@ onBeforeUnmount(() => {
   color: var(--docs-content-text);
 }
 
-.pc-docs__content::-webkit-scrollbar { width: 8px; }
-.pc-docs__content::-webkit-scrollbar-track { background: transparent; }
-.pc-docs__content::-webkit-scrollbar-thumb { background-color: var(--docs-border); border-radius: 4px; }
+.pc-docs__content::-webkit-scrollbar {
+  width: 8px;
+}
+.pc-docs__content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pc-docs__content::-webkit-scrollbar-thumb {
+  background-color: var(--docs-border);
+  border-radius: 4px;
+}
 
 .pc-docs__content-loading {
   display: flex;
@@ -928,7 +1103,7 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__article :deep(code) {
-  font-family: var(--gui-font-mono, "JetBrains Mono", monospace);
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   font-size: 0.9em;
   padding: 2px 6px;
   border-radius: 4px;
@@ -1001,7 +1176,9 @@ onBeforeUnmount(() => {
 /* ── TOC Transition ─────────────────────────────────────────────────── */
 .toc-slide-enter-active,
 .toc-slide-leave-active {
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
 }
 
 .toc-slide-enter-from,

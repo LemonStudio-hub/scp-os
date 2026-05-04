@@ -476,7 +476,7 @@ export function useDocsReader() {
     const toc: TOCItem[] = []
     const div = document.createElement('div')
     div.innerHTML = html
-    div.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(el => {
+    div.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((el) => {
       const level = parseInt(el.tagName.charAt(1))
       let id = el.id || el.textContent?.trim().replace(/\s+/g, '-').toLowerCase() || ''
       if (!el.id) el.id = id
@@ -553,7 +553,9 @@ export function useDocsReader() {
     error.value = null
 
     try {
-      const res = await fetchWithTimeout(`${API_BASE}/api/scp/article/${encodeURIComponent(scpNumber)}`)
+      const res = await fetchWithTimeout(
+        `${API_BASE}/api/scp/article/${encodeURIComponent(scpNumber)}`
+      )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
 
@@ -605,7 +607,10 @@ export function useDocsReader() {
   function saveProgress(_scrollTop?: number) {
     if (!currentArticle.value) return
     try {
-      localStorage.setItem(`scp-progress-${currentArticle.value.scpNumber}`, String(_scrollTop ?? 0))
+      localStorage.setItem(
+        `scp-progress-${currentArticle.value.scpNumber}`,
+        String(_scrollTop ?? 0)
+      )
     } catch {}
   }
 
@@ -623,8 +628,12 @@ export function useDocsReader() {
     }
   }
 
-  function handleOnline() { isOnline.value = true }
-  function handleOffline() { isOnline.value = false }
+  function handleOnline() {
+    isOnline.value = true
+  }
+  function handleOffline() {
+    isOnline.value = false
+  }
 
   onMounted(() => {
     window.addEventListener('online', handleOnline)
