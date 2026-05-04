@@ -295,7 +295,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import DOMPurify from 'dompurify'
 import MobileWindow from '../../components/MobileWindow.vue'
-import { useDocsReader, type TOCItem } from '../composables/useDocsReader'
+import { useDocsReader, type TOCItem } from '../../composables/useDocsReader'
 import { applyImageProxyHook } from '../../../utils/imageProxy'
 
 interface Props {

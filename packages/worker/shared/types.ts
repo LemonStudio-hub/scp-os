@@ -1,4 +1,4 @@
-﻿﻿﻿﻿/**
+﻿﻿﻿﻿﻿/**
  * 统一类型定义
  * 前端和 Worker 共享此类型定义
  */
@@ -326,4 +326,40 @@ export interface AdminJWTPayload {
   role: AdminRole
   iat?: number
   exp?: number
+}
+
+export interface AdminLogEntry {
+  id: number
+  admin_id: number
+  admin_username: string
+  action: string
+  target_type: string
+  target_id: string
+  details: string
+  ip_address: string
+  created_at: string
+}
+
+export interface SystemSetting {
+  id: number
+  key: string
+  value: string
+  updated_at: string
+  updated_by: string
+}
+
+export interface AdminStats {
+  totalUsers: number
+  activeUsers: number
+  bannedUsers: number
+  totalContent: number
+  totalFeedback: number
+  totalChatMessages: number
+  recentUsers: number
+  recentFeedback: number
+}
+
+export interface TrendDataPoint {
+  date: string
+  count: number
 }

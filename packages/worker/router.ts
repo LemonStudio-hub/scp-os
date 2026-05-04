@@ -19,6 +19,10 @@ export class Router {
     this.routes.set(`POST:${path}`, handler)
   }
 
+  put(path: string, handler: RouteHandler): void {
+    this.routes.set(`PUT:${path}`, handler)
+  }
+
   delete(path: string, handler: RouteHandler): void {
     this.routes.set(`DELETE:${path}`, handler)
   }

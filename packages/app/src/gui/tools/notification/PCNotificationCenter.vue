@@ -72,7 +72,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import { useNotificationStore } from '../../../stores/notificationStore'
-import { useI18n } from '../composables/useI18n'
+import { useI18n } from '../../composables/useI18n'
 import type { WindowInstance } from '../../types'
 import type { NotificationType } from '../../../stores/notificationStore'
 

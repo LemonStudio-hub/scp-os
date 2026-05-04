@@ -197,11 +197,11 @@
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
-import { useI18n } from '../composables/useI18n'
+import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
-import { useChatWebSocket, type WSChatMessage } from '../composables/useChatWebSocket'
+import { useChatWebSocket, type WSChatMessage } from '../../composables/useChatWebSocket'
 
 interface Props {
   visible: boolean

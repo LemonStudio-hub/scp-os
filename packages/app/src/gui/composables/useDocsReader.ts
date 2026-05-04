@@ -4,12 +4,8 @@
  * 搜索筛选、收藏管理、阅读进度保存、HTML 清洗等功能。
  */
 
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import { config } from '../../config'
-import indexedDBService from '../../utils/indexedDB'
-import logger from '../../utils/logger'
-import { proxyImageUrl } from '../../utils/imageProxy'
-import type { FavoriteRecord } from '../../utils/indexedDB'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { config } from '../../config/index'
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -41,53 +37,7 @@ export type ReaderTheme = 'dark' | 'light'
 
 // ── Constants ────────────────────────────────────────────────────────
 
-const API_BASE = config.api.workerUrl
-const PAGE_SIZE = 30
-const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
 const TIMEOUT_MS = 20000
-
-const OBJECT_CLASS_COLORS: Record<SCPObjectClass, string> = {
-  Safe: '#34C759',
-  Euclid: '#FFCC00',
-  Keter: '#FF3B30',
-  Thaumiel: '#AF52DE',
-  Neutralized: '#8E8E93',
-  Unknown: '#FFFFFF',
-}
-
-const SERIES_OPTIONS = [
-  { label: 'Series I', value: 1, range: '001-999' },
-  { label: 'Series II', value: 2, range: '1000-1999' },
-  { label: 'Series III', value: 3, range: '2000-2999' },
-  { label: 'Series IV', value: 4, range: '3000-3999' },
-  { label: 'Series V', value: 5, range: '4000-4999' },
-  { label: 'Series VI', value: 6, range: '5000-5999' },
-  { label: 'Series VII', value: 7, range: '6000-6999' },
-  { label: 'Series VIII', value: 8, range: '7000-7999' },
-  { label: 'Series IX', value: 9, range: '8000-8999' },
-  { label: 'Series X', value: 10, range: '9000-9999' },
-  { label: 'Series X.5', value: 10.5, range: '9000-9999 (Joke)' },
-]
-
-const CLASS_OPTIONS: { label: string; value: SCPObjectClass }[] = [
-  { label: 'Safe', value: 'Safe' },
-  { label: 'Euclid', value: 'Euclid' },
-  { label: 'Keter', value: 'Keter' },
-  { label: 'Thaumiel', value: 'Thaumiel' },
-  { label: 'Neutralized', value: 'Neutralized' },
-  { label: 'Unknown', value: 'Unknown' },
-]
-
-const GUIDE_SCP_NUMBER = 'GUIDE-000'
-
-const GUIDE_ARTICLE: SCPArticle = {
-  scpNumber: GUIDE_SCP_NUMBER,
-  title: 'SCP-OS 使用指南',
-  objectClass: 'Safe' as SCPObjectClass,
-  series: 0,
-  rating: 9999,
-  url: '',
-}
 
 const GUIDE_HTML = `<style>
 .guide-wrap{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.75;max-width:760px;margin:0 auto;padding:0 20px 40px;color:#c9d1d9}
@@ -422,7 +372,51 @@ const GUIDE_HTML = `<style>
 </div>
 </div>`
 
+// ── Object Class Colors ─────────────────────────────────────────────
+
+export const OBJECT_CLASS_COLORS: Record<SCPObjectClass, string> = {
+  Safe: '#3fb950',
+  Euclid: '#d29922',
+  Keter: '#f85149',
+  Thaumiel: '#a371f7',
+  Neutralized: '#8b949e',
+  Unknown: '#484f58',
+}
+
+export const SERIES_OPTIONS = [
+  { label: '系列 I', value: 1, range: 'SCP-002 ~ SCP-999' },
+  { label: '系列 II', value: 2, range: 'SCP-1000 ~ SCP-1999' },
+  { label: '系列 III', value: 3, range: 'SCP-2000 ~ SCP-2999' },
+  { label: '系列 IV', value: 4, range: 'SCP-3000 ~ SCP-3999' },
+  { label: '系列 V', value: 5, range: 'SCP-4000 ~ SCP-4999' },
+  { label: '系列 VI', value: 6, range: 'SCP-5000 ~ SCP-5999' },
+  { label: '系列 VII', value: 7, range: 'SCP-6000 ~ SCP-6999' },
+  { label: 'CN', value: 0, range: 'SCP-CN-001 ~ SCP-CN-999' },
+]
+
+export const CLASS_OPTIONS: { label: string; value: SCPObjectClass }[] = [
+  { label: 'Safe', value: 'Safe' },
+  { label: 'Euclid', value: 'Euclid' },
+  { label: 'Keter', value: 'Keter' },
+  { label: 'Thaumiel', value: 'Thaumiel' },
+  { label: 'Neutralized', value: 'Neutralized' },
+]
+
+export const GUIDE_ARTICLE: SCPArticle = {
+  scpNumber: 'GUIDE',
+  title: 'SCP-OS 使用指南',
+  objectClass: 'Safe',
+  series: 0,
+  rating: 9999,
+  url: '',
+}
+
+export const GUIDE_SCP_NUMBER = 'GUIDE'
+
 // ── HTTP Helper ──────────────────────────────────────────────────────
+
+const API_BASE = config.api.workerUrl
+const PAGE_SIZE = 12
 
 async function fetchWithTimeout(url: string, timeoutMs: number = TIMEOUT_MS): Promise<Response> {
   const controller = new AbortController()
@@ -432,5 +426,256 @@ async function fetchWithTimeout(url: string, timeoutMs: number = TIMEOUT_MS): Pr
     return res
   } finally {
     clearTimeout(timeoutId)
+  }
+}
+
+// ── Composable ───────────────────────────────────────────────────────
+
+export function useDocsReader() {
+  const articles = ref<SCPArticle[]>([])
+  const filteredArticles = ref<SCPArticle[]>([])
+  const currentArticle = ref<SCPArticleDetail | null>(null)
+  const loading = ref(false)
+  const loadingMore = ref(false)
+  const loadingDetail = ref(false)
+  const hasMore = ref(true)
+  const error = ref<string | null>(null)
+  const searchQuery = ref('')
+  const selectedSeries = ref<number | null>(null)
+  const selectedClass = ref<SCPObjectClass | null>(null)
+  const readerTheme = ref<ReaderTheme>('dark')
+  const fontSize = ref(15)
+  const isFavorited = ref(false)
+  const cacheStatus = ref('')
+  const isOnline = ref(navigator.onLine)
+
+  let currentPage = 1
+  let searchDebounce: ReturnType<typeof setTimeout> | null = null
+  let progressInterval: ReturnType<typeof setInterval> | null = null
+
+  const GUIDE_DETAIL: SCPArticleDetail = {
+    ...GUIDE_ARTICLE,
+    content: '',
+    rawHtml: GUIDE_HTML,
+    wordCount: GUIDE_HTML.length,
+    toc: [],
+  }
+
+  function sanitizeHtml(raw: string): string {
+    let html = raw
+    html = html.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+    html = html.replace(/\son\w+="[^"]*"/gi, '')
+    html = html.replace(/\son\w+='[^']*'/gi, '')
+    html = html.replace(/src="\/\//g, 'src="https://')
+    html = html.replace(/href="\/\//g, 'href="https://')
+    html = html.replace(/href="\/([^"]*)"/g, `href="${'https://scp-wiki.wikidot.com'}/$1"`)
+    return html
+  }
+
+  function extractToc(html: string): TOCItem[] {
+    const toc: TOCItem[] = []
+    const div = document.createElement('div')
+    div.innerHTML = html
+    div.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(el => {
+      const level = parseInt(el.tagName.charAt(1))
+      let id = el.id || el.textContent?.trim().replace(/\s+/g, '-').toLowerCase() || ''
+      if (!el.id) el.id = id
+      toc.push({ id, text: el.textContent?.trim() || '', level })
+    })
+    return toc
+  }
+
+  async function fetchArticles(page = 1) {
+    if (page === 1) {
+      loading.value = true
+      articles.value = []
+    } else {
+      loadingMore.value = true
+    }
+    error.value = null
+
+    try {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) })
+      if (searchQuery.value) params.set('q', searchQuery.value)
+      if (selectedSeries.value) params.set('series', String(selectedSeries.value))
+      if (selectedClass.value) params.set('objectClass', selectedClass.value)
+
+      const res = await fetchWithTimeout(`${API_BASE}/api/scp/articles?${params}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const list = data.data || []
+
+      if (page === 1) {
+        filteredArticles.value = list
+        articles.value = list
+      } else {
+        filteredArticles.value.push(...list)
+        articles.value.push(...list)
+      }
+      currentPage = page
+      hasMore.value = list.length >= PAGE_SIZE
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '加载失败'
+    } finally {
+      loading.value = false
+      loadingMore.value = false
+    }
+  }
+
+  function search() {
+    if (searchDebounce) clearTimeout(searchDebounce)
+    searchDebounce = setTimeout(() => {
+      hasMore.value = true
+      fetchArticles(1)
+    }, 300)
+  }
+
+  function setSeries(value: number | null) {
+    selectedSeries.value = value
+    hasMore.value = true
+    fetchArticles(1)
+  }
+
+  function setObjectClass(value: SCPObjectClass | null) {
+    selectedClass.value = value
+    hasMore.value = true
+    fetchArticles(1)
+  }
+
+  function loadMore() {
+    if (!loadingMore.value && hasMore.value) {
+      fetchArticles(currentPage + 1)
+    }
+  }
+
+  async function selectArticle(scpNumber: string) {
+    loadingDetail.value = true
+    error.value = null
+
+    try {
+      const res = await fetchWithTimeout(`${API_BASE}/api/scp/article/${encodeURIComponent(scpNumber)}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+
+      const sanitized = sanitizeHtml(data.rawHtml || '')
+      const toc = extractToc(sanitized)
+
+      currentArticle.value = {
+        ...data,
+        rawHtml: sanitized,
+        toc,
+        wordCount: (data.content || '').length,
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '加载详情失败'
+    } finally {
+      loadingDetail.value = false
+    }
+  }
+
+  function selectGuide() {
+    currentArticle.value = { ...GUIDE_DETAIL }
+  }
+
+  function clearArticle() {
+    currentArticle.value = null
+  }
+
+  function toggleTheme() {
+    readerTheme.value = readerTheme.value === 'dark' ? 'light' : 'dark'
+  }
+
+  function increaseFontSize() {
+    if (fontSize.value < 24) fontSize.value += 1
+  }
+
+  function decreaseFontSize() {
+    if (fontSize.value > 12) fontSize.value -= 1
+  }
+
+  function toggleFavorite() {
+    isFavorited.value = !isFavorited.value
+  }
+
+  function scrollToTOCItem(item: TOCItem) {
+    const el = document.getElementById(item.id)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function saveProgress(_scrollTop?: number) {
+    if (!currentArticle.value) return
+    try {
+      localStorage.setItem(`scp-progress-${currentArticle.value.scpNumber}`, String(_scrollTop ?? 0))
+    } catch {}
+  }
+
+  function startProgressAutoSave(_getScrollPosition: () => number) {
+    stopProgressAutoSave()
+    progressInterval = setInterval(() => {
+      saveProgress(_getScrollPosition())
+    }, 5000)
+  }
+
+  function stopProgressAutoSave() {
+    if (progressInterval) {
+      clearInterval(progressInterval)
+      progressInterval = null
+    }
+  }
+
+  function handleOnline() { isOnline.value = true }
+  function handleOffline() { isOnline.value = false }
+
+  onMounted(() => {
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    fetchArticles(1)
+  })
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('online', handleOnline)
+    window.removeEventListener('offline', handleOffline)
+    stopProgressAutoSave()
+    if (searchDebounce) clearTimeout(searchDebounce)
+  })
+
+  return {
+    articles,
+    filteredArticles,
+    currentArticle,
+    loading,
+    loadingMore,
+    loadingDetail,
+    hasMore,
+    error,
+    searchQuery,
+    selectedSeries,
+    selectedClass,
+    readerTheme,
+    fontSize,
+    isFavorited,
+    cacheStatus,
+    isOnline,
+    SERIES_OPTIONS,
+    CLASS_OPTIONS,
+    OBJECT_CLASS_COLORS,
+    GUIDE_ARTICLE,
+    GUIDE_SCP_NUMBER,
+    fetchArticles,
+    search,
+    setSeries,
+    setObjectClass,
+    loadMore,
+    selectArticle,
+    selectGuide,
+    clearArticle,
+    toggleTheme,
+    increaseFontSize,
+    decreaseFontSize,
+    toggleFavorite,
+    scrollToTOCItem,
+    saveProgress,
+    startProgressAutoSave,
+    stopProgressAutoSave,
   }
 }

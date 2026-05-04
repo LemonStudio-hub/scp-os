@@ -67,7 +67,7 @@
 import { ref, computed, onMounted } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useNotificationStore } from '../../../stores/notificationStore'
-import { useI18n } from '../composables/useI18n'
+import { useI18n } from '../../composables/useI18n'
 import type { NotificationType } from '../../../stores/notificationStore'
 
 interface Props { visible: boolean }

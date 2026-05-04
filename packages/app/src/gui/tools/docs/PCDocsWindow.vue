@@ -257,10 +257,10 @@
 import { ref, onMounted, onBeforeUnmount, nextTick, watch, computed } from 'vue'
 import DOMPurify from 'dompurify'
 import SCPWindow from '../../components/SCPWindow.vue'
-import { useDocsReader } from '../composables/useDocsReader'
+import { useDocsReader } from '../../composables/useDocsReader'
 import { applyImageProxyHook } from '../../../utils/imageProxy'
 import type { WindowInstance } from '../../types'
-import type { SCPObjectClass } from '../composables/useDocsReader'
+import type { SCPObjectClass } from '../../composables/useDocsReader'
 
 interface Props {
   windowInstance: WindowInstance
