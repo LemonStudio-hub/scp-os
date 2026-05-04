@@ -295,7 +295,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
@@ -475,10 +475,6 @@ onMounted(async () => {
   await loadUnreadCounts()
 })
 
-onUnmounted(() => {
-  ws.disconnect()
-})
-
 watch(
   () => authStore.userId,
   (newUserId) => {
@@ -556,7 +552,10 @@ async function createRoom() {
   }
 }
 
-function enterRoom(roomId: number) {
+async function enterRoom(roomId: number) {
+  if (!userId) {
+    userId = authStore.userId || (await indexedDBService.getUserId())
+  }
   currentRoomId.value = roomId
   messages.length = 0
   markRoomAsRead(roomId)
@@ -629,11 +628,6 @@ async function sendMessage() {
     if (idx !== -1) {
       messages[idx].sending = false
       messages[idx].error = 'Failed to send (not connected)'
-    }
-  } else {
-    const idx = messages.findIndex((m) => m.tempId === tempId)
-    if (idx !== -1) {
-      messages[idx].sending = false
     }
   }
   sending.value = false

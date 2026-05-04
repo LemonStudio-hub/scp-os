@@ -1,4 +1,4 @@
-﻿﻿/**
+﻿/**
  * SCP Scraper Worker
  * 重构版本 - 使用模块化架构
  */
@@ -1067,7 +1067,8 @@ export default {
     try {
       const url = new URL(request.url)
       const path = url.pathname
-      if (path === '/chat/ws' && request.headers.get('Upgrade') === 'websocket') {
+      const isChatWs = (path === '/chat/ws' || /^\/chat\/room\/\d+\/ws$/.test(path))
+      if (isChatWs && request.headers.get('Upgrade') === 'websocket') {
         const chatRoomId = env.CHAT_ROOM_DO.idFromName('global')
         const chatRoomStub = env.CHAT_ROOM_DO.get(chatRoomId)
         return chatRoomStub.fetch(request)

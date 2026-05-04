@@ -36,6 +36,7 @@ export class ChatRoomDO {
   private rateLimits: Map<string, RateLimitEntry> = new Map()
 
   private messagesLoaded = false
+  private loadedRooms = new Set<number>()
 
   constructor(
     private state: DurableObjectState,
@@ -87,7 +88,7 @@ export class ChatRoomDO {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url)
 
-    if (url.pathname === '/chat/ws' || url.pathname === '/ws') {
+    if (url.pathname === '/chat/ws' || url.pathname === '/ws' || /^\/chat\/room\/\d+\/ws$/.test(url.pathname)) {
       return this.handleWebSocketUpgrade(request, url)
     }
 
@@ -304,19 +305,20 @@ export class ChatRoomDO {
   }
 
   private async loadMessages(roomId: number): Promise<void> {
-    if (this.messagesLoaded) return
+    if (this.loadedRooms.has(roomId)) return
     try {
       const result = await this.env.SCP_DB.prepare(
-        'SELECT * FROM chat_messages ORDER BY created_at DESC LIMIT ?',
+        'SELECT * FROM chat_messages WHERE room_id = ? ORDER BY created_at DESC LIMIT ?',
       )
-        .bind(MAX_MESSAGES)
+        .bind(roomId, MAX_MESSAGES)
         .all<ChatMessage>()
 
-      this.messages = (result.results || []).reverse()
+      const roomMessages = (result.results || []).reverse()
+      this.messages = this.messages.filter((m) => m.room_id !== roomId).concat(roomMessages)
+      this.loadedRooms.add(roomId)
       this.messagesLoaded = true
     } catch (error) {
       console.error('[ChatRoomDO] Failed to load messages:', error)
-      this.messages = []
     }
   }
 

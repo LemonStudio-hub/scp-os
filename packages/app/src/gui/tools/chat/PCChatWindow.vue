@@ -422,7 +422,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import PCWindow from '../../components/PCWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
@@ -621,14 +621,12 @@ onMounted(async () => {
     currentRoomId.value = rooms[0].id
   }
   ws.setCredentials(userId, authStore.nickname || 'Anonymous')
-  ws.connect()
   if (currentRoomId.value) {
+    ws.switchRoom(currentRoomId.value)
     loadHistoryFromAPI(currentRoomId.value)
+  } else {
+    ws.connect()
   }
-})
-
-onUnmounted(() => {
-  ws.disconnect()
 })
 
 watch(
@@ -774,11 +772,6 @@ async function sendMessage() {
     if (idx !== -1) {
       messages[idx].sending = false
       messages[idx].error = 'Failed to send (not connected)'
-    }
-  } else {
-    const idx = messages.findIndex((m) => m.tempId === tempId)
-    if (idx !== -1) {
-      messages[idx].sending = false
     }
   }
   sending.value = false

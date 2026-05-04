@@ -86,8 +86,10 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   let currentUsername = username
 
   function getWsUrl(): string {
-    const base = apiUrl.replace(/^https?/, 'wss').replace(/\/$/, '')
-    return `${base}/chat/ws?user_id=${encodeURIComponent(currentUserId)}&username=${encodeURIComponent(currentUsername)}&room_id=${currentRoomId}`
+    const base = apiUrl.startsWith('https')
+      ? apiUrl.replace(/^https/, 'wss')
+      : apiUrl.replace(/^http/, 'ws')
+    return `${base.replace(/\/$/, '')}/chat/ws?user_id=${encodeURIComponent(currentUserId)}&username=${encodeURIComponent(currentUsername)}&room_id=${currentRoomId}`
   }
 
   function connect(): void {
