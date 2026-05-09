@@ -137,7 +137,7 @@ const GUIDE_HTML = `<style>
 <div class="guide-section" id="overview">
 <div class="guide-section-title"><span class="dot" style="background:rgba(88,166,255,0.7)"></span><h2>项目概述</h2></div>
 <div class="guide-intro-card">
-<p>SCP-OS 是一个功能丰富的 SCP 基金会主题信息平台，运行于 Cloudflare 全球边缘网络。系统由 Vue 3 + Pinia 前端和 Cloudflare Workers 后端组成，支持桌面端和移动端自适应访问，提供 SCP 条目查询、文档阅读、实时聊天、下载代理、虚拟渗透测试等核心功能。</p>
+<p>SCP-OS 是一个功能丰富的 SCP 基金会主题信息平台，运行于 Cloudflare 全球边缘网络。系统由 Vue 3 + Pinia 前端和 Cloudflare Workers 后端组成，支持桌面端和移动端自适应访问，提供 SCP 条目查询、文档阅读、实时聊天、系统监控等核心功能。</p>
 <div class="guide-tech-tags">
 <span class="guide-tech-tag">Vue 3</span>
 <span class="guide-tech-tag">Pinia</span>
@@ -163,11 +163,6 @@ const GUIDE_HTML = `<style>
 <h4><span class="app-icon">&#128196;</span> 文档阅读器 <code>Docs</code></h4>
 <p>SCP 条目浏览器，支持系列/等级筛选、全文搜索、目录导航、收藏和离线缓存。</p>
 <span class="app-tag">信息阅读</span>
-</div>
-<div class="guide-app-card">
-<h4><span class="app-icon">&#8595;</span> 下载代理 <code>Proxy</code></h4>
-<p>Cloudflare 流式下载代理。实时速度图表、ETA 预估、速率控制和统计仪表盘。</p>
-<span class="app-tag">工具服务</span>
 </div>
 <div class="guide-app-card">
 <h4><span class="app-icon">&#128172;</span> 聊天 <code>Chat</code></h4>
@@ -313,11 +308,7 @@ const GUIDE_HTML = `<style>
 </div>
 <div class="guide-faq-item">
 <h4>离线可以使用吗？</h4>
-<p>部分功能支持离线：文档阅读器有 24 小时本地缓存（已缓存文章可离线阅读）；终端的文件系统命令（ls/cd/cat/mkdir 等）完全本地运行。需要网络的功能：搜索、聊天、下载代理。</p>
-</div>
-<div class="guide-faq-item">
-<h4>如何使用下载代理？</h4>
-<p>打开「代理」应用，粘贴任意 HTTP/HTTPS 下载链接，点击「下载」按钮。高级选项中可自定义文件名和传输速率限制（KB/s）。支持最大 500MB 文件，代理流量经由 Cloudflare Workers 转发。</p>
+<p>部分功能支持离线：文档阅读器有 24 小时本地缓存（已缓存文章可离线阅读）；终端的文件系统命令（ls/cd/cat/mkdir 等）完全本地运行。需要网络的功能：搜索、聊天、系统监控。</p>
 </div>
 <div class="guide-faq-item">
 <h4>渗透测试是真实的攻击吗？</h4>
@@ -362,11 +353,11 @@ const GUIDE_HTML = `<style>
 <div class="guide-divider"></div>
 <div class="guide-warn">
 <h4>&#9888; 法律声明</h4>
-<p>SCP-OS 为 SCP 基金会主题的虚构信息平台，所有内容（包括 SCP 条目数据）均来自公开的 SCP Wiki，仅供娱乐和教育目的。虚拟渗透会话为模拟系统，不涉及真实网络攻击。下载代理功能请仅用于合法用途。系统禁止发布任何违规内容。</p>
+<p>SCP-OS 为 SCP 基金会主题的虚构信息平台，所有内容（包括 SCP 条目数据）均来自公开的 SCP Wiki，仅供娱乐和教育目的。虚拟渗透会话为模拟系统，不涉及真实网络攻击。系统禁止发布任何违规内容。</p>
 </div>
 <div class="guide-footer">
 <div class="guide-footer-inner">
-<p>SCP-OS &middot; Built with Cloudflare Workers &middot; v2.0.0</p>
+<p>SCP-OS &middot; Built with Cloudflare Workers &middot; v3.0.2</p>
 <p class="ver">Powered by Vue 3 &middot; TypeScript &middot; Cloudflare Edge Network</p>
 </div>
 </div>

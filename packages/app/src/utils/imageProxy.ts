@@ -1,5 +1,5 @@
 import DOMPurify from 'dompurify'
-import config from '../config'
+import { config } from '../config'
 
 const PROXY_BASE = `${config.api.workerUrl}/image-proxy`
 
