@@ -8,8 +8,6 @@ import * as docsAPI from './api/docs'
 import * as notificationAPI from './api/notification'
 import * as adminAuthAPI from './api/admin-auth'
 import * as adminAPI from './api/admin'
-import { DownloadProxy } from './download/downloadProxy'
-import type { DownloadRequest } from './download/types'
 import { logger } from './utils/logger'
 import { requireAuth } from './security/auth'
 import { validationError, unauthorizedError } from './shared/errors'
@@ -34,7 +32,7 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
   const { scraper, env, corsManager, rateLimiter } = deps
 
   function authFail(): boolean {
-    return deps.authenticatedUserId === undefined
+    return !deps.authenticatedUserId
   }
 
   function authUserId(): string {
@@ -73,10 +71,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
         '/docs/content/{scpNumber}': '\u83b7\u53d6\u6761\u76ee\u5b8c\u6574\u5185\u5bb9',
         '/docs/tales': '\u67e5\u8be2\u6545\u4e8b\u5217\u8868',
         '/docs/hubs': '\u83b7\u53d6 Hub \u5217\u8868',
-        '/download/init': '\u521d\u59cb\u5316\u4e0b\u8f7d (POST)',
-        '/download/stream': '\u6d41\u5f0f\u4e0b\u8f7d (GET)',
-        '/download/progress': '\u67e5\u8be2\u4e0b\u8f7d\u8fdb\u5ea6 (GET)',
-        '/download/history': '\u4e0b\u8f7d\u5386\u53f2\u8bb0\u5f55 (GET/DELETE)',
       },
       features: {
         modular: true,
@@ -85,7 +79,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
         rateLimit: `${config.rateLimit.maxRequests} requests / ${config.rateLimit.windowMs / 1000}s`,
         database: 'D1 database enabled',
         performance: 'Performance monitoring',
-        downloadProxy: 'Streaming download proxy',
       },
     }, 200, ctx(_req))
   })
@@ -249,10 +242,10 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     try {
       const body = await req.json() as SubmitFeedbackBody
       if (!body.title || !body.content) return corsManager.createErrorResponse(validationError('Missing required fields'), 400, ctx(req))
-      if (body.title.length > 200 || body.content.length > 5000) {
-        return corsManager.createErrorResponse(validationError('Content too long. Title max 200 chars, content max 5000 chars'), 400, ctx(req))
+      if (body.title.length > 100 || body.content.length > 2000) {
+        return corsManager.createErrorResponse(validationError('Content too long. Title max 100 chars, content max 2000 chars'), 400, ctx(req))
       }
-      const result = await feedbackAPI.submitFeedback(scraper.requireDB(), { user_id: authUserId(), title: body.title, content: body.content, category: body.category })
+      const result = await feedbackAPI.submitFeedback(scraper.requireDB(), { user_id: authUserId(), title: body.title, content: body.content, category: body.category, nickname: body.nickname })
       return corsManager.createResponse(result, result.success ? 201 : 500, ctx(req))
     } catch {
       return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
@@ -305,10 +298,10 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     try {
       const body = await req.json() as SubmitCommentBody
       if (!body.feedback_id || !body.content) return corsManager.createErrorResponse(validationError('Missing required fields'), 400, ctx(req))
-      if (body.content.length > 5000) {
-        return corsManager.createErrorResponse(validationError('Comment content too long. Max 5000 chars'), 400, ctx(req))
+      if (body.content.length > 500) {
+        return corsManager.createErrorResponse(validationError('Comment content too long. Max 500 chars'), 400, ctx(req))
       }
-      const result = await feedbackAPI.submitComment(scraper.requireDB(), { feedback_id: body.feedback_id, user_id: authUserId(), content: body.content })
+      const result = await feedbackAPI.submitComment(scraper.requireDB(), { feedback_id: body.feedback_id, user_id: authUserId(), content: body.content, nickname: body.nickname })
       return corsManager.createResponse(result, result.success ? 201 : 500, ctx(req))
     } catch {
       return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
@@ -424,46 +417,6 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
   router.get('/docs/hubs', async (req, _env, _ctx_, _params, _url) => {
     const result = await docsAPI.handleDocsHubs(req, env)
     return corsManager.createResponse(await result.json(), result.status, ctx(req))
-  })
-
-  router.post('/download/init', async (req, _env, _ctx_, _params, _url) => {
-    try {
-      const body = await req.json() as DownloadRequest
-      const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-      return downloadProxy.handleInit(body, ctx(req).origin)
-    } catch {
-      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
-    }
-  })
-
-  router.get('/download/stream', async (req, _env, _ctx_, _params, url) => {
-    const downloadId = url.searchParams.get('id')
-    const downloadUrl = url.searchParams.get('url')
-    const rateLimitStr = url.searchParams.get('rateLimit')
-    if (!downloadId || !downloadUrl) {
-      return corsManager.createErrorResponse(validationError('Missing id or url parameter'), 400, ctx(req))
-    }
-    const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-    return downloadProxy.handleStream(downloadId, decodeURIComponent(downloadUrl), parseInt(rateLimitStr || '0', 10) || 0, ctx(req).origin)
-  })
-
-  router.get('/download/progress', async (req, _env, _ctx_, _params, url) => {
-    const downloadId = url.searchParams.get('id')
-    if (!downloadId) return corsManager.createErrorResponse(validationError('Missing id parameter'), 400, ctx(req))
-    const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-    return downloadProxy.handleProgress(downloadId, ctx(req).origin)
-  })
-
-  router.get('/download/history', async (req, _env, _ctx_, _params, url) => {
-    const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-    return downloadProxy.handleHistory(url.searchParams.get('limit'), url.searchParams.get('offset'), ctx(req).origin)
-  })
-
-  router.delete('/download/history', async (req, _env, _ctx_, _params, url) => {
-    const downloadId = url.searchParams.get('id')
-    if (!downloadId) return corsManager.createErrorResponse(validationError('Missing id parameter'), 400, ctx(req))
-    const downloadProxy = new DownloadProxy(env.SCP_CACHE)
-    return downloadProxy.handleDeleteHistory(downloadId, ctx(req).origin)
   })
 
   // ━━ Notification API ━━━━━━━━━━━━━━━━━━━━━━━━━━━━

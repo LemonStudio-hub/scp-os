@@ -32,8 +32,6 @@ const AsyncPCFeedbackWindow = defineAsyncComponent(
 )
 const AsyncPCDocsWindow = defineAsyncComponent(() => import('../tools/docs/PCDocsWindow.vue'))
 const AsyncMobileDocs = defineAsyncComponent(() => import('../tools/docs/MobileDocs.vue'))
-const AsyncPCProxyWindow = defineAsyncComponent(() => import('../tools/proxy/PCProxyWindow.vue'))
-const AsyncMobileProxy = defineAsyncComponent(() => import('../tools/proxy/MobileProxy.vue'))
 const AsyncPCNotificationCenter = defineAsyncComponent(
   () => import('../tools/notification/PCNotificationCenter.vue')
 )
@@ -120,19 +118,6 @@ export function registerAllTools(): void {
     windowConfig: { width: 800, height: 600, minWidth: 500, minHeight: 400, resizable: true },
     desktopComponent: AsyncPCDocsWindow,
     mobileComponent: AsyncMobileDocs,
-  })
-
-  ToolRegistry.register({
-    id: 'proxy',
-    label: lbl('app.proxy'),
-    icon: 'proxy',
-    windowConfig: { width: 700, height: 550, minWidth: 420, minHeight: 380, resizable: true },
-    desktopComponent: AsyncPCProxyWindow,
-    mobileComponent: {
-      render() {
-        return h(AsyncMobileProxy, { visible: true, onClose: () => {} })
-      },
-    },
   })
 
   ToolRegistry.register({

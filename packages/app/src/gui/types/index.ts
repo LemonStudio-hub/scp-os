@@ -11,7 +11,6 @@ export type ToolType =
   | 'dash'
   | 'feedback'
   | 'docs'
-  | 'proxy'
   | 'notification'
   | 'admin'
 

@@ -204,22 +204,6 @@
               <line x1="9" y1="11" x2="15" y2="11" />
             </svg>
           </template>
-          <template v-else-if="app.id === 'proxy'">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-          </template>
           <template v-else-if="app.id === 'editor'">
             <svg
               width="24"
@@ -268,7 +252,6 @@ const apps = computed<HomeApp[]>(() => [
   { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)' },
   { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)' },
   { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)' },
-  { id: 'proxy', label: t('home.apps.proxy'), tool: 'proxy', color: 'var(--gui-accent)' },
   { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)' },
   { id: 'editor', label: t('home.apps.editor'), tool: 'editor', color: 'var(--gui-accent)' },
 ])

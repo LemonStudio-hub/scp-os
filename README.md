@@ -476,4 +476,5 @@ scp-os/
 - [Vue.js](https://vuejs.org/) - 前端框架
 - [Tauri](https://tauri.app/) - 桌面应用框架
 - [Cloudflare Workers](https://workers.cloudflare.com/) - 后端服务
+- [Cloudflare](https://www.cloudflare.com/) - CDN 与边缘计算服务
 - [所有贡献者](https://github.com/LemonStudio-hub/scp-os/graphs/contributors) - 感谢你们的努力！

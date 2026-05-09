@@ -214,10 +214,10 @@ function typeLabel(type: NotificationType): string {
 
 function formatTimeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
-  if (diff < 60000) return t('proxy.timeJustNow')
-  if (diff < 3600000) return t('proxy.timeMinAgo', { n: Math.floor(diff / 60000) })
-  if (diff < 86400000) return t('proxy.timeHourAgo', { n: Math.floor(diff / 3600000) })
-  return t('proxy.timeDayAgo', { n: Math.floor(diff / 86400000) })
+  if (diff < 60000) return t('notif.timeJustNow')
+  if (diff < 3600000) return t('notif.timeMinAgo', { n: Math.floor(diff / 60000) })
+  if (diff < 86400000) return t('notif.timeHourAgo', { n: Math.floor(diff / 3600000) })
+  return t('notif.timeDayAgo', { n: Math.floor(diff / 86400000) })
 }
 
 async function handleClick(item: any): Promise<void> {

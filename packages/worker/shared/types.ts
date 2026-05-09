@@ -1,4 +1,4 @@
-﻿﻿/**
+/**
  * 统一类型定义
  * 前端和 Worker 共享此类型定义
  */
@@ -214,6 +214,7 @@ export interface SubmitFeedbackBody {
   title: string
   content: string
   category?: string
+  nickname?: string
 }
 
 export interface LikeFeedbackBody {
@@ -223,6 +224,7 @@ export interface LikeFeedbackBody {
 export interface SubmitCommentBody {
   feedback_id: number
   content: string
+  nickname?: string
 }
 
 export interface VoteFeedbackBody {

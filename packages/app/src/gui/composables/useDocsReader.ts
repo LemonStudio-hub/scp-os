@@ -495,15 +495,23 @@ export function useDocsReader() {
     error.value = null
 
     try {
-      const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) })
-      if (searchQuery.value) params.set('q', searchQuery.value)
+      const offset = (page - 1) * PAGE_SIZE
+      const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
+      if (selectedClass.value) params.set('scp_class', selectedClass.value)
       if (selectedSeries.value) params.set('series', String(selectedSeries.value))
-      if (selectedClass.value) params.set('objectClass', selectedClass.value)
+      if (searchQuery.value) params.set('q', searchQuery.value)
 
-      const res = await fetchWithTimeout(`${API_BASE}/api/scp/articles?${params}`)
+      const res = await fetchWithTimeout(`${API_BASE}/docs/items?${params}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
-      const list = data.data || []
+      const list = (data.data || []).map((item: any) => ({
+        scpNumber: item.scp_number || '',
+        title: item.title || '',
+        objectClass: item.object_class || 'Unknown',
+        series: item.series ? Number(item.series) : 0,
+        rating: item.rating || 0,
+        url: '',
+      }))
 
       if (page === 1) {
         filteredArticles.value = list
@@ -513,7 +521,7 @@ export function useDocsReader() {
         articles.value.push(...list)
       }
       currentPage = page
-      hasMore.value = list.length >= PAGE_SIZE
+      hasMore.value = data.pagination?.has_more ?? list.length >= PAGE_SIZE
     } catch (e) {
       error.value = e instanceof Error ? e.message : '加载失败'
     } finally {
@@ -553,20 +561,34 @@ export function useDocsReader() {
     error.value = null
 
     try {
-      const res = await fetchWithTimeout(
-        `${API_BASE}/api/scp/article/${encodeURIComponent(scpNumber)}`
-      )
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
+      const [contentRes, itemRes] = await Promise.all([
+        fetchWithTimeout(`${API_BASE}/docs/content/${encodeURIComponent(scpNumber)}`),
+        fetchWithTimeout(`${API_BASE}/docs/item/${encodeURIComponent(scpNumber)}`),
+      ])
+      if (!contentRes.ok) throw new Error(`HTTP ${contentRes.status}`)
 
-      const sanitized = sanitizeHtml(data.rawHtml || '')
+      const contentData = await contentRes.json()
+      const rawHtml = contentData.data?.content || ''
+      const sanitized = sanitizeHtml(rawHtml)
       const toc = extractToc(sanitized)
 
+      let meta: any = {}
+      if (itemRes.ok) {
+        const itemData = await itemRes.json()
+        meta = itemData.data || {}
+      }
+
       currentArticle.value = {
-        ...data,
+        scpNumber: meta.scp_number || scpNumber,
+        title: meta.title || '',
+        objectClass: meta.object_class || 'Unknown',
+        series: meta.series ? Number(meta.series) : 0,
+        rating: meta.rating || 0,
+        url: '',
+        content: rawHtml,
         rawHtml: sanitized,
         toc,
-        wordCount: (data.content || '').length,
+        wordCount: rawHtml.length,
       }
     } catch (e) {
       error.value = e instanceof Error ? e.message : '加载详情失败'

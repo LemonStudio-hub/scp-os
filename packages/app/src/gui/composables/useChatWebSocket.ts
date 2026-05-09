@@ -181,7 +181,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
       ws.send(
         JSON.stringify({
           type: 'chat_message',
-          data: { content: content.trim() },
+          content: content.trim(),
         })
       )
       return true
@@ -197,8 +197,8 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     try {
       ws.send(
         JSON.stringify({
-          type: 'auth',
-          data: { username: newUsername },
+          type: 'update_username',
+          username: newUsername,
         })
       )
     } catch {}

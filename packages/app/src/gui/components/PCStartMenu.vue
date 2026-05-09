@@ -157,7 +157,6 @@ const apps: StartMenuApp[] = [
   { id: 'chat', label: t('home.apps.chat'), tool: 'chat', iconName: 'message-square' },
   { id: 'dash', label: t('home.apps.dash'), tool: 'dash', iconName: 'bar-chart-2' },
   { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', iconName: 'message-circle' },
-  { id: 'proxy', label: t('home.apps.proxy'), tool: 'proxy', iconName: 'proxy' },
 ]
 
 // All apps (including pinned)

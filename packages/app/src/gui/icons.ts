@@ -143,10 +143,6 @@ export function iconDocs(p: IconProps = {}) {
   return `<svg ${attrSize(p)} ${attrBase()}><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg>`
 }
 
-export function iconProxy(p: IconProps = {}) {
-  return `<svg ${attrSize(p)} ${attrBase()}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`
-}
-
 // Additional PC GUI icons
 export function iconEye(p: IconProps = {}) {
   return `<svg ${attrSize(p)} ${attrBase()}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`
@@ -328,7 +324,6 @@ export const iconNames = [
   'dash',
   'feedback',
   'docs',
-  'proxy',
   'eye',
   'sort',
   'play',
@@ -389,7 +384,6 @@ const iconFnMap: Record<string, (p?: IconProps) => string> = {
   dash: iconDash,
   feedback: iconFeedback,
   docs: iconDocs,
-  proxy: iconProxy,
   eye: iconEye,
   sort: iconSort,
   play: iconPlay,

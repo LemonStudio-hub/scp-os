@@ -90,6 +90,8 @@ export async function handleDocsItems(
   const scpClass = url.searchParams.get('scp_class')
   const clearanceLevel = url.searchParams.get('clearance_level')
   const tag = url.searchParams.get('tag')
+  const series = url.searchParams.get('series')
+  const q = url.searchParams.get('q')
 
   try {
     const db = env.SCP_READER_DB
@@ -126,7 +128,22 @@ export async function handleDocsItems(
       countParams.push(`%${tag}%`)
     }
 
-    query += ' ORDER BY scp_number_int ASC LIMIT ? OFFSET ?'
+    if (series) {
+      query += ' AND series = ?'
+      countQuery += ' AND series = ?'
+      params.push(series)
+      countParams.push(series)
+    }
+
+    if (q) {
+      query += ' AND (title LIKE ? OR scp_number LIKE ?)'
+      countQuery += ' AND (title LIKE ? OR scp_number LIKE ?)'
+      const likeQ = `%${q}%`
+      params.push(likeQ, likeQ)
+      countParams.push(likeQ, likeQ)
+    }
+
+    query += ' ORDER BY CAST(scp_number AS INTEGER) ASC LIMIT ? OFFSET ?'
     params.push(limit, offset)
 
     const [itemsResult, countResult] = await Promise.all([
@@ -172,7 +189,7 @@ export async function handleDocsItem(
     }
 
     const item = await db.prepare(
-      'SELECT * FROM scp_items WHERE scp_number = ? OR scp_number_int = ?'
+      'SELECT * FROM scp_items WHERE scp_number = ? OR CAST(scp_number AS INTEGER) = ?'
     ).bind(scpNumber, parseInt(scpNumber, 10)).first<DocsItem>()
 
     if (!item) {

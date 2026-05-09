@@ -330,6 +330,10 @@ onMounted(async () => {
 
 async function submitFeedback() {
   if (!canSubmit.value || isSubmitting.value) return
+  if (!userId) {
+    alert(t('fb.loginRequired'))
+    return
+  }
 
   isSubmitting.value = true
   try {
@@ -340,6 +344,7 @@ async function submitFeedback() {
         title: form.title.trim(),
         content: form.content.trim(),
         category: form.category,
+        nickname: authStore.nickname || undefined,
       }),
     })
 
@@ -354,9 +359,12 @@ async function submitFeedback() {
       activeTab.value = 'list'
       offset.value = 0
       await loadFeedbacks()
+    } else {
+      alert(t('fb.submitFailed', { msg: data.error || 'Unknown error' }))
     }
   } catch (error) {
     logger.error('[Feedback] Failed to submit:', error as Error)
+    alert(t('fb.submitFailed', { msg: (error as Error).message }))
   } finally {
     isSubmitting.value = false
   }
@@ -416,6 +424,10 @@ async function loadMore() {
 
 async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
   if (isVoting.value[item.id]) return
+  if (!userId) {
+    alert(t('fb.loginRequired'))
+    return
+  }
   isVoting.value[item.id] = true
 
   try {
@@ -459,9 +471,12 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
         }
         feedback.userVote = voteType
       }
+    } else {
+      alert(t('fb.voteFailed', { msg: data.error || 'Unknown error' }))
     }
   } catch (error) {
     logger.error('[Feedback] Failed to vote:', error as Error)
+    alert(t('fb.voteFailed', { msg: (error as Error).message }))
   } finally {
     isVoting.value[item.id] = false
   }
@@ -506,6 +521,10 @@ async function loadComments(item: FeedbackItem) {
 async function submitComment(feedbackId: number) {
   const content = commentForms.value[feedbackId]?.trim()
   if (!content || isSubmittingComment.value[feedbackId]) return
+  if (!userId) {
+    alert(t('fb.loginRequired'))
+    return
+  }
 
   isSubmittingComment.value[feedbackId] = true
   try {
@@ -515,6 +534,7 @@ async function submitComment(feedbackId: number) {
       body: JSON.stringify({
         feedback_id: feedbackId,
         content: content,
+        nickname: authStore.nickname || undefined,
       }),
     })
 
@@ -527,9 +547,12 @@ async function submitComment(feedbackId: number) {
         feedback.commentsCount = (feedback.commentsCount || 0) + 1
         commentForms.value[feedbackId] = ''
       }
+    } else {
+      alert(t('fb.commentFailed', { msg: data.error || 'Unknown error' }))
     }
   } catch (error) {
     logger.error('[Feedback] Failed to submit comment:', error as Error)
+    alert(t('fb.commentFailed', { msg: (error as Error).message }))
   } finally {
     isSubmittingComment.value[feedbackId] = false
   }
