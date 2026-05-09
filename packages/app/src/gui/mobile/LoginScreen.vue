@@ -20,7 +20,15 @@
       <div class="login-screen__logo-section" aria-hidden="true">
         <div class="login-screen__logo-container">
           <!-- SCP Foundation Logo -->
-          <svg class="login-screen__logo" width="80" height="80" viewBox="0 0 80 80" fill="none" role="img" aria-label="SCP Foundation Logo">
+          <svg
+            class="login-screen__logo"
+            width="80"
+            height="80"
+            viewBox="0 0 80 80"
+            fill="none"
+            role="img"
+            aria-label="SCP Foundation Logo"
+          >
             <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="2" opacity="0.6" />
             <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
             <circle cx="40" cy="40" r="20" stroke="currentColor" stroke-width="1" opacity="0.2" />
@@ -86,7 +94,9 @@
 
         <!-- Error Message -->
         <transition name="error-fade">
-          <p v-if="error" id="mobile-login-error" class="login-screen__error" role="alert">{{ error }}</p>
+          <p v-if="error" id="mobile-login-error" class="login-screen__error" role="alert">
+            {{ error }}
+          </p>
         </transition>
 
         <!-- Character Count -->

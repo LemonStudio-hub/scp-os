@@ -15,7 +15,11 @@ const ALLOWED_HOSTS = [
 export function proxyImageUrl(url: string): string {
   try {
     const parsed = new URL(url)
-    if (!ALLOWED_HOSTS.some(host => parsed.hostname === host || parsed.hostname.endsWith('.' + host))) {
+    if (
+      !ALLOWED_HOSTS.some(
+        (host) => parsed.hostname === host || parsed.hostname.endsWith('.' + host)
+      )
+    ) {
       return url
     }
     return `${PROXY_BASE}?url=${encodeURIComponent(url)}`

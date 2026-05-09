@@ -1,6 +1,11 @@
 <template>
   <!-- Mobile Layout -->
-  <div v-if="mobile.isMobile.value" class="mobile-app" role="application" aria-label="SCP-OS 移动端">
+  <div
+    v-if="mobile.isMobile.value"
+    class="mobile-app"
+    role="application"
+    aria-label="SCP-OS 移动端"
+  >
     <!-- Home Screen (default view) -->
     <HomeScreen v-if="!activeTool" @launch="onHomeLaunch" />
 

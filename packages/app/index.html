@@ -43,7 +43,10 @@
       content="SCP基金会,SCP-OS,Web OS,Web操作系统,SCP终端,SCP命令行,在线操作系统,SCP Foundation,安全收容保护,SCP浏览器,SCP文件管理器,SCP代码编辑器,SCP聊天,SCP Wiki,SCP-CN,渗透测试模拟,虚拟操作系统"
     />
     <meta name="author" content="SCP Foundation" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="bingbot" content="index, follow" />
     <link rel="canonical" href="https://scpos.site/" />
@@ -344,81 +347,96 @@
     </script>
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "SCP-OS",
-      "alternateName": "SCP基金会 Web 操作系统",
-      "url": "https://scpos.site/",
-      "description": "SCP-OS 是一款基于 SCP 基金会世界观的沉浸式 Web 操作系统。内置命令行终端、文件管理器、代码编辑器、实时聊天、渗透测试模拟等功能。",
-      "applicationCategory": "UtilitiesApplication",
-      "operatingSystem": "Web Browser",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "CNY"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": "SCP Foundation"
-      },
-      "inLanguage": ["zh-CN"],
-      "featureList": [
-        "命令行终端模拟器",
-        "文件管理系统",
-        "代码编辑器",
-        "实时聊天系统",
-        "渗透测试模拟",
-        "SCP 数据库搜索",
-        "多主题切换",
-        "PWA 离线支持"
-      ],
-      "browserRequirements": "Requires a modern browser with JavaScript enabled",
-      "softwareHelp": {
-        "@type": "CreativeWork",
-        "url": "https://scpos.site/"
-      }
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "SCP Foundation",
-      "url": "https://scpos.site/",
-      "logo": "https://scpos.site/android-chrome-512x512.png",
-      "sameAs": [
-        "https://scp-wiki-cn.wikidot.com/"
-      ]
-    }
-    </script>
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "SCP-OS",
-      "url": "https://scpos.site/",
-      "description": "SCP基金会 Web 操作系统 — 安全、收容、保护",
-      "inLanguage": "zh-CN",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://scpos.site/?q={search_term_string}"
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "SCP-OS",
+        "alternateName": "SCP基金会 Web 操作系统",
+        "url": "https://scpos.site/",
+        "description": "SCP-OS 是一款基于 SCP 基金会世界观的沉浸式 Web 操作系统。内置命令行终端、文件管理器、代码编辑器、实时聊天、渗透测试模拟等功能。",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "CNY"
         },
-        "query-input": "required name=search_term_string"
+        "author": {
+          "@type": "Organization",
+          "name": "SCP Foundation"
+        },
+        "inLanguage": ["zh-CN"],
+        "featureList": [
+          "命令行终端模拟器",
+          "文件管理系统",
+          "代码编辑器",
+          "实时聊天系统",
+          "渗透测试模拟",
+          "SCP 数据库搜索",
+          "多主题切换",
+          "PWA 离线支持"
+        ],
+        "browserRequirements": "Requires a modern browser with JavaScript enabled",
+        "softwareHelp": {
+          "@type": "CreativeWork",
+          "url": "https://scpos.site/"
+        }
       }
-    }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "SCP Foundation",
+        "url": "https://scpos.site/",
+        "logo": "https://scpos.site/android-chrome-512x512.png",
+        "sameAs": ["https://scp-wiki-cn.wikidot.com/"]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "SCP-OS",
+        "url": "https://scpos.site/",
+        "description": "SCP基金会 Web 操作系统 — 安全、收容、保护",
+        "inLanguage": "zh-CN",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://scpos.site/?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
     </script>
   </head>
   <body>
     <div id="app">
       <noscript>
-        <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0a0a0a;color:#e0e0e0;font-family:'Courier New',monospace;padding:24px;text-align:center;">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            padding: 24px;
+            text-align: center;
+          "
+        >
           <div>
-            <h1 style="font-size:28px;color:#00ff41;margin-bottom:16px;">SCP-OS — SCP基金会 Web 操作系统</h1>
-            <p style="font-size:16px;color:#8e8e93;margin-bottom:24px;">安全 · 收容 · 保护</p>
-            <p style="font-size:14px;color:#636366;">您需要启用 JavaScript 才能使用 SCP-OS。请在浏览器设置中开启 JavaScript 支持后刷新页面。</p>
+            <h1 style="font-size: 28px; color: #00ff41; margin-bottom: 16px">
+              SCP-OS — SCP基金会 Web 操作系统
+            </h1>
+            <p style="font-size: 16px; color: #8e8e93; margin-bottom: 24px">安全 · 收容 · 保护</p>
+            <p style="font-size: 14px; color: #636366">
+              您需要启用 JavaScript 才能使用 SCP-OS。请在浏览器设置中开启 JavaScript
+              支持后刷新页面。
+            </p>
           </div>
         </div>
       </noscript>
