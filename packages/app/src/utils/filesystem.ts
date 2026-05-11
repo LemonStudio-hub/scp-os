@@ -44,7 +44,10 @@ export class FileSystem {
   constructor() {
     // 初始化根目录
     this.root = this.createDefaultFilesystem()
-    this.loadFromStorage()
+  }
+
+  async init(): Promise<void> {
+    await this.loadFromStorage()
   }
 
   // 创建默认文件系统

@@ -1,6 +1,7 @@
 import type { PerformanceMetric, PerformanceReport } from './performance-monitor.service'
 import { getAuthHeaders } from '../../utils/authFetch'
 import logger from '../../utils/logger'
+import { config } from '../../config'
 
 export class PerformanceApiService {
   private apiUrl: string
@@ -8,7 +9,7 @@ export class PerformanceApiService {
   private isSending = false
   private sendInterval: number | null = null
 
-  constructor(apiUrl: string = 'https://api.scpos.site/performance') {
+  constructor(apiUrl: string = `${config.api.workerUrl}/performance`) {
     this.apiUrl = apiUrl
   }
 

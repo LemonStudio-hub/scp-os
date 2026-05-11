@@ -51,7 +51,6 @@ export const useTabsStore = defineStore('tabs', () => {
       }
 
       isInitialized.value = true
-      logger.info('[Tabs Store] Initialized with IndexedDB')
     } catch (error) {
       logger.error('[Tabs Store] Failed to initialize:', error)
       // Fallback: create default tab

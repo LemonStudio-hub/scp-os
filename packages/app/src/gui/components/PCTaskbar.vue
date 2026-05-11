@@ -1,5 +1,5 @@
 <template>
-  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-200">
+  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-200" @contextmenu.prevent>
     <div class="pc-taskbar__container">
       <!-- Start Button -->
       <button class="pc-taskbar__start-btn" @click="$emit('start-click')">
@@ -48,26 +48,102 @@
             notifStore.unreadCount
           }}</span>
         </button>
-        <div class="pc-taskbar__tray-item">
-          <GUIIcon :name="'wifi'" :size="16" />
+        <div
+          class="pc-taskbar__tray-item pc-taskbar__wifi"
+          @click="measureBackendLatency"
+          @mouseenter="showLatencyTooltip = true"
+          @mouseleave="showLatencyTooltip = false"
+        >
+          <!-- Latency tooltip -->
+          <Transition name="latency-fade">
+            <div v-if="showLatencyTooltip" class="pc-taskbar__latency-tip">
+              <div class="pc-taskbar__latency-tip__value" :style="{ color: latencyTipColor }">
+                {{ latencyDisplay }}
+              </div>
+              <div class="pc-taskbar__latency-tip__label">
+                {{ latencyLabel }}
+              </div>
+              <div class="pc-taskbar__latency-tip__debug">
+                {{ latencyDebug }}
+              </div>
+            </div>
+          </Transition>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="wifiColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Offline: cross through wifi -->
+            <template v-if="!isOnline">
+              <path d="M0 11a15 15 0 0 1 24 0" />
+              <path d="M4 14a10 10 0 0 1 16 0" />
+              <path d="M8 17a5 5 0 0 1 8 0" />
+              <line x1="2" y1="2" x2="22" y2="22" />
+              <circle cx="12" cy="20" r="2" :fill="wifiColor" stroke="none" />
+            </template>
+            <!-- Online: signal bars based on latency -->
+            <template v-else>
+              <path v-if="wifiBars >= 3" d="M0 11a15 15 0 0 1 24 0" />
+              <path v-if="wifiBars >= 2" d="M4 14a10 10 0 0 1 16 0" />
+              <path v-if="wifiBars >= 1" d="M8 17a5 5 0 0 1 8 0" />
+              <circle cx="12" cy="20" r="2" :fill="wifiColor" stroke="none" />
+            </template>
+          </svg>
         </div>
-        <div class="pc-taskbar__tray-item">
-          <GUIIcon :name="'battery'" :size="16" />
+        <div class="pc-taskbar__tray-item pc-taskbar__battery" :title="batteryTitle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <!-- Battery body -->
+            <rect
+              x="2"
+              y="6"
+              width="18"
+              height="12"
+              rx="2"
+              :stroke="batteryColor"
+              stroke-width="1.5"
+            />
+            <!-- Battery cap -->
+            <rect
+              x="20"
+              y="9"
+              width="2"
+              height="6"
+              rx="1"
+              :fill="batteryColor"
+            />
+            <!-- Battery fill -->
+            <rect
+              v-if="batteryLevel > 0"
+              x="4"
+              y="8"
+              :width="Math.max(1.5, batteryLevel * 14)"
+              height="8"
+              rx="1"
+              :fill="batteryColor"
+            />
+            <!-- Charging bolt -->
+            <path
+              v-if="batteryCharging"
+              d="M11 8l-2 4h3l-1 4 4-5h-3l2-3"
+              :fill="batteryColor"
+              stroke="none"
+              style="filter: drop-shadow(0 0 2px rgba(0,0,0,0.8))"
+            />
+          </svg>
         </div>
         <div class="pc-taskbar__tray-item pc-taskbar__time">
           <span class="pc-taskbar__time-text">{{ currentTime }}</span>
         </div>
       </div>
     </div>
+
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import { useNotificationStore } from '../../stores/notificationStore'
 import { useWindowManagerStore } from '../stores/windowManager'
 import { ToolRegistry } from '../registry/ToolRegistry'
+import { config } from '../../config'
 import type { ToolType } from '../types'
 import type { IconName } from '../icons'
 import GUIIcon from './ui/GUIIcon.vue'
@@ -129,6 +205,147 @@ function updateTime() {
   currentTime.value = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
+// Network / Backend latency state
+const isOnline = ref(navigator.onLine)
+const backendLatency = ref<number>(0)
+const isMeasuring = ref(false)
+const showLatencyTooltip = ref(false)
+let latencyInterval: number | undefined
+
+const wifiBars = computed(() => {
+  if (!isOnline.value) return 0
+  const lat = backendLatency.value
+  if (lat === 0) return 3
+  if (lat < 80) return 3
+  if (lat < 200) return 2
+  if (lat < 500) return 1
+  return 1
+})
+
+const wifiColor = computed(() => {
+  if (!isOnline.value) return 'var(--gui-error, #FF3B30)'
+  const lat = backendLatency.value
+  if (lat >= 500) return 'var(--gui-error, #FF3B30)'
+  if (lat >= 200) return 'var(--gui-warning, #FF9500)'
+  return 'var(--gui-text-secondary, #8e8e93)'
+})
+
+const latencyTipColor = computed(() => {
+  if (!isOnline.value) return '#FF3B30'
+  const lat = backendLatency.value
+  if (lat >= 500 || lat === 9999) return '#FF3B30'
+  if (lat >= 200) return '#FF9500'
+  if (lat >= 80) return '#8E8E93'
+  return '#34C759'
+})
+
+const latencyDisplay = computed(() => {
+  if (isMeasuring.value) return '···'
+  if (!isOnline.value) return 'Offline'
+  if (backendLatency.value === 0) return '--'
+  if (backendLatency.value >= 9999) return 'Timeout'
+  return `${backendLatency.value}ms`
+})
+
+const latencyLabel = computed(() => {
+  if (!isOnline.value) return 'No connection'
+  const lat = backendLatency.value
+  if (lat >= 9999) return 'Backend unreachable'
+  if (lat >= 500) return 'Very slow'
+  if (lat >= 200) return 'Slow'
+  if (lat >= 80) return 'Moderate'
+  if (lat > 0) return 'Good'
+  return 'Measuring...'
+})
+
+const latencyDebug = computed(() => {
+  return config.api.workerUrl
+})
+
+async function measureBackendLatency() {
+  isOnline.value = navigator.onLine
+  if (!isOnline.value) {
+    backendLatency.value = 0
+    return
+  }
+  if (isMeasuring.value) return
+  isMeasuring.value = true
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    const start = performance.now()
+    await fetch(config.api.workerUrl + '/', {
+      method: 'HEAD',
+      cache: 'no-store',
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+    backendLatency.value = Math.round(performance.now() - start)
+  } catch {
+    backendLatency.value = 9999
+  } finally {
+    isMeasuring.value = false
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    // Page in background: pause auto-ping
+    if (latencyInterval) {
+      clearInterval(latencyInterval)
+      latencyInterval = undefined
+    }
+  } else {
+    // Page back to foreground: resume auto-ping every 20s
+    if (!latencyInterval) {
+      measureBackendLatency()
+      latencyInterval = window.setInterval(measureBackendLatency, 20000)
+    }
+  }
+}
+
+// Battery state
+const batteryLevel = ref(0)
+const batteryCharging = ref(false)
+const batterySupported = ref(false)
+let batteryObj: any = null
+
+const batteryColor = computed(() => {
+  if (!batterySupported.value) return 'var(--gui-text-secondary, #8e8e93)'
+  if (batteryLevel.value <= 0.2) return 'var(--gui-error, #FF3B30)'
+  if (batteryCharging.value) return 'var(--gui-success, #34C759)'
+  return 'var(--gui-text-secondary, #8e8e93)'
+})
+
+const batteryTitle = computed(() => {
+  if (!batterySupported.value) return 'Battery status unavailable'
+  const pct = Math.round(batteryLevel.value * 100)
+  return batteryCharging.value ? `Charging: ${pct}%` : `Battery: ${pct}%`
+})
+
+async function initBattery() {
+  try {
+    const bat = await (navigator as any).getBattery?.()
+    if (!bat) return
+    batterySupported.value = true
+    batteryObj = bat
+    batteryLevel.value = bat.level
+    batteryCharging.value = bat.charging
+    bat.addEventListener('levelchange', onBatteryLevelChange)
+    bat.addEventListener('chargingchange', onBatteryChargingChange)
+  } catch {
+    /* Battery API not supported */
+  }
+}
+
+function onBatteryLevelChange() {
+  if (batteryObj) batteryLevel.value = batteryObj.level
+}
+
+function onBatteryChargingChange() {
+  if (batteryObj) batteryCharging.value = batteryObj.charging
+}
+
 function onClick(item: PCTaskbarItem) {
   emit('launch', item)
 }
@@ -151,13 +368,25 @@ onMounted(() => {
   updateTime()
   timeInterval = window.setInterval(updateTime, 60000)
   notifStore.startPolling()
+  initBattery()
+  measureBackendLatency()
+  latencyInterval = window.setInterval(measureBackendLatency, 20000)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
   if (timeInterval) {
     clearInterval(timeInterval)
   }
+  if (latencyInterval) {
+    clearInterval(latencyInterval)
+  }
   notifStore.stopPolling()
+  if (batteryObj) {
+    batteryObj.removeEventListener('levelchange', onBatteryLevelChange)
+    batteryObj.removeEventListener('chargingchange', onBatteryChargingChange)
+  }
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 
@@ -193,7 +422,6 @@ onUnmounted(() => {
   height: 52px;
   padding: 0 var(--gui-spacing-base, 16px);
   max-width: 100vw;
-  overflow: hidden;
 }
 
 /* ── Start Button ──────────────────────────────────────────────────── */
@@ -239,7 +467,9 @@ onUnmounted(() => {
   gap: var(--gui-spacing-xs, 4px);
   flex: 1;
   margin: 0 var(--gui-spacing-xl, 24px);
+  padding: 4px 6px;
   overflow-x: auto;
+  overflow-y: visible;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -347,6 +577,82 @@ onUnmounted(() => {
 }
 
 /* ── Time Display ──────────────────────────────────────────────────── */
+.pc-taskbar__wifi,
+.pc-taskbar__battery {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: default;
+}
+
+/* Latency tooltip above WiFi icon */
+.pc-taskbar__latency-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.pc-taskbar__latency-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(28, 28, 30, 0.92);
+}
+
+.pc-taskbar__latency-tip__value {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  letter-spacing: -0.3px;
+}
+
+.pc-taskbar__latency-tip__label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gui-text-tertiary, #636366);
+  letter-spacing: 0.02em;
+}
+
+.pc-taskbar__latency-tip__debug {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--gui-text-disabled, #48484A);
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Tooltip transition */
+.latency-fade-enter-active,
+.latency-fade-leave-active {
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.latency-fade-enter-from,
+.latency-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+}
+
 .pc-taskbar__time {
   padding-left: var(--gui-spacing-sm, 8px);
   border-left: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));

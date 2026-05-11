@@ -5,7 +5,7 @@
         v-if="visible"
         ref="menuRef"
         class="pcc-context-menu"
-        :style="{ left: `${x}px`, top: `${y}px` }"
+        :style="menuStyle"
         tabindex="-1"
         @click.stop
         @keydown="handleKeydown"
@@ -14,6 +14,7 @@
           <div v-if="item.divider" class="pcc-context-menu__divider" />
           <div
             v-else
+            :ref="(el) => setItemRef(item.id, el as HTMLElement)"
             :class="[
               'pcc-context-menu__item',
               {
@@ -23,7 +24,7 @@
             ]"
             :disabled="item.disabled"
             @click="onItemClick(item)"
-            @mouseenter="openSubmenu(item, $event)"
+            @mouseenter="openSubmenu(item)"
             @mouseleave="closeSubmenu"
           >
             <GUIIcon v-if="item.icon" :name="item.icon" :size="16" class="pcc-context-menu__icon" />
@@ -31,34 +32,39 @@
             <span v-if="item.children && item.children.length > 0" class="pcc-context-menu__arrow"
               >▸</span
             >
+          </div>
+        </template>
+      </div>
+    </Transition>
 
-            <!-- Submenu -->
-            <div
-              v-if="item.children && item.children.length > 0 && submenuOpen === item.id"
-              class="pcc-context-menu__submenu"
-              :style="getSubmenuStyle()"
-            >
-              <template v-for="(child, childIndex) in item.children" :key="child.id || childIndex">
-                <div v-if="child.divider" class="pcc-context-menu__divider" />
-                <div
-                  v-else
-                  :class="[
-                    'pcc-context-menu__item',
-                    { 'pcc-context-menu__item--disabled': child.disabled },
-                  ]"
-                  :disabled="child.disabled"
-                  @click="onItemClick(child)"
-                >
-                  <GUIIcon
-                    v-if="child.icon"
-                    :name="child.icon"
-                    :size="16"
-                    class="pcc-context-menu__icon"
-                  />
-                  <span class="pcc-context-menu__label">{{ child.label }}</span>
-                </div>
-              </template>
-            </div>
+    <Transition name="submenu">
+      <div
+        v-if="submenuItem"
+        ref="submenuRef"
+        class="pcc-context-menu pcc-context-menu__submenu"
+        :style="submenuStyle"
+        @mouseenter="onSubmenuEnter"
+        @mouseleave="onSubmenuLeave"
+        @click.stop
+      >
+        <template v-for="(child, childIndex) in submenuItem.children" :key="child.id || childIndex">
+          <div v-if="child.divider" class="pcc-context-menu__divider" />
+          <div
+            v-else
+            :class="[
+              'pcc-context-menu__item',
+              { 'pcc-context-menu__item--disabled': child.disabled },
+            ]"
+            :disabled="child.disabled"
+            @click="onItemClick(child)"
+          >
+            <GUIIcon
+              v-if="child.icon"
+              :name="child.icon"
+              :size="16"
+              class="pcc-context-menu__icon"
+            />
+            <span class="pcc-context-menu__label">{{ child.label }}</span>
           </div>
         </template>
       </div>
@@ -67,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import GUIIcon from './GUIIcon.vue'
 import type { ContextMenuItem } from '../../types'
 
@@ -85,87 +91,146 @@ const emit = defineEmits<{
 }>()
 
 const menuRef = ref<HTMLElement>()
-const submenuOpen = ref<string | null>(null)
+const submenuRef = ref<HTMLElement>()
+const submenuOpenId = ref<string | null>(null)
 const submenuTimer = ref<number | null>(null)
+const itemRefs = new Map<string, HTMLElement>()
+
+function setItemRef(id: string | undefined, el: HTMLElement) {
+  if (id && el) {
+    itemRefs.set(id, el)
+  }
+}
+
+const submenuItem = computed(() => {
+  if (!submenuOpenId.value) return null
+  return props.items.find(
+    (i) => i.id === submenuOpenId.value && i.children && i.children.length > 0
+  ) || null
+})
 
 function onItemClick(item: ContextMenuItem) {
   if (item.disabled) return
   emit('select', item)
   item.action?.()
   emit('update:visible', false)
-  submenuOpen.value = null
+  submenuOpenId.value = null
 }
 
-function openSubmenu(item: ContextMenuItem, _event: MouseEvent) {
-  // Clear any existing timer
+function openSubmenu(item: ContextMenuItem) {
+  if (!item.children || item.children.length === 0) return
   if (submenuTimer.value) {
     clearTimeout(submenuTimer.value)
+    submenuTimer.value = null
   }
-
-  // Open submenu after a short delay
   submenuTimer.value = window.setTimeout(() => {
-    submenuOpen.value = item.id
-  }, 200)
+    submenuOpenId.value = item.id ?? null
+  }, 150)
 }
 
 function closeSubmenu() {
-  // Clear any existing timer
   if (submenuTimer.value) {
     clearTimeout(submenuTimer.value)
+    submenuTimer.value = null
   }
-
-  // Close submenu after a short delay
   submenuTimer.value = window.setTimeout(() => {
-    submenuOpen.value = null
-  }, 100)
+    submenuOpenId.value = null
+  }, 150)
 }
 
-function getSubmenuStyle() {
-  return {
-    left: `100%`,
-    top: `0px`,
+function onSubmenuEnter() {
+  if (submenuTimer.value) {
+    clearTimeout(submenuTimer.value)
+    submenuTimer.value = null
   }
+}
+
+function onSubmenuLeave() {
+  closeSubmenu()
+}
+
+const adjustedPos = ref({ x: 0, y: 0 })
+const isPositioned = ref(false)
+
+const menuStyle = computed(() => ({
+  left: `${adjustedPos.value.x}px`,
+  top: `${adjustedPos.value.y}px`,
+  visibility: isPositioned.value ? ('visible' as const) : ('hidden' as const),
+}))
+
+const submenuStyle = computed(() => {
+  if (!submenuOpenId.value || !submenuItem.value) return { display: 'none' }
+  const parentEl = itemRefs.get(submenuOpenId.value)
+  if (!parentEl) return { display: 'none' }
+  const rect = parentEl.getBoundingClientRect()
+  const vw = window.innerWidth
+  const padding = 12
+  const submenuWidth = 200
+  const left = rect.right + 4
+  const flip = left + submenuWidth > vw - padding
+  return {
+    left: flip ? `${rect.left - submenuWidth - 4}px` : `${left}px`,
+    top: `${rect.top}px`,
+  }
+})
+
+function adjustPosition() {
+  if (!menuRef.value) return
+  const rect = menuRef.value.getBoundingClientRect()
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const padding = 12
+  let x = props.x
+  let y = props.y
+
+  if (y + rect.height + padding > vh) {
+    y = y - rect.height - padding
+  }
+  if (x + rect.width + padding > vw) {
+    x = x - rect.width - padding
+  }
+  if (x < padding) {
+    x = padding
+  }
+  if (y < padding) {
+    y = padding
+  }
+
+  adjustedPos.value = { x, y }
+  isPositioned.value = true
 }
 
 function handleKeydown(event: KeyboardEvent) {
   switch (event.key) {
     case 'Escape':
       emit('update:visible', false)
-      submenuOpen.value = null
+      submenuOpenId.value = null
       break
     case 'ArrowUp':
-      // Implement keyboard navigation
       break
     case 'ArrowDown':
-      // Implement keyboard navigation
       break
     case 'ArrowRight':
-      // Open submenu
       break
     case 'ArrowLeft':
-      // Close submenu
-      submenuOpen.value = null
+      submenuOpenId.value = null
       break
   }
 }
 
 function handleClickOutside(event: MouseEvent) {
-  if (props.visible && menuRef.value && !menuRef.value.contains(event.target as Node)) {
+  if (!props.visible) return
+  const target = event.target as Node
+  const inMenu = menuRef.value?.contains(target)
+  const inSubmenu = submenuRef.value?.contains(target)
+  if (!inMenu && !inSubmenu) {
     emit('update:visible', false)
-    submenuOpen.value = null
+    submenuOpenId.value = null
   }
-}
-
-function handleContextMenu(event: MouseEvent) {
-  // Prevent default context menu
-  event.preventDefault()
 }
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
-  document.addEventListener('contextmenu', handleContextMenu)
-
-  // Focus the menu when it becomes visible
   if (props.visible && menuRef.value) {
     menuRef.value.focus()
   }
@@ -173,12 +238,19 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
-  document.removeEventListener('contextmenu', handleContextMenu)
-
-  // Clear any existing timer
   if (submenuTimer.value) {
     clearTimeout(submenuTimer.value)
   }
+})
+
+watch(() => [props.visible, props.x, props.y], () => {
+  isPositioned.value = false
+  submenuOpenId.value = null
+  adjustedPos.value = { x: props.x, y: props.y }
+  if (!props.visible) return
+  nextTick(() => {
+    requestAnimationFrame(adjustPosition)
+  })
 })
 </script>
 
@@ -202,8 +274,6 @@ onBeforeUnmount(() => {
   max-height: 80vh;
   overflow-y: auto;
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
-  animation: contextMenuSpringIn 0.3s
-    var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1)) both;
 }
 
 @keyframes contextMenuSpringIn {
@@ -284,36 +354,8 @@ onBeforeUnmount(() => {
 
 /* ── Submenu ─────────────────────────────────────────────────────── */
 .pcc-context-menu__submenu {
-  position: absolute;
-  top: 0;
-  left: calc(100% + 4px);
   min-width: 200px;
-  padding: var(--gui-spacing-xxs, 2px);
-  background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.95));
-  backdrop-filter: blur(30px) saturate(200%);
-  -webkit-backdrop-filter: blur(30px) saturate(200%);
-  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
-  border-radius: var(--gui-radius-lg, 12px);
-  box-shadow: var(
-    --gui-shadow-ios-dropdown,
-    0 8px 32px rgba(0, 0, 0, 0.6),
-    0 0 1px rgba(255, 255, 255, 0.08)
-  );
-  z-index: var(--gui-z-context-menu, 500);
-  max-height: 80vh;
-  overflow-y: auto;
-  animation: submenuFadeIn 0.2s var(--gui-transition-base, 200ms ease) both;
-}
-
-@keyframes submenuFadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  z-index: calc(var(--gui-z-context-menu, 500) + 1);
 }
 
 /* ── Animations ───────────────────────────────────────────────────── */
@@ -324,6 +366,34 @@ onBeforeUnmount(() => {
 
 .context-menu-leave-active {
   animation: contextMenuFadeOut 0.15s var(--gui-transition-fast, 120ms ease) both;
+}
+
+.submenu-enter-active {
+  animation: submenuSlideIn 0.2s var(--gui-transition-base, 200ms ease) both;
+}
+
+.submenu-leave-active {
+  animation: submenuFadeOut 0.12s var(--gui-transition-fast, 120ms ease) both;
+}
+
+@keyframes submenuSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes submenuFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 @keyframes contextMenuFadeOut {

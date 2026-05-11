@@ -5,18 +5,38 @@ import App from './App.vue'
 import { errorHandler, ErrorType, ErrorSeverity } from './utils/errorHandler'
 import { useTerminalStore } from './stores'
 import indexedDBService from './utils/indexedDB'
-import logger from './utils/logger'
+
+// Unregister any stale service workers and clear caches (dev environment cleanup)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(async (registrations) => {
+    for (const registration of registrations) {
+      await registration.unregister()
+    }
+    if (registrations.length > 0) {
+      console.log('[Main] Unregistered', registrations.length, 'service worker(s)')
+    }
+  })
+  // Also clear all SW caches to prevent stale cached responses
+  if ('caches' in window) {
+    caches.keys().then(async (cacheNames) => {
+      for (const cacheName of cacheNames) {
+        await caches.delete(cacheName)
+      }
+      if (cacheNames.length > 0) {
+        console.log('[Main] Cleared', cacheNames.length, 'cache(s)')
+      }
+    })
+  }
+}
 
 // Initialize user ID early (before app mounts)
 indexedDBService
   .getUserId()
   .then((userId) => {
-    // Store globally for easy access
     window.__USER_ID__ = userId
-    logger.info('[App] User ID initialized:', userId)
   })
-  .catch((err) => {
-    logger.error('[App] Failed to initialize user ID:', err)
+  .catch(() => {
+    // Fallback: user ID will be generated later
   })
 
 // Create Pinia instance

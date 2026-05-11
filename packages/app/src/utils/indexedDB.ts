@@ -42,16 +42,40 @@ const STORES = {
 
 class IndexedDBService {
   private db: IDBDatabase | null = null
+  private initPromise: Promise<void> | null = null
 
   /**
    * Initialize the database
    */
   async init(): Promise<void> {
+    if (this.db) {
+      return
+    }
+    if (this.initPromise) {
+      return this.initPromise
+    }
+    this.initPromise = this.doInit()
+    return this.initPromise
+  }
+
+  private async doInit(attempt = 1): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
 
-      request.onerror = () => {
-        logger.error('[IndexedDB] Failed to open database:', request.error)
+      request.onerror = async () => {
+        logger.error(`[IndexedDB] Failed to open database (attempt ${attempt}):`, request.error)
+        this.initPromise = null
+        if (attempt < 2) {
+          logger.warn('[IndexedDB] Attempting to delete and recreate database...')
+          try {
+            await this.deleteDatabase()
+            const retry = await this.doInit(attempt + 1)
+            resolve(retry)
+            return
+          } catch (deleteErr) {
+            logger.error('[IndexedDB] Failed to delete database:', deleteErr)
+          }
+        }
         reject(request.error)
       }
 
@@ -59,6 +83,12 @@ class IndexedDBService {
         this.db = request.result
         logger.info('[IndexedDB] Database opened successfully')
         resolve()
+      }
+
+      request.onblocked = () => {
+        logger.warn('[IndexedDB] Database open blocked')
+        this.initPromise = null
+        reject(new Error('IndexedDB blocked'))
       }
 
       request.onupgradeneeded = (event) => {
@@ -145,6 +175,7 @@ class IndexedDBService {
    * Save tabs data
    */
   async saveTabs(tabs: any[], activeTabId: string, sidebarOpen: boolean): Promise<void> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TABS], 'readwrite')
@@ -190,6 +221,7 @@ class IndexedDBService {
    * Load tabs data
    */
   async loadTabs(): Promise<{ tabs: any[]; activeTabId: string; sidebarOpen: boolean }> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TABS], 'readonly')
@@ -217,6 +249,7 @@ class IndexedDBService {
    * Save terminal state for a specific tab
    */
   async saveTerminalState(tabId: string, content: string | string[]): Promise<void> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TERMINAL_STATES], 'readwrite')
@@ -238,6 +271,7 @@ class IndexedDBService {
    * Load terminal state for a specific tab
    */
   async loadTerminalState(tabId: string): Promise<string | string[] | null> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.TERMINAL_STATES], 'readonly')
@@ -289,6 +323,29 @@ class IndexedDBService {
       const request = store.delete(tabId)
       request.onsuccess = () => resolve()
       request.onerror = () => reject(request.error)
+    })
+  }
+
+  /**
+   * Delete the entire database (nuclear option for corrupted DBs)
+   */
+  async deleteDatabase(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.deleteDatabase(DB_NAME)
+      request.onsuccess = () => {
+        logger.info('[IndexedDB] Database deleted successfully')
+        this.db = null
+        this.initPromise = null
+        resolve()
+      }
+      request.onerror = () => {
+        logger.error('[IndexedDB] Failed to delete database:', request.error)
+        reject(request.error)
+      }
+      request.onblocked = () => {
+        logger.warn('[IndexedDB] Database delete blocked')
+        reject(new Error('Database delete blocked'))
+      }
     })
   }
 
@@ -416,6 +473,7 @@ class IndexedDBService {
    * Load filesystem data
    */
   async loadFilesystem(): Promise<{ root: any; currentPath: string[] } | null> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.FILESYSTEM], 'readonly')
@@ -471,6 +529,7 @@ class IndexedDBService {
   }
 
   async loadGUIWindowStates(): Promise<any[]> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.GUI_WINDOWS], 'readonly')
@@ -516,6 +575,7 @@ class IndexedDBService {
    * 保存设置项
    */
   async saveSetting(key: string, value: any): Promise<void> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.USER_SETTINGS], 'readwrite')
@@ -536,6 +596,7 @@ class IndexedDBService {
    * 加载设置项
    */
   async loadSetting(key: string): Promise<any> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.USER_SETTINGS], 'readonly')

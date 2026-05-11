@@ -20,16 +20,19 @@
         <!-- WiFi -->
         <svg
           width="16"
-          height="12"
-          viewBox="0 0 16 12"
+          height="16"
+          viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          stroke-width="1.5"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
           class="home-screen__icon"
         >
-          <path d="M1.5 4.5C4 1.5 12 1.5 14.5 4.5" />
-          <path d="M4.5 7.5C6 5.5 10 5.5 11.5 7.5" />
-          <path d="M7 10.5C7.5 9.5 8.5 9.5 9 10.5" />
+          <path d="M0 11a15 15 0 0 1 24 0" />
+          <path d="M4 14a10 10 0 0 1 16 0" />
+          <path d="M8 17a5 5 0 0 1 8 0" />
+          <circle cx="12" cy="20" r="2" fill="currentColor" stroke="none" />
         </svg>
         <!-- Battery -->
         <svg width="25" height="12" viewBox="0 0 25 12" fill="none" class="home-screen__icon">

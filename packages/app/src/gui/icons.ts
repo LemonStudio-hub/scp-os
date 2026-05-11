@@ -169,7 +169,7 @@ export function iconBattery(p: IconProps = {}) {
 }
 
 export function iconWifi(p: IconProps = {}) {
-  return `<svg ${attrSize(p)} ${attrBase()}><path d="M1 8.5a14 14 0 0122 0M5 12.5a9 9 0 0114 0M8.5 16a4 4 0 017 0"/></svg>`
+  return `<svg ${attrSize(p)} ${attrBase()}><path d="M0 11a15 15 0 0 1 24 0"/><path d="M4 14a10 10 0 0 1 16 0"/><path d="M8 17a5 5 0 0 1 8 0"/><circle cx="12" cy="20" r="2" fill="currentColor" stroke="none"/></svg>`
 }
 
 export function iconMenu(p: IconProps = {}) {

@@ -115,6 +115,13 @@ export default defineConfig({
       'X-Frame-Options': 'SAMEORIGIN',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
     },
+    proxy: {
+      '/api': {
+        target: 'https://api.scpos.site',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
   preview: {
     headers: {

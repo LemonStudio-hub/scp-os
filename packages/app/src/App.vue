@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import PCNotification from './gui/components/PCNotification.vue'
 import MobileApp from './gui/mobile/MobileApp.vue'
@@ -17,10 +17,12 @@ import {
   setContext,
 } from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
+import { filesystem } from './utils/filesystem'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
 import logger from './utils/logger'
+import indexedDBService from './utils/indexedDB'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
@@ -41,45 +43,63 @@ const isAppReady = ref(false)
 const loadingProgress = ref(0)
 const loadingStep = ref('loading.steps.initializing')
 
-// Auth state
-const isAuthReady = ref(false)
+onMounted(() => {
+  // Safety timeout: force show app after 3s even if init hangs
+  const forceReady = setTimeout(() => {
+    if (!isAppReady.value) {
+      logger.warn('[App] Initialization timeout, forcing app ready')
+      isAppReady.value = true
+    }
+  }, 3000)
 
-onMounted(async () => {
-  // Step 1: Initialize theme store
-  loadingStep.value = 'loading.steps.themes'
-  loadingProgress.value = 10
-  themeStore.init()
+  ;(async () => {
+    try {
+      // Step 1: Initialize theme store
+      loadingStep.value = 'loading.steps.themes'
+      loadingProgress.value = 10
+      themeStore.init()
 
-  // Step 2: Inject GUI design tokens
-  loadingStep.value = 'loading.steps.ui'
-  loadingProgress.value = 20
-  injectGUITokens()
+      // Step 2: Inject GUI design tokens
+      loadingStep.value = 'loading.steps.ui'
+      loadingProgress.value = 20
+      injectGUITokens()
 
-  // Step 3: Register all GUI tools
-  loadingStep.value = 'loading.steps.components'
-  loadingProgress.value = 30
-  registerAllTools()
+      // Step 3: Register all GUI tools
+      loadingStep.value = 'loading.steps.components'
+      loadingProgress.value = 30
+      registerAllTools()
 
-  // Step 4 & 5: Initialize tabs store and load saved GUI windows in parallel
-  loadingStep.value = 'loading.steps.data'
-  loadingProgress.value = 50
-  await Promise.all([tabsStore.initialize(), wmStore.loadWindowStates()])
-  loadingProgress.value = 90
+      // Step 4: Initialize IndexedDB first (required by all data operations)
+      loadingStep.value = 'loading.steps.data'
+      loadingProgress.value = 45
+      await indexedDBService.init()
 
-  // Loading complete — show app immediately
-  loadingProgress.value = 100
-  loadingStep.value = 'loading.steps.ready'
-  isAppReady.value = true
+      // Step 5: Load tabs, window states, and filesystem in parallel
+      loadingProgress.value = 50
+      await Promise.all([tabsStore.initialize(), wmStore.loadWindowStates(), filesystem.init()])
+      loadingProgress.value = 90
 
-  // Auth initialization in background (non-blocking)
-  authStore.initAuth().then(() => {
-    isAuthReady.value = true
-  })
+      // Step 6: Auth initialization
+      loadingStep.value = 'loading.steps.auth'
+      loadingProgress.value = 95
+      await authStore.initAuth()
+
+      // Loading complete
+      loadingProgress.value = 100
+      loadingStep.value = 'loading.steps.ready'
+      isAppReady.value = true
+    } catch (error) {
+      logger.error('[App] Failed to initialize:', error)
+      isAppReady.value = true
+    } finally {
+      clearTimeout(forceReady)
+    }
+  })()
 
   // Register global keyboard shortcuts
   setContext('global')
 
-  // Ctrl+T: New terminal tab
+  // Ctrl+Shift+T: New terminal tab
   registerShortcut({
     id: 'global-new-terminal',
     keys: 'Ctrl+Shift+T',
@@ -164,10 +184,6 @@ onMounted(async () => {
   }, 1000)
 })
 
-onUnmounted(() => {
-  // Nothing to clean up for now
-})
-
 /**
  * Handle successful login
  * Called when user completes login from LoginScreen or PCLoginScreen
@@ -180,7 +196,7 @@ function handleLoginSuccess(): void {
 <template>
   <!-- App Loading Overlay -->
   <div
-    v-if="!isAppReady"
+    v-show="!isAppReady"
     class="app-loading-overlay"
     role="status"
     aria-live="polite"
@@ -221,32 +237,29 @@ function handleLoginSuccess(): void {
     </div>
   </div>
 
-  <!-- Login Screen (shown when auth is ready but user not logged in) -->
-  <transition name="fade" mode="out-in">
-    <template v-if="isAuthReady && !authStore.isLoggedIn">
+  <!-- Main Content Area -->
+  <div v-show="isAppReady" class="app-content">
+    <!-- Login Screen -->
+    <div v-if="!authStore.isLoggedIn" class="login-wrapper">
       <LoginScreen
         v-if="mobile.isMobile.value"
         key="mobile-login"
         @login-success="handleLoginSuccess"
       />
       <PCLoginScreen v-else key="desktop-login" @login-success="handleLoginSuccess" />
-    </template>
+    </div>
 
-    <!-- Main App (shown when app is ready; auth checks run in background) -->
-    <template v-else>
+    <!-- Main App -->
+    <div v-else class="main-wrapper">
       <MobileApp key="main-app" :class="{ 'app-loaded': true }">
-        <!-- Desktop-only components (only mounted on desktop) -->
+        <!-- Desktop-only components -->
         <template v-if="!mobile.isMobile.value">
-          <!-- Performance Dashboard -->
           <PerformanceDashboard
             :is-visible="showPerformanceDashboard"
             @close="showPerformanceDashboard = false"
           />
 
-          <!-- GUI Windows rendered via ToolRegistry (dynamic, no hardcoded v-if chain) -->
           <template v-for="win in wmStore.openWindows" :key="win.config.id">
-            <!-- Existing tools (FileManagerWindow, EditorWindow, TerminalPanel) have their own window chrome -->
-            <!-- They are rendered directly without PCWindow wrapper -->
             <component
               :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
               :window-instance="win"
@@ -255,11 +268,10 @@ function handleLoginSuccess(): void {
           </template>
         </template>
 
-        <!-- System Notifications (always rendered) -->
         <PCNotification />
       </MobileApp>
-    </template>
-  </transition>
+    </div>
+  </div>
 </template>
 
 <style>
@@ -290,30 +302,17 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
-  padding-bottom: 48px; /* Reserve space for toolbar */
+  padding-bottom: 48px;
 }
 
-/* ── Fade Transition for Login/Main App Switching ──────────────── */
-.fade-enter-active,
-.fade-leave-active {
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
+.app-content {
+  width: 100%;
+  height: 100%;
 }
 
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.fade-enter-to,
-.fade-leave-from {
-  opacity: 1;
-  transform: translateY(0);
+.login-wrapper,
+.main-wrapper {
+  width: 100%;
+  height: 100%;
 }
 </style>

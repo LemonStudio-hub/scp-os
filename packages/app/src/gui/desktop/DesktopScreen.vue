@@ -51,11 +51,11 @@
       <div
         v-for="app in apps"
         :key="app.id"
-        ref="appIcons"
+        :ref="(el) => bindAppDrag(el as HTMLElement, app)"
         :data-app-id="app.id"
         class="desktop-screen__icon"
-        :style="getAppStyle(app)"
-        @mousedown="handleMouseDown($event, app)"
+        :style="{ left: `${app.x}px`, top: `${app.y}px` }"
+        @mousedown="handleAppMouseDown($event, app)"
         @dblclick="onAppDoubleClick(app)"
         @contextmenu="handleAppContextMenu($event, app)"
       >
@@ -219,7 +219,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted, reactive } from 'vue'
 import { useThemeStore } from '../stores/themeStore'
 import { wallpaperService } from '../../utils/wallpaperService'
 import PCTaskbar, { type PCTaskbarItem } from '../components/PCTaskbar.vue'
@@ -241,72 +241,16 @@ export interface DesktopApp {
 
 const { t } = useI18n()
 
-const apps: DesktopApp[] = [
-  {
-    id: 'terminal',
-    label: t('home.apps.terminal'),
-    tool: 'terminal',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 50,
-  },
-  {
-    id: 'files',
-    label: t('home.apps.files'),
-    tool: 'filemanager',
-    color: 'var(--gui-accent)',
-    x: 180,
-    y: 50,
-  },
-  {
-    id: 'chat',
-    label: t('home.apps.chat'),
-    tool: 'chat',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 50,
-  },
-  {
-    id: 'dash',
-    label: t('home.apps.dash'),
-    tool: 'dash',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 180,
-  },
-  {
-    id: 'feedback',
-    label: t('home.apps.feedback'),
-    tool: 'feedback',
-    color: 'var(--gui-accent)',
-    x: 180,
-    y: 180,
-  },
-  {
-    id: 'docs',
-    label: t('home.apps.docs'),
-    tool: 'docs',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 180,
-  },
-  {
-    id: 'settings',
-    label: t('home.apps.settings'),
-    tool: 'settings',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 310,
-  },
-  {
-    id: 'editor',
-    label: t('home.apps.editor'),
-    tool: 'editor',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 310,
-  },
-]
+const apps = reactive<DesktopApp[]>([
+  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', color: 'var(--gui-accent)', x: 50, y: 50 },
+  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', color: 'var(--gui-accent)', x: 180, y: 50 },
+  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)', x: 310, y: 50 },
+  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)', x: 50, y: 180 },
+  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)', x: 180, y: 180 },
+  { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)', x: 310, y: 180 },
+  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)', x: 50, y: 310 },
+  { id: 'editor', label: t('home.apps.editor'), tool: 'editor', color: 'var(--gui-accent)', x: 310, y: 310 },
+])
 
 const taskbarItems: PCTaskbarItem[] = [
   { id: 'terminal', tool: 'terminal' as ToolType, label: t('app.terminal'), iconName: 'terminal' },
@@ -331,62 +275,38 @@ const emit = defineEmits<{
   'start-click': []
 }>()
 
-const appIcons = ref<HTMLElement[]>([])
 const customWallpaperUrl = ref<string | null>(null)
 const themeStore = useThemeStore()
 themeStore.init()
 
-// Store drag states for each app
-const dragStates = new Map<string, ReturnType<typeof useDraggable>>()
+// Desktop app drag states
+const appDragStates = new Map<string, ReturnType<typeof useDraggable>>()
 
-// Get app style with position
-const getAppStyle = (app: DesktopApp) => {
-  return {
-    left: `${app.x}px`,
-    top: `${app.y}px`,
-  }
-}
-
-// Initialize draggable for an app
-const initDraggable = (app: DesktopApp, element: HTMLElement) => {
-  const draggable = useDraggable(ref(element), {
+function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
+  if (!el || appDragStates.has(app.id)) return
+  const state = useDraggable(ref(el), {
     boundary: {
       minX: 0,
       minY: 0,
       maxX: window.innerWidth - 100,
-      maxY: window.innerHeight - 150, // Account for taskbar
+      maxY: window.innerHeight - 150,
     },
-    onClick: () => {
-      // Single click launches the app
-      emit('launch', app)
+    onClick: () => emit('launch', app),
+    onMove: (x, y) => {
+      app.x = x
+      app.y = y
     },
     onEnd: (x, y) => {
-      // Update app position
-      const appIndex = apps.findIndex((a) => a.id === app.id)
-      if (appIndex !== -1) {
-        apps[appIndex].x = x
-        apps[appIndex].y = y
-      }
+      app.x = x
+      app.y = y
     },
   })
-
-  dragStates.set(app.id, draggable)
-  return draggable
+  state.setInitialPosition(app.x ?? 0, app.y ?? 0)
+  appDragStates.set(app.id, state)
 }
 
-// Handle mouse down on app
-const handleMouseDown = (event: MouseEvent, app: DesktopApp) => {
-  // Find the element for this app
-  const element = appIcons.value.find((el) => el.dataset.appId === app.id)
-  if (!element) return
-
-  // Get or initialize draggable
-  let draggable = dragStates.get(app.id)
-  if (!draggable) {
-    draggable = initDraggable(app, element)
-  }
-
-  draggable.handleMouseDown(event)
+function handleAppMouseDown(e: MouseEvent, app: DesktopApp) {
+  appDragStates.get(app.id)?.handleMouseDown(e)
 }
 
 // Handle app double click
@@ -438,6 +358,12 @@ const onPowerAction = (action: string) => {
 // Handle desktop context menu
 const handleDesktopContextMenu = (event: MouseEvent) => {
   event.preventDefault()
+
+  // Only show desktop menu on empty areas (not on app icons or taskbar)
+  const target = event.target as HTMLElement
+  if (target.closest('.desktop-screen__icon') || target.closest('.pc-taskbar')) {
+    return
+  }
 
   contextMenu.value = {
     visible: true,
@@ -535,6 +461,7 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
 // Handle app context menu
 const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
   event.preventDefault()
+  event.stopPropagation()
 
   contextMenu.value = {
     visible: true,
@@ -659,10 +586,8 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 
   // Clean up drag states
-  dragStates.forEach((draggable) => {
-    draggable.stop()
-  })
-  dragStates.clear()
+  appDragStates.forEach((state) => state.stop())
+  appDragStates.clear()
 })
 </script>
 
