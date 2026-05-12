@@ -1069,7 +1069,7 @@ export default {
       const path = url.pathname
       const isChatWs = (path === '/chat/ws' || /^\/chat\/room\/\d+\/ws$/.test(path))
       if (isChatWs && request.headers.get('Upgrade') === 'websocket') {
-        const chatRoomId = env.CHAT_ROOM_DO.idFromName('global')
+        const chatRoomId = env.CHAT_ROOM_DO.idFromName('global-v3')
         const chatRoomStub = env.CHAT_ROOM_DO.get(chatRoomId)
         return chatRoomStub.fetch(request)
       }

@@ -46,8 +46,14 @@
             <div class="pc-chat__loading-dot" />
           </div>
           <template v-else>
+            <!-- DEBUG: rooms count -->
+            <div v-if="rooms.length === 0" style="padding: 16px; color: #ff3b30; font-size: 12px;">
+              DEBUG: rooms.length = {{ rooms.length }}<br>
+              query = "{{ roomSearchQuery }}"<br>
+              filtered = {{ filteredRooms.length }}
+            </div>
             <div
-              v-for="room in filteredRooms"
+              v-for="room in rooms"
               :key="room.id"
               class="pc-chat__room-item"
               :class="{ 'pc-chat__room-item--active': currentRoomId === room.id }"
@@ -79,18 +85,9 @@
                 class="pc-chat__room-settings"
                 @click.stop="openRoomSettings(room)"
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path
-                    d="M7 9.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
-                    stroke="currentColor"
-                    stroke-width="1.2"
-                  />
-                  <path
-                    d="M7 1.5v1M7 11.5v1M1.5 7h1M11.5 7h1M3.1 3.1l.7.7M10.2 10.2l.7.7M3.1 10.9l.7-.7M10.2 3.8l.7-.7"
-                    stroke="currentColor"
-                    stroke-width="1.2"
-                    stroke-linecap="round"
-                  />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 5 15.34a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.66 9 1.65 1.65 0 0 0 4.33 7.18l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.66a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.34 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                 </svg>
               </button>
             </div>
@@ -126,6 +123,9 @@
           </div>
 
           <div ref="messagesRef" class="pc-chat__messages">
+            <div v-if="messages.length > 0 || loading" style="padding: 4px 8px; font-size: 10px; color: #666; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+              DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{ messages[messages.length-1]?.id || '?' }}
+            </div>
             <div v-if="messages.length === 0 && !loading" class="pc-chat__empty">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
                 <path
@@ -152,7 +152,7 @@
             >
               <div class="chat-bubble__header">
                 <span class="chat-bubble__username">{{ msg.username }}</span>
-                <span class="chat-bubble__time">{{ formatTime(msg.created_at) }}</span>
+                <span class="chat-bubble__time">{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}</span>
               </div>
               <div class="chat-bubble__content">{{ msg.content }}</div>
               <div v-if="msg.sending" class="chat-bubble__status">
@@ -519,11 +519,16 @@ const ws = useChatWebSocket({
       ...msg,
       isSelf: msg.user_id === userId,
     }
-    const existingIdx = messages.findIndex(
-      (m) => m.sending && m.content === msg.content && m.user_id === msg.user_id
-    )
+    // 优先使用 tempId 匹配，避免内容编码导致匹配失败
+    const existingIdx = msg.tempId
+      ? messages.findIndex((m) => m.sending && m.tempId === msg.tempId)
+      : messages.findIndex((m) => m.sending && m.content === msg.content && m.user_id === msg.user_id)
     if (existingIdx !== -1) {
-      messages[existingIdx] = chatMsg
+      // 保留 tempId 避免 Vue key 变化导致 DOM 闪烁，使用 splice 确保响应式追踪
+      messages.splice(existingIdx, 1, {
+        ...chatMsg,
+        tempId: messages[existingIdx].tempId,
+      })
     } else {
       const alreadyExists = messages.some((m) => m.id === msg.id && !m.tempId)
       if (!alreadyExists) {
@@ -533,7 +538,7 @@ const ws = useChatWebSocket({
     nextTick(() => scrollToBottom())
   },
   onHistory: (msgs: WSChatMessage[]) => {
-    messages.length = 0
+    messages.splice(0, messages.length)
     for (const msg of msgs) {
       messages.push({
         ...msg,
@@ -574,18 +579,17 @@ const displayMessages = computed(() => messages)
 
 const filteredRooms = computed(() => {
   const query = roomSearchQuery.value.trim().toLowerCase()
-  if (!query) return rooms
-  return rooms.filter((r) => r.name.toLowerCase().includes(query))
+  return rooms.filter((r) => !query || r.name.toLowerCase().includes(query))
 })
 
 const currentRoom = computed(() => rooms.find((r) => r.id === currentRoomId.value) || null)
 
 const wsStatusLabel = computed(() => {
   const state = ws.connectionState.value
-  if (state === 'connected') return 'Connected'
-  if (state === 'connecting') return 'Connecting...'
-  if (state === 'reconnecting') return 'Reconnecting...'
-  return ws.lastError.value || 'Disconnected'
+  if (state === 'connected') return '已连接'
+  if (state === 'connecting') return '连接中...'
+  if (state === 'reconnecting') return '重连中...'
+  return ws.lastError.value || '已断开'
 })
 
 function getUnreadCount(roomId: number): number {
@@ -646,11 +650,16 @@ async function loadUnreadCounts() {
 async function loadRooms() {
   loadingRooms.value = true
   try {
-    const response = await fetch(`${API_BASE}/chat/rooms`)
+    const url = `${API_BASE}/chat/rooms?t=${Date.now()}`
+    console.log('[Chat] Loading rooms from:', url)
+    const response = await fetch(url, {
+      cache: 'no-cache'
+    })
     const data = await response.json()
+    console.log('[Chat] Rooms response:', JSON.stringify(data).slice(0, 500))
     if (data.success && data.data) {
       const oldRooms = new Map(rooms.map((r) => [r.id, r]))
-      rooms.length = 0
+      rooms.splice(0, rooms.length)
       for (const room of data.data) {
         const oldRoom = oldRooms.get(room.id)
         if (
@@ -668,6 +677,9 @@ async function loadRooms() {
         const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0
         return timeB - timeA
       })
+      console.log('[Chat] Rooms loaded:', rooms.length)
+    } else {
+      console.warn('[Chat] Rooms load failed or empty:', data)
     }
   } catch (error) {
     console.error('[Chat] Failed to load rooms:', error)
@@ -680,13 +692,14 @@ async function createRoom() {
   if (!newRoomName.value.trim()) return
   creatingRoom.value = true
   try {
+    const effectiveUserId = authStore.userId || userId || (await indexedDBService.getUserId())
     const response = await authStore.authFetch(`${API_BASE}/chat/rooms`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: newRoomName.value.trim(),
         description: newRoomDescription.value.trim(),
-        created_by: userId,
+        created_by: effectiveUserId,
         is_public: newRoomPublic.value ? 1 : 0,
       }),
     })
@@ -711,7 +724,7 @@ async function createRoom() {
 function switchRoom(roomId: number) {
   if (currentRoomId.value === roomId) return
   currentRoomId.value = roomId
-  messages.length = 0
+  messages.splice(0, messages.length)
   markRoomAsRead(roomId)
   ws.switchRoom(roomId)
   loadHistoryFromAPI(roomId)
@@ -766,12 +779,11 @@ async function sendMessage() {
   scrollToBottom()
   autoResizeInput()
 
-  const sent = ws.sendMessage(content)
+  const sent = ws.sendMessage(content, tempId)
   if (!sent) {
     const idx = messages.findIndex((m) => m.tempId === tempId)
     if (idx !== -1) {
-      messages[idx].sending = false
-      messages[idx].error = 'Failed to send (not connected)'
+      messages.splice(idx, 1, { ...messages[idx], sending: false, error: 'Failed to send (not connected)' })
     }
   }
   sending.value = false
@@ -784,16 +796,14 @@ async function retryMessage(msg: ChatMessage) {
   const idx = messages.findIndex((m) => m.tempId === msg.tempId)
   if (idx === -1) return
 
-  messages[idx].sending = true
-  messages[idx].error = undefined
-  messages[idx].retryCount = (msg.retryCount || 0) + 1
+  const updated = { ...messages[idx], sending: true, error: undefined, retryCount: (msg.retryCount || 0) + 1 }
+  messages.splice(idx, 1, updated)
 
   const sent = ws.sendMessage(msg.content)
   if (!sent) {
-    messages[idx].sending = false
-    messages[idx].error = t('chat.networkError')
+    messages.splice(idx, 1, { ...updated, sending: false, error: t('chat.networkError') })
   } else {
-    messages[idx].sending = false
+    messages.splice(idx, 1, { ...updated, sending: false })
   }
 }
 
@@ -872,7 +882,7 @@ async function deleteRoom() {
       rooms.splice(roomIndex, 1)
       if (currentRoomId.value === currentRoom.value?.id && rooms.length > 0) {
         currentRoomId.value = rooms[0].id
-        messages.length = 0
+        messages.splice(0, messages.length)
         ws.switchRoom(rooms[0]?.id || 1)
       }
     }

@@ -29,7 +29,7 @@ export function setI18n(i18n: {
 
 export const useFileManagerStore = defineStore('fileManager', () => {
   // State
-  const currentPath = ref<string>('/')
+  const currentPath = ref<string>('/home/scp')
   const files = ref<FileItem[]>([])
   const viewMode = ref<ViewMode>('grid')
   const sortField = ref<SortField>('name')
@@ -43,10 +43,16 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     items: [],
   })
   const loading = ref(false)
+  const showHidden = ref(false)
 
   // Computed
   const sortedFiles = computed(() => {
     let filtered = files.value
+
+    // Filter hidden files
+    if (!showHidden.value) {
+      filtered = filtered.filter((f) => !f.isHidden)
+    }
 
     // Apply search filter
     if (searchQuery.value) {
@@ -154,6 +160,10 @@ export const useFileManagerStore = defineStore('fileManager', () => {
       sortField.value = field
       sortOrder.value = 'asc'
     }
+  }
+
+  function toggleShowHidden(): void {
+    showHidden.value = !showHidden.value
   }
 
   function setSearch(query: string): void {
@@ -306,6 +316,8 @@ export const useFileManagerStore = defineStore('fileManager', () => {
 
   // Helper
   function nodeToItem(node: FileSystemNode): FileItem {
+    const isHidden = node.name.startsWith('.') ||
+      (currentPath.value === '/' && ['home', 'etc', 'var'].includes(node.name))
     return {
       name: node.name,
       path: `${currentPath.value}/${node.name}`.replace('//', '/'),
@@ -319,6 +331,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
         execute: node.permissions.user.execute,
       },
       type: node.type === 'directory' ? 'folder' : node.name.split('.').pop(),
+      isHidden,
     }
   }
 
@@ -336,6 +349,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     selectedFiles,
     contextMenu,
     loading,
+    showHidden,
 
     // Computed
     sortedFiles,
@@ -351,6 +365,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     setViewMode,
     setSort,
     setSearch,
+    toggleShowHidden,
     createFile,
     createDirectory,
     deleteSelected,

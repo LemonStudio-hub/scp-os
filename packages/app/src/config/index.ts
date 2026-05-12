@@ -5,7 +5,7 @@
 
 export const config = {
   api: {
-    workerUrl: import.meta.env.VITE_WORKER_API_URL || 'https://api.scpos.site',
+    workerUrl: import.meta.env.VITE_WORKER_API_URL || 'https://os1api.daum.pw',
     timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 15000,
   },
   cache: {

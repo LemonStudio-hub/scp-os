@@ -112,6 +112,7 @@ export interface Env {
   SCP_CACHE: KVNamespace
   SCP_DB: D1Database
   SCP_READER_DB: D1Database
+  SCP_FILES: R2Bucket
   CHAT_ROOM_DO: DurableObjectNamespace
   JWT_SECRET?: string
   ADMIN_JWT_SECRET?: string

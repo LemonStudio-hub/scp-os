@@ -108,6 +108,10 @@ export class CORSManager {
     const corsHeaders = this.getHeaders(request)
     const headers = new Headers(corsHeaders)
     headers.set('Content-Type', 'application/json')
+    // Prevent caching of API responses
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    headers.set('Pragma', 'no-cache')
+    headers.set('Expires', '0')
     
     return new Response(JSON.stringify(data), {
       status,

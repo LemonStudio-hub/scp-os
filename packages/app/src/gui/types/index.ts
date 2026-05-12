@@ -94,6 +94,7 @@ export interface FileItem {
   modifiedAt: number
   permissions: FilePermissions
   type?: string
+  isHidden?: boolean
 }
 
 export interface FilePermissions {

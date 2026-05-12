@@ -28,35 +28,58 @@ export class Router {
   }
 
   resolve(method: string, pathname: string): { handler: RouteHandler; params: Record<string, string> } | null {
-    const exactKey = `${method}:${pathname}`
-    const exactHandler = this.routes.get(exactKey)
-    if (exactHandler) {
-      return { handler: exactHandler, params: {} }
+    // Map /api/admin/* aliases to internal /admin/* routes
+    let resolvedPath = pathname
+    if (pathname.startsWith('/api/admin/')) {
+      if (pathname === '/api/admin/login') resolvedPath = '/admin/auth/login'
+      else if (pathname === '/api/admin/verify') resolvedPath = '/admin/auth/verify'
+      else if (pathname === '/api/admin/stats') resolvedPath = '/admin/stats/dashboard'
+      else if (pathname === '/api/admin/stats/trend') resolvedPath = '/admin/stats/trends'
+      else resolvedPath = pathname.replace(/^\/api\/admin/, '/admin')
     }
 
-    for (const [key, handler] of this.routes) {
-      const colonIdx = key.indexOf(':')
-      const routeMethod = key.slice(0, colonIdx)
-      if (routeMethod !== method) continue
+    // Try exact match first (original and resolved path)
+    const pathsToTry = resolvedPath !== pathname ? [pathname, resolvedPath] : [pathname]
+    const methodsToTry = method === 'HEAD' ? ['HEAD', 'GET'] : [method]
 
-      const routePath = key.slice(colonIdx + 1)
-      if (!routePath.includes(':')) continue
+    for (const tryMethod of methodsToTry) {
+      for (const tryPath of pathsToTry) {
+        const exactKey = `${tryMethod}:${tryPath}`
+        const exactHandler = this.routes.get(exactKey)
+        if (exactHandler) {
+          return { handler: exactHandler, params: {} }
+        }
+      }
+    }
 
-      const paramNames: string[] = []
-      const regexStr = '^' + routePath.replace(/:([^/]+)/g, (_, name) => {
-        paramNames.push(name)
-        return '([^/]+)'
-      }) + '$'
+    // Try parameterized routes
+    for (const tryMethod of methodsToTry) {
+      for (const tryPath of pathsToTry) {
+        for (const [key, handler] of this.routes) {
+          const colonIdx = key.indexOf(':')
+          const routeMethod = key.slice(0, colonIdx)
+          if (routeMethod !== tryMethod) continue
 
-      const regex = new RegExp(regexStr)
-      const match = pathname.match(regex)
+          const routePath = key.slice(colonIdx + 1)
+          if (!routePath.includes(':')) continue
 
-      if (match) {
-        const params: Record<string, string> = {}
-        paramNames.forEach((name, i) => {
-          params[name] = match[i + 1]
-        })
-        return { handler, params }
+          const paramNames: string[] = []
+          const regexStr = '^' + routePath.replace(/:([^/]+)/g, (_, name) => {
+            paramNames.push(name)
+            return '([^/]+)'
+          }) + '$'
+
+          const regex = new RegExp(regexStr)
+          const match = tryPath.match(regex)
+
+          if (match) {
+            const params: Record<string, string> = {}
+            paramNames.forEach((name, i) => {
+              params[name] = match[i + 1]
+            })
+            return { handler, params }
+          }
+        }
       }
     }
 

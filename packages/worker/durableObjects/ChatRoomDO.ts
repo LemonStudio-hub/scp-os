@@ -42,47 +42,7 @@ export class ChatRoomDO {
     private state: DurableObjectState,
     private env: { SCP_DB: D1Database },
   ) {
-    try {
-      const existingSockets = this.state.getWebSockets()
-      for (const ws of existingSockets) {
-        try {
-          const tags = ws.deserializeAttachment() as {
-            userId: string
-            username: string
-            roomId: number
-            connectionId: string
-          } | null
-          if (tags && tags.userId && tags.connectionId) {
-            this.connections.set(tags.connectionId, {
-              ws,
-              userId: tags.userId,
-              username: tags.username || 'Anonymous',
-              roomId: tags.roomId || 1,
-              connectionId: tags.connectionId,
-              lastHeartbeat: Date.now(),
-            })
-          } else {
-            try {
-              ws.close(1011, 'Invalid attachment on restart')
-            } catch {
-              // ignore
-            }
-          }
-        } catch {
-          try {
-            ws.close(1011, 'Failed to restore connection state')
-          } catch {
-            // ignore
-          }
-        }
-      }
-    } catch (error) {
-      console.error('[ChatRoomDO] Constructor error:', error)
-    }
-
-    this.state.blockConcurrencyWhile(async () => {
-      await this.state.storage.setAlarm(Date.now() + ALARM_INTERVAL_MS)
-    })
+    // Old-style WebSocket API - no hibernation restoration needed
   }
 
   async fetch(request: Request): Promise<Response> {
@@ -126,79 +86,59 @@ export class ChatRoomDO {
     await this.state.storage.setAlarm(now + ALARM_INTERVAL_MS)
   }
 
-  async webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): Promise<void> {
-    const tags = ws.deserializeAttachment() as {
-      userId: string
-      username: string
-      roomId: number
-      connectionId: string
-    } | null
-    if (!tags) return
+  private setupWebSocketHandlers(server: WebSocket, connectionId: string, userId: string, username: string, roomId: number): void {
+    server.addEventListener('message', async (event: MessageEvent) => {
+      const conn = this.connections.get(connectionId)
+      if (conn) {
+        conn.lastHeartbeat = Date.now()
+      }
 
-    let msg: IncomingMessage
-    try {
-      const raw = typeof message === 'string' ? message : new TextDecoder().decode(message)
-      msg = JSON.parse(raw)
-      if (!msg || typeof msg.type !== 'string') {
-        this.sendErrorToAll(tags.userId, 'INVALID_FORMAT', 'Message must have a type field')
+      let msg: IncomingMessage
+      try {
+        const raw = typeof event.data === 'string' ? event.data : new TextDecoder().decode(event.data)
+        msg = JSON.parse(raw)
+        if (!msg || typeof msg.type !== 'string') {
+          this.sendErrorToAll(userId, 'INVALID_FORMAT', 'Message must have a type field')
+          return
+        }
+      } catch {
+        this.sendErrorToAll(userId, 'INVALID_JSON', 'Invalid JSON message')
         return
       }
-    } catch {
-      this.sendErrorToAll(tags.userId, 'INVALID_JSON', 'Invalid JSON message')
-      return
-    }
 
-    const conn = this.connections.get(tags.connectionId)
-    if (conn) {
-      conn.lastHeartbeat = Date.now()
-    }
-
-    try {
-      await this.handleIncomingMessage(msg, tags.userId, tags.username, tags.roomId)
-    } catch (error) {
-      console.error('[ChatRoomDO] Unhandled error in message processing:', error)
-      this.sendErrorToAll(tags.userId, 'INTERNAL_ERROR', 'Internal error processing message')
-    }
-  }
-
-  async webSocketClose(ws: WebSocket, _code: number, _reason: string): Promise<void> {
-    const tags = ws.deserializeAttachment() as {
-      userId: string
-      username: string
-      roomId: number
-      connectionId: string
-    } | null
-    if (!tags) return
-
-    this.connections.delete(tags.connectionId)
-    try {
-      await this.broadcastUserLeft(tags.userId, tags.username, tags.roomId)
-    } catch (error) {
-      console.error('[ChatRoomDO] Failed to broadcast user left:', error)
-    }
-  }
-
-  async webSocketError(ws: WebSocket, error: unknown): Promise<void> {
-    console.error('[ChatRoomDO] WebSocket error:', error)
-    try {
-      const tags = ws.deserializeAttachment() as {
-        userId: string
-        username: string
-        roomId: number
-        connectionId: string
-      } | null
-      if (tags) {
-        this.connections.delete(tags.connectionId)
-        await this.broadcastUserLeft(tags.userId, tags.username, tags.roomId)
+      try {
+        const conn = this.connections.get(connectionId)
+        const currentRoomId = conn ? conn.roomId : roomId
+        await this.handleIncomingMessage(msg, userId, username, currentRoomId, connectionId)
+      } catch (error) {
+        console.error('[ChatRoomDO] Unhandled error in message processing:', error)
+        this.sendErrorToAll(userId, 'INTERNAL_ERROR', 'Internal error processing message')
       }
-    } catch {
-      // ignore cleanup errors
-    }
-    try {
-      ws.close(1011, 'WebSocket error')
-    } catch {
-      // already closed
-    }
+    })
+
+    server.addEventListener('close', async () => {
+      this.connections.delete(connectionId)
+      try {
+        await this.broadcastUserLeft(userId, username, roomId)
+      } catch (error) {
+        console.error('[ChatRoomDO] Failed to broadcast user left:', error)
+      }
+    })
+
+    server.addEventListener('error', async () => {
+      console.error('[ChatRoomDO] WebSocket error for connection:', connectionId)
+      this.connections.delete(connectionId)
+      try {
+        await this.broadcastUserLeft(userId, username, roomId)
+      } catch {
+        // ignore
+      }
+      try {
+        server.close(1011, 'WebSocket error')
+      } catch {
+        // already closed
+      }
+    })
   }
 
   private async handleWebSocketUpgrade(request: Request, url: URL): Promise<Response> {
@@ -221,7 +161,6 @@ export class ChatRoomDO {
     }
 
     const { 0: client, 1: server } = new WebSocketPair()
-    server.accept()
 
     const connectionId = `${userId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
@@ -234,10 +173,8 @@ export class ChatRoomDO {
       lastHeartbeat: Date.now(),
     })
 
-    const attachment = { userId, username, roomId, connectionId }
-    server.serializeAttachment(attachment)
-
-    this.state.acceptWebSocket(server)
+    server.accept()
+    this.setupWebSocketHandlers(server, connectionId, userId, username, roomId)
 
     await this.loadMessages(roomId)
     await this.sendHistory(server, roomId)
@@ -306,6 +243,10 @@ export class ChatRoomDO {
 
   private async loadMessages(roomId: number): Promise<void> {
     if (this.loadedRooms.has(roomId)) return
+    await this.refreshMessages(roomId)
+  }
+
+  private async refreshMessages(roomId: number): Promise<void> {
     try {
       const result = await this.env.SCP_DB.prepare(
         'SELECT * FROM chat_messages WHERE room_id = ? ORDER BY created_at DESC LIMIT ?',
@@ -341,7 +282,29 @@ export class ChatRoomDO {
         }),
       )
     } catch (error) {
-      console.error('[ChatRoomDO] Failed to send history:', error)
+      console.error('[ChatRoomDO] Failed to send history (possible bigint):', error)
+      // Fallback: sanitize bigint values
+      try {
+        const safeMessages = roomMessages.map((m) => ({
+          ...m,
+          id: typeof m.id === 'bigint' ? Number(m.id) : m.id,
+          room_id: typeof m.room_id === 'bigint' ? Number(m.room_id) : m.room_id,
+          is_broadcast: typeof m.is_broadcast === 'bigint' ? Number(m.is_broadcast) : m.is_broadcast,
+          broadcast_count: typeof m.broadcast_count === 'bigint' ? Number(m.broadcast_count) : m.broadcast_count,
+        }))
+        ws.send(
+          JSON.stringify({
+            type: 'history',
+            data: {
+              messages: safeMessages,
+              users,
+              totalCount: safeMessages.length,
+            },
+          }),
+        )
+      } catch (e) {
+        console.error('[ChatRoomDO] Failed to send safe history:', e)
+      }
     }
   }
 
@@ -360,8 +323,35 @@ export class ChatRoomDO {
     userId: string,
     username: string,
     roomId: number,
+    connectionId: string,
   ): Promise<void> {
     switch (message.type) {
+      case 'switch_room': {
+        const newRoomId = typeof message.data?.room_id === 'number'
+          ? message.data.room_id
+          : parseInt(String(message.data?.room_id), 10)
+        if (!newRoomId || isNaN(newRoomId)) {
+          this.sendErrorToAll(userId, 'INVALID_ROOM', 'Invalid room ID')
+          return
+        }
+
+        const conn = this.connections.get(connectionId)
+        if (!conn) return
+
+        const oldRoomId = conn.roomId
+        if (oldRoomId === newRoomId) break
+
+        await this.broadcastUserLeft(userId, username, oldRoomId)
+
+        conn.roomId = newRoomId
+
+        // 强制刷新该房间消息，确保包含最新数据
+        await this.refreshMessages(newRoomId)
+        await this.sendHistory(conn.ws, newRoomId)
+        await this.broadcastUserJoined(userId, username, newRoomId)
+        break
+      }
+
       case 'chat_message': {
         if (!this.checkRateLimit(userId)) {
           this.sendErrorToAll(userId, 'RATE_LIMIT', 'Rate limit exceeded')
@@ -374,7 +364,8 @@ export class ChatRoomDO {
           return
         }
 
-        await this.saveAndBroadcastMessage(userId, username, content, roomId)
+        const tempId = typeof message.data?.temp_id === 'string' ? message.data.temp_id : undefined
+        await this.saveAndBroadcastMessage(userId, username, content, roomId, tempId)
         break
       }
 
@@ -448,11 +439,12 @@ export class ChatRoomDO {
     username: string,
     content: string,
     roomId: number,
+    tempId?: string,
   ): Promise<void> {
     const now = new Date().toISOString()
     const safeUsername = encodeHtmlEntities(username)
     const safeContent = encodeHtmlEntities(content)
-    let message: ChatMessage
+    let message: ChatMessage & { tempId?: string }
 
     try {
       const result = await this.env.SCP_DB.prepare(
@@ -461,8 +453,15 @@ export class ChatRoomDO {
         .bind(userId, safeUsername, safeContent, roomId)
         .run()
 
+      const rawLastRowId = result.meta?.last_row_id
+      const lastRowId = typeof rawLastRowId === 'bigint' ? Number(rawLastRowId) : (rawLastRowId || 0)
+
+      if (!lastRowId) {
+        console.warn('[ChatRoomDO] Warning: last_row_id is missing or zero, meta:', JSON.stringify(result.meta))
+      }
+
       message = {
-        id: (result.meta?.last_row_id as number) || Date.now(),
+        id: lastRowId,
         user_id: userId,
         username: safeUsername,
         content: safeContent,
@@ -470,19 +469,12 @@ export class ChatRoomDO {
         created_at: now,
         is_broadcast: 0,
         broadcast_count: 0,
+        tempId,
       }
     } catch (error) {
       console.error('[ChatRoomDO] Failed to persist message to D1:', error)
-      message = {
-        id: Date.now(),
-        user_id: userId,
-        username: safeUsername,
-        content: safeContent,
-        room_id: roomId,
-        created_at: now,
-        is_broadcast: 0,
-        broadcast_count: 0,
-      }
+      this.sendErrorToAll(userId, 'DB_ERROR', 'Failed to save message. Please retry.')
+      return
     }
 
     this.messages.push(message)
@@ -494,7 +486,20 @@ export class ChatRoomDO {
   }
 
   private async broadcastMessage(message: ChatMessage): Promise<void> {
-    const payload = JSON.stringify({ type: 'chat_message', data: message })
+    let payload: string
+    try {
+      payload = JSON.stringify({ type: 'chat_message', data: message })
+    } catch (error) {
+      console.error('[ChatRoomDO] JSON stringify failed (possible bigint):', error)
+      const safeMessage = {
+        ...message,
+        id: typeof message.id === 'bigint' ? Number(message.id) : message.id,
+        room_id: typeof message.room_id === 'bigint' ? Number(message.room_id) : message.room_id,
+        is_broadcast: typeof message.is_broadcast === 'bigint' ? Number(message.is_broadcast) : message.is_broadcast,
+        broadcast_count: typeof message.broadcast_count === 'bigint' ? Number(message.broadcast_count) : message.broadcast_count,
+      }
+      payload = JSON.stringify({ type: 'chat_message', data: safeMessage })
+    }
     const roomConnections = Array.from(this.connections.values()).filter(
       (c) => c.roomId === message.room_id,
     )

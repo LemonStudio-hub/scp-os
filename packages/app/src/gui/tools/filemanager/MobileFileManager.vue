@@ -92,6 +92,37 @@
               <path d="M9 9v6M6 12h6" />
             </svg>
           </button>
+          <button
+            class="mobile-file-manager__action-btn"
+            :class="{ 'mobile-file-manager__action-btn--active': fmStore.showHidden }"
+            :title="fmStore.showHidden ? 'Hide hidden files' : 'Show hidden files'"
+            @click="fmStore.toggleShowHidden"
+          >
+            <svg
+              v-if="!fmStore.showHidden"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <svg
+              v-else
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -317,6 +348,7 @@ import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
 import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { filesystem } from '../../../utils/filesystem'
+import { uploadFile } from '../../../services/fileService'
 
 interface Props {
   visible: boolean
@@ -529,49 +561,23 @@ async function onFileUpload(event: Event) {
   let failCount = 0
 
   for (const file of files) {
-    const buffer = await file.arrayBuffer()
     const path =
       fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
-    const ext = file.name.split('.').pop()?.toLowerCase() || ''
 
     try {
-      // Check if file already exists
-      const existingNode = filesystem.getNodeByPath(path)
-
-      if (existingNode && existingNode.type === 'file') {
-        // Overwrite existing file
-        if (TEXT_EXTS.includes(ext)) {
-          const content = new TextDecoder().decode(buffer)
-          filesystem.writeFile(path, content)
+      // 所有文件都上传到 R2
+      const result = await uploadFile(file, 'uploads')
+      if (result.success && result.data) {
+        const existingNode = filesystem.getNodeByPath(path)
+        if (existingNode && existingNode.type === 'file') {
+          filesystem.writeFile(path, result.data.url)
         } else {
-          const bytes = new Uint8Array(buffer)
-          let binary = ''
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i])
-          }
-          const base64 = btoa(binary)
-          const mimeType = file.type || 'application/octet-stream'
-          const dataUrl = `data:${mimeType};base64,${base64}`
-          filesystem.writeFile(path, dataUrl)
+          filesystem.createFile(path, result.data.url)
         }
+        successCount++
       } else {
-        // Create new file
-        if (TEXT_EXTS.includes(ext)) {
-          const content = new TextDecoder().decode(buffer)
-          filesystem.createFile(path, content)
-        } else {
-          const bytes = new Uint8Array(buffer)
-          let binary = ''
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i])
-          }
-          const base64 = btoa(binary)
-          const mimeType = file.type || 'application/octet-stream'
-          const dataUrl = `data:${mimeType};base64,${base64}`
-          filesystem.createFile(path, dataUrl)
-        }
+        failCount++
       }
-      successCount++
     } catch (error) {
       console.error('[FileManager] Failed to upload file:', error)
       failCount++
@@ -581,10 +587,7 @@ async function onFileUpload(event: Event) {
   fmStore.loadDirectory(fmStore.currentPath)
   input.value = ''
 
-  // Show feedback
-  if (successCount > 0 && failCount === 0) {
-    // All files uploaded successfully - no need for alert
-  } else if (failCount > 0) {
+  if (failCount > 0) {
     alert(`Uploaded ${successCount} file(s), ${failCount} failed.`)
   }
 }
@@ -816,67 +819,26 @@ async function onDrop(event: DragEvent) {
   const files = event.dataTransfer?.files
   if (!files || files.length === 0) return
 
-  const textExts = [
-    'txt',
-    'md',
-    'log',
-    'json',
-    'xml',
-    'yml',
-    'yaml',
-    'js',
-    'ts',
-    'css',
-    'html',
-    'vue',
-    'csv',
-    'sh',
-  ]
-
   let successCount = 0
   let failCount = 0
 
   for (const file of files) {
-    const buffer = await file.arrayBuffer()
     const path =
       fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
-    const ext = file.name.split('.').pop()?.toLowerCase() || ''
 
     try {
-      const existingNode = filesystem.getNodeByPath(path)
-
-      if (existingNode && existingNode.type === 'file') {
-        if (textExts.includes(ext)) {
-          const content = new TextDecoder().decode(buffer)
-          filesystem.writeFile(path, content)
+      const result = await uploadFile(file, 'uploads')
+      if (result.success && result.data) {
+        const existingNode = filesystem.getNodeByPath(path)
+        if (existingNode && existingNode.type === 'file') {
+          filesystem.writeFile(path, result.data.url)
         } else {
-          const bytes = new Uint8Array(buffer)
-          let binary = ''
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i])
-          }
-          const base64 = btoa(binary)
-          const mimeType = file.type || 'application/octet-stream'
-          const dataUrl = `data:${mimeType};base64,${base64}`
-          filesystem.writeFile(path, dataUrl)
+          filesystem.createFile(path, result.data.url)
         }
+        successCount++
       } else {
-        if (textExts.includes(ext)) {
-          const content = new TextDecoder().decode(buffer)
-          filesystem.createFile(path, content)
-        } else {
-          const bytes = new Uint8Array(buffer)
-          let binary = ''
-          for (let i = 0; i < bytes.byteLength; i++) {
-            binary += String.fromCharCode(bytes[i])
-          }
-          const base64 = btoa(binary)
-          const mimeType = file.type || 'application/octet-stream'
-          const dataUrl = `data:${mimeType};base64,${base64}`
-          filesystem.createFile(path, dataUrl)
-        }
+        failCount++
       }
-      successCount++
     } catch (error) {
       console.error('[FileManager] Failed to upload dropped file:', error)
       failCount++

@@ -160,12 +160,25 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
 
   function switchRoom(newRoomId: number): void {
     currentRoomId = newRoomId
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(
+          JSON.stringify({
+            type: 'switch_room',
+            data: { room_id: newRoomId },
+          }),
+        )
+        return
+      } catch {
+        // fallback to reconnect
+      }
+    }
     disconnect()
     reconnectAttempts = 0
     connect()
   }
 
-  function sendMessage(content: string): boolean {
+  function sendMessage(content: string, tempId?: string): boolean {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       lastError.value = 'Not connected'
       return false
@@ -185,7 +198,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
       ws.send(
         JSON.stringify({
           type: 'chat_message',
-          content: content.trim(),
+          data: { content: content.trim(), temp_id: tempId },
         })
       )
       return true
@@ -201,8 +214,8 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     try {
       ws.send(
         JSON.stringify({
-          type: 'update_username',
-          username: newUsername,
+          type: 'rename',
+          data: { username: newUsername },
         })
       )
     } catch {}

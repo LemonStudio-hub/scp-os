@@ -13,6 +13,7 @@ import { requireAuth } from './security/auth'
 import { validationError, unauthorizedError } from './shared/errors'
 import { getImageHeaders } from './utils/browserHeaders'
 import { getConfig } from './shared/config'
+import * as filesAPI from './api/files'
 
 function safeParseInt(value: string | null, defaultValue: number): number {
   if (!value) return defaultValue
@@ -214,8 +215,8 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
       if (!body.name) return corsManager.createErrorResponse(validationError('Missing name'), 400, ctx(req))
       const result = await scraper.createChatRoom({ name: body.name, description: body.description, created_by: authUserId(), is_public: body.is_public })
       return corsManager.createResponse(result, result.success ? 201 : 500, ctx(req))
-    } catch {
-      return corsManager.createErrorResponse(validationError('Invalid request body'), 400, ctx(req))
+    } catch (e) {
+      return corsManager.createErrorResponse(validationError('Invalid request body: ' + (e as Error).message), 400, ctx(req))
     }
   })
 
@@ -807,5 +808,40 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
 
     const result = await adminAPI.getAdminLogs(scraper.requireDB(), { limit, offset, admin_id, action, start_date, end_date })
     return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
+  })
+
+  // ━━ File Storage (R2) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  router.post('/files/upload', async (req, _env, _ctx_, _params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    return filesAPI.uploadFile(req, env, authUserId(), corsManager.getHeaders(ctx(req)))
+  })
+
+  router.get('/files', async (req, _env, _ctx_, _params, url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    const prefix = url.searchParams.get('prefix') || ''
+    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 100), 1000)
+    return filesAPI.listFiles(env, authUserId(), prefix, limit, corsManager.getHeaders(ctx(req)))
+  })
+
+  router.get('/files/quota', async (req, _env, _ctx_, _params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    return filesAPI.getStorageQuota(env, authUserId(), corsManager.getHeaders(ctx(req)))
+  })
+
+  router.get('/files/:key', async (req, _env, _ctx_, params, _url) => {
+    const key = decodeURIComponent(params.key)
+    return filesAPI.getFile(req, env, key, corsManager.getHeaders(ctx(req)))
+  })
+
+  router.put('/files/:key', async (req, _env, _ctx_, params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    const key = decodeURIComponent(params.key)
+    return filesAPI.updateFile(req, env, key, authUserId(), corsManager.getHeaders(ctx(req)))
+  })
+
+  router.delete('/files/:key', async (req, _env, _ctx_, params, _url) => {
+    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
+    const key = decodeURIComponent(params.key)
+    return filesAPI.deleteFile(env, key, authUserId(), corsManager.getHeaders(ctx(req)))
   })
 }

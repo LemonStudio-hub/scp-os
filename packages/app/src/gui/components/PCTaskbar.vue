@@ -272,10 +272,10 @@ async function measureBackendLatency() {
   isMeasuring.value = true
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 3000)
+    const timeout = setTimeout(() => controller.abort(), 10000)
     const start = performance.now()
     await fetch(config.api.workerUrl + '/', {
-      method: 'HEAD',
+      method: 'GET',
       cache: 'no-store',
       signal: controller.signal,
     })

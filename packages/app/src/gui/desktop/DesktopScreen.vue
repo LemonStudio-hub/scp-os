@@ -47,7 +47,7 @@
     </div>
 
     <!-- Desktop Icons -->
-    <div class="desktop-screen__icons">
+    <div class="desktop-screen__icons" :class="`icon-size-${desktopIconSize}`">
       <div
         v-for="app in apps"
         :key="app.id"
@@ -261,6 +261,96 @@ const taskbarItems: PCTaskbarItem[] = [
 const activeTools = ref<ToolType[]>([])
 const isStartMenuOpen = ref(false)
 
+// Desktop icon size: large | medium | small
+const desktopIconSize = ref<'large' | 'medium' | 'small'>('medium')
+
+// Desktop sort order: name | date
+const desktopSortBy = ref<'name' | 'date'>('name')
+
+// Save default app order for 'sort by date' (later in array = newer)
+const defaultAppOrder = apps.map((a) => a.id)
+
+// Need to import toRaw for safe array access
+// (avoid reactive proxy issues during sort)
+
+// Load saved icon size from localStorage
+function loadIconSize() {
+  const saved = localStorage.getItem('scp-os-desktop-icon-size')
+  if (saved === 'large' || saved === 'medium' || saved === 'small') {
+    desktopIconSize.value = saved
+  }
+}
+
+// Grid layout gap based on icon size
+function getGridGap(): number {
+  if (desktopIconSize.value === 'large') return 150
+  if (desktopIconSize.value === 'small') return 110
+  return 130
+}
+
+// Arrange apps in grid layout based on current sort and size
+function arrangeApps() {
+  const cols = 3
+  const startX = 50
+  const startY = 50
+  const gap = getGridGap()
+
+  // Sort apps copy
+  const sorted = [...apps].sort((a, b) => {
+    if (desktopSortBy.value === 'name') {
+      return a.label.localeCompare(b.label)
+    }
+    // 'date' - use default array order (later = newer)
+    const idxA = defaultAppOrder.indexOf(a.id)
+    const idxB = defaultAppOrder.indexOf(b.id)
+    return idxB - idxA // newer first
+  })
+
+  // Reassign positions
+  sorted.forEach((app, index) => {
+    const col = index % cols
+    const row = Math.floor(index / cols)
+    const newX = startX + col * gap
+    const newY = startY + row * gap
+
+    // Update reactive app position
+    app.x = newX
+    app.y = newY
+
+    // Update draggable state if exists
+    const dragState = appDragStates.get(app.id)
+    if (dragState) {
+      dragState.setInitialPosition(newX, newY)
+    }
+  })
+}
+
+// Save and apply icon size
+function setDesktopIconSize(size: 'large' | 'medium' | 'small') {
+  desktopIconSize.value = size
+  localStorage.setItem('scp-os-desktop-icon-size', size)
+  logger.info('Desktop icon size changed to:', size)
+  arrangeApps() // Re-arrange with new gap
+}
+
+// Load saved sort preference
+function loadSortBy() {
+  const saved = localStorage.getItem('scp-os-desktop-sort-by')
+  if (saved === 'name' || saved === 'date') {
+    desktopSortBy.value = saved
+  }
+}
+
+function setDesktopSortBy(sort: 'name' | 'date') {
+  desktopSortBy.value = sort
+  localStorage.setItem('scp-os-desktop-sort-by', sort)
+  arrangeApps()
+  logger.info('Desktop sort changed to:', sort)
+}
+
+loadIconSize()
+loadSortBy()
+
 // Context menu state
 const contextMenu = ref({
   visible: false,
@@ -397,26 +487,17 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           {
             id: 'view-large-icons',
             label: t('pc.largeIcons'),
-            action: () => {
-              logger.info('View large icons')
-              // Implement view mode change
-            },
+            action: () => setDesktopIconSize('large'),
           },
           {
             id: 'view-medium-icons',
             label: t('pc.mediumIcons'),
-            action: () => {
-              logger.info('View medium icons')
-              // Implement view mode change
-            },
+            action: () => setDesktopIconSize('medium'),
           },
           {
             id: 'view-small-icons',
             label: t('pc.smallIcons'),
-            action: () => {
-              logger.info('View small icons')
-              // Implement view mode change
-            },
+            action: () => setDesktopIconSize('small'),
           },
         ],
       },
@@ -428,18 +509,12 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           {
             id: 'sort-by-name',
             label: t('pc.name'),
-            action: () => {
-              logger.info('Sort by name')
-              // Implement sort by name
-            },
+            action: () => setDesktopSortBy('name'),
           },
           {
             id: 'sort-by-date',
             label: t('pc.dateModified'),
-            action: () => {
-              logger.info('Sort by date')
-              // Implement sort by date
-            },
+            action: () => setDesktopSortBy('date'),
           },
         ],
       },
@@ -552,6 +627,9 @@ const iconGradientStyle = computed(() => ({
 
 // Load wallpaper
 onMounted(async () => {
+  // Arrange desktop icons after DOM is ready
+  arrangeApps()
+
   try {
     await wallpaperService.init()
     const url = await wallpaperService.getCurrentWallpaper()
@@ -820,5 +898,57 @@ onUnmounted(() => {
   .desktop-screen__icon-label {
     font-size: var(--gui-font-xs, 11px);
   }
+}
+
+/* ── Icon Size Overrides ─────────────────────────────── */
+
+/* Large icons */
+.icon-size-large .desktop-screen__icon {
+  width: 120px;
+}
+
+.icon-size-large .desktop-screen__icon-bg {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--gui-radius-2xl, 18px);
+}
+
+.icon-size-large .desktop-screen__icon-bg svg {
+  width: 40px;
+  height: 40px;
+}
+
+.icon-size-large .desktop-screen__icon-text {
+  font-size: 40px;
+}
+
+.icon-size-large .desktop-screen__icon-label {
+  font-size: var(--gui-font-base, 14px);
+  padding: 5px 12px;
+}
+
+/* Small icons */
+.icon-size-small .desktop-screen__icon {
+  width: 80px;
+}
+
+.icon-size-small .desktop-screen__icon-bg {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--gui-radius-lg, 12px);
+}
+
+.icon-size-small .desktop-screen__icon-bg svg {
+  width: 24px;
+  height: 24px;
+}
+
+.icon-size-small .desktop-screen__icon-text {
+  font-size: 24px;
+}
+
+.icon-size-small .desktop-screen__icon-label {
+  font-size: var(--gui-font-xs, 11px);
+  padding: 3px 8px;
 }
 </style>

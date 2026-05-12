@@ -10,14 +10,28 @@
             size="sm"
             icon="file"
             :title="t('fm.newFile')"
-            @click="fmStore.promptNewFile"
+            @click="promptNewFile"
           />
           <SCPButton
             variant="ghost"
             size="sm"
             icon="folder"
             :title="t('fm.newFolder')"
-            @click="fmStore.promptNewFolder"
+            @click="promptNewFolder"
+          />
+          <input
+            ref="fileInputRef"
+            type="file"
+            multiple
+            style="display: none"
+            @change="onFileUpload"
+          />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="document"
+            :title="t('fm.upload')"
+            @click="fileInputRef?.click()"
           />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
@@ -39,6 +53,14 @@
       <!-- Search Bar -->
       <div class="file-manager__search">
         <SCPInput v-model="searchText" :placeholder="t('pc.searchFiles')" size="sm" clearable />
+        <label class="file-manager__hidden-toggle">
+          <input
+            type="checkbox"
+            :checked="fmStore.showHidden"
+            @change="fmStore.toggleShowHidden"
+          />
+          <span>{{ t('fm.showHidden') || 'Show hidden' }}</span>
+        </label>
       </div>
 
       <!-- File Grid/List View -->
@@ -136,6 +158,20 @@
       :items="fmStore.contextMenu.items"
       @select="onContextSelect"
     />
+
+    <!-- Dialog Modal -->
+    <DialogModal
+      v-model:visible="dialogVisible"
+      :type="dialogType"
+      :title="dialogTitle"
+      :placeholder="dialogPlaceholder"
+      :default-value="dialogDefaultValue"
+      :confirm-text="dialogConfirmText"
+      :message="dialogMessage"
+      :danger="dialogDanger"
+      @confirm="onDialogConfirm"
+      @cancel="onDialogCancel"
+    />
   </SCPWindow>
 </template>
 
@@ -150,10 +186,12 @@ import SCPBreadcrumbs from '../../components/ui/SCPBreadcrumbs.vue'
 import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
 import SCPContextMenu from '../../components/ui/SCPContextMenu.vue'
 import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
+import DialogModal from './DialogModal.vue'
 import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { useWindowManagerStore } from '../../stores/windowManager'
 import type { WindowInstance, FileItem, ContextMenuItem } from '../../types'
-import logger from '../../../utils/logger'
+import { filesystem } from '../../../utils/filesystem'
+import { uploadFile } from '../../../services/fileService'
 
 interface Props {
   windowInstance: WindowInstance
@@ -166,6 +204,25 @@ setFileManagerI18n({ t })
 const fmStore = useFileManagerStore()
 const wmStore = useWindowManagerStore()
 const searchText = ref('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
+
+// Dialog state
+const dialogVisible = ref(false)
+const dialogType = ref<'input' | 'confirm'>('input')
+const dialogTitle = ref('')
+const dialogPlaceholder = ref('')
+const dialogDefaultValue = ref('')
+const dialogConfirmText = ref('')
+const dialogMessage = ref('')
+const dialogDanger = ref(false)
+let dialogResolve: Function | null = null
+const contextTargetFile = ref<string>('')
+
+// File type helpers
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
+const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
+const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
+
 
 watch(searchText, (val) => {
   fmStore.setSearch(val)
@@ -200,7 +257,7 @@ function onFileDblClick(file: FileItem): void {
   if (file.isDirectory) {
     fmStore.navigateTo(file.path)
   } else {
-    openInEditor(file)
+    openFile(file)
   }
 }
 
@@ -227,15 +284,229 @@ function onContextMenu(event: MouseEvent): void {
 }
 
 function onFileContextMenu(event: MouseEvent, fileName: string): void {
+  contextTargetFile.value = fileName
   fmStore.showContextMenu(event.clientX, event.clientY, fileName)
 }
 
 function onContextSelect(item: ContextMenuItem): void {
-  logger.info('[FileManager] Context menu select:', item.label)
+  switch (item.id) {
+    case 'new-file':
+      promptNewFile()
+      break
+    case 'new-folder':
+      promptNewFolder()
+      break
+    case 'rename':
+      if (contextTargetFile.value) promptRename(contextTargetFile.value)
+      break
+    case 'delete':
+      if (contextTargetFile.value) promptDelete(contextTargetFile.value)
+      break
+    case 'refresh':
+      fmStore.loadDirectory()
+      break
+    default:
+      item.action?.()
+  }
 }
 
 function onClose(): void {
   // Window manager handles cleanup
+}
+
+// ── Dialog helpers ──────────────────────────────────────────────────
+
+function showInputDialog(opts: {
+  title: string
+  placeholder?: string
+  defaultValue?: string
+  confirmText?: string
+}): Promise<string | null> {
+  return new Promise((resolve) => {
+    dialogType.value = 'input'
+    dialogTitle.value = opts.title
+    dialogPlaceholder.value = opts.placeholder || ''
+    dialogDefaultValue.value = opts.defaultValue || ''
+    dialogConfirmText.value = opts.confirmText || t('common.confirm')
+    dialogMessage.value = ''
+    dialogDanger.value = false
+    dialogResolve = resolve
+    dialogVisible.value = true
+  })
+}
+
+function showConfirmDialog(opts: {
+  title: string
+  message: string
+  confirmText?: string
+  danger?: boolean
+}): Promise<boolean> {
+  return new Promise((resolve) => {
+    dialogType.value = 'confirm'
+    dialogTitle.value = opts.title
+    dialogMessage.value = opts.message
+    dialogConfirmText.value = opts.confirmText || t('common.confirm')
+    dialogDanger.value = opts.danger || false
+    dialogResolve = (val: string | true | null) => resolve(val === true)
+    dialogVisible.value = true
+  })
+}
+
+function onDialogConfirm(value: string | true): void {
+  dialogVisible.value = false
+  dialogResolve?.(value)
+  dialogResolve = null
+}
+
+function onDialogCancel(): void {
+  dialogVisible.value = false
+  dialogResolve?.(null)
+  dialogResolve = null
+}
+
+// ── File operations with dialog ─────────────────────────────────────
+
+async function promptNewFile(): Promise<void> {
+  const name = await showInputDialog({
+    title: t('fm.newFile'),
+    placeholder: t('fm.enterFileName'),
+    defaultValue: t('fm.untitled'),
+    confirmText: t('fm.create'),
+  })
+  if (name) {
+    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
+    filesystem.createFile(path, '')
+    fmStore.loadDirectory()
+  }
+}
+
+async function promptNewFolder(): Promise<void> {
+  const name = await showInputDialog({
+    title: t('fm.newFolder'),
+    placeholder: t('fm.enterFolderName'),
+    defaultValue: t('fm.newFolderDefault'),
+    confirmText: t('fm.create'),
+  })
+  if (name) {
+    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
+    filesystem.createDirectory(path)
+    fmStore.loadDirectory()
+  }
+}
+
+async function promptRename(fileName: string): Promise<void> {
+  const newName = await showInputDialog({
+    title: t('fm.rename'),
+    placeholder: t('fm.enterNewName'),
+    defaultValue: fileName,
+    confirmText: t('fm.rename'),
+  })
+  if (newName && newName !== fileName) {
+    fmStore.renameFile(fileName, newName)
+  }
+}
+
+async function promptDelete(fileName: string): Promise<void> {
+  const confirmed = await showConfirmDialog({
+    title: t('fm.delete'),
+    message: t('fm.confirmDelete', { name: fileName }),
+    confirmText: t('fm.delete'),
+    danger: true,
+  })
+  if (confirmed) {
+    fmStore.deleteFile(fileName)
+  }
+}
+
+// Use these functions to silence TS6133 warnings
+promptRename
+promptDelete
+
+// ── File upload ─────────────────────────────────────────────────────
+
+async function onFileUpload(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const files = input.files
+  if (!files || files.length === 0) return
+
+  let successCount = 0
+  let failCount = 0
+
+  for (const file of files) {
+    const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+    try {
+      const result = await uploadFile(file, 'uploads')
+      if (result.success && result.data) {
+        const existingNode = filesystem.getNodeByPath(path)
+        if (existingNode && existingNode.type === 'file') {
+          filesystem.writeFile(path, result.data.url)
+        } else {
+          filesystem.createFile(path, result.data.url)
+        }
+        successCount++
+      } else {
+        failCount++
+      }
+    } catch (error) {
+      console.error('[FileManager] Failed to upload file:', error)
+      failCount++
+    }
+  }
+
+  fmStore.loadDirectory()
+  input.value = ''
+
+  if (failCount > 0) {
+    alert(`Uploaded ${successCount} file(s), ${failCount} failed.`)
+  }
+}
+
+// ── File open with type detection ───────────────────────────────────
+
+function openFile(file: FileItem): void {
+  if (file.isDirectory) {
+    fmStore.navigateTo(file.path)
+    return
+  }
+
+  const ext = file.name.split('.').pop()?.toLowerCase() || ''
+
+  if (IMAGE_EXTS.includes(ext)) {
+    openImage(file)
+  } else if (VIDEO_EXTS.includes(ext)) {
+    openVideo(file)
+  } else if (AUDIO_EXTS.includes(ext)) {
+    openAudio(file)
+  } else {
+    openInEditor(file)
+  }
+}
+
+function openImage(file: FileItem): void {
+  const data = filesystem.readFile(file.path)
+  if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+    window.open(data, '_blank')
+  } else {
+    openInEditor(file)
+  }
+}
+
+function openVideo(file: FileItem): void {
+  const data = filesystem.readFile(file.path)
+  if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+    window.open(data, '_blank')
+  } else {
+    openInEditor(file)
+  }
+}
+
+function openAudio(file: FileItem): void {
+  const data = filesystem.readFile(file.path)
+  if (typeof data === 'string' && (data.startsWith('http') || data.startsWith('data:'))) {
+    window.open(data, '_blank')
+  } else {
+    openInEditor(file)
+  }
 }
 </script>
 

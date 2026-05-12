@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { filesystem } from '../../utils/filesystem'
+import { readFileContent, saveTextFile } from '../../services/fileService'
 import type { OpenFile } from '../types'
 
 export const useTextEditorStore = defineStore('textEditor', () => {
@@ -27,7 +27,7 @@ export const useTextEditorStore = defineStore('textEditor', () => {
   })
 
   // Actions
-  function openFile(path: string, content?: string): OpenFile {
+  async function openFile(path: string, content?: string): Promise<OpenFile> {
     // Check if file is already open
     const existing = openFiles.value.find((f) => f.path === path)
     if (existing) {
@@ -36,7 +36,7 @@ export const useTextEditorStore = defineStore('textEditor', () => {
     }
 
     const name = path.split('/').pop() || path
-    const fileContent = content ?? filesystem.readFile(path) ?? ''
+    const fileContent = content ?? (await readFileContent(path)) ?? ''
     const language = detectLanguage(name)
 
     const newFile: OpenFile = {
@@ -106,11 +106,11 @@ export const useTextEditorStore = defineStore('textEditor', () => {
     file.lastModifiedAt = Date.now()
   }
 
-  function saveFile(fileId: string): boolean {
+  async function saveFile(fileId: string): Promise<boolean> {
     const file = openFiles.value.find((f) => f.id === fileId)
     if (!file) return false
 
-    const result = filesystem.writeFile(file.path, file.content)
+    const result = await saveTextFile(file.path, file.content)
     if (result) {
       file.originalContent = file.content
       file.dirty = false
@@ -120,11 +120,12 @@ export const useTextEditorStore = defineStore('textEditor', () => {
     return result
   }
 
-  function saveAll(): boolean {
+  async function saveAll(): Promise<boolean> {
     let allSaved = true
     for (const file of openFiles.value) {
       if (file.dirty) {
-        if (!saveFile(file.id)) {
+        const saved = await saveFile(file.id)
+        if (!saved) {
           allSaved = false
         }
       }

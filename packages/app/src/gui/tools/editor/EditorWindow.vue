@@ -657,14 +657,14 @@ function zoomOut(): void {
   editorStore.fontSize = Math.max(editorStore.fontSize - 1, 10)
 }
 
-function saveActive(): void {
+async function saveActive(): Promise<void> {
   if (editorStore.activeFileId) {
-    editorStore.saveFile(editorStore.activeFileId)
+    await editorStore.saveFile(editorStore.activeFileId)
   }
 }
 
-function saveAll(): void {
-  editorStore.saveAll()
+async function saveAll(): Promise<void> {
+  await editorStore.saveAll()
 }
 
 function onCloseFile(fileId: string): void {
@@ -877,12 +877,12 @@ watch(
   }
 )
 
-onMounted(() => {
+onMounted(async () => {
   setContext('editor')
 
   if (props.windowInstance?.config?.data?.filePath) {
     const filePath = props.windowInstance.config.data.filePath
-    editorStore.openFile(filePath)
+    await editorStore.openFile(filePath)
   }
 
   if (editorStore.openFiles.length === 0) {

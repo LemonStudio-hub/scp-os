@@ -3,8 +3,8 @@
  * 实现完整的 PWA 功能：离线缓存、性能优化、后台同步
  */
 
-const CACHE_NAME = 'scp-os-v2'
-const CACHE_VERSION = 2
+const CACHE_NAME = 'scp-os-v3'
+const CACHE_VERSION = 3
 
 const CACHE_URLS = ['/', '/index.html', '/favicon.ico', '/favicon.svg', '/icon-512x512.png']
 
@@ -153,7 +153,9 @@ async function handleStaticRequest(request) {
 
   if (isNavigation) {
     try {
-      const response = await fetch(request)
+      // Always bypass browser cache for HTML to ensure latest version
+      const noCacheRequest = new Request(request, { cache: 'no-store' })
+      const response = await fetch(noCacheRequest)
       if (response.ok) {
         const cache = await caches.open(CACHE_NAME)
         await cache.put(request, response.clone())

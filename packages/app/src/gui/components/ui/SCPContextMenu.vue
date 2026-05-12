@@ -48,7 +48,6 @@ const emit = defineEmits<{
 function onItemClick(item: ContextMenuItem) {
   if (item.disabled) return
   emit('select', item)
-  item.action?.()
   emit('update:visible', false)
 }
 
