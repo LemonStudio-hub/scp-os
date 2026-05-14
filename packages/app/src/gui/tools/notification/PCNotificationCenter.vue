@@ -262,7 +262,11 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: linear-gradient(135deg, var(--gui-bg-surface, #161b22) 0%, var(--gui-bg-surface-raised, #1a2233) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--gui-bg-surface, #161b22) 0%,
+    var(--gui-bg-surface-raised, #1a2233) 100%
+  );
   border-bottom: 1px solid var(--gui-border-default, #21262d);
 }
 

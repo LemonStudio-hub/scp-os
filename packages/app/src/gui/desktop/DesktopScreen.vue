@@ -242,14 +242,70 @@ export interface DesktopApp {
 const { t } = useI18n()
 
 const apps = reactive<DesktopApp[]>([
-  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', color: 'var(--gui-accent)', x: 50, y: 50 },
-  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', color: 'var(--gui-accent)', x: 180, y: 50 },
-  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)', x: 310, y: 50 },
-  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)', x: 50, y: 180 },
-  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)', x: 180, y: 180 },
-  { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)', x: 310, y: 180 },
-  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)', x: 50, y: 310 },
-  { id: 'editor', label: t('home.apps.editor'), tool: 'editor', color: 'var(--gui-accent)', x: 310, y: 310 },
+  {
+    id: 'terminal',
+    label: t('home.apps.terminal'),
+    tool: 'terminal',
+    color: 'var(--gui-accent)',
+    x: 50,
+    y: 50,
+  },
+  {
+    id: 'files',
+    label: t('home.apps.files'),
+    tool: 'filemanager',
+    color: 'var(--gui-accent)',
+    x: 180,
+    y: 50,
+  },
+  {
+    id: 'chat',
+    label: t('home.apps.chat'),
+    tool: 'chat',
+    color: 'var(--gui-accent)',
+    x: 310,
+    y: 50,
+  },
+  {
+    id: 'dash',
+    label: t('home.apps.dash'),
+    tool: 'dash',
+    color: 'var(--gui-accent)',
+    x: 50,
+    y: 180,
+  },
+  {
+    id: 'feedback',
+    label: t('home.apps.feedback'),
+    tool: 'feedback',
+    color: 'var(--gui-accent)',
+    x: 180,
+    y: 180,
+  },
+  {
+    id: 'docs',
+    label: t('home.apps.docs'),
+    tool: 'docs',
+    color: 'var(--gui-accent)',
+    x: 310,
+    y: 180,
+  },
+  {
+    id: 'settings',
+    label: t('home.apps.settings'),
+    tool: 'settings',
+    color: 'var(--gui-accent)',
+    x: 50,
+    y: 310,
+  },
+  {
+    id: 'editor',
+    label: t('home.apps.editor'),
+    tool: 'editor',
+    color: 'var(--gui-accent)',
+    x: 310,
+    y: 310,
+  },
 ])
 
 const taskbarItems: PCTaskbarItem[] = [
@@ -782,15 +838,13 @@ onUnmounted(() => {
 }
 
 .light .desktop-screen__icon-bg {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
 .light .desktop-screen__icon-bg::before {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.5) 0%,
-    transparent 60%
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 60%);
 }
 
 .light .desktop-screen__icon-bg svg {

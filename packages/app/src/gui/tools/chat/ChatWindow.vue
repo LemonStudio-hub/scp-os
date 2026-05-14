@@ -42,9 +42,12 @@
 
           <template v-else>
             <!-- DEBUG: rooms count -->
-            <div v-if="rooms.length === 0" style="padding: 16px; color: var(--gui-error, #ff3b30); font-size: 12px;">
-              DEBUG: rooms.length = {{ rooms.length }}<br>
-              query = "{{ roomSearchQuery }}"<br>
+            <div
+              v-if="rooms.length === 0"
+              style="padding: 16px; color: var(--gui-error, #ff3b30); font-size: 12px"
+            >
+              DEBUG: rooms.length = {{ rooms.length }}<br />
+              query = "{{ roomSearchQuery }}"<br />
               filtered = {{ filteredRooms.length }}
             </div>
             <div
@@ -107,8 +110,19 @@
       <!-- View: Chat -->
       <div v-else class="mobile-chat__chat-view">
         <div ref="messagesRef" class="mobile-chat__messages">
-          <div v-if="messages.length > 0 || loading" style="padding: 4px 8px; font-size: 10px; color: #666; background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05)); border-bottom: 1px solid rgba(255,255,255,0.1);">
-            DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{ messages[messages.length-1]?.id || '?' }}
+          <div
+            v-if="messages.length > 0 || loading"
+            style="
+              padding: 4px 8px;
+              font-size: 10px;
+              color: #666;
+              background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            "
+          >
+            DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
+              messages[messages.length - 1]?.id || '?'
+            }}
           </div>
           <div v-if="messages.length === 0 && !loading" class="mobile-chat__empty">
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -136,7 +150,9 @@
           >
             <div class="chat-bubble__header">
               <span class="chat-bubble__username">{{ msg.username }}</span>
-              <span class="chat-bubble__time">{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}</span>
+              <span class="chat-bubble__time"
+                >{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}</span
+              >
             </div>
             <div class="chat-bubble__content">{{ msg.content }}</div>
             <div v-if="msg.sending" class="chat-bubble__status">
@@ -397,7 +413,9 @@ const ws = useChatWebSocket({
     // 优先使用 tempId 匹配，避免内容编码导致匹配失败
     const existingIdx = msg.tempId
       ? messages.findIndex((m) => m.sending && m.tempId === msg.tempId)
-      : messages.findIndex((m) => m.sending && m.content === msg.content && m.user_id === msg.user_id)
+      : messages.findIndex(
+          (m) => m.sending && m.content === msg.content && m.user_id === msg.user_id
+        )
     if (existingIdx !== -1) {
       // 保留 tempId 避免 Vue key 变化导致 DOM 闪烁，使用 splice 确保响应式追踪
       messages.splice(existingIdx, 1, {
@@ -508,7 +526,7 @@ async function loadRooms() {
     const url = `${API_BASE}/chat/rooms?t=${Date.now()}`
     console.log('[Chat] Loading rooms from:', url)
     const response = await fetch(url, {
-      cache: 'no-cache'
+      cache: 'no-cache',
     })
     const data = await response.json()
     console.log('[Chat] Rooms response:', JSON.stringify(data).slice(0, 500))
@@ -649,7 +667,11 @@ async function sendMessage() {
   if (!sent) {
     const idx = messages.findIndex((m) => m.tempId === tempId)
     if (idx !== -1) {
-      messages.splice(idx, 1, { ...messages[idx], sending: false, error: 'Failed to send (not connected)' })
+      messages.splice(idx, 1, {
+        ...messages[idx],
+        sending: false,
+        error: 'Failed to send (not connected)',
+      })
     }
   }
   sending.value = false
@@ -662,7 +684,12 @@ async function retryMessage(msg: ChatMessage) {
   const idx = messages.findIndex((m) => m.tempId === msg.tempId)
   if (idx === -1) return
 
-  const updated = { ...messages[idx], sending: true, error: undefined, retryCount: (msg.retryCount || 0) + 1 }
+  const updated = {
+    ...messages[idx],
+    sending: true,
+    error: undefined,
+    retryCount: (msg.retryCount || 0) + 1,
+  }
   messages.splice(idx, 1, updated)
 
   const sent = ws.sendMessage(msg.content, msg.tempId)

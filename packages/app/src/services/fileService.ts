@@ -72,7 +72,10 @@ export async function deleteFile(key: string): Promise<{ success: boolean; error
 /**
  * 更新文件内容（文本文件）
  */
-export async function updateFileContent(key: string, content: string): Promise<{ success: boolean; error?: string }> {
+export async function updateFileContent(
+  key: string,
+  content: string
+): Promise<{ success: boolean; error?: string }> {
   const response = await fetch(`${API_BASE}/files/${encodeURIComponent(key)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'text/plain' },

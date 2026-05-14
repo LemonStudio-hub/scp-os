@@ -367,7 +367,7 @@ function close() {
   font-size: 14px;
 }
 
- .wallpaper-picker__spinner {
+.wallpaper-picker__spinner {
   width: 32px;
   height: 32px;
   border: 3px solid var(--gui-border-default, rgba(255, 255, 255, 0.2));

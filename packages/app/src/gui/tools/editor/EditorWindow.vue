@@ -520,7 +520,9 @@ function createTheme(): any {
     '.cm-scroller': {
       overflow: 'auto',
       scrollbarWidth: 'thin',
-      scrollbarColor: isLight ? 'rgba(0, 0, 0, 0.15) transparent' : 'rgba(255, 255, 255, 0.08) transparent',
+      scrollbarColor: isLight
+        ? 'rgba(0, 0, 0, 0.15) transparent'
+        : 'rgba(255, 255, 255, 0.08) transparent',
     },
     '.cm-scroller::-webkit-scrollbar': {
       width: '6px',

@@ -15,21 +15,12 @@
           @click="onTap(item)"
           @touchstart="onTap(item)"
         >
-          <GUIIcon
-            :name="item.iconName"
-            :size="24"
-            class="mobile-dock__icon"
-          />
+          <GUIIcon :name="item.iconName" :size="24" class="mobile-dock__icon" />
           <span class="mobile-dock__label">{{ t(item.label) }}</span>
-          <span
-            v-if="item.badge && item.badge > 0"
-            class="mobile-dock__badge"
-            >{{ item.badge }}</span
-          >
-          <span
-            v-if="activeTools.includes(item.tool)"
-            class="mobile-dock__indicator"
-          />
+          <span v-if="item.badge && item.badge > 0" class="mobile-dock__badge">{{
+            item.badge
+          }}</span>
+          <span v-if="activeTools.includes(item.tool)" class="mobile-dock__indicator" />
         </button>
       </div>
     </div>

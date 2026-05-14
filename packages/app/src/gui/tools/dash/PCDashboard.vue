@@ -98,7 +98,13 @@
                 <path d="M0 11a15 15 0 0 1 24 0" />
                 <path d="M4 14a10 10 0 0 1 16 0" />
                 <path d="M8 17a5 5 0 0 1 8 0" />
-                <circle cx="12" cy="20" r="2" fill="var(--gui-text-secondary, #8e8e93)" stroke="none" />
+                <circle
+                  cx="12"
+                  cy="20"
+                  r="2"
+                  fill="var(--gui-text-secondary, #8e8e93)"
+                  stroke="none"
+                />
               </svg>
             </button>
             <div class="dash__header-divider" />
@@ -530,7 +536,13 @@
                 <path d="M0 11a15 15 0 0 1 24 0" />
                 <path d="M4 14a10 10 0 0 1 16 0" />
                 <path d="M8 17a5 5 0 0 1 8 0" />
-                <circle cx="12" cy="20" r="2" fill="var(--gui-text-secondary, #8e8e93)" stroke="none" />
+                <circle
+                  cx="12"
+                  cy="20"
+                  r="2"
+                  fill="var(--gui-text-secondary, #8e8e93)"
+                  stroke="none"
+                />
               </svg>
               <span>Network Status</span>
               <span class="dash__network-badge" :class="networkStatusClass">{{
@@ -599,7 +611,13 @@
                     <path d="M0 11a15 15 0 0 1 24 0" />
                     <path d="M4 14a10 10 0 0 1 16 0" />
                     <path d="M8 17a5 5 0 0 1 8 0" />
-                    <circle cx="12" cy="20" r="2" fill="var(--gui-text-secondary, #8e8e93)" stroke="none" />
+                    <circle
+                      cx="12"
+                      cy="20"
+                      r="2"
+                      fill="var(--gui-text-secondary, #8e8e93)"
+                      stroke="none"
+                    />
                   </svg>
                   <span>{{ isSpeedTesting ? 'Testing...' : 'Run Test' }}</span>
                 </button>

@@ -104,9 +104,10 @@ function setItemRef(id: string | undefined, el: HTMLElement) {
 
 const submenuItem = computed(() => {
   if (!submenuOpenId.value) return null
-  return props.items.find(
-    (i) => i.id === submenuOpenId.value && i.children && i.children.length > 0
-  ) || null
+  return (
+    props.items.find((i) => i.id === submenuOpenId.value && i.children && i.children.length > 0) ||
+    null
+  )
 })
 
 function onItemClick(item: ContextMenuItem) {
@@ -243,15 +244,18 @@ onBeforeUnmount(() => {
   }
 })
 
-watch(() => [props.visible, props.x, props.y], () => {
-  isPositioned.value = false
-  submenuOpenId.value = null
-  adjustedPos.value = { x: props.x, y: props.y }
-  if (!props.visible) return
-  nextTick(() => {
-    requestAnimationFrame(adjustPosition)
-  })
-})
+watch(
+  () => [props.visible, props.x, props.y],
+  () => {
+    isPositioned.value = false
+    submenuOpenId.value = null
+    adjustedPos.value = { x: props.x, y: props.y }
+    if (!props.visible) return
+    nextTick(() => {
+      requestAnimationFrame(adjustPosition)
+    })
+  }
+)
 </script>
 
 <style scoped>

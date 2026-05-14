@@ -68,7 +68,16 @@
               </div>
             </div>
           </Transition>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" :stroke="wifiColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            :stroke="wifiColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <!-- Offline: cross through wifi -->
             <template v-if="!isOnline">
               <path d="M0 11a15 15 0 0 1 24 0" />
@@ -99,14 +108,7 @@
               stroke-width="1.5"
             />
             <!-- Battery cap -->
-            <rect
-              x="20"
-              y="9"
-              width="2"
-              height="6"
-              rx="1"
-              :fill="batteryColor"
-            />
+            <rect x="20" y="9" width="2" height="6" rx="1" :fill="batteryColor" />
             <!-- Battery fill -->
             <rect
               v-if="batteryLevel > 0"
@@ -123,7 +125,7 @@
               d="M11 8l-2 4h3l-1 4 4-5h-3l2-3"
               :fill="batteryColor"
               stroke="none"
-              style="filter: drop-shadow(0 0 2px rgba(0,0,0,0.8))"
+              style="filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8))"
             />
           </svg>
         </div>
@@ -132,8 +134,6 @@
         </div>
       </div>
     </div>
-
-
   </div>
 </template>
 
@@ -626,7 +626,7 @@ onUnmounted(() => {
 .pc-taskbar__latency-tip__debug {
   font-size: 9px;
   font-weight: 400;
-  color: var(--gui-text-disabled, #48484A);
+  color: var(--gui-text-disabled, #48484a);
   letter-spacing: 0.02em;
   margin-top: 2px;
   padding-top: 2px;
@@ -636,7 +636,9 @@ onUnmounted(() => {
 /* Tooltip transition */
 .latency-fade-enter-active,
 .latency-fade-leave-active {
-  transition: opacity 150ms ease, transform 150ms ease;
+  transition:
+    opacity 150ms ease,
+    transform 150ms ease;
 }
 
 .latency-fade-enter-from,

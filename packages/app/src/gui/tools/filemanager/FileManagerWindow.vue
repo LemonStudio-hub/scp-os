@@ -54,11 +54,7 @@
       <div class="file-manager__search">
         <SCPInput v-model="searchText" :placeholder="t('pc.searchFiles')" size="sm" clearable />
         <label class="file-manager__hidden-toggle">
-          <input
-            type="checkbox"
-            :checked="fmStore.showHidden"
-            @change="fmStore.toggleShowHidden"
-          />
+          <input type="checkbox" :checked="fmStore.showHidden" @change="fmStore.toggleShowHidden" />
           <span>{{ t('fm.showHidden') || 'Show hidden' }}</span>
         </label>
       </div>
@@ -222,7 +218,6 @@ const contextTargetFile = ref<string>('')
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
 const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
 const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
-
 
 watch(searchText, (val) => {
   fmStore.setSearch(val)
@@ -433,7 +428,8 @@ async function onFileUpload(event: Event): Promise<void> {
   let failCount = 0
 
   for (const file of files) {
-    const path = fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+    const path =
+      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
     try {
       const result = await uploadFile(file, 'uploads')
       if (result.success && result.data) {

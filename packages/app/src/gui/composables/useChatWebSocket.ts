@@ -166,7 +166,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
           JSON.stringify({
             type: 'switch_room',
             data: { room_id: newRoomId },
-          }),
+          })
         )
         return
       } catch {

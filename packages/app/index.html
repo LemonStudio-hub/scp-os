@@ -444,7 +444,11 @@
     <script type="module" src="./src/main.ts"></script>
     <!-- Service Worker: only register in production -->
     <script>
-      if ('serviceWorker' in navigator && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
+      if (
+        'serviceWorker' in navigator &&
+        !location.hostname.includes('localhost') &&
+        !location.hostname.includes('127.0.0.1')
+      ) {
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('/sw.js')
         })

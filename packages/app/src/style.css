@@ -596,7 +596,12 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--gui-bg-base, #0a0a0a) 0%, var(--gui-bg-surface, #1a1a1a) 50%, var(--gui-bg-base, #0a0a0a) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--gui-bg-base, #0a0a0a) 0%,
+    var(--gui-bg-surface, #1a1a1a) 50%,
+    var(--gui-bg-base, #0a0a0a) 100%
+  );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -716,7 +721,12 @@ textarea {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.3)), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.3)),
+    transparent
+  );
   animation: progress-shimmer 1.5s ease-in-out infinite;
 }
 

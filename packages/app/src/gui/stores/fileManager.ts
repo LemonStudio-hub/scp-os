@@ -316,7 +316,8 @@ export const useFileManagerStore = defineStore('fileManager', () => {
 
   // Helper
   function nodeToItem(node: FileSystemNode): FileItem {
-    const isHidden = node.name.startsWith('.') ||
+    const isHidden =
+      node.name.startsWith('.') ||
       (currentPath.value === '/' && ['home', 'etc', 'var'].includes(node.name))
     return {
       name: node.name,
