@@ -177,4 +177,9 @@ defineEmits<{
 .scp-tabs__close:active {
   transform: scale(0.85);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .scp-tabs__item--active {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
 </style>

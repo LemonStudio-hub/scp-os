@@ -383,4 +383,12 @@ onBeforeUnmount(() => {
   transform: scale(0.95);
   box-shadow: none;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-terminal__key {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.light .mobile-terminal__key:active {
+  background: var(--gui-bg-surface-active, rgba(0, 0, 0, 0.12));
+}
 </style>

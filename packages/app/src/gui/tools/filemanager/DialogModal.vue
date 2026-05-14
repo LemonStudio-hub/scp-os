@@ -233,4 +233,9 @@ function onCancel() {
 .fm-dialog-leave-to {
   opacity: 0;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .fm-dialog {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
 </style>

@@ -532,7 +532,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__tab:hover {
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
 }
 
 .content-mgmt__tab--active {
@@ -606,11 +606,11 @@ onMounted(fetchContent)
 
 .content-mgmt__btn--secondary {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
 }
 
 .content-mgmt__btn--secondary:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -626,12 +626,12 @@ onMounted(fetchContent)
 
 .content-mgmt__btn--ghost {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .content-mgmt__btn--ghost:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -655,7 +655,7 @@ onMounted(fetchContent)
   padding: 8px 14px;
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   font-size: 13px;
   text-align: left;
   cursor: pointer;
@@ -696,7 +696,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__action-btn:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
 }
 
 .content-mgmt__action-btn--edit {
@@ -775,5 +775,31 @@ onMounted(fetchContent)
 
 .content-mgmt__textarea::placeholder {
   color: var(--gui-text-disabled, #4a4a4a);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .content-mgmt__tabs {
+  background: var(--gui-bg-surface-hover, #e8e8ed);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .content-mgmt__tab--active {
+  background: var(--gui-bg-surface, #ffffff);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.light .content-mgmt__search-input,
+.light .content-mgmt__input,
+.light .content-mgmt__textarea {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .content-mgmt__action-btn {
+  border-color: var(--gui-border-default, #d1d1d6);
+  background: var(--gui-bg-surface, #ffffff);
+}
+.light .content-mgmt__action-btn:hover {
+  background: var(--gui-bg-surface-hover, #f0f0f0);
+}
+.light .content-mgmt__dropdown {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 </style>

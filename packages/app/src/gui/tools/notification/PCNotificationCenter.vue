@@ -547,4 +547,15 @@ onUnmounted(() => {
   background: var(--gui-error-bg);
   color: var(--gui-error);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .notif-center__panel {
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.08);
+}
+.light .notif-center__item {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+}
+.light .notif-center__item:hover {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.06));
+}
 </style>

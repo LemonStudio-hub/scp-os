@@ -493,13 +493,13 @@ function createTheme(): any {
       color: 'var(--gui-text-primary, #f0f0f0)',
     },
     '.cm-selectionBackground': {
-      background: 'rgba(233, 69, 96, 0.2) !important',
+      background: isLight ? 'rgba(99, 99, 102, 0.15) !important' : 'rgba(233, 69, 96, 0.2) !important',
     },
     '&.cm-focused .cm-selectionBackground': {
-      background: 'rgba(233, 69, 96, 0.25) !important',
+      background: isLight ? 'rgba(99, 99, 102, 0.2) !important' : 'rgba(233, 69, 96, 0.25) !important',
     },
     '.cm-selectionMatch': {
-      background: 'rgba(233, 69, 96, 0.12)',
+      background: isLight ? 'rgba(99, 99, 102, 0.1)' : 'rgba(233, 69, 96, 0.12)',
     },
     '.cm-searchMatch': {
       background: 'rgba(255, 200, 50, 0.2)',
@@ -509,9 +509,9 @@ function createTheme(): any {
       background: 'rgba(255, 200, 50, 0.35)',
     },
     '.cm-matchingBracket': {
-      backgroundColor: 'rgba(233, 69, 96, 0.25)',
+      backgroundColor: isLight ? 'rgba(99, 99, 102, 0.15)' : 'rgba(233, 69, 96, 0.25)',
       outline: '1px solid var(--gui-accent, #e94560)',
-      color: '#fff !important',
+      color: isLight ? '#000 !important' : '#fff !important',
     },
     '.cm-nonmatchingBracket': {
       backgroundColor: 'rgba(255, 50, 50, 0.25)',
@@ -552,7 +552,7 @@ function createTheme(): any {
         padding: '4px 8px',
       },
       '& > ul > li[aria-selected]': {
-        background: 'rgba(233, 69, 96, 0.15)',
+        background: isLight ? 'rgba(99, 99, 102, 0.1)' : 'rgba(233, 69, 96, 0.15)',
         color: 'var(--gui-text-primary, #fff)',
       },
     },
@@ -1302,5 +1302,55 @@ onUnmounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .text-editor__find-replace,
+.light .text-editor__goto-line {
+  background: var(--gui-bg-surface, #fff);
+  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.light .text-editor__find-input,
+.light .text-editor__goto-input {
+  background: var(--gui-bg-base, #f2f2f7);
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.06));
+  color: var(--gui-text-primary, #000);
+}
+.light .text-editor__find-input:focus,
+.light .text-editor__goto-input:focus {
+  border-color: var(--gui-accent, #636366);
+}
+.light .text-editor__find-btn {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.06));
+  color: var(--gui-text-secondary, #6e6e73);
+}
+.light .text-editor__find-btn:hover {
+  background: var(--gui-bg-surface-active, rgba(0, 0, 0, 0.08));
+  color: var(--gui-text-primary, #000);
+}
+.light .text-editor__tool-btn--active {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.12));
+}
+.light .text-editor__tool-btn--active:hover {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.18));
+}
+.light .text-editor__shortcut {
+  background: var(--gui-bg-surface, rgba(0, 0, 0, 0.02));
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.06));
+}
+.light .text-editor__shortcut:hover {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+}
+.light .text-editor__shortcut kbd {
+  background: var(--gui-bg-surface-raised, rgba(0, 0, 0, 0.04));
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.08));
+}
+.light .editor-cmd-palette {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.light .editor-goto-line {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 </style>

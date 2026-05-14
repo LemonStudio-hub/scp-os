@@ -1130,4 +1130,12 @@ onMounted(() => {
 .mobile-file-manager__context-item--danger {
   color: var(--gui-error, #ff3b30);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-file-manager__context-menu {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .mobile-file-manager__sheet {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+}
 </style>

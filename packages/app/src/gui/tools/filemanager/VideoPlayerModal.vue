@@ -292,4 +292,12 @@ function close() {
 .media-modal-leave-to {
   opacity: 0;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .video-player-modal {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .video-player-modal__controls {
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.9));
+}
 </style>

@@ -63,8 +63,9 @@
           <div
             class="desktop-screen__icon-bg"
             :class="`desktop-screen__icon-bg--${app.id}`"
-            :style="iconGradientStyle"
+            :style="{ background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})` }"
           >
+            <div class="desktop-screen__icon-inner">
             <template v-if="app.id === 'terminal'">
               <span class="desktop-screen__icon-text">&gt;_</span>
             </template>
@@ -182,6 +183,7 @@
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
               </svg>
             </template>
+            </div>
           </div>
           <span class="desktop-screen__icon-label">{{ app.label }}</span>
         </div>
@@ -406,6 +408,7 @@ function setDesktopSortBy(sort: 'name' | 'date') {
 
 loadIconSize()
 loadSortBy()
+// Note: arrangeApps() is called in onMounted after drag states are initialized
 
 // Context menu state
 const contextMenu = ref({
@@ -427,6 +430,7 @@ themeStore.init()
 
 // Desktop app drag states
 const appDragStates = new Map<string, ReturnType<typeof useDraggable>>()
+let nextZIndex = 1
 
 function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
   if (!el || appDragStates.has(app.id)) return
@@ -438,6 +442,14 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
       maxY: window.innerHeight - 150,
     },
     onClick: () => emit('launch', app),
+    onStart: () => {
+      el?.classList.add('is-dragging')
+      // Increment z-index so dragged icon is always on top
+      nextZIndex++
+      if (el) {
+        el.style.zIndex = String(nextZIndex)
+      }
+    },
     onMove: (x, y) => {
       app.x = x
       app.y = y
@@ -445,6 +457,8 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
     onEnd: (x, y) => {
       app.x = x
       app.y = y
+      el?.classList.remove('is-dragging')
+      // Keep the elevated z-index so overlapping icons stay stacked by last-used
     },
   })
   state.setInitialPosition(app.x ?? 0, app.y ?? 0)
@@ -676,11 +690,6 @@ const wallpaperPatternColor1 = computed(() => themeStore.currentTheme.colors.bor
 const wallpaperPatternColor2 = computed(() => themeStore.currentTheme.colors.borderDefault)
 const wallpaperPatternColor3 = computed(() => themeStore.currentTheme.colors.borderStrong)
 
-// App icon gradient style
-const iconGradientStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
-}))
-
 // Load wallpaper
 onMounted(async () => {
   // Arrange desktop icons after DOM is ready
@@ -782,6 +791,7 @@ onUnmounted(() => {
 
 .desktop-screen__icon {
   position: absolute;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -791,10 +801,16 @@ onUnmounted(() => {
   cursor: move;
   -webkit-tap-highlight-color: transparent;
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
 }
 
 .desktop-screen__icon:hover {
   transform: translateY(-6px);
+  z-index: 10;
+}
+
+.desktop-screen__icon.is-dragging {
+  z-index: 100;
 }
 
 .desktop-screen__icon:active {
@@ -810,22 +826,29 @@ onUnmounted(() => {
 
 .desktop-screen__icon-bg {
   position: relative;
+  z-index: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 14px;
   width: 72px;
   height: 72px;
-  border-radius: var(--gui-radius-xl, 14px);
+  --icon-radius: var(--gui-radius-xl, 14px);
+  border-radius: var(--icon-radius);
   color: var(--gui-text-inverse, #ffffff);
+  /* background set by inline style from theme store */
   box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4));
   transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
+  isolation: isolate;
+  clip-path: inset(0 round var(--icon-radius));
 }
 
 /* Frosted glass overlay effect on icons */
-.desktop-screen__icon-bg::before {
+.desktop-screen__icon-bg::after {
   content: '';
   position: absolute;
+  z-index: 2;
   inset: 0;
   background: linear-gradient(
     135deg,
@@ -843,26 +866,42 @@ onUnmounted(() => {
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
-.light .desktop-screen__icon-bg::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 60%);
-}
 
-.light .desktop-screen__icon-bg svg {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+
+.desktop-screen__icon-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .desktop-screen__icon-bg svg {
-  position: relative;
-  z-index: 1;
   width: 32px;
   height: 32px;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  display: block;
+  overflow: hidden;
+  fill: none;
+  stroke: var(--gui-text-inverse, #ffffff);
+  shape-rendering: crispEdges;
+}
+
+/* SVG icon mask — icons rendered as mask-image for opaque fill */
+.desktop-screen__icon-mask {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: var(--gui-text-inverse, #ffffff);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 
 .desktop-screen__icon-text {
-  position: relative;
-  z-index: 1;
   font-family: var(
     --gui-font-mono,
     'JetBrains Mono',
@@ -941,6 +980,7 @@ onUnmounted(() => {
   .desktop-screen__icon-bg {
     width: 64px;
     height: 64px;
+    padding-top: 12px;
   }
 
   .desktop-screen__icon-bg svg {
@@ -965,6 +1005,7 @@ onUnmounted(() => {
   .desktop-screen__icon-bg {
     width: 56px;
     height: 56px;
+    padding-top: 10px;
   }
 
   .desktop-screen__icon-bg svg {
@@ -991,7 +1032,7 @@ onUnmounted(() => {
 .icon-size-large .desktop-screen__icon-bg {
   width: 88px;
   height: 88px;
-  border-radius: var(--gui-radius-2xl, 18px);
+  --icon-radius: var(--gui-radius-2xl, 18px);
 }
 
 .icon-size-large .desktop-screen__icon-bg svg {
@@ -1016,7 +1057,7 @@ onUnmounted(() => {
 .icon-size-small .desktop-screen__icon-bg {
   width: 56px;
   height: 56px;
-  border-radius: var(--gui-radius-lg, 12px);
+  --icon-radius: var(--gui-radius-lg, 12px);
 }
 
 .icon-size-small .desktop-screen__icon-bg svg {

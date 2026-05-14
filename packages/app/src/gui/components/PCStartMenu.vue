@@ -460,6 +460,27 @@ onUnmounted(() => {
   transform: scale(1.05);
 }
 
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-start-menu {
+  box-shadow: var(--gui-shadow-ios-sheet, 0 -10px 40px rgba(0, 0, 0, 0.12));
+}
+
+.light .pc-start-menu:hover {
+  box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.15));
+}
+
+.light .pc-start-menu__search-results {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.light .pc-start-menu__app:hover .pc-start-menu__app-icon {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.light .pc-start-menu__app-icon {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 .pc-start-menu__app-label {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-medium, 500);

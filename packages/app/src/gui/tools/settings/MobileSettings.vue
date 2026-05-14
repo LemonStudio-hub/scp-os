@@ -931,4 +931,18 @@ function formatBytes(bytes: number): string {
   font-weight: var(--gui-font-weight-medium, 500);
   color: var(--gui-text-primary, #ffffff);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-settings__theme-preview {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.light .mobile-settings__theme-preview--active {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+.light .mobile-settings__sheet {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .mobile-settings__lang-sheet {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+}
 </style>

@@ -126,7 +126,7 @@ function onPageChange(page: number) {
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   font-size: 13px;
   cursor: pointer;
   transition: all 120ms ease;

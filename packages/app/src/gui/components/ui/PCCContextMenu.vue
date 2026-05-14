@@ -432,4 +432,13 @@ watch(
 .pcc-context-menu__submenu::-webkit-scrollbar-thumb:hover {
   background: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pcc-context-menu {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.light .pcc-context-menu__submenu {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
 </style>

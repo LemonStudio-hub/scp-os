@@ -1103,4 +1103,15 @@ function getCategoryIcon(category: string): string {
 .pc-feedback__load-more:not(:disabled):hover {
   background: var(--gui-bg-surface-hover, #3a3a3c);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-feedback__item {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.light .pc-feedback__item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.light .pc-feedback__compose {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
 </style>

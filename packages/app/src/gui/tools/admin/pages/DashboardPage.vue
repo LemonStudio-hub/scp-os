@@ -253,4 +253,15 @@ onMounted(fetchDashboard)
   color: var(--gui-text-primary, #e0e0e0);
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .dashboard-page__stat-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .dashboard-page__stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+.light .dashboard-page__activity-item:hover {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+}
 </style>

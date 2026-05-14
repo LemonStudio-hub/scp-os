@@ -499,7 +499,7 @@ onMounted(fetchUsers)
   padding: 8px 14px;
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   font-size: 13px;
   text-align: left;
   cursor: pointer;
@@ -542,11 +542,11 @@ onMounted(fetchUsers)
 
 .user-mgmt__btn--secondary {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
 }
 
 .user-mgmt__btn--secondary:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -561,12 +561,12 @@ onMounted(fetchUsers)
 
 .user-mgmt__btn--ghost {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .user-mgmt__btn--ghost:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -606,7 +606,7 @@ onMounted(fetchUsers)
 }
 
 .user-mgmt__action-btn:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
 }
 
 .user-mgmt__action-btn--warn {
@@ -680,5 +680,23 @@ onMounted(fetchUsers)
 
 .user-mgmt__textarea::placeholder {
   color: var(--gui-text-disabled, #4a4a4a);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .user-mgmt__search-input,
+.light .user-mgmt__select,
+.light .user-mgmt__textarea {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .user-mgmt__dropdown {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+.light .user-mgmt__action-btn {
+  border-color: var(--gui-border-default, #d1d1d6);
+  background: var(--gui-bg-surface, #ffffff);
+}
+.light .user-mgmt__action-btn:hover {
+  background: var(--gui-bg-surface-hover, #f0f0f0);
 }
 </style>

@@ -92,4 +92,9 @@ const { notifications, removeNotification } = useNotification()
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
   color: var(--gui-text-primary, #ffffff);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-notification__item {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
 </style>

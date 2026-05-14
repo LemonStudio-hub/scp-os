@@ -198,4 +198,12 @@ defineEmits<{
   font-size: var(--gui-font-lg, 15px);
   border-radius: var(--gui-radius-md, 10px);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .gui-btn {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.light .gui-btn:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
 </style>

@@ -1363,4 +1363,18 @@ onBeforeUnmount(() => {
 .mobile-docs__card-number--guide {
   font-size: 16px;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-docs__card {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.light .mobile-docs__card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.light .mobile-docs__search-bar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .mobile-docs__filter-chips {
+  box-shadow: none;
+}
 </style>

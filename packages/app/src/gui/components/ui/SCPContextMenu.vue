@@ -158,4 +158,9 @@ onBeforeUnmount(() => {
     transform: translateY(-4px) scale(0.98);
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .scp-context-menu {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
 </style>

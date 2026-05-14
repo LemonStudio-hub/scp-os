@@ -1738,7 +1738,7 @@ async function runSpeedTest() {
   background: rgba(255, 59, 48, 0.04);
 }
 .dash__alert--info {
-  border-left-color: rgba(255, 255, 255, 0.1);
+  border-left-color: var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
 }
 .dash__alert-time {
   flex-shrink: 0;

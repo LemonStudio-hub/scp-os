@@ -463,4 +463,12 @@ function formatTime(ms: number): string {
     gap: 4px;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .metric-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .metric-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
 </style>

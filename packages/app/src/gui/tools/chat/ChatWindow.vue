@@ -115,9 +115,9 @@
             style="
               padding: 4px 8px;
               font-size: 10px;
-              color: #666;
+              color: var(--gui-text-tertiary, #666);
               background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
-              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+              border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
             "
           >
             DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
@@ -1406,5 +1406,13 @@ async function saveNickname() {
 .mobile-fade-enter-from,
 .mobile-fade-leave-to {
   opacity: 0;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-chat__emoji-picker {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.light .mobile-chat__action-menu {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
 }
 </style>

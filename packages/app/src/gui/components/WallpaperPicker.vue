@@ -522,4 +522,22 @@ function close() {
 .wallpaper-picker-leave-to {
   opacity: 0;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .wallpaper-picker-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+.light .wallpaper-picker {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .wallpaper-picker__item-preview {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.light .wallpaper-picker__item-delete {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+.light .wallpaper-picker__delete-actions button:first-child {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
 </style>

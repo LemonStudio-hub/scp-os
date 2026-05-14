@@ -568,6 +568,23 @@ onUnmounted(() => {
   opacity: 0.7;
 }
 
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-taskbar {
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.light .pc-taskbar:hover {
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.1);
+}
+
+.light .pc-taskbar__app-btn:hover {
+  box-shadow: none;
+}
+
+.light .pc-taskbar__latency-tip {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
 /* ── Time Display ──────────────────────────────────────────────────── */
 .pc-taskbar__wifi,
 .pc-taskbar__battery {

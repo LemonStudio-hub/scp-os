@@ -507,4 +507,15 @@ const handleCleanup = () => {
     text-align: center;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .sidebar {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06);
+}
+.light .sidebar__bottom-sheet {
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.08);
+}
+.light .sidebar__overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
 </style>

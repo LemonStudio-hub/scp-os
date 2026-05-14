@@ -158,4 +158,12 @@ function onClose() {
   transform: scale(0.96);
   opacity: 0;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .admin-modal-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+.light .admin-modal {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
 </style>

@@ -296,4 +296,9 @@ async function handleLogin() {
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .admin-login__card {
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
+}
 </style>

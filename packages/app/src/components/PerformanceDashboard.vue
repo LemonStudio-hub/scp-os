@@ -1050,4 +1050,18 @@ onUnmounted(() => {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .perf-modal {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+.light .perf-modal__backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+.light .perf-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .perf-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
 </style>

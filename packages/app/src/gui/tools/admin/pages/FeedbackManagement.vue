@@ -358,7 +358,7 @@ onMounted(fetchFeedback)
 }
 
 .feedback-mgmt__action-btn:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
 }
 
 .feedback-mgmt__action-btn--view {
@@ -413,7 +413,7 @@ onMounted(fetchFeedback)
 .feedback-mgmt__detail-content {
   margin: 0;
   font-size: 14px;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   line-height: 1.6;
   padding: 12px;
   background: var(--gui-bg-surface, #0f0f0f);

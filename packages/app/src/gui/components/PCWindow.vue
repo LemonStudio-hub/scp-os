@@ -357,6 +357,23 @@ function handleWindowResize() {
   border: none;
 }
 
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-window {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.light .pc-window:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.light .pc-window--focused {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.light .pc-window:not(.pc-window--focused) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 /* ── Header / Title Bar - iOS Frosted Glass ────────────────────────── */
 .pc-window__header {
   display: flex;

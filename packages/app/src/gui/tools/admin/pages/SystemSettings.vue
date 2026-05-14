@@ -198,7 +198,7 @@ onMounted(fetchSettings)
   justify-content: center;
   gap: 12px;
   min-height: 200px;
-  color: #555555;
+  color: var(--gui-text-tertiary, #555555);
   font-size: 14px;
 }
 
@@ -249,7 +249,7 @@ onMounted(fetchSettings)
 
 .sys-settings__item-key {
   font-size: 13px;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   word-break: break-all;
 }
 
@@ -266,7 +266,7 @@ onMounted(fetchSettings)
   height: 22px;
   border: none;
   border-radius: 11px;
-  background: #2a2a2a;
+  background: var(--gui-border-default, #2a2a2a);
   cursor: pointer;
   transition: background 200ms ease;
   padding: 0;

@@ -1014,4 +1014,18 @@ function resetSettings(): void {
     display: none;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-settings__modal-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+.light .pc-settings__modal {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+.light .pc-settings__theme-preview {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.light .pc-settings__theme-preview--active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 </style>

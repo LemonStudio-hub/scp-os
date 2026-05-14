@@ -215,6 +215,10 @@ onMounted(fetchLogs)
   color-scheme: dark;
 }
 
+.light .audit-log__date-input {
+  color-scheme: light;
+}
+
 .audit-log__date-input:focus {
   border-color: var(--gui-error, #e94560);
 }
@@ -242,5 +246,12 @@ onMounted(fetchLogs)
   white-space: nowrap;
   color: var(--gui-text-tertiary, #6a6a6a);
   font-size: 12px;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .audit-log__select,
+.light .audit-log__date-input {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #d1d1d6);
 }
 </style>

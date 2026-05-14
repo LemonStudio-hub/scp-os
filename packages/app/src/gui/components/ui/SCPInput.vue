@@ -202,4 +202,12 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 .scp-input__clear:active {
   transform: scale(0.85);
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .scp-input__field {
+  box-shadow: none;
+}
+.light .scp-input__field:focus {
+  box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(99, 99, 102, 0.15));
+}
 </style>

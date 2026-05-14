@@ -387,7 +387,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__tab:hover {
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
 }
 
 .chat-mgmt__tab--active {
@@ -468,7 +468,7 @@ onMounted(() => {
 }
 
 .chat-mgmt__action-btn:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
 }
 
 .chat-mgmt__action-btn--edit {
@@ -519,12 +519,12 @@ onMounted(() => {
 
 .chat-mgmt__btn--ghost {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .chat-mgmt__btn--ghost:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -601,7 +601,7 @@ onMounted(() => {
   height: 22px;
   border: none;
   border-radius: 11px;
-  background: #2a2a2a;
+  background: var(--gui-border-default, #2a2a2a);
   cursor: pointer;
   transition: background 200ms ease;
   padding: 0;
@@ -628,6 +628,35 @@ onMounted(() => {
 
 .chat-mgmt__toggle-label {
   font-size: 13px;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .chat-mgmt__tabs {
+  background: var(--gui-bg-surface-hover, #e8e8ed);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .chat-mgmt__tab--active {
+  background: var(--gui-bg-surface, #ffffff);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.light .chat-mgmt__select {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .chat-mgmt__action-btn {
+  border-color: var(--gui-border-default, #d1d1d6);
+  background: var(--gui-bg-surface, #ffffff);
+}
+.light .chat-mgmt__action-btn:hover {
+  background: var(--gui-bg-surface-hover, #f0f0f0);
+}
+.light .chat-mgmt__input,
+.light .chat-mgmt__textarea {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .chat-mgmt__toggle-label {
+  color: var(--gui-text-secondary, #6e6e73);
 }
 </style>

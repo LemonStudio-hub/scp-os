@@ -142,9 +142,9 @@
               style="
                 padding: 4px 8px;
                 font-size: 10px;
-                color: #666;
+                color: var(--gui-text-tertiary, #666);
                 background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
               "
             >
               DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
@@ -1810,5 +1810,25 @@ async function saveNickname() {
     width: 240px;
     min-width: 240px;
   }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-chat__container {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+.light .pc-chat__emoji-picker {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.light .pc-chat__dialog {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+.light .pc-chat__ws-status--connected .pc-chat__ws-dot {
+  box-shadow: 0 0 6px rgba(52, 199, 89, 0.3);
+}
+.light .pc-chat__ws-status--connected .pc-chat__ws-text {
+  color: rgba(52, 199, 89, 0.8);
+}
+.light .pc-chat__ws-status--disconnected .pc-chat__ws-text {
+  color: rgba(255, 59, 48, 0.8);
 }
 </style>

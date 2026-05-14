@@ -1139,4 +1139,12 @@ function getCategoryIcon(category: string): string {
     padding: 14px;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-feedback__item {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.light .mobile-feedback__compose {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+}
 </style>

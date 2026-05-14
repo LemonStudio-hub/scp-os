@@ -303,4 +303,9 @@ function close() {
 .media-modal-leave-to {
   opacity: 0;
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .audio-player-modal {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
 </style>
