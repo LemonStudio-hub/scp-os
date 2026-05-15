@@ -21,7 +21,8 @@ import { parseHTML } from 'linkedom'
 import * as cheerio from 'cheerio'
 
 // 安全
-import { RateLimiter, KVRateLimiter } from './security/rateLimiter'
+import { RateLimiter } from './security/rateLimiter'
+import { D1RateLimiter } from './security/d1RateLimiter'
 import { CORSManager } from './security/cors'
 import { requireAuth } from './security/auth'
 
@@ -55,7 +56,7 @@ export class SCPScraper {
   private paragraphFilter = new ParagraphFilter()
   private retryStrategy = new RetryStrategy()
 
-  constructor(private kv?: KVNamespace, private db?: D1Database) {}
+  constructor(private db?: D1Database) {}
 
   getDatabase(): D1Database | undefined {
     return this.db
@@ -537,15 +538,18 @@ export class SCPScraper {
   }
 
   /**
-   * 从缓存获取
+   * 从 D1 缓存获取
    */
   private async getFromCache(key: string): Promise<SCPWikiData | null> {
-    if (!this.kv) return null
+    if (!this.db) return null
 
     try {
-      const cached = await this.kv.get(key, 'text')
-      if (cached) {
-        return JSON.parse(cached) as SCPWikiData
+      const row = await this.db.prepare(
+        'SELECT value FROM cache_entries WHERE key = ? AND expires_at > ?'
+      ).bind(key, Date.now()).first<{ value: string }>()
+
+      if (row) {
+        return JSON.parse(row.value) as SCPWikiData
       }
     } catch (error) {
       logger.error('Cache read error', error as Error)
@@ -555,15 +559,23 @@ export class SCPScraper {
   }
 
   /**
-   * 保存到缓存
+   * 保存到 D1 缓存
    */
   private async saveToCache(key: string, data: SCPWikiData): Promise<void> {
-    if (!this.kv) return
+    if (!this.db) return
 
     try {
-      await this.kv.put(key, JSON.stringify(data), {
-        expirationTtl: Math.floor(this.config.cacheDuration / 1000),
-      })
+      const expiresAt = Date.now() + this.config.cacheDuration
+      await this.db.prepare(
+        'INSERT OR REPLACE INTO cache_entries (key, value, expires_at) VALUES (?, ?, ?)'
+      ).bind(key, JSON.stringify(data), expiresAt).run()
+
+      // 顺便清理过期缓存（每次写入时概率触发）
+      if (Math.random() < 0.1) {
+        await this.db.prepare(
+          'DELETE FROM cache_entries WHERE expires_at < ?'
+        ).bind(Date.now()).run()
+      }
     } catch (error) {
       logger.error('Cache write error', error as Error)
     }
@@ -1054,7 +1066,7 @@ export class SCPScraper {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const corsManager = new CORSManager()
-    const rateLimiter = env.SCP_CACHE ? new KVRateLimiter(env.SCP_CACHE) : new RateLimiter()
+    const rateLimiter = env.SCP_DB ? new D1RateLimiter(env.SCP_DB) : new RateLimiter()
     if (request.method === 'OPTIONS') {
       const pc: RequestContext = {
         ip: request.headers.get('CF-Connecting-IP') || 'unknown',
@@ -1074,7 +1086,7 @@ export default {
         return chatRoomStub.fetch(request)
       }
       const router = new Router()
-      const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
+      const scraper = new SCPScraper(env.SCP_DB)
       const authResult = await requireAuth(request, env, corsManager)
       let authenticatedUserId: string | undefined
       if (!(authResult instanceof Response)) {
@@ -1118,7 +1130,7 @@ export default {
   },
 
   async scheduled(event: ScheduledEvent, env: Env): Promise<void> {
-    const scraper = new SCPScraper(env.SCP_CACHE, env.SCP_DB)
+    const scraper = new SCPScraper(env.SCP_DB)
     const result = await scraper.broadcastNewMessages()
     logger.info('[Scheduled] Broadcast result:', result)
   },

@@ -105,6 +105,20 @@ export class FileSystem {
                   mtime: Date.now(),
                   children: {},
                 },
+                desktop: {
+                  name: 'desktop',
+                  type: 'directory',
+                  permissions: {
+                    user: { read: true, write: true, execute: true },
+                    group: { read: true, write: true, execute: true },
+                    others: { read: true, write: false, execute: true },
+                  },
+                  owner: 'scp',
+                  group: 'foundation',
+                  size: 0,
+                  mtime: Date.now(),
+                  children: {},
+                },
                 logs: {
                   name: 'logs',
                   type: 'directory',

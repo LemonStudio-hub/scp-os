@@ -105,11 +105,7 @@ export interface ParsedSections {
   author?: string
 }
 
-/**
- * KV 命名空间
- */
 export interface Env {
-  SCP_CACHE: KVNamespace
   SCP_DB: D1Database
   SCP_READER_DB: D1Database
   SCP_FILES: R2Bucket

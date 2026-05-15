@@ -214,20 +214,7 @@ export async function handleDocsContent(
   env: Env,
   scpNumber: string
 ): Promise<Response> {
-  const kvKey = `docs-content:${scpNumber}`
-
   try {
-    const cached = await env.SCP_CACHE.get(kvKey, 'text')
-    if (cached) {
-      const response: DocsContentResponse = {
-        scp_number: scpNumber,
-        content: cached,
-        cached: true,
-        source: 'kv',
-      }
-      return Response.json({ success: true, data: response })
-    }
-
     const db = env.SCP_READER_DB
     if (!db) {
       return Response.json({
@@ -236,6 +223,22 @@ export async function handleDocsContent(
       }, { status: 500 })
     }
 
+    // 先查 D1 缓存
+    const cached = await db.prepare(
+      'SELECT content FROM scp_items WHERE scp_number = ? AND content IS NOT NULL'
+    ).bind(scpNumber).first<{ content: string }>()
+
+    if (cached) {
+      const response: DocsContentResponse = {
+        scp_number: scpNumber,
+        content: cached.content,
+        cached: true,
+        source: 'd1',
+      }
+      return Response.json({ success: true, data: response })
+    }
+
+    // 缓存未命中，从 GitHub 拉取
     const item = await db.prepare(
       'SELECT content_file FROM scp_items WHERE scp_number = ?'
     ).bind(scpNumber).first<{ content_file: string | null }>()
@@ -296,7 +299,10 @@ export async function handleDocsContent(
 
     const rawContent: string = entry.raw_content
 
-    await env.SCP_CACHE.put(kvKey, rawContent)
+    // 写入 D1 缓存
+    await db.prepare(
+      'UPDATE scp_items SET content = ? WHERE scp_number = ?'
+    ).bind(rawContent, scpNumber).run()
 
     const response: DocsContentResponse = {
       scp_number: scpNumber,

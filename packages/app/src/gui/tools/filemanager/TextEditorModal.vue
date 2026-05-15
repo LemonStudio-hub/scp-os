@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from '../../composables/useI18n'
-import { readFileContent } from '../../../services/fileService'
+import { filesystem } from '../../../utils/filesystem'
 
 interface Props {
   visible: boolean
@@ -76,7 +76,7 @@ watch(
 async function loadFile() {
   try {
     const path = props.file.path || '/' + props.file.name
-    const data = await readFileContent(path)
+    const data = filesystem.readFile(path)
     if (data !== null) {
       content.value = data
     } else {

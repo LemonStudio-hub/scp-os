@@ -13,7 +13,6 @@ import { requireAuth } from './security/auth'
 import { validationError, unauthorizedError } from './shared/errors'
 import { getImageHeaders } from './utils/browserHeaders'
 import { getConfig } from './shared/config'
-import * as filesAPI from './api/files'
 
 function safeParseInt(value: string | null, defaultValue: number): number {
   if (!value) return defaultValue
@@ -370,8 +369,17 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     try {
       const body = await req.json() as PerformanceMetricsBody
       logger.info('Received performance metrics', { metrics: body })
-      const metricKey = `perf-${Date.now()}`
-      await env.SCP_CACHE?.put(metricKey, JSON.stringify(body), { expirationTtl: 3600 })
+      const db = env.SCP_DB
+      if (db) {
+        const now = Date.now()
+        await db.prepare(
+          'INSERT INTO performance_metrics (data, created_at) VALUES (?, ?)'
+        ).bind(JSON.stringify(body), now).run()
+        // 清理 1 小时前的记录
+        await db.prepare(
+          'DELETE FROM performance_metrics WHERE created_at < ?'
+        ).bind(now - 3600000).run()
+      }
       return corsManager.createResponse({ success: true, message: 'Performance metrics received', timestamp: Date.now() }, 200, ctx(req))
     } catch {
       return corsManager.createErrorResponse('Invalid request body', 400, ctx(req))
@@ -382,14 +390,18 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     try {
       const limit = safeParseInt(url.searchParams.get('limit'), 10)
       const metrics: any[] = []
-      const list = await env.SCP_CACHE?.list({ prefix: 'perf-', limit })
-      if (list && list.keys.length > 0) {
-        for (const key of list.keys) {
-          const value = await env.SCP_CACHE?.get(key.name, 'text')
-          if (value) metrics.push(JSON.parse(value))
+      const db = env.SCP_DB
+      if (db) {
+        const rows = await db.prepare(
+          'SELECT data FROM performance_metrics ORDER BY created_at DESC LIMIT ?'
+        ).bind(limit).all<{ data: string }>()
+        if (rows.results) {
+          for (const row of rows.results) {
+            metrics.push(JSON.parse(row.data))
+          }
         }
       }
-      return corsManager.createResponse({ success: true, metrics: metrics.reverse(), count: metrics.length }, 200, ctx(req))
+      return corsManager.createResponse({ success: true, metrics, count: metrics.length }, 200, ctx(req))
     } catch {
       return corsManager.createErrorResponse('Failed to retrieve metrics', 500, ctx(req))
     }
@@ -810,38 +822,18 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
     return corsManager.createResponse(result, result.success ? 200 : 500, ctx(req))
   })
 
-  // ━━ File Storage (R2) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  router.post('/files/upload', async (req, _env, _ctx_, _params, _url) => {
-    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
-    return filesAPI.uploadFile(req, env, authUserId(), corsManager.getHeaders(ctx(req)))
-  })
+  // ━━ File Storage (R2) — DISABLED ━━━━━━━━━━━━━━━━━━━━━━━
+  const r2Disabled = (req: Request) =>
+    corsManager.createErrorResponse(
+      { code: 'GONE', message: 'Cloud file storage is disabled. Files are stored locally.' },
+      410,
+      ctx(req),
+    )
 
-  router.get('/files', async (req, _env, _ctx_, _params, url) => {
-    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
-    const prefix = url.searchParams.get('prefix') || ''
-    const limit = Math.min(safeParseInt(url.searchParams.get('limit'), 100), 1000)
-    return filesAPI.listFiles(env, authUserId(), prefix, limit, corsManager.getHeaders(ctx(req)))
-  })
-
-  router.get('/files/quota', async (req, _env, _ctx_, _params, _url) => {
-    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
-    return filesAPI.getStorageQuota(env, authUserId(), corsManager.getHeaders(ctx(req)))
-  })
-
-  router.get('/files/:key', async (req, _env, _ctx_, params, _url) => {
-    const key = decodeURIComponent(params.key)
-    return filesAPI.getFile(req, env, key, corsManager.getHeaders(ctx(req)))
-  })
-
-  router.put('/files/:key', async (req, _env, _ctx_, params, _url) => {
-    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
-    const key = decodeURIComponent(params.key)
-    return filesAPI.updateFile(req, env, key, authUserId(), corsManager.getHeaders(ctx(req)))
-  })
-
-  router.delete('/files/:key', async (req, _env, _ctx_, params, _url) => {
-    if (authFail()) return corsManager.createErrorResponse(unauthorizedError(), 401, ctx(req))
-    const key = decodeURIComponent(params.key)
-    return filesAPI.deleteFile(env, key, authUserId(), corsManager.getHeaders(ctx(req)))
-  })
+  router.post('/files/upload', (req) => r2Disabled(req))
+  router.get('/files', (req) => r2Disabled(req))
+  router.get('/files/quota', (req) => r2Disabled(req))
+  router.get('/files/:key', (req) => r2Disabled(req))
+  router.put('/files/:key', (req) => r2Disabled(req))
+  router.delete('/files/:key', (req) => r2Disabled(req))
 }

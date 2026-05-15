@@ -103,7 +103,7 @@ export interface FilePermissions {
   execute: boolean
 }
 
-export type ViewMode = 'grid' | 'list'
+export type ViewMode = 'grid' | 'list' | 'column' | 'detail'
 
 export type SortField = 'name' | 'size' | 'type' | 'modifiedAt'
 export type SortOrder = 'asc' | 'desc'
@@ -111,6 +111,26 @@ export type SortOrder = 'asc' | 'desc'
 export interface FileSortConfig {
   field: SortField
   order: SortOrder
+}
+
+export interface SidebarItem {
+  label: string
+  path: string
+  icon?: string
+  isFavorite?: boolean
+}
+
+export interface SidebarSection {
+  id: string
+  label: string
+  items: SidebarItem[]
+  collapsed?: boolean
+}
+
+export interface ColumnEntry {
+  path: string
+  files: FileItem[]
+  selectedName?: string
 }
 
 // Text Editor Types
@@ -172,6 +192,8 @@ export type ContextMenuIcon =
   | 'wifi'
   | 'menu'
   | 'file-text'
+  | 'copy'
+  | 'star'
 
 export interface ContextMenuItem {
   id: string
