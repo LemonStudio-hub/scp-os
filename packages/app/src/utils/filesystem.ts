@@ -386,6 +386,8 @@ export class FileSystem {
       if (data) {
         this.root = data.root
         this.currentPath = data.currentPath
+        // Migrate: ensure new default directories exist
+        this.ensureDefaultDirs()
       }
       this.isInitialized = true
     } catch (error) {
@@ -402,6 +404,43 @@ export class FileSystem {
     } catch (error) {
       console.error('[Filesystem] Failed to save to storage:', error)
     }
+  }
+
+  // 确保默认目录和桌面快捷方式存在（迁移旧数据）
+  private ensureDefaultDirs(): void {
+    const defaults = this.createDefaultFilesystem()
+
+    // Helper: recursively ensure a node exists in the live tree
+    const ensureNode = (path: string[], template: FileSystemNode) => {
+      const parent = this.getNode(path.slice(0, -1))
+      const name = path[path.length - 1]
+      if (!parent || parent.type !== 'directory' || !parent.children) return
+      if (!(name in parent.children)) {
+        parent.children[name] = JSON.parse(JSON.stringify(template))
+      } else if (template.type === 'directory' && template.children) {
+        // Recurse into children for directories that already exist
+        for (const [childName, childTemplate] of Object.entries(template.children)) {
+          ensureNode([...path, childName], childTemplate)
+        }
+      }
+    }
+
+    // Ensure top-level dirs
+    if (defaults.children) {
+      for (const [name, template] of Object.entries(defaults.children)) {
+        ensureNode(['', name], template)
+      }
+    }
+
+    // Ensure /home/scp subdirs
+    const home = defaults.children?.home?.children?.scp
+    if (home?.children) {
+      for (const [name, template] of Object.entries(home.children)) {
+        ensureNode(['', 'home', 'scp', name], template)
+      }
+    }
+
+    this.saveToStorage()
   }
 
   // 获取当前工作目录
