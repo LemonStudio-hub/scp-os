@@ -111,21 +111,51 @@ const type = computed(() => {
 }
 
 /* Size variants */
-.scp-file-icon--sm { width: 16px; height: 16px; }
-.scp-file-icon--md { width: 20px; height: 20px; }
-.scp-file-icon--lg { width: 32px; height: 32px; }
-.scp-file-icon--xl { width: 48px; height: 48px; }
+.scp-file-icon--sm {
+  width: 16px;
+  height: 16px;
+}
+.scp-file-icon--md {
+  width: 20px;
+  height: 20px;
+}
+.scp-file-icon--lg {
+  width: 32px;
+  height: 32px;
+}
+.scp-file-icon--xl {
+  width: 48px;
+  height: 48px;
+}
 
 /* Type colors */
-.scp-file-icon--folder .scp-file-icon__svg { color: var(--gui-accent, #e94560); }
-.scp-file-icon--code .scp-file-icon__svg { color: #60a5fa; }
-.scp-file-icon--image .scp-file-icon__svg { color: #34d399; }
-.scp-file-icon--audio .scp-file-icon__svg { color: #a78bfa; }
-.scp-file-icon--video .scp-file-icon__svg { color: #fbbf24; }
-.scp-file-icon--document .scp-file-icon__svg { color: var(--gui-text-secondary, #a8a8a8); }
-.scp-file-icon--archive .scp-file-icon__svg { color: #fb923c; }
-.scp-file-icon--shortcut .scp-file-icon__svg { color: #f472b6; }
-.scp-file-icon--file .scp-file-icon__svg { color: var(--gui-text-tertiary, #6a6a6a); }
+.scp-file-icon--folder .scp-file-icon__svg {
+  color: var(--gui-accent, #e94560);
+}
+.scp-file-icon--code .scp-file-icon__svg {
+  color: #60a5fa;
+}
+.scp-file-icon--image .scp-file-icon__svg {
+  color: #34d399;
+}
+.scp-file-icon--audio .scp-file-icon__svg {
+  color: #a78bfa;
+}
+.scp-file-icon--video .scp-file-icon__svg {
+  color: #fbbf24;
+}
+.scp-file-icon--document .scp-file-icon__svg {
+  color: var(--gui-text-secondary, #a8a8a8);
+}
+.scp-file-icon--archive .scp-file-icon__svg {
+  color: #fb923c;
+}
+.scp-file-icon--shortcut .scp-file-icon__svg {
+  color: #f472b6;
+}
+.scp-file-icon--file .scp-file-icon__svg {
+  color: var(--gui-text-tertiary, #6a6a6a);
+}
 
 /* Hover effects */
 .scp-file-icon:hover {

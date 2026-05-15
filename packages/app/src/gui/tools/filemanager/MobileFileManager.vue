@@ -199,7 +199,12 @@
             @contextmenu.prevent="onFileContextMenu($event, file)"
           >
             <div class="mobile-file-manager__item-icon">
-              <SCPFileIcon :name="file.name" :is-directory="file.isDirectory" :size="32" size-class="xl" />
+              <SCPFileIcon
+                :name="file.name"
+                :is-directory="file.isDirectory"
+                :size="32"
+                size-class="xl"
+              />
             </div>
             <span class="mobile-file-manager__item-name" :title="file.name">{{ file.name }}</span>
             <span class="mobile-file-manager__item-meta">
@@ -221,7 +226,12 @@
             @click="onFileTap(file)"
             @contextmenu.prevent="onFileContextMenu($event, file)"
           >
-            <SCPFileIcon :name="file.name" :is-directory="file.isDirectory" :size="20" size-class="md" />
+            <SCPFileIcon
+              :name="file.name"
+              :is-directory="file.isDirectory"
+              :size="20"
+              size-class="md"
+            />
             <div class="mobile-file-manager__list-item-info">
               <span class="mobile-file-manager__list-item-name">{{ file.name }}</span>
               <span class="mobile-file-manager__list-item-meta">
@@ -438,7 +448,20 @@ const isDragOver = ref(false)
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
 const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
 const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
-const TEXT_EXTS = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue']
+const TEXT_EXTS = [
+  'txt',
+  'md',
+  'log',
+  'json',
+  'xml',
+  'yml',
+  'yaml',
+  'js',
+  'ts',
+  'css',
+  'html',
+  'vue',
+]
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -487,7 +510,10 @@ function triggerUpload() {
 
 function readFileAsLocal(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (file.type.startsWith('text/') || /\.(txt|md|json|js|ts|css|html|vue|py|sh|xml|yaml|yml|sql|log|csv|tsv)$/i.test(file.name)) {
+    if (
+      file.type.startsWith('text/') ||
+      /\.(txt|md|json|js|ts|css|html|vue|py|sh|xml|yaml|yml|sql|log|csv|tsv)$/i.test(file.name)
+    ) {
       const reader = new FileReader()
       reader.onload = () => resolve(reader.result as string)
       reader.onerror = reject

@@ -4,25 +4,89 @@
       <!-- Toolbar -->
       <div class="file-manager__toolbar">
         <div class="file-manager__toolbar-nav">
-          <SCPButton variant="ghost" size="sm" icon="sidebar" title="Toggle sidebar" @click="fmStore.toggleSidebar" />
-          <SCPButton variant="ghost" size="sm" icon="arrow-left" title="Go up" @click="fmStore.goUp" />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="sidebar"
+            title="Toggle sidebar"
+            @click="fmStore.toggleSidebar"
+          />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="arrow-left"
+            title="Go up"
+            @click="fmStore.goUp"
+          />
         </div>
         <div class="file-manager__toolbar-breadcrumb">
           <SCPBreadcrumbs :segments="fmStore.breadcrumbs" @navigate="fmStore.navigateTo" />
         </div>
         <div class="file-manager__toolbar-actions">
-          <SCPButton variant="ghost" size="sm" icon="file" :title="t('fm.newFile')" @click="promptNewFile" />
-          <SCPButton variant="ghost" size="sm" icon="folder" :title="t('fm.newFolder')" @click="promptNewFolder" />
-          <input ref="fileInputRef" type="file" multiple style="display: none" @change="onFileUpload" />
-          <SCPButton variant="ghost" size="sm" icon="document" :title="t('fm.upload')" @click="fileInputRef?.click()" />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="file"
+            :title="t('fm.newFile')"
+            @click="promptNewFile"
+          />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="folder"
+            :title="t('fm.newFolder')"
+            @click="promptNewFolder"
+          />
+          <input
+            ref="fileInputRef"
+            type="file"
+            multiple
+            style="display: none"
+            @change="onFileUpload"
+          />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="document"
+            :title="t('fm.upload')"
+            @click="fileInputRef?.click()"
+          />
           <div class="file-manager__toolbar-divider" />
-          <SCPButton :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'" size="sm" icon="grid" title="Grid" @click="fmStore.setViewMode('grid')" />
-          <SCPButton :variant="fmStore.viewMode === 'list' ? 'primary' : 'ghost'" size="sm" icon="list" title="List" @click="fmStore.setViewMode('list')" />
-          <SCPButton :variant="fmStore.viewMode === 'column' ? 'primary' : 'ghost'" size="sm" icon="column" title="Column" @click="fmStore.setViewMode('column')" />
-          <SCPButton :variant="fmStore.viewMode === 'detail' ? 'primary' : 'ghost'" size="sm" icon="detail" title="Detail" @click="fmStore.setViewMode('detail')" />
+          <SCPButton
+            :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
+            size="sm"
+            icon="grid"
+            title="Grid"
+            @click="fmStore.setViewMode('grid')"
+          />
+          <SCPButton
+            :variant="fmStore.viewMode === 'list' ? 'primary' : 'ghost'"
+            size="sm"
+            icon="list"
+            title="List"
+            @click="fmStore.setViewMode('list')"
+          />
+          <SCPButton
+            :variant="fmStore.viewMode === 'column' ? 'primary' : 'ghost'"
+            size="sm"
+            icon="column"
+            title="Column"
+            @click="fmStore.setViewMode('column')"
+          />
+          <SCPButton
+            :variant="fmStore.viewMode === 'detail' ? 'primary' : 'ghost'"
+            size="sm"
+            icon="detail"
+            title="Detail"
+            @click="fmStore.setViewMode('detail')"
+          />
           <div class="file-manager__toolbar-divider" />
           <label class="file-manager__hidden-toggle">
-            <input type="checkbox" :checked="fmStore.showHidden" @change="fmStore.toggleShowHidden" />
+            <input
+              type="checkbox"
+              :checked="fmStore.showHidden"
+              @change="fmStore.toggleShowHidden"
+            />
             <span>{{ t('fm.showHidden') || 'Hidden' }}</span>
           </label>
         </div>
@@ -47,7 +111,7 @@
               :class="{ 'file-manager__sidebar-item--active': fmStore.currentPath === item.path }"
               @click="fmStore.navigateTo(item.path)"
             >
-              <GUIIcon :name="(item.icon as IconName)" :size="14" />
+              <GUIIcon :name="item.icon as IconName" :size="14" />
               <span>{{ item.label }}</span>
             </button>
           </div>
@@ -93,7 +157,9 @@
                     v-for="dir in rootDirs"
                     :key="dir.name"
                     class="file-manager__tree-btn file-manager__tree-btn--child"
-                    :class="{ 'file-manager__tree-btn--active': fmStore.currentPath === '/' + dir.name }"
+                    :class="{
+                      'file-manager__tree-btn--active': fmStore.currentPath === '/' + dir.name,
+                    }"
                     @click="fmStore.navigateTo('/' + dir.name)"
                   >
                     <GUIIcon name="folder" :size="14" />
@@ -128,7 +194,12 @@
               @dblclick.stop="onFileDblClick(file)"
               @contextmenu.prevent.stop="onFileContextMenu($event, file.name)"
             >
-              <SCPFileIcon :name="file.name" :is-directory="file.isDirectory" :size="32" size-class="lg" />
+              <SCPFileIcon
+                :name="file.name"
+                :is-directory="file.isDirectory"
+                :size="32"
+                size-class="lg"
+              />
               <span class="file-grid-item__name">{{ file.name }}</span>
               <span class="file-grid-item__meta">
                 {{ file.isDirectory ? t('fm.folder') : formatSize(file.size) }}
@@ -160,12 +231,23 @@
               >
                 <td>
                   <div class="file-list-name">
-                    <SCPFileIcon :name="file.name" :is-directory="file.isDirectory" :size="16" size-class="sm" />
+                    <SCPFileIcon
+                      :name="file.name"
+                      :is-directory="file.isDirectory"
+                      :size="16"
+                      size-class="sm"
+                    />
                     <span>{{ file.name }}</span>
                   </div>
                 </td>
                 <td>{{ file.isDirectory ? '—' : formatSize(file.size) }}</td>
-                <td>{{ file.isDirectory ? t('fm.folder') : (file.type || t('common.file')).toUpperCase() }}</td>
+                <td>
+                  {{
+                    file.isDirectory
+                      ? t('fm.folder')
+                      : (file.type || t('common.file')).toUpperCase()
+                  }}
+                </td>
                 <td>{{ formatDate(file.modifiedAt) }}</td>
               </tr>
             </tbody>
@@ -178,7 +260,9 @@
               :key="col.path"
               class="file-manager__column"
             >
-              <div class="file-manager__column-header">{{ col.path === '/' ? '/' : col.path.split('/').pop() }}</div>
+              <div class="file-manager__column-header">
+                {{ col.path === '/' ? '/' : col.path.split('/').pop() }}
+              </div>
               <div class="file-manager__column-list">
                 <button
                   v-for="file in col.files"
@@ -192,9 +276,19 @@
                   @dblclick.stop="onFileDblClick(file)"
                   @contextmenu.prevent.stop="onFileContextMenu($event, file.name)"
                 >
-                  <SCPFileIcon :name="file.name" :is-directory="file.isDirectory" :size="16" size-class="sm" />
+                  <SCPFileIcon
+                    :name="file.name"
+                    :is-directory="file.isDirectory"
+                    :size="16"
+                    size-class="sm"
+                  />
                   <span class="file-manager__column-item-name">{{ file.name }}</span>
-                  <GUIIcon v-if="file.isDirectory" name="chevron-right" :size="12" class="file-manager__column-item-arrow" />
+                  <GUIIcon
+                    v-if="file.isDirectory"
+                    name="chevron-right"
+                    :size="12"
+                    class="file-manager__column-item-arrow"
+                  />
                 </button>
               </div>
             </div>
@@ -226,12 +320,23 @@
                   >
                     <td>
                       <div class="file-list-name">
-                        <SCPFileIcon :name="file.name" :is-directory="file.isDirectory" :size="16" size-class="sm" />
+                        <SCPFileIcon
+                          :name="file.name"
+                          :is-directory="file.isDirectory"
+                          :size="16"
+                          size-class="sm"
+                        />
                         <span>{{ file.name }}</span>
                       </div>
                     </td>
                     <td>{{ file.isDirectory ? '—' : formatSize(file.size) }}</td>
-                    <td>{{ file.isDirectory ? t('fm.folder') : (file.type || t('common.file')).toUpperCase() }}</td>
+                    <td>
+                      {{
+                        file.isDirectory
+                          ? t('fm.folder')
+                          : (file.type || t('common.file')).toUpperCase()
+                      }}
+                    </td>
                     <td>{{ formatDate(file.modifiedAt) }}</td>
                   </tr>
                 </tbody>
@@ -239,16 +344,27 @@
             </div>
             <div v-if="fmStore.detailFile" class="file-manager__detail-panel">
               <div class="file-manager__detail-icon">
-                <SCPFileIcon :name="fmStore.detailFile.name" :is-directory="fmStore.detailFile.isDirectory" :size="48" size-class="xl" />
+                <SCPFileIcon
+                  :name="fmStore.detailFile.name"
+                  :is-directory="fmStore.detailFile.isDirectory"
+                  :size="48"
+                  size-class="xl"
+                />
               </div>
               <div class="file-manager__detail-name">{{ fmStore.detailFile.name }}</div>
               <div class="file-manager__detail-type">
-                {{ fmStore.detailFile.isDirectory ? 'Folder' : (fmStore.detailFile.type || 'File').toUpperCase() }}
+                {{
+                  fmStore.detailFile.isDirectory
+                    ? 'Folder'
+                    : (fmStore.detailFile.type || 'File').toUpperCase()
+                }}
               </div>
               <div class="file-manager__detail-info">
                 <div class="file-manager__detail-row">
                   <span class="file-manager__detail-label">Size</span>
-                  <span>{{ fmStore.detailFile.isDirectory ? '—' : formatSize(fmStore.detailFile.size) }}</span>
+                  <span>{{
+                    fmStore.detailFile.isDirectory ? '—' : formatSize(fmStore.detailFile.size)
+                  }}</span>
                 </div>
                 <div class="file-manager__detail-row">
                   <span class="file-manager__detail-label">Modified</span>
@@ -261,7 +377,9 @@
                 <div class="file-manager__detail-row">
                   <span class="file-manager__detail-label">Permissions</span>
                   <span>
-                    {{ fmStore.detailFile.permissions.read ? 'r' : '-' }}{{ fmStore.detailFile.permissions.write ? 'w' : '-' }}{{ fmStore.detailFile.permissions.execute ? 'x' : '-' }}
+                    {{ fmStore.detailFile.permissions.read ? 'r' : '-'
+                    }}{{ fmStore.detailFile.permissions.write ? 'w' : '-'
+                    }}{{ fmStore.detailFile.permissions.execute ? 'x' : '-' }}
                   </span>
                 </div>
               </div>
@@ -376,7 +494,23 @@ const detailPreview = computed(() => {
   const file = fmStore.detailFile
   if (!file || file.isDirectory) return null
   const ext = file.name.split('.').pop()?.toLowerCase() || ''
-  const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue', 'py', 'sh', 'desktop']
+  const textExts = [
+    'txt',
+    'md',
+    'log',
+    'json',
+    'xml',
+    'yml',
+    'yaml',
+    'js',
+    'ts',
+    'css',
+    'html',
+    'vue',
+    'py',
+    'sh',
+    'desktop',
+  ]
   if (textExts.includes(ext)) {
     const content = fmStore.readFileContent(file.name)
     if (content) {
@@ -639,7 +773,10 @@ async function onFileUpload(event: Event): Promise<void> {
 
 function readFileAsLocal(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    if (file.type.startsWith('text/') || /\.(txt|md|json|js|ts|css|html|vue|py|sh|xml|yaml|yml|sql|log|csv|tsv)$/i.test(file.name)) {
+    if (
+      file.type.startsWith('text/') ||
+      /\.(txt|md|json|js|ts|css|html|vue|py|sh|xml|yaml|yml|sql|log|csv|tsv)$/i.test(file.name)
+    ) {
       const reader = new FileReader()
       reader.onload = () => resolve(reader.result as string)
       reader.onerror = reject

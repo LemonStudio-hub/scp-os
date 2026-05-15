@@ -823,17 +823,17 @@ export function registerRoutes(router: Router, deps: RouteDeps): void {
   })
 
   // ━━ File Storage (R2) — DISABLED ━━━━━━━━━━━━━━━━━━━━━━━
-  const r2Disabled = (req: Request) =>
+  const r2Disabled = async (req: Request) =>
     corsManager.createErrorResponse(
       { code: 'GONE', message: 'Cloud file storage is disabled. Files are stored locally.' },
       410,
       ctx(req),
     )
 
-  router.post('/files/upload', (req) => r2Disabled(req))
-  router.get('/files', (req) => r2Disabled(req))
-  router.get('/files/quota', (req) => r2Disabled(req))
-  router.get('/files/:key', (req) => r2Disabled(req))
-  router.put('/files/:key', (req) => r2Disabled(req))
-  router.delete('/files/:key', (req) => r2Disabled(req))
+  router.post('/files/upload', r2Disabled)
+  router.get('/files', r2Disabled)
+  router.get('/files/quota', r2Disabled)
+  router.get('/files/:key', r2Disabled)
+  router.put('/files/:key', r2Disabled)
+  router.delete('/files/:key', r2Disabled)
 }
