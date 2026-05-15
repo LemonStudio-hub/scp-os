@@ -939,12 +939,18 @@ onMounted(() => {
   border-color: var(--gui-accent, #636366);
   box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(99, 99, 102, 0.15));
 }
-.light .pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(.pc-login-screen__button--loading) {
+.light
+  .pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  ) {
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.12),
     0 6px 12px rgba(0, 0, 0, 0.06);
 }
-.light .pc-login-screen__button:active:not(.pc-login-screen__button--disabled):not(.pc-login-screen__button--loading) {
+.light
+  .pc-login-screen__button:active:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  ) {
   box-shadow:
     0 6px 16px rgba(0, 0, 0, 0.1),
     0 3px 6px rgba(0, 0, 0, 0.04);

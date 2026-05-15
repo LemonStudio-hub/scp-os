@@ -759,12 +759,18 @@ onMounted(() => {
   border-color: var(--gui-accent, #636366);
   box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(99, 99, 102, 0.15));
 }
-.light .login-screen__button:hover:not(.login-screen__button--disabled):not(.login-screen__button--loading) {
+.light
+  .login-screen__button:hover:not(.login-screen__button--disabled):not(
+    .login-screen__button--loading
+  ) {
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.1),
     0 4px 8px rgba(0, 0, 0, 0.04);
 }
-.light .login-screen__button:active:not(.login-screen__button--disabled):not(.login-screen__button--loading) {
+.light
+  .login-screen__button:active:not(.login-screen__button--disabled):not(
+    .login-screen__button--loading
+  ) {
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.08),
     0 2px 4px rgba(0, 0, 0, 0.04);

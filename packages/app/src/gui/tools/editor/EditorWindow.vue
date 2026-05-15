@@ -493,10 +493,14 @@ function createTheme(): any {
       color: 'var(--gui-text-primary, #f0f0f0)',
     },
     '.cm-selectionBackground': {
-      background: isLight ? 'rgba(99, 99, 102, 0.15) !important' : 'rgba(233, 69, 96, 0.2) !important',
+      background: isLight
+        ? 'rgba(99, 99, 102, 0.15) !important'
+        : 'rgba(233, 69, 96, 0.2) !important',
     },
     '&.cm-focused .cm-selectionBackground': {
-      background: isLight ? 'rgba(99, 99, 102, 0.2) !important' : 'rgba(233, 69, 96, 0.25) !important',
+      background: isLight
+        ? 'rgba(99, 99, 102, 0.2) !important'
+        : 'rgba(233, 69, 96, 0.25) !important',
     },
     '.cm-selectionMatch': {
       background: isLight ? 'rgba(99, 99, 102, 0.1)' : 'rgba(233, 69, 96, 0.12)',

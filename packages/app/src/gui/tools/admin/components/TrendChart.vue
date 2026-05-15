@@ -24,7 +24,13 @@
           :stroke="gridStroke"
           stroke-width="0.5"
         />
-        <text :x="padding.left - 8" :y="y + 4" text-anchor="end" :fill="gridTextFill" font-size="10">
+        <text
+          :x="padding.left - 8"
+          :y="y + 4"
+          text-anchor="end"
+          :fill="gridTextFill"
+          font-size="10"
+        >
           {{ gridLabels[i] }}
         </text>
       </g>
