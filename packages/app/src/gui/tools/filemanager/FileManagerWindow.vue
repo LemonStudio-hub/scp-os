@@ -332,7 +332,9 @@ import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores
 import { useWindowManagerStore } from '../../stores/windowManager'
 import type { WindowInstance, FileItem, ContextMenuItem } from '../../types'
 import type { IconName } from '../../icons'
+import type { ToolType } from '../../types'
 import { filesystem } from '../../../utils/filesystem'
+import { parseDesktopFile } from '../../../utils/desktopShortcut'
 
 interface Props {
   windowInstance: WindowInstance
@@ -374,7 +376,7 @@ const detailPreview = computed(() => {
   const file = fmStore.detailFile
   if (!file || file.isDirectory) return null
   const ext = file.name.split('.').pop()?.toLowerCase() || ''
-  const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue', 'py', 'sh']
+  const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml', 'js', 'ts', 'css', 'html', 'vue', 'py', 'sh', 'desktop']
   if (textExts.includes(ext)) {
     const content = fmStore.readFileContent(file.name)
     if (content) {
@@ -660,6 +662,22 @@ function openFile(file: FileItem): void {
   }
 
   const ext = file.name.split('.').pop()?.toLowerCase() || ''
+
+  if (ext === 'desktop') {
+    const content = filesystem.readFile(file.path)
+    if (content) {
+      const shortcut = parseDesktopFile(content)
+      if (shortcut) {
+        const wmStore = useWindowManagerStore()
+        wmStore.openWindow({
+          id: `${shortcut.tool}-${Date.now()}`,
+          tool: shortcut.tool as ToolType,
+          title: shortcut.name,
+        })
+        return
+      }
+    }
+  }
 
   if (IMAGE_EXTS.includes(ext)) {
     openImage(file)

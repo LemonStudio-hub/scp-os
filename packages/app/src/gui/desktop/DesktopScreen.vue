@@ -230,6 +230,8 @@ import PCCContextMenu from '../components/ui/PCCContextMenu.vue'
 import { useDraggable } from '../composables/useDraggable'
 import { useI18n } from '../composables/useI18n'
 import type { ToolType, ContextMenuItem } from '../types'
+import { filesystem } from '../../utils/filesystem'
+import { parseDesktopFile, serializeDesktopFile, type DesktopShortcut } from '../../utils/desktopShortcut'
 import logger from '../../utils/logger'
 
 export interface DesktopApp {
@@ -239,76 +241,51 @@ export interface DesktopApp {
   color: string
   x?: number
   y?: number
+  shortcutFile?: string // path to .desktop file
 }
 
 const { t } = useI18n()
 
-const apps = reactive<DesktopApp[]>([
-  {
-    id: 'terminal',
-    label: t('home.apps.terminal'),
-    tool: 'terminal',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 50,
-  },
-  {
-    id: 'files',
-    label: t('home.apps.files'),
-    tool: 'filemanager',
-    color: 'var(--gui-accent)',
-    x: 180,
-    y: 50,
-  },
-  {
-    id: 'chat',
-    label: t('home.apps.chat'),
-    tool: 'chat',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 50,
-  },
-  {
-    id: 'dash',
-    label: t('home.apps.dash'),
-    tool: 'dash',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 180,
-  },
-  {
-    id: 'feedback',
-    label: t('home.apps.feedback'),
-    tool: 'feedback',
-    color: 'var(--gui-accent)',
-    x: 180,
-    y: 180,
-  },
-  {
-    id: 'docs',
-    label: t('home.apps.docs'),
-    tool: 'docs',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 180,
-  },
-  {
-    id: 'settings',
-    label: t('home.apps.settings'),
-    tool: 'settings',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 310,
-  },
-  {
-    id: 'editor',
-    label: t('home.apps.editor'),
-    tool: 'editor',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 310,
-  },
-])
+const apps = reactive<DesktopApp[]>([])
+
+function loadDesktopApps() {
+  const desktopPath = '/home/scp/desktop'
+  const nodes = filesystem.listDirectory(desktopPath)
+  const loaded: DesktopApp[] = []
+
+  for (const node of nodes) {
+    if (node.type !== 'file' || !node.name.endsWith('.desktop')) continue
+    const content = filesystem.readFile(`${desktopPath}/${node.name}`)
+    if (!content) continue
+    const shortcut = parseDesktopFile(content)
+    if (!shortcut) continue
+
+    loaded.push({
+      id: shortcut.tool,
+      label: shortcut.name,
+      tool: shortcut.tool,
+      color: 'var(--gui-accent)',
+      x: shortcut.x,
+      y: shortcut.y,
+      shortcutFile: `${desktopPath}/${node.name}`,
+    })
+  }
+
+  apps.splice(0, apps.length, ...loaded)
+}
+
+function saveDesktopShortcut(app: DesktopApp) {
+  if (!app.shortcutFile) return
+  const shortcut: DesktopShortcut = {
+    name: app.label,
+    type: 'Application',
+    tool: app.tool,
+    icon: app.tool,
+    x: app.x ?? 0,
+    y: app.y ?? 0,
+  }
+  filesystem.writeFile(app.shortcutFile, serializeDesktopFile(shortcut))
+}
 
 const taskbarItems: PCTaskbarItem[] = [
   { id: 'terminal', tool: 'terminal' as ToolType, label: t('app.terminal'), iconName: 'terminal' },
@@ -324,12 +301,6 @@ const desktopIconSize = ref<'large' | 'medium' | 'small'>('medium')
 
 // Desktop sort order: name | date
 const desktopSortBy = ref<'name' | 'date'>('name')
-
-// Save default app order for 'sort by date' (later in array = newer)
-const defaultAppOrder = apps.map((a) => a.id)
-
-// Need to import toRaw for safe array access
-// (avoid reactive proxy issues during sort)
 
 // Load saved icon size from localStorage
 function loadIconSize() {
@@ -358,10 +329,7 @@ function arrangeApps() {
     if (desktopSortBy.value === 'name') {
       return a.label.localeCompare(b.label)
     }
-    // 'date' - use default array order (later = newer)
-    const idxA = defaultAppOrder.indexOf(a.id)
-    const idxB = defaultAppOrder.indexOf(b.id)
-    return idxB - idxA // newer first
+    return 0
   })
 
   // Reassign positions
@@ -380,6 +348,9 @@ function arrangeApps() {
     if (dragState) {
       dragState.setInitialPosition(newX, newY)
     }
+
+    // Save to filesystem
+    saveDesktopShortcut(app)
   })
 }
 
@@ -458,6 +429,7 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
       app.x = x
       app.y = y
       el?.classList.remove('is-dragging')
+      saveDesktopShortcut(app)
       // Keep the elevated z-index so overlapping icons stay stacked by last-used
     },
   })
@@ -692,6 +664,8 @@ const wallpaperPatternColor3 = computed(() => themeStore.currentTheme.colors.bor
 
 // Load wallpaper
 onMounted(async () => {
+  // Load desktop shortcuts from filesystem
+  loadDesktopApps()
   // Arrange desktop icons after DOM is ready
   arrangeApps()
 

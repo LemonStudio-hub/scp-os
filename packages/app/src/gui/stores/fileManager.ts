@@ -62,9 +62,9 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     { label: 'Home', path: '/home/scp', icon: 'home' },
     { label: 'Desktop', path: '/home/scp/desktop', icon: 'grid' },
     { label: 'Documents', path: '/home/scp/documents', icon: 'document' },
+    { label: 'Downloads', path: '/home/scp/downloads', icon: 'archive' },
     { label: 'Root', path: '/', icon: 'folder' },
-    { label: 'etc', path: '/etc', icon: 'settings' },
-    { label: 'var', path: '/var', icon: 'folder' },
+    { label: 'tmp', path: '/tmp', icon: 'folder' },
   ])
 
   // Computed

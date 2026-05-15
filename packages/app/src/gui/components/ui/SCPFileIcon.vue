@@ -71,6 +71,8 @@ const iconName = computed<IconName>(() => {
     gz: 'archive',
     rar: 'archive',
     '7z': 'archive',
+    // Shortcuts
+    desktop: 'play',
   }
 
   return iconMap[ext] || 'file'
@@ -85,6 +87,7 @@ const type = computed(() => {
   const videoExts = ['mp4', 'webm', 'avi', 'mov', 'mkv']
   const docExts = ['md', 'txt', 'log', 'csv', 'pdf']
   const archiveExts = ['zip', 'tar', 'gz', 'rar', '7z']
+  if (ext === 'desktop') return 'shortcut'
   if (codeExts.includes(ext)) return 'code'
   if (imageExts.includes(ext)) return 'image'
   if (audioExts.includes(ext)) return 'audio'
@@ -121,6 +124,7 @@ const type = computed(() => {
 .scp-file-icon--video .scp-file-icon__svg { color: #fbbf24; }
 .scp-file-icon--document .scp-file-icon__svg { color: var(--gui-text-secondary, #a8a8a8); }
 .scp-file-icon--archive .scp-file-icon__svg { color: #fb923c; }
+.scp-file-icon--shortcut .scp-file-icon__svg { color: #f472b6; }
 .scp-file-icon--file .scp-file-icon__svg { color: var(--gui-text-tertiary, #6a6a6a); }
 
 /* Hover effects */
