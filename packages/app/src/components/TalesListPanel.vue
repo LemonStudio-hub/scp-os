@@ -295,11 +295,13 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
       fetchWithTimeout(`${API_BASE}/docs/item/${id}`),
     ])
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contentData: any = null
     if (contentResponse.status === 'fulfilled' && contentResponse.value.ok) {
       contentData = await contentResponse.value.json()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let metaData: any = null
     if (metaResponse.status === 'fulfilled' && metaResponse.value.ok) {
       metaData = await metaResponse.value.json()
@@ -348,6 +350,7 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
 
 // ── Normalization ──────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizeTaleSummary(raw: any): TaleSummary {
   return {
     id: String(raw.id || raw._id || raw.slug || ''),

@@ -327,7 +327,9 @@ watch(
             lines.push(line ? line.translateToString(true) : '')
           }
           terminalStates.value[oldTabId] = lines
-          indexedDBService.saveTerminalState(oldTabId, lines).catch(() => {})
+          indexedDBService.saveTerminalState(oldTabId, lines).catch(() => {
+            /* ignore */
+          })
         }
       } catch (error) {
         console.error('[Terminal] Failed to save state:', error)

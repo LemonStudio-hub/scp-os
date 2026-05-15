@@ -156,7 +156,7 @@ export function useCommandHistory() {
   }
 
   // Listen to events
-  const handleHistoryAdded = (event: any) => {
+  const handleHistoryAdded = (event: { command: string }) => {
     logger.debug('[useCommandHistory] Command added to history:', event.command)
   }
 

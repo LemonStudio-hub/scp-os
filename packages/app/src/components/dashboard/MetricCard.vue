@@ -2,6 +2,7 @@
   <div class="metric-card" :class="cardClass">
     <div class="metric-header">
       <div class="metric-icon-wrapper" :class="statusClass">
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <span class="metric-icon" v-html="icon" />
       </div>
       <div class="metric-info">

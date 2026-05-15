@@ -54,8 +54,10 @@ const apiService = ref<PerformanceApiService | null>(null)
 
 // State
 const isMonitoring = ref(false)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const latestReport = ref<any>(null)
 const issues = ref<PerformanceIssue[]>([])
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const recommendations = ref<any[]>([])
 const lastUpdated = ref<string>('--:--:--')
 const apiStatus = ref<string>('Unknown')
@@ -308,6 +310,7 @@ onMounted(() => {
     if (apiService.value && monitorService.value) {
       apiService.value.startAutoSend(60000, () => {
         const names = monitorService.value?.getMetricNames() || []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const allMetrics: any[] = []
         for (const name of names) {
           const latest = monitorService.value?.getLatestMetric(name)
