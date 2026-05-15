@@ -77,6 +77,7 @@
       </header>
 
       <!-- Content Body -->
+      <!-- eslint-disable-next-line vue/no-v-html -->
       <div class="doc-reader__body" v-html="sanitizedContent" />
 
       <!-- Empty State -->

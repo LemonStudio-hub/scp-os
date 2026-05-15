@@ -362,6 +362,7 @@ onUnmounted(() => {
           <!-- Real-time Metrics Grid -->
           <div class="metrics-section">
             <h3 class="section-title">
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <span class="title-icon" v-html="ICON_VITAL" />
               Real-time Metrics
             </h3>
@@ -424,6 +425,7 @@ onUnmounted(() => {
           <!-- Web Vitals Section -->
           <div class="metrics-section vitals-section">
             <h3 class="section-title">
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <span class="title-icon" v-html="ICON_VITAL" />
               Web Vitals
             </h3>
@@ -553,6 +555,7 @@ onUnmounted(() => {
           <!-- Network & Storage Section -->
           <div class="metrics-section info-section">
             <h3 class="section-title">
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <span class="title-icon" v-html="ICON_NET" />
               System Info
             </h3>
@@ -560,6 +563,7 @@ onUnmounted(() => {
               <!-- Network -->
               <div class="info-card">
                 <div class="info-card-title">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="info-icon" v-html="ICON_NET" />
                   Network
                 </div>
@@ -590,6 +594,7 @@ onUnmounted(() => {
               <!-- Storage -->
               <div class="info-card">
                 <div class="info-card-title">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="info-icon" v-html="ICON_STORAGE" />
                   Storage
                 </div>
@@ -616,6 +621,7 @@ onUnmounted(() => {
               <!-- Resources -->
               <div class="info-card">
                 <div class="info-card-title">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="info-icon" v-html="ICON_DOM" />
                   Resources
                 </div>
