@@ -234,7 +234,7 @@
               </template>
             </div>
           </div>
-          <span class="desktop-screen__icon-label">{{ app.label }}</span>
+          <span class="desktop-screen__icon-label">{{ getAppLabel(app) }}</span>
         </div>
       </div>
     </div>
@@ -382,6 +382,25 @@ function saveDesktopShortcut(app: DesktopApp) {
     y: app.y ?? 0,
   }
   filesystem.writeFile(app.shortcutFile, serializeDesktopFile(shortcut))
+}
+
+function getAppLabel(app: DesktopApp): string {
+  const toolToKey: Record<string, string> = {
+    terminal: 'app.terminal',
+    filemanager: 'app.files',
+    editor: 'app.editor',
+    chat: 'app.chat',
+    dash: 'app.dash',
+    feedback: 'app.feedback',
+    docs: 'app.docs',
+    settings: 'app.settings',
+  }
+  const key = toolToKey[app.tool]
+  if (key) {
+    const translated = t(key)
+    if (translated !== key) return translated
+  }
+  return app.label
 }
 
 const taskbarItems: PCTaskbarItem[] = [
