@@ -589,7 +589,9 @@ onUnmounted(() => {
                   </div>
                   <div class="info-row">
                     <span>{{ t('perf.saveData') }}</span
-                    ><span class="info-val">{{ networkInfo.saveData ? t('perf.yes') : t('perf.no') }}</span>
+                    ><span class="info-val">{{
+                      networkInfo.saveData ? t('perf.yes') : t('perf.no')
+                    }}</span>
                   </div>
                 </div>
                 <div v-else class="info-card-body">
@@ -606,10 +608,12 @@ onUnmounted(() => {
                 </div>
                 <div class="info-card-body">
                   <div class="info-row">
-                    <span>{{ t('perf.used') }}</span><span class="info-val">{{ formatBytes(storageUsage) }}</span>
+                    <span>{{ t('perf.used') }}</span
+                    ><span class="info-val">{{ formatBytes(storageUsage) }}</span>
                   </div>
                   <div class="info-row">
-                    <span>{{ t('perf.quota') }}</span><span class="info-val">{{ formatBytes(storageQuota) }}</span>
+                    <span>{{ t('perf.quota') }}</span
+                    ><span class="info-val">{{ formatBytes(storageQuota) }}</span>
                   </div>
                   <div class="info-row">
                     <span>{{ t('perf.usage') }}</span>
@@ -633,10 +637,12 @@ onUnmounted(() => {
                 </div>
                 <div class="info-card-body">
                   <div class="info-row">
-                    <span>{{ t('perf.loaded') }}</span><span class="info-val">{{ resourceCount }}</span>
+                    <span>{{ t('perf.loaded') }}</span
+                    ><span class="info-val">{{ resourceCount }}</span>
                   </div>
                   <div class="info-row">
-                    <span>{{ t('perf.domNodes') }}</span><span class="info-val">{{ domNodes }}</span>
+                    <span>{{ t('perf.domNodes') }}</span
+                    ><span class="info-val">{{ domNodes }}</span>
                   </div>
                 </div>
               </div>
@@ -855,7 +861,7 @@ onUnmounted(() => {
 }
 
 .vital-card {
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 12px;
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
@@ -953,7 +959,7 @@ onUnmounted(() => {
 }
 
 .info-card {
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 12px;
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));

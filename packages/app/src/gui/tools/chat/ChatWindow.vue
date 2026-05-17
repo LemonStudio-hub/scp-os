@@ -1432,7 +1432,7 @@ async function saveNickname() {
   color: var(--chat-accent, #636366);
 }
 .light .mobile-chat__action-btn {
-  color: var(--chat-text-secondary, #6E6E73);
+  color: var(--chat-text-secondary, #6e6e73);
 }
 .light .mobile-chat__action-btn:active {
   background: rgba(0, 0, 0, 0.06);

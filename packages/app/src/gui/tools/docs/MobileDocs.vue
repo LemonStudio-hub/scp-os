@@ -148,7 +148,9 @@
               />
             </svg>
             <p>{{ reader.error.value }}</p>
-            <button class="mobile-docs__retry-btn" @click="reader.fetchArticles(1)">{{ t('docs.retry') }}</button>
+            <button class="mobile-docs__retry-btn" @click="reader.fetchArticles(1)">
+              {{ t('docs.retry') }}
+            </button>
           </div>
 
           <!-- Empty -->

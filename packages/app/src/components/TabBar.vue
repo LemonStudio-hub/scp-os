@@ -141,7 +141,7 @@ const handleCloseTab = async (tabId: string) => {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   cursor: pointer;
@@ -263,7 +263,7 @@ const handleCloseTab = async (tabId: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-accent, #8e8e93);
   border: 1px dashed var(--gui-border-strong, rgba(255, 255, 255, 0.12));
   border-radius: var(--gui-radius-lg, 12px);

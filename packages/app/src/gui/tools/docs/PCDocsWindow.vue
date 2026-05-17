@@ -72,7 +72,9 @@
               />
             </svg>
             <p>{{ reader.error.value }}</p>
-            <button class="pc-docs__retry-btn" @click="reader.fetchArticles(1)">{{ t('docs.retry') }}</button>
+            <button class="pc-docs__retry-btn" @click="reader.fetchArticles(1)">
+              {{ t('docs.retry') }}
+            </button>
           </div>
 
           <!-- Empty State -->
@@ -110,7 +112,9 @@
               <div class="pc-docs__item-number pc-docs__item-number--guide">📖</div>
               <div class="pc-docs__item-body">
                 <span class="pc-docs__item-title">{{ reader.GUIDE_ARTICLE.title }}</span>
-                <span class="pc-docs__item-class" style="color: #58a6ff">{{ t('docs.guide') }}</span>
+                <span class="pc-docs__item-class" style="color: #58a6ff">{{
+                  t('docs.guide')
+                }}</span>
               </div>
             </div>
             <div
@@ -216,7 +220,9 @@
               <!-- Theme Toggle -->
               <button
                 class="pc-docs__toolbar-btn"
-                :title="reader.readerTheme.value === 'dark' ? t('docs.lightMode') : t('docs.darkMode')"
+                :title="
+                  reader.readerTheme.value === 'dark' ? t('docs.lightMode') : t('docs.darkMode')
+                "
                 @click="reader.toggleTheme()"
               >
                 <svg

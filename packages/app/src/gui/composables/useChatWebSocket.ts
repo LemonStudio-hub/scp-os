@@ -309,9 +309,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   function scheduleReconnect(): void {
     if (reconnectAttempts >= maxReconnectAttempts) {
       connectionState.value = 'disconnected'
-      const msg = import.meta.env.DEV
-        ? t('chat.serverUnavailableDev')
-        : t('chat.serverUnavailable')
+      const msg = import.meta.env.DEV ? t('chat.serverUnavailableDev') : t('chat.serverUnavailable')
       lastError.value = msg
       onError?.(msg)
       return

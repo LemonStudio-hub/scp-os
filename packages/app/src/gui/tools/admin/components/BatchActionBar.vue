@@ -2,8 +2,12 @@
   <Transition name="batch-bar">
     <div v-if="selectedCount > 0" class="admin-batch-bar">
       <div class="admin-batch-bar__info">
-        <span class="admin-batch-bar__count">{{ t('admin.batchBar.selected', { count: selectedCount }) }}</span>
-        <button class="admin-batch-bar__clear" @click="$emit('clear')">{{ t('admin.batchBar.clear') }}</button>
+        <span class="admin-batch-bar__count">{{
+          t('admin.batchBar.selected', { count: selectedCount })
+        }}</span>
+        <button class="admin-batch-bar__clear" @click="$emit('clear')">
+          {{ t('admin.batchBar.clear') }}
+        </button>
       </div>
       <div class="admin-batch-bar__actions">
         <button

@@ -44,13 +44,17 @@
         </div>
         <div class="dashboard-page__chart-card">
           <div class="dashboard-page__chart-header">
-            <span class="dashboard-page__chart-title">{{ t('admin.dashboard.contentGrowth') }}</span>
+            <span class="dashboard-page__chart-title">{{
+              t('admin.dashboard.contentGrowth')
+            }}</span>
           </div>
           <TrendChart :data="contentTrendData" color="#0A84FF" />
         </div>
         <div class="dashboard-page__chart-card">
           <div class="dashboard-page__chart-header">
-            <span class="dashboard-page__chart-title">{{ t('admin.dashboard.feedbackGrowth') }}</span>
+            <span class="dashboard-page__chart-title">{{
+              t('admin.dashboard.feedbackGrowth')
+            }}</span>
           </div>
           <TrendChart :data="feedbackTrendData" color="#FFCC00" />
         </div>
@@ -59,31 +63,45 @@
       <div class="dashboard-page__activity">
         <div class="dashboard-page__activity-card">
           <div class="dashboard-page__activity-header">
-            <span class="dashboard-page__activity-title">{{ t('admin.dashboard.recentActivity') }}</span>
+            <span class="dashboard-page__activity-title">{{
+              t('admin.dashboard.recentActivity')
+            }}</span>
           </div>
           <div class="dashboard-page__activity-grid">
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">{{ t('admin.dashboard.todayNewUsers') }}</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayNewUsers')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayNewUsers ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">{{ t('admin.dashboard.todayNewContent') }}</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayNewContent')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayNewContent ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">{{ t('admin.dashboard.todayNewFeedback') }}</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayNewFeedback')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayNewFeedback ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">{{ t('admin.dashboard.pendingFeedback') }}</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.pendingFeedback')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.pendingFeedback ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">{{ t('admin.dashboard.bannedUsers') }}</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.bannedUsers')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.bannedUsers ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">{{ t('admin.dashboard.todayMessages') }}</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayMessages')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayMessages ?? 0 }}</span>
             </div>
           </div>

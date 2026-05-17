@@ -27,7 +27,9 @@
           />
         </div>
         <select v-model="banFilter" class="user-mgmt__select" @change="onFilterChange">
-          <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+          <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </option>
         </select>
       </div>
       <div class="user-mgmt__actions-right">
@@ -147,7 +149,9 @@
         <button class="user-mgmt__btn user-mgmt__btn--ghost" @click="banModalVisible = false">
           {{ t('common.cancel') }}
         </button>
-        <button class="user-mgmt__btn user-mgmt__btn--danger" @click="handleBan">{{ t('admin.users.confirmBan') }}</button>
+        <button class="user-mgmt__btn user-mgmt__btn--danger" @click="handleBan">
+          {{ t('admin.users.confirmBan') }}
+        </button>
       </template>
     </Modal>
 
@@ -350,7 +354,10 @@ function handleBatchAction(key: string) {
     delete: t('admin.users.batchDelete'),
   }
   batchConfirmTitle.value = actionLabels[key] || t('admin.users.batchOperation')
-  batchConfirmMessage.value = t('admin.users.batchConfirmMessage', { count: selectedIds.value.length, action: actionLabels[key] })
+  batchConfirmMessage.value = t('admin.users.batchConfirmMessage', {
+    count: selectedIds.value.length,
+    action: actionLabels[key],
+  })
   batchConfirmVisible.value = true
 }
 

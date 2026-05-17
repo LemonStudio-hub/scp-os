@@ -4,8 +4,20 @@
       <!-- Toolbar -->
       <div class="terminal-panel__toolbar">
         <div class="terminal-panel__toolbar-left">
-          <SCPButton variant="ghost" size="sm" icon="trash" :title="t('terminal.clear')" @click="onClear" />
-          <SCPButton variant="ghost" size="sm" icon="refresh" :title="t('terminal.restart')" @click="onRestart" />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="trash"
+            :title="t('terminal.clear')"
+            @click="onClear"
+          />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="refresh"
+            :title="t('terminal.restart')"
+            @click="onRestart"
+          />
         </div>
         <div class="terminal-panel__toolbar-right">
           <SCPButton
@@ -23,7 +35,10 @@
       <div ref="terminalContainerRef" class="terminal-panel__terminal" />
 
       <!-- Status Bar -->
-      <SCPStatusBar :left-items="[t('app.terminal'), t('terminal.bash')]" :right-items="[`${fontSize}px`]" />
+      <SCPStatusBar
+        :left-items="[t('app.terminal'), t('terminal.bash')]"
+        :right-items="[`${fontSize}px`]"
+      />
     </div>
   </SCPWindow>
 </template>
@@ -178,7 +193,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 

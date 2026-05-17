@@ -204,7 +204,9 @@
             >
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t(`theme.${theme.i18nKey}`) }}</div>
-                <div class="pc-settings__row-description">{{ t(`theme.${theme.i18nKey}Desc`) }}</div>
+                <div class="pc-settings__row-description">
+                  {{ t(`theme.${theme.i18nKey}Desc`) }}
+                </div>
               </div>
               <div
                 class="pc-settings__radio"
@@ -616,7 +618,7 @@ function resetSettings(): void {
 .pc-settings__sidebar {
   width: 200px;
   flex-shrink: 0;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-right: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   padding: var(--gui-spacing-base, 16px) 0;
   display: flex;
@@ -684,7 +686,7 @@ function resetSettings(): void {
 
 /* ── Card ──────────────────────────────────────────────────────────── */
 .pc-settings__card {
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   overflow: hidden;
@@ -794,7 +796,7 @@ function resetSettings(): void {
   flex-direction: column;
   align-items: center;
   gap: var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   animation: sliderFadeIn 0.2s ease both;
 }
@@ -819,7 +821,7 @@ function resetSettings(): void {
 /* ── Language Dropdown ─────────────────────────────────────────────── */
 .pc-settings__language-dropdown {
   padding: var(--gui-spacing-xs, 4px);
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   animation: sliderFadeIn 0.2s ease both;
 }
@@ -906,7 +908,7 @@ function resetSettings(): void {
 .pc-settings__dialog {
   width: 100%;
   max-width: 320px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-xl, 14px);
   padding: var(--gui-spacing-xl, 24px);
@@ -950,7 +952,7 @@ function resetSettings(): void {
 .pc-settings__dialog-btn {
   flex: 1;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);

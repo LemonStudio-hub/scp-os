@@ -3,7 +3,9 @@
     <div class="sidebar-content" @click.stop>
       <div class="sidebar-header">
         <h2>{{ t('sidebar.title') }}</h2>
-        <button class="btn-icon" :aria-label="t('sidebar.closeSidebar')" @click="handleClose">&times;</button>
+        <button class="btn-icon" :aria-label="t('sidebar.closeSidebar')" @click="handleClose">
+          &times;
+        </button>
       </div>
 
       <div class="sidebar-actions">
@@ -56,7 +58,9 @@
 
         <div v-if="tabs.length === 0" class="empty-state">
           <p>{{ t('sidebar.noTabs') }}</p>
-          <button class="btn-secondary" @click="handleCreateTab">{{ t('sidebar.createFirstTab') }}</button>
+          <button class="btn-secondary" @click="handleCreateTab">
+            {{ t('sidebar.createFirstTab') }}
+          </button>
         </div>
       </div>
 
@@ -212,7 +216,7 @@ const handleCleanup = () => {
   width: 320px;
   max-width: 85vw;
   height: 100%;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
@@ -299,7 +303,7 @@ const handleCleanup = () => {
   align-items: center;
   padding: 12px 14px;
   margin-bottom: 2px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
   transition:
@@ -438,7 +442,7 @@ const handleCleanup = () => {
 
 .btn-secondary {
   padding: 8px 14px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-accent, #8e8e93);
   border: none;
   border-radius: var(--gui-radius-md, 10px);

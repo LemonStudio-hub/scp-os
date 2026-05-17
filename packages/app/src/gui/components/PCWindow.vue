@@ -445,7 +445,7 @@ function handleWindowResize() {
   justify-content: center;
   width: 14px;
   height: 14px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: none;
   border-radius: var(--gui-radius-full, 999px);
   color: transparent;

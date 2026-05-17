@@ -80,7 +80,9 @@ export function useTerminalEmulator(options: UseTerminalEmulatorOptions) {
         )
       }
     } else {
-      terminal.writeln(`${ANSICode.yellow}${translate('terminal.commandNotFound', { cmd: command })}: ${command}${ANSICode.reset}`)
+      terminal.writeln(
+        `${ANSICode.yellow}${translate('terminal.commandNotFound', { cmd: command })}: ${command}${ANSICode.reset}`
+      )
     }
 
     writePrompt()

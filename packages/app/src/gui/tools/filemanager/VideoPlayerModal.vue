@@ -157,7 +157,7 @@ function close() {
 .video-player {
   width: 90%;
   max-width: 800px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 16px;
   overflow: hidden;
   animation: video-fade-in 0.3s ease;

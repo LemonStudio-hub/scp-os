@@ -365,7 +365,7 @@ onBeforeUnmount(() => {
 .mobile-terminal__key {
   flex: 1;
   height: 40px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
   color: var(--gui-text-primary, #f0f0f0);

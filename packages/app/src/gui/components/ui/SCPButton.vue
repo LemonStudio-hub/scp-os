@@ -156,7 +156,7 @@ defineEmits<{
 }
 
 .gui-btn--secondary {
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-text-primary, #ffffff);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
@@ -218,12 +218,12 @@ defineEmits<{
   background: var(--gui-bg-surface-active, rgba(0, 0, 0, 0.08));
 }
 .light .gui-btn--secondary {
-  background: var(--gui-bg-surface-raised, #FFFFFF);
+  background: var(--gui-bg-surface-raised, #ffffff);
   color: var(--gui-text-primary, #000000);
   border: 0.5px solid var(--gui-border-subtle, rgba(0, 0, 0, 0.06));
 }
 .light .gui-btn--ghost {
-  color: var(--gui-text-secondary, #6E6E73);
+  color: var(--gui-text-secondary, #6e6e73);
 }
 .light .gui-btn--ghost:hover::after {
   background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.06));

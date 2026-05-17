@@ -66,7 +66,7 @@ defineEmits<{
 .scp-tabs {
   display: flex;
   align-items: stretch;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   overflow-x: auto;
   overflow-y: hidden;
@@ -109,7 +109,7 @@ defineEmits<{
 }
 
 .scp-tabs__tab--active {
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-text-primary, #ffffff);
   font-weight: var(--gui-font-weight-medium, 500);
 }

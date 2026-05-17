@@ -60,7 +60,11 @@
               <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
             </svg>
           </button>
-          <button class="mobile-file-manager__action-btn" :title="t('fm.newFile')" @click="createNewFile">
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.newFile')"
+            @click="createNewFile"
+          >
             <svg
               width="18"
               height="18"
@@ -829,7 +833,7 @@ onMounted(() => {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 14px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -966,7 +970,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 12px 8px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 14px;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -1027,7 +1031,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 10px;
   border: 1.5px solid transparent;
   cursor: pointer;

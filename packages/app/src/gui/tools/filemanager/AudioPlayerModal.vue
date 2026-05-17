@@ -169,7 +169,7 @@ function close() {
 .audio-player {
   width: 100%;
   max-width: 500px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 16px 16px 0 0;
   overflow: hidden;
   animation: audio-slide-up 0.3s ease;

@@ -589,7 +589,7 @@ function findPrev(): void {
 
 /* ── Tab Bar ──────────────────────────────────────────────────────────── */
 .mobile-editor__tabs {
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   padding: 6px 8px;
 }
@@ -611,7 +611,7 @@ function findPrev(): void {
   align-items: center;
   gap: 4px;
   padding: 5px 10px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: 8px;
   color: var(--gui-text-secondary, #a8a8a8);
@@ -683,7 +683,7 @@ function findPrev(): void {
   align-items: center;
   gap: 6px;
   padding: 6px 10px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
@@ -726,7 +726,7 @@ function findPrev(): void {
   justify-content: center;
   width: 28px;
   height: 28px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: 6px;
   color: var(--gui-text-secondary, #a8a8a8);
@@ -771,7 +771,7 @@ function findPrev(): void {
   align-items: center;
   justify-content: space-between;
   padding: 4px 12px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
 }
 
@@ -802,7 +802,7 @@ function findPrev(): void {
   gap: 0;
   padding: 4px 6px;
   padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   overflow-x: auto;
   scrollbar-width: none;
@@ -835,7 +835,7 @@ function findPrev(): void {
   min-width: 34px;
   height: 34px;
   padding: 0 6px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: 6px;
   color: var(--gui-text-primary, #f0f0f0);

@@ -597,7 +597,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__content::-webkit-scrollbar-track {
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
 }
 
 .mobile-feedback__content::-webkit-scrollbar-thumb {
@@ -611,7 +611,7 @@ function getCategoryIcon(category: string): string {
   top: 0;
   z-index: 10;
   display: flex;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -699,7 +699,7 @@ function getCategoryIcon(category: string): string {
   padding: 10px 16px;
   border-radius: 18px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-secondary, #8e8e93);
   font-size: 14px;
   cursor: pointer;
@@ -806,7 +806,7 @@ function getCategoryIcon(category: string): string {
 
 /* ── Feedback Item ──────────────────────────────────────────────────── */
 .mobile-feedback__item {
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 16px;
   padding: 16px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
@@ -1058,7 +1058,7 @@ function getCategoryIcon(category: string): string {
   padding: 12px;
   border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
@@ -1101,7 +1101,7 @@ function getCategoryIcon(category: string): string {
   margin-top: 20px;
   border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   font-weight: 500;

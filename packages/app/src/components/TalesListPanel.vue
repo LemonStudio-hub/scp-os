@@ -46,9 +46,9 @@
 
       <!-- Info Bar -->
       <div class="tales-panel__info-bar">
-        <span class="tales-panel__info-count"
-          >{{ t('docs.talesCount', { count: filteredTales.length }) }}</span
-        >
+        <span class="tales-panel__info-count">{{
+          t('docs.talesCount', { count: filteredTales.length })
+        }}</span>
         <span v-if="error" class="tales-panel__info-error">{{ error }}</span>
       </div>
 
@@ -100,7 +100,9 @@
         >
           <div class="tales-panel__item-main">
             <span class="tales-panel__item-title">{{ tale.title }}</span>
-            <span class="tales-panel__item-author">{{ tale.author || t('docs.unknownAuthor') }}</span>
+            <span class="tales-panel__item-author">{{
+              tale.author || t('docs.unknownAuthor')
+            }}</span>
           </div>
           <div class="tales-panel__item-meta">
             <span v-if="tale.year" class="tales-panel__item-year">{{ tale.year }}</span>
@@ -170,7 +172,9 @@
           />
         </svg>
         <p>{{ detailError }}</p>
-        <button class="tales-panel__retry-btn" @click="retryLoadDetail">{{ t('docs.retry') }}</button>
+        <button class="tales-panel__retry-btn" @click="retryLoadDetail">
+          {{ t('docs.retry') }}
+        </button>
       </div>
     </template>
   </div>

@@ -786,7 +786,7 @@ function formatBytes(bytes: number): string {
 .settings-confirm-dialog {
   width: 100%;
   max-width: 280px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-xl, 14px);
   padding: var(--gui-spacing-xl, 24px);
@@ -906,7 +906,7 @@ function formatBytes(bytes: number): string {
   align-items: center;
   justify-content: space-between;
   padding: var(--gui-spacing-md, 12px) var(--gui-spacing-base, 16px);
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-base, 8px);
   cursor: pointer;
   transition: all var(--gui-transition-fast, 120ms ease);

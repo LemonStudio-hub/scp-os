@@ -78,7 +78,12 @@
       @page-change="currentPage = $event"
     />
 
-    <Modal :visible="detailVisible" :title="t('admin.feedback.detailTitle')" width="520px" @close="detailVisible = false">
+    <Modal
+      :visible="detailVisible"
+      :title="t('admin.feedback.detailTitle')"
+      width="520px"
+      @close="detailVisible = false"
+    >
       <div class="feedback-mgmt__detail" v-if="detailTarget">
         <div class="feedback-mgmt__detail-row">
           <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colTitle') }}</span>

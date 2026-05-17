@@ -77,7 +77,11 @@
           <span class="btn-text">{{ t('perf.refresh') }}</span>
         </button>
 
-        <button class="btn-action btn-danger" :title="t('perf.clearAllData')" @click="$emit('clear')">
+        <button
+          class="btn-action btn-danger"
+          :title="t('perf.clearAllData')"
+          @click="$emit('clear')"
+        >
           <span class="btn-icon"
             ><svg
               xmlns="http://www.w3.org/2000/svg"

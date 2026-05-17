@@ -318,7 +318,7 @@ onBeforeUnmount(() => {
 }
 
 .scp-window__header--dragging {
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
 }
 
 .scp-window__header-title {

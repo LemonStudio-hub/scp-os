@@ -366,12 +366,15 @@
               <div class="dash__info-table">
                 <div class="dash__info-row">
                   <span class="dash__info-key">{{ t('dash.platform') }}</span>
-                  <span class="dash__info-val">{{ navigator.platform || t('common.unknown') }}</span>
+                  <span class="dash__info-val">{{
+                    navigator.platform || t('common.unknown')
+                  }}</span>
                 </div>
                 <div class="dash__info-row">
                   <span class="dash__info-key">{{ t('dash.cpuCores') }}</span>
                   <span class="dash__info-val"
-                    >{{ cpuCores }} {{ t('dash.physical') }} / {{ cpuThreads }} {{ t('dash.logical') }}</span
+                    >{{ cpuCores }} {{ t('dash.physical') }} / {{ cpuThreads }}
+                    {{ t('dash.logical') }}</span
                   >
                 </div>
                 <div class="dash__info-row">
@@ -400,7 +403,9 @@
                 </div>
                 <div class="dash__info-row">
                   <span class="dash__info-key">{{ t('dash.doNotTrack') }}</span>
-                  <span class="dash__info-val">{{ navigator.doNotTrack || t('dash.unspecified') }}</span>
+                  <span class="dash__info-val">{{
+                    navigator.doNotTrack || t('dash.unspecified')
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -518,9 +523,7 @@
               </div>
               <div v-if="alerts.length === 0" class="dash__alert dash__alert--info">
                 <span class="dash__alert-time">{{ currentTime }}</span>
-                <span class="dash__alert-msg"
-                  >{{ t('dash.noAlerts') }}</span
-                >
+                <span class="dash__alert-msg">{{ t('dash.noAlerts') }}</span>
               </div>
             </div>
           </div>
@@ -1111,7 +1114,7 @@ async function runSpeedTest() {
 }
 
 .light .dash {
-  background: var(--gui-bg-base, #F2F2F7);
+  background: var(--gui-bg-base, #f2f2f7);
   color: var(--gui-text-primary, #000000);
 }
 
@@ -1153,7 +1156,7 @@ async function runSpeedTest() {
 }
 
 .light .dash__btn-icon {
-  color: var(--gui-text-tertiary, #6E6E73);
+  color: var(--gui-text-tertiary, #6e6e73);
 }
 .light .dash__btn-icon:hover {
   background: rgba(0, 0, 0, 0.05);
@@ -1170,12 +1173,12 @@ async function runSpeedTest() {
 }
 
 .light .dash__hero {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
 .light .dash__hero-stat {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 .light .dash__hero-stat:hover {
@@ -1184,7 +1187,7 @@ async function runSpeedTest() {
 }
 
 .light .dash__chart-card {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 .light .dash__chart-card:hover {
@@ -1197,7 +1200,7 @@ async function runSpeedTest() {
 }
 
 .light .dash__metric {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 .light .dash__metric:hover {
@@ -1207,7 +1210,7 @@ async function runSpeedTest() {
 
 .light .dash__metric-icon {
   background: rgba(0, 0, 0, 0.05);
-  color: var(--gui-text-tertiary, #6E6E73);
+  color: var(--gui-text-tertiary, #6e6e73);
 }
 
 .light .dash__metric-bar-wrap {
@@ -1215,7 +1218,7 @@ async function runSpeedTest() {
 }
 
 .light .dash__system-card {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
@@ -1231,7 +1234,7 @@ async function runSpeedTest() {
 }
 
 .light .dash__alerts {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
@@ -1240,14 +1243,14 @@ async function runSpeedTest() {
 }
 
 .light .dash__network-card--full {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
 .light .dash__speed-btn {
   border-color: rgba(0, 0, 0, 0.1);
-  background: var(--gui-bg-surface, #FFFFFF);
-  color: var(--gui-text-secondary, #6E6E73);
+  background: var(--gui-bg-surface, #ffffff);
+  color: var(--gui-text-secondary, #6e6e73);
 }
 .light .dash__speed-btn:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.04);

@@ -1,6 +1,8 @@
 <template>
   <div class="admin-pagination">
-    <span class="admin-pagination__total">{{ t('admin.pagination.total', { total: totalItems }) }}</span>
+    <span class="admin-pagination__total">{{
+      t('admin.pagination.total', { total: totalItems })
+    }}</span>
     <div class="admin-pagination__controls">
       <button
         class="admin-pagination__btn"

@@ -292,7 +292,9 @@
                 type="checkbox"
                 class="pc-chat__dialog-checkbox-input"
               />
-              <label for="room-public" class="pc-chat__dialog-checkbox-label">{{ t('chat.publicRoom') }}</label>
+              <label for="room-public" class="pc-chat__dialog-checkbox-label">{{
+                t('chat.publicRoom')
+              }}</label>
             </div>
             <div class="pc-chat__dialog-actions">
               <button
@@ -346,9 +348,9 @@
                   type="checkbox"
                   class="pc-chat__dialog-checkbox-input"
                 />
-                <label for="edit-room-public" class="pc-chat__dialog-checkbox-label"
-                  >{{ t('chat.publicRoom') }}</label
-                >
+                <label for="edit-room-public" class="pc-chat__dialog-checkbox-label">{{
+                  t('chat.publicRoom')
+                }}</label>
               </div>
             </div>
             <div class="pc-chat__dialog-section">
@@ -1853,10 +1855,10 @@ async function saveNickname() {
   color: var(--chat-accent, #636366);
 }
 .light .pc-chat__room-item--active .pc-chat__room-time {
-  color: var(--chat-text-secondary, #6E6E73);
+  color: var(--chat-text-secondary, #6e6e73);
 }
 .light .pc-chat__room-item--active .pc-chat__room-preview {
-  color: var(--chat-text-secondary, #6E6E73);
+  color: var(--chat-text-secondary, #6e6e73);
 }
 .light .chat-bubble--self .chat-bubble__content {
   background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
@@ -1877,7 +1879,7 @@ async function saveNickname() {
   color: var(--chat-accent, #636366);
 }
 .light .pc-chat__action-btn {
-  color: var(--chat-text-secondary, #6E6E73);
+  color: var(--chat-text-secondary, #6e6e73);
 }
 .light .pc-chat__action-btn:hover {
   background: rgba(0, 0, 0, 0.06);

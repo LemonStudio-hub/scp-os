@@ -56,7 +56,9 @@
           <div class="mdash__meta">
             <span class="mdash__meta-item">{{ currentTime }}</span>
             <span class="mdash__meta-sep">·</span>
-            <span class="mdash__meta-item">{{ t('mdash.uptime') }}: {{ formatUptime(uptime) }}</span>
+            <span class="mdash__meta-item"
+              >{{ t('mdash.uptime') }}: {{ formatUptime(uptime) }}</span
+            >
           </div>
         </header>
 
@@ -312,7 +314,11 @@
               <div class="mdash__battery-detail">
                 <span class="mdash__battery-pct">{{ Math.round(battery.level * 100) }}%</span>
                 <span class="mdash__battery-state">{{
-                  battery.charging ? t('mdash.charging') : battery.level > 0 ? t('mdash.onBattery') : t('mdash.acPower')
+                  battery.charging
+                    ? t('mdash.charging')
+                    : battery.level > 0
+                      ? t('mdash.onBattery')
+                      : t('mdash.acPower')
                 }}</span>
               </div>
             </div>
@@ -523,7 +529,13 @@ const heroStats = computed(() => [
     pct: memoryUsage.value.percent,
     color: memoryColor.value,
   },
-  { label: t('dash.cpu'), value: cpuUsage.value, unit: '%', pct: cpuUsage.value, color: cpuColor.value },
+  {
+    label: t('dash.cpu'),
+    value: cpuUsage.value,
+    unit: '%',
+    pct: cpuUsage.value,
+    color: cpuColor.value,
+  },
   {
     label: 'FPS',
     value: fps.value,
@@ -606,7 +618,12 @@ const metricItems = computed(() => [
     barWidth: Math.min(100, (parseInt(resources.value) || 0) / 2),
     barColor: (parseInt(resources.value) || 0) > 100 ? '#FF9500' : '#5AC8FA',
   },
-  { label: t('dash.eventListeners'), value: jsListeners.value, barWidth: 0, barColor: scoreColor.value },
+  {
+    label: t('dash.eventListeners'),
+    value: jsListeners.value,
+    barWidth: 0,
+    barColor: scoreColor.value,
+  },
   {
     label: t('settings.usedSpace'),
     value: formatBytes(storageUsed.value),
@@ -783,7 +800,7 @@ async function runSpeedTest() {
 }
 
 .light .mdash {
-  background: var(--gui-bg-base, #F2F2F7);
+  background: var(--gui-bg-base, #f2f2f7);
   color: var(--gui-text-primary, #000000);
 }
 
@@ -817,7 +834,7 @@ async function runSpeedTest() {
 }
 
 .light .mdash__pill {
-  color: var(--gui-text-tertiary, #6E6E73);
+  color: var(--gui-text-tertiary, #6e6e73);
 }
 .light .mdash__pill--active {
   background: rgba(0, 0, 0, 0.08);
@@ -826,19 +843,19 @@ async function runSpeedTest() {
 
 .light .mdash__refresh-btn {
   background: rgba(0, 0, 0, 0.04);
-  color: var(--gui-text-tertiary, #6E6E73);
+  color: var(--gui-text-tertiary, #6e6e73);
 }
 .light .mdash__refresh-btn:active {
   background: rgba(0, 0, 0, 0.08);
 }
 
 .light .mdash__hero {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
 .light .mdash__mini-stat {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 .light .mdash__mini-stat:active {
@@ -846,7 +863,7 @@ async function runSpeedTest() {
 }
 
 .light .mdash__chart-card {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
@@ -855,7 +872,7 @@ async function runSpeedTest() {
 }
 
 .light .mdash__metric {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
@@ -864,7 +881,7 @@ async function runSpeedTest() {
 }
 
 .light .mdash__card {
-  background: var(--gui-bg-surface, #FFFFFF);
+  background: var(--gui-bg-surface, #ffffff);
   border-color: rgba(0, 0, 0, 0.06);
 }
 
@@ -881,8 +898,8 @@ async function runSpeedTest() {
 
 .light .mdash__speed-btn {
   border-color: rgba(0, 0, 0, 0.1);
-  background: var(--gui-bg-surface, #FFFFFF);
-  color: var(--gui-text-secondary, #6E6E73);
+  background: var(--gui-bg-surface, #ffffff);
+  color: var(--gui-text-secondary, #6e6e73);
 }
 .light .mdash__speed-btn:active:not(:disabled) {
   background: rgba(0, 0, 0, 0.04);

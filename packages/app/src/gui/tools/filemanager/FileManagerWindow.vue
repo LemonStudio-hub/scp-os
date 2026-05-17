@@ -877,7 +877,7 @@ function openAudio(file: FileItem): void {
   gap: var(--gui-spacing-xs, 4px);
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
 }
 
 .file-manager__toolbar-nav {
@@ -947,7 +947,7 @@ function openAudio(file: FileItem): void {
   width: 200px;
   min-width: 200px;
   border-right: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1120,7 +1120,7 @@ function openAudio(file: FileItem): void {
 .file-manager__list th {
   text-align: left;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-tertiary, #6a6a6a);
   font-weight: var(--gui-font-weight-semibold, 600);
   font-size: var(--gui-font-xs, 11px);
@@ -1189,7 +1189,7 @@ function openAudio(file: FileItem): void {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-semibold, 600);
   color: var(--gui-text-tertiary, #6a6a6a);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1257,7 +1257,7 @@ function openAudio(file: FileItem): void {
 .file-manager__detail-panel {
   width: 240px;
   min-width: 240px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   padding: var(--gui-spacing-base, 16px);
   overflow-y: auto;
   display: flex;
@@ -1354,7 +1354,7 @@ function openAudio(file: FileItem): void {
   gap: var(--gui-spacing-sm, 8px);
   color: var(--gui-text-tertiary, #6a6a6a);
   font-size: var(--gui-font-sm, 12px);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
 }
 
 /* ── Empty State ───────────────────────────────────────────────────── */

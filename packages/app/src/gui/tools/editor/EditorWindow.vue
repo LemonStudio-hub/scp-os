@@ -197,7 +197,11 @@
                     <path d="M13 10L8 5L3 10" />
                   </svg>
                 </button>
-                <button class="text-editor__find-btn" :title="t('editor.nextHint')" @click="findNext">
+                <button
+                  class="text-editor__find-btn"
+                  :title="t('editor.nextHint')"
+                  @click="findNext"
+                >
                   <svg
                     width="12"
                     height="12"
@@ -238,8 +242,12 @@
                   @keydown.ctrl.enter="replaceAll"
                   @keydown.escape="closeFindReplace"
                 />
-                <button class="text-editor__find-btn" @click="replaceCurrent">{{ t('editor.replace') }}</button>
-                <button class="text-editor__find-btn" @click="replaceAll">{{ t('editor.replaceAll') }}</button>
+                <button class="text-editor__find-btn" @click="replaceCurrent">
+                  {{ t('editor.replace') }}
+                </button>
+                <button class="text-editor__find-btn" @click="replaceAll">
+                  {{ t('editor.replaceAll') }}
+                </button>
               </div>
               <button class="text-editor__find-close" @click="closeFindReplace">
                 <svg
@@ -978,7 +986,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: var(--gui-spacing-xxs, 2px) var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   gap: var(--gui-spacing-xs, 4px);
 }

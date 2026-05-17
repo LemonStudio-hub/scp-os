@@ -132,7 +132,9 @@
         <button class="chat-mgmt__btn chat-mgmt__btn--ghost" @click="editRoomVisible = false">
           {{ t('common.cancel') }}
         </button>
-        <button class="chat-mgmt__btn chat-mgmt__btn--primary" @click="handleSaveRoom">{{ t('common.save') }}</button>
+        <button class="chat-mgmt__btn chat-mgmt__btn--primary" @click="handleSaveRoom">
+          {{ t('common.save') }}
+        </button>
       </template>
     </Modal>
 

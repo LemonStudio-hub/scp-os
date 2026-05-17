@@ -271,7 +271,7 @@ function close() {
   width: 100%;
   max-width: 600px;
   max-height: 80dvh;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 16px 16px 0 0;
   display: flex;
   flex-direction: column;

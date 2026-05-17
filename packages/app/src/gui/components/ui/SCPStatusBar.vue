@@ -28,7 +28,7 @@ withDefaults(defineProps<Props>(), {
   justify-content: space-between;
   height: 26px;
   padding: 0 var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-top: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   font-size: var(--gui-font-xs, 11px);

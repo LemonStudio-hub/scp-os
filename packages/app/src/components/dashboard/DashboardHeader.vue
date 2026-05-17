@@ -27,7 +27,9 @@
     <div class="header-right">
       <div class="monitoring-status" :class="{ active: isMonitoring }">
         <span class="status-dot"></span>
-        <span class="status-text">{{ isMonitoring ? t('perf.monitoring') : t('perf.stopped') }}</span>
+        <span class="status-text">{{
+          isMonitoring ? t('perf.monitoring') : t('perf.stopped')
+        }}</span>
       </div>
 
       <button
@@ -61,7 +63,9 @@
         </svg>
       </button>
 
-      <button class="btn-close" :aria-label="t('perf.closeDashboard')" @click="$emit('close')">X</button>
+      <button class="btn-close" :aria-label="t('perf.closeDashboard')" @click="$emit('close')">
+        X
+      </button>
     </div>
   </div>
 </template>
@@ -89,7 +93,7 @@ defineEmits<{
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   flex-shrink: 0;
 }
@@ -124,7 +128,7 @@ defineEmits<{
   font-size: 11px;
   font-weight: 500;
   color: var(--gui-text-tertiary, #636366);
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   padding: 3px 8px;
   border-radius: var(--gui-radius-sm, 6px);
   letter-spacing: 0.02em;
@@ -141,7 +145,7 @@ defineEmits<{
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-md, 10px);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   transition: all 200ms ease;
@@ -197,7 +201,7 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-text-secondary, #8e8e93);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);
@@ -222,7 +226,7 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-text-secondary, #8e8e93);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);

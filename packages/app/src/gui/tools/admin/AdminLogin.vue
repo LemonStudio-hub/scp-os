@@ -56,7 +56,9 @@ async function handleLogin() {
 
       <form class="admin-login__form" @submit.prevent="handleLogin">
         <div class="admin-login__field">
-          <label class="admin-login__label" for="admin-username">{{ t('admin.login.username') }}</label>
+          <label class="admin-login__label" for="admin-username">{{
+            t('admin.login.username')
+          }}</label>
           <input
             id="admin-username"
             v-model="username"
@@ -69,7 +71,9 @@ async function handleLogin() {
         </div>
 
         <div class="admin-login__field">
-          <label class="admin-login__label" for="admin-password">{{ t('admin.login.password') }}</label>
+          <label class="admin-login__label" for="admin-password">{{
+            t('admin.login.password')
+          }}</label>
           <input
             id="admin-password"
             v-model="password"
@@ -118,7 +122,7 @@ async function handleLogin() {
 .admin-login__card {
   width: 100%;
   max-width: 380px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border: 1px solid var(--gui-border-subtle, #1a1a1a);
   border-radius: 16px;
   padding: 40px 32px 32px;

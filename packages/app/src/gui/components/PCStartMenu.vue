@@ -310,7 +310,7 @@ onUnmounted(() => {
 .pc-start-menu__search-field {
   width: 100%;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) 36px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);
@@ -447,7 +447,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-lg, 12px);
   color: var(--gui-text-primary, #ffffff);
   transition: all var(--gui-transition-base, 200ms ease);
@@ -541,7 +541,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);
 }
@@ -590,7 +590,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: var(--gui-bg-surface-raised, #2C2C2E);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-lg, 12px);
   color: var(--gui-text-primary, #ffffff);
 }

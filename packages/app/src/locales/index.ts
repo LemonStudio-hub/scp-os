@@ -208,7 +208,8 @@ export const en = {
   'chat.emptyMessage': 'Message cannot be empty',
   'chat.messageTooLong': 'Message too long (max 1000 characters)',
   'chat.sendFailed': 'Failed to send message',
-  'chat.serverUnavailableDev': 'Chat server unavailable. Run pnpm worker:dev to start local worker.',
+  'chat.serverUnavailableDev':
+    'Chat server unavailable. Run pnpm worker:dev to start local worker.',
   'chat.serverUnavailable': 'Chat server unavailable. Please try again later.',
 
   // ── Dashboard ───────────────────────────────────────────────────────

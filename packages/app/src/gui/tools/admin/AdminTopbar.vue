@@ -53,7 +53,7 @@ const roleLabel = computed(() => {
   justify-content: space-between;
   height: 56px;
   padding: 0 20px;
-  background: var(--gui-bg-surface, #1C1C1E);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 1px solid var(--gui-border-subtle, #1a1a1a);
   flex-shrink: 0;
 }
