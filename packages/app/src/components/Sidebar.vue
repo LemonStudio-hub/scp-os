@@ -2,13 +2,13 @@
   <div class="sidebar" :class="{ 'sidebar-open': isOpen }" @click="handleBackdropClick">
     <div class="sidebar-content" @click.stop>
       <div class="sidebar-header">
-        <h2>Tabs</h2>
-        <button class="btn-icon" aria-label="Close sidebar" @click="handleClose">&times;</button>
+        <h2>{{ t('sidebar.title') }}</h2>
+        <button class="btn-icon" :aria-label="t('sidebar.closeSidebar')" @click="handleClose">&times;</button>
       </div>
 
       <div class="sidebar-actions">
         <button class="btn-primary" :disabled="tabs.length >= 10" @click="handleCreateTab">
-          + New Tab
+          + {{ t('sidebar.newTab') }}
         </button>
       </div>
 
@@ -25,7 +25,7 @@
         >
           <div class="tab-main">
             <span class="tab-icon">
-              {{ tab.isLocked ? 'Locked' : '' }}
+              {{ tab.isLocked ? t('tabs.locked') : '' }}
             </span>
             <input
               v-if="editingTabId === tab.id"
@@ -46,7 +46,7 @@
             <button
               v-if="!tab.isLocked"
               class="btn-icon btn-small"
-              aria-label="Close tab"
+              :aria-label="t('tabs.closeTab')"
               @click.stop="handleCloseTab(tab.id)"
             >
               &times;
@@ -55,19 +55,19 @@
         </div>
 
         <div v-if="tabs.length === 0" class="empty-state">
-          <p>No tabs</p>
-          <button class="btn-secondary" @click="handleCreateTab">Create First Tab</button>
+          <p>{{ t('sidebar.noTabs') }}</p>
+          <button class="btn-secondary" @click="handleCreateTab">{{ t('sidebar.createFirstTab') }}</button>
         </div>
       </div>
 
       <div class="sidebar-footer">
-        <div class="tabs-count">{{ tabs.length }} / 10 tabs</div>
+        <div class="tabs-count">{{ t('sidebar.tabsCount', { count: tabs.length }) }}</div>
         <button
           class="btn-secondary btn-small"
-          title="Clean up unused tabs (7 days)"
+          :title="t('sidebar.cleanupTooltip')"
           @click="handleCleanup"
         >
-          Cleanup
+          {{ t('sidebar.cleanup') }}
         </button>
       </div>
     </div>
@@ -77,7 +77,10 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
 import { useTabsStore } from '../stores/tabs'
+import { useI18n } from '../gui/composables/useI18n'
 import type { Tab } from '../stores/tabs'
+
+const { t } = useI18n()
 import indexedDBService from '../utils/indexedDB'
 import logger from '../utils/logger'
 
@@ -209,7 +212,7 @@ const handleCleanup = () => {
   width: 320px;
   max-width: 85vw;
   height: 100%;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
@@ -296,7 +299,7 @@ const handleCleanup = () => {
   align-items: center;
   padding: 12px 14px;
   margin-bottom: 2px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   border-radius: var(--gui-radius-md, 10px);
   cursor: pointer;
   transition:
@@ -435,7 +438,7 @@ const handleCleanup = () => {
 
 .btn-secondary {
   padding: 8px 14px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   color: var(--gui-accent, #8e8e93);
   border: none;
   border-radius: var(--gui-radius-md, 10px);
@@ -517,5 +520,12 @@ const handleCleanup = () => {
 }
 .light .sidebar__overlay {
   background: rgba(0, 0, 0, 0.3);
+}
+.light .btn-primary {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .btn-primary:hover:not(:disabled) {
+  background: rgba(99, 99, 102, 0.2);
 }
 </style>

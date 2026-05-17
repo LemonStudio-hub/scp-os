@@ -3,7 +3,7 @@
     <div class="section-header">
       <h3 class="section-title">
         <span class="title-icon">→</span>
-        Optimization Recommendations
+        {{ t('perf.optimizationRecommendations') }}
       </h3>
       <span class="rec-count">{{ recommendations.length }}</span>
     </div>
@@ -56,20 +56,20 @@
                 />
                 <rect x="8" y="2" width="8" height="4" rx="1" ry="1" /></svg
             ></span>
-            {{ rec.steps.length }} steps
+            {{ t('perf.steps', { count: rec.steps.length }) }}
           </span>
         </div>
 
         <div v-if="showSteps" class="rec-steps">
           <div class="steps-header">
-            <span class="steps-title">Implementation Steps</span>
+            <span class="steps-title">{{ t('perf.implementationSteps') }}</span>
             <button
               class="steps-toggle"
               :class="{ expanded: expandedRecs.has(rec.id) }"
-              aria-label="Toggle steps"
+              :aria-label="t('perf.toggleSteps')"
               @click="toggleSteps(rec.id)"
             >
-              {{ expandedRecs.has(rec.id) ? 'Hide' : 'Show' }}
+              {{ expandedRecs.has(rec.id) ? t('perf.hide') : t('perf.show') }}
             </button>
           </div>
           <div class="steps-list" :class="{ expanded: expandedRecs.has(rec.id) }">
@@ -86,6 +86,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from '../../gui/composables/useI18n'
+
+const { t } = useI18n()
 
 defineProps<{
   recommendations: Array<{

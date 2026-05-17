@@ -6,21 +6,21 @@
         :class="{ 'chat-mgmt__tab--active': activeSection === 'messages' }"
         @click="activeSection = 'messages'"
       >
-        消息管理
+        {{ t('admin.chat.tabMessages') }}
       </button>
       <button
         class="chat-mgmt__tab"
         :class="{ 'chat-mgmt__tab--active': activeSection === 'rooms' }"
         @click="activeSection = 'rooms'"
       >
-        房间管理
+        {{ t('admin.chat.tabRooms') }}
       </button>
     </div>
 
     <div v-if="activeSection === 'messages'" class="chat-mgmt__section">
       <div class="chat-mgmt__toolbar">
         <select v-model="roomFilter" class="chat-mgmt__select" @change="onRoomFilterChange">
-          <option value="">全部房间</option>
+          <option value="">{{ t('admin.chat.allRooms') }}</option>
           <option v-for="room in rooms" :key="room.id" :value="room.id">{{ room.name }}</option>
         </select>
       </div>
@@ -42,7 +42,7 @@
             class="chat-mgmt__action-btn chat-mgmt__action-btn--danger"
             @click.stop="openDeleteMsgConfirm(row)"
           >
-            删除
+            {{ t('common.delete') }}
           </button>
         </template>
       </DataTable>
@@ -62,7 +62,7 @@
             class="chat-mgmt__badge"
             :class="row.is_public ? 'chat-mgmt__badge--public' : 'chat-mgmt__badge--private'"
           >
-            {{ row.is_public ? '公开' : '私有' }}
+            {{ row.is_public ? t('admin.chat.public') : t('admin.chat.private') }}
           </span>
         </template>
         <template #cell-created_at="{ value }">
@@ -74,13 +74,13 @@
               class="chat-mgmt__action-btn chat-mgmt__action-btn--edit"
               @click.stop="openEditRoomModal(row)"
             >
-              编辑
+              {{ t('common.edit') }}
             </button>
             <button
               class="chat-mgmt__action-btn chat-mgmt__action-btn--danger"
               @click.stop="openDeleteRoomConfirm(row)"
             >
-              删除
+              {{ t('common.delete') }}
             </button>
           </div>
         </template>
@@ -89,31 +89,31 @@
 
     <Modal
       :visible="editRoomVisible"
-      title="编辑房间"
+      :title="t('admin.chat.editRoomTitle')"
       width="420px"
       @close="editRoomVisible = false"
     >
       <div class="chat-mgmt__modal-body">
         <div class="chat-mgmt__modal-field">
-          <label class="chat-mgmt__modal-label">房间名称</label>
+          <label class="chat-mgmt__modal-label">{{ t('admin.chat.colRoomName') }}</label>
           <input
             v-model="editRoomForm.name"
             class="chat-mgmt__input"
             type="text"
-            placeholder="房间名称"
+            :placeholder="t('admin.chat.colRoomName')"
           />
         </div>
         <div class="chat-mgmt__modal-field">
-          <label class="chat-mgmt__modal-label">描述</label>
+          <label class="chat-mgmt__modal-label">{{ t('admin.chat.colDesc') }}</label>
           <textarea
             v-model="editRoomForm.description"
             class="chat-mgmt__textarea"
             rows="3"
-            placeholder="房间描述"
+            :placeholder="t('admin.chat.colDesc')"
           ></textarea>
         </div>
         <div class="chat-mgmt__modal-field">
-          <label class="chat-mgmt__modal-label">是否公开</label>
+          <label class="chat-mgmt__modal-label">{{ t('admin.chat.isPublic') }}</label>
           <label class="chat-mgmt__toggle-wrap">
             <button
               class="chat-mgmt__toggle"
@@ -123,23 +123,23 @@
               <span class="chat-mgmt__toggle-knob" />
             </button>
             <span class="chat-mgmt__toggle-label">{{
-              editRoomForm.is_public === 1 ? '公开' : '私有'
+              editRoomForm.is_public === 1 ? t('admin.chat.public') : t('admin.chat.private')
             }}</span>
           </label>
         </div>
       </div>
       <template #footer>
         <button class="chat-mgmt__btn chat-mgmt__btn--ghost" @click="editRoomVisible = false">
-          取消
+          {{ t('common.cancel') }}
         </button>
-        <button class="chat-mgmt__btn chat-mgmt__btn--primary" @click="handleSaveRoom">保存</button>
+        <button class="chat-mgmt__btn chat-mgmt__btn--primary" @click="handleSaveRoom">{{ t('common.save') }}</button>
       </template>
     </Modal>
 
     <ConfirmDialog
       :visible="deleteMsgVisible"
-      title="删除消息"
-      message="确定要删除此条消息吗？此操作不可撤销。"
+      :title="t('admin.chat.deleteMsgTitle')"
+      :message="t('admin.chat.deleteMsgMessage')"
       type="danger"
       @confirm="handleDeleteMsg"
       @cancel="deleteMsgVisible = false"
@@ -147,8 +147,8 @@
 
     <ConfirmDialog
       :visible="deleteRoomVisible"
-      title="删除房间"
-      message="确定要删除此房间吗？房间内所有消息也将被删除。此操作不可撤销。"
+      :title="t('admin.chat.deleteRoomTitle')"
+      :message="t('admin.chat.deleteRoomMessage')"
       type="danger"
       @confirm="handleDeleteRoom"
       @cancel="deleteRoomVisible = false"
@@ -162,30 +162,32 @@ import { DataTable, Pagination, ConfirmDialog, Modal } from '../components'
 import type { TableColumn } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
+import { useI18n } from '../../../composables/useI18n'
 import * as adminApi from '../services/adminApi'
 
 const toast = useToast()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
 const activeSection = ref<'messages' | 'rooms'>('messages')
 
-const messageColumns: TableColumn[] = [
+const messageColumns = computed<TableColumn[]>(() => [
   { key: 'id', label: 'ID', width: '70px' },
-  { key: 'room_id', label: '房间ID', width: '80px' },
-  { key: 'nickname', label: '发送者' },
-  { key: 'content', label: '消息内容' },
-  { key: 'created_at', label: '发送时间' },
-  { key: 'actions', label: '操作', width: '100px' },
-]
+  { key: 'room_id', label: t('admin.chat.colRoomId'), width: '80px' },
+  { key: 'nickname', label: t('admin.chat.colSender') },
+  { key: 'content', label: t('admin.chat.colContent') },
+  { key: 'created_at', label: t('admin.chat.colSentAt') },
+  { key: 'actions', label: t('admin.chat.colActions'), width: '100px' },
+])
 
-const roomColumns: TableColumn[] = [
+const roomColumns = computed<TableColumn[]>(() => [
   { key: 'id', label: 'ID', width: '70px' },
-  { key: 'name', label: '房间名称' },
-  { key: 'description', label: '描述' },
-  { key: 'is_public', label: '类型', width: '80px' },
-  { key: 'created_at', label: '创建时间' },
-  { key: 'actions', label: '操作', width: '140px' },
-]
+  { key: 'name', label: t('admin.chat.colRoomName') },
+  { key: 'description', label: t('admin.chat.colDesc') },
+  { key: 'is_public', label: t('admin.chat.colType'), width: '80px' },
+  { key: 'created_at', label: t('admin.chat.colCreated') },
+  { key: 'actions', label: t('admin.chat.colActions'), width: '140px' },
+])
 
 const messages = ref<Record<string, any>[]>([])
 const messagesLoading = ref(false)
@@ -241,10 +243,10 @@ async function fetchMessages() {
       messages.value = res.data || []
       msgTotalItems.value = res.total ?? messages.value.length
     } else {
-      toast.error(res.error || '获取消息列表失败')
+      toast.error(res.error || t('admin.chat.fetchMsgError'))
     }
   } catch {
-    toast.error('获取消息列表失败')
+    toast.error(t('admin.chat.fetchMsgError'))
   } finally {
     messagesLoading.value = false
   }
@@ -259,10 +261,10 @@ async function fetchRooms() {
     if (res.success) {
       rooms.value = res.data || []
     } else {
-      toast.error(res.error || '获取房间列表失败')
+      toast.error(res.error || t('admin.chat.fetchRoomError'))
     }
   } catch {
-    toast.error('获取房间列表失败')
+    toast.error(t('admin.chat.fetchRoomError'))
   } finally {
     roomsLoading.value = false
   }
@@ -279,14 +281,14 @@ async function handleDeleteMsg() {
   try {
     const res = await adminApi.deleteAdminChatMessage(token, deleteMsgTarget.value.id)
     if (res.success) {
-      toast.success('消息已删除')
+      toast.success(t('admin.chat.msgDeletedSuccess'))
       deleteMsgVisible.value = false
       fetchMessages()
     } else {
-      toast.error(res.error || '删除失败')
+      toast.error(res.error || t('admin.chat.msgDeleteError'))
     }
   } catch {
-    toast.error('删除操作失败')
+    toast.error(t('admin.chat.msgDeleteActionError'))
   }
 }
 
@@ -310,14 +312,14 @@ async function handleSaveRoom() {
       editRoomForm.value
     )
     if (res.success) {
-      toast.success('房间已更新')
+      toast.success(t('admin.chat.roomUpdatedSuccess'))
       editRoomVisible.value = false
       fetchRooms()
     } else {
-      toast.error(res.error || '更新失败')
+      toast.error(res.error || t('admin.chat.roomUpdateError'))
     }
   } catch {
-    toast.error('更新操作失败')
+    toast.error(t('admin.chat.roomUpdateActionError'))
   }
 }
 
@@ -332,14 +334,14 @@ async function handleDeleteRoom() {
   try {
     const res = await adminApi.deleteAdminChatRoom(token, deleteRoomTarget.value.id)
     if (res.success) {
-      toast.success('房间已删除')
+      toast.success(t('admin.chat.roomDeletedSuccess'))
       deleteRoomVisible.value = false
       fetchRooms()
     } else {
-      toast.error(res.error || '删除失败')
+      toast.error(res.error || t('admin.chat.roomDeleteError'))
     }
   } catch {
-    toast.error('删除操作失败')
+    toast.error(t('admin.chat.roomDeleteActionError'))
   }
 }
 

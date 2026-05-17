@@ -320,7 +320,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-bg-base, #060606);
+  background: var(--gui-bg-base, #000000);
 }
 
 .mobile-terminal__container {
@@ -365,7 +365,7 @@ onBeforeUnmount(() => {
 .mobile-terminal__key {
   flex: 1;
   height: 40px;
-  background: var(--gui-bg-surface-raised, #111111);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
   color: var(--gui-text-primary, #f0f0f0);
@@ -379,7 +379,7 @@ onBeforeUnmount(() => {
 }
 
 .mobile-terminal__key:active {
-  background: var(--gui-bg-surface-active, #222222);
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
   transform: scale(0.95);
   box-shadow: none;
 }

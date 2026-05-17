@@ -445,7 +445,7 @@ function handleWindowResize() {
   justify-content: center;
   width: 14px;
   height: 14px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   border: none;
   border-radius: var(--gui-radius-full, 999px);
   color: transparent;
@@ -529,7 +529,7 @@ function handleWindowResize() {
 .pc-window__content {
   flex: 1;
   overflow: auto;
-  background: var(--gui-bg-base, #1c1c1e);
+  background: var(--gui-bg-base, #000000);
   min-height: 0;
   -webkit-overflow-scrolling: touch;
 }

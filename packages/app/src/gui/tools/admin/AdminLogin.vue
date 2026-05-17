@@ -2,10 +2,12 @@
 import { ref } from 'vue'
 import { useAdminStore } from './stores/adminStore'
 import { useToast } from './composables/useToast'
+import { useI18n } from '../../composables/useI18n'
 
 const emit = defineEmits<{ loginSuccess: [] }>()
 const adminStore = useAdminStore()
 const { error: showError } = useToast()
+const { t } = useI18n()
 
 const username = ref('')
 const password = ref('')
@@ -14,7 +16,7 @@ const errorMsg = ref('')
 
 async function handleLogin() {
   if (!username.value.trim() || !password.value.trim()) {
-    errorMsg.value = '请输入用户名和密码'
+    errorMsg.value = t('admin.login.errorEmpty')
     return
   }
   isLoading.value = true
@@ -24,7 +26,7 @@ async function handleLogin() {
   if (result.success) {
     emit('loginSuccess')
   } else {
-    errorMsg.value = result.error || '登录失败'
+    errorMsg.value = result.error || t('admin.login.errorGeneric')
     showError(errorMsg.value)
   }
 }
@@ -49,31 +51,31 @@ async function handleLogin() {
           </svg>
         </div>
         <h1 class="admin-login__title">SCP-OS Admin</h1>
-        <p class="admin-login__subtitle">管理后台登录</p>
+        <p class="admin-login__subtitle">{{ t('admin.login.subtitle') }}</p>
       </div>
 
       <form class="admin-login__form" @submit.prevent="handleLogin">
         <div class="admin-login__field">
-          <label class="admin-login__label" for="admin-username">用户名</label>
+          <label class="admin-login__label" for="admin-username">{{ t('admin.login.username') }}</label>
           <input
             id="admin-username"
             v-model="username"
             type="text"
             class="admin-login__input"
-            placeholder="输入管理员用户名"
+            :placeholder="t('admin.login.usernamePlaceholder')"
             autocomplete="username"
             :disabled="isLoading"
           />
         </div>
 
         <div class="admin-login__field">
-          <label class="admin-login__label" for="admin-password">密码</label>
+          <label class="admin-login__label" for="admin-password">{{ t('admin.login.password') }}</label>
           <input
             id="admin-password"
             v-model="password"
             type="password"
             class="admin-login__input"
-            placeholder="输入密码"
+            :placeholder="t('admin.login.passwordPlaceholder')"
             autocomplete="current-password"
             :disabled="isLoading"
           />
@@ -83,12 +85,12 @@ async function handleLogin() {
 
         <button type="submit" class="admin-login__btn" :disabled="isLoading">
           <span v-if="isLoading" class="admin-login__spinner"></span>
-          <span v-else>登录</span>
+          <span v-else>{{ t('admin.login.button') }}</span>
         </button>
       </form>
 
       <div class="admin-login__footer">
-        <span>SCP Foundation &middot; Restricted Access</span>
+        <span>SCP Foundation &middot; {{ t('admin.login.restricted') }}</span>
       </div>
     </div>
   </div>
@@ -100,7 +102,7 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   min-height: 100%;
-  background: var(--gui-bg-base, #0a0a0a);
+  background: var(--gui-bg-base, #000000);
   animation: adminLoginFadeIn 0.4s ease both;
 }
 
@@ -116,7 +118,7 @@ async function handleLogin() {
 .admin-login__card {
   width: 100%;
   max-width: 380px;
-  background: var(--gui-bg-surface, #111111);
+  background: var(--gui-bg-surface, #1C1C1E);
   border: 1px solid var(--gui-border-subtle, #1a1a1a);
   border-radius: 16px;
   padding: 40px 32px 32px;
@@ -188,8 +190,8 @@ async function handleLogin() {
 .admin-login__input {
   width: 100%;
   padding: 10px 14px;
-  background: var(--gui-bg-base, #0a0a0a);
-  border: 1px solid var(--gui-border-default, #222222);
+  background: var(--gui-bg-base, #000000);
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;

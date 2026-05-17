@@ -20,12 +20,12 @@
               <path d="M13 17V5" />
               <path d="M8 17v-3" /></svg
           ></span>
-          <span class="info-label">Metrics:</span>
+          <span class="info-label">{{ t('perf.metrics') }}:</span>
           <span class="info-value">{{ metricCount }}</span>
         </div>
         <div class="info-item">
           <span class="info-icon">◷</span>
-          <span class="info-label">Updated:</span>
+          <span class="info-label">{{ t('perf.updated') }}:</span>
           <span class="info-value">{{ lastUpdated }}</span>
         </div>
         <div v-if="apiStatus" class="info-item">
@@ -47,18 +47,18 @@
                 d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
               /></svg
           ></span>
-          <span class="info-label">API:</span>
+          <span class="info-label">{{ t('perf.api') }}:</span>
           <span class="info-value" :class="apiStatusClass">{{ apiStatus }}</span>
         </div>
       </div>
 
       <div class="footer-actions">
-        <button class="btn-action" title="Export data" @click="$emit('export')">
+        <button class="btn-action" :title="t('perf.exportData')" @click="$emit('export')">
           <span class="btn-icon">↓</span>
-          <span class="btn-text">Export</span>
+          <span class="btn-text">{{ t('perf.export') }}</span>
         </button>
 
-        <button class="btn-action" title="Refresh data" @click="$emit('refresh')">
+        <button class="btn-action" :title="t('perf.refreshData')" @click="$emit('refresh')">
           <span class="btn-icon"
             ><svg
               xmlns="http://www.w3.org/2000/svg"
@@ -74,10 +74,10 @@
               <polyline points="23 4 23 10 17 10" />
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg
           ></span>
-          <span class="btn-text">Refresh</span>
+          <span class="btn-text">{{ t('perf.refresh') }}</span>
         </button>
 
-        <button class="btn-action btn-danger" title="Clear all data" @click="$emit('clear')">
+        <button class="btn-action btn-danger" :title="t('perf.clearAllData')" @click="$emit('clear')">
           <span class="btn-icon"
             ><svg
               xmlns="http://www.w3.org/2000/svg"
@@ -96,7 +96,7 @@
               <path d="M14 11v6" />
               <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" /></svg
           ></span>
-          <span class="btn-text">Clear</span>
+          <span class="btn-text">{{ t('perf.clear') }}</span>
         </button>
       </div>
     </div>
@@ -110,6 +110,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from '../../gui/composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   metricCount: number

@@ -4,14 +4,14 @@
       <!-- Toolbar -->
       <div class="terminal-panel__toolbar">
         <div class="terminal-panel__toolbar-left">
-          <SCPButton variant="ghost" size="sm" icon="trash" title="Clear" @click="onClear" />
-          <SCPButton variant="ghost" size="sm" icon="refresh" title="Restart" @click="onRestart" />
+          <SCPButton variant="ghost" size="sm" icon="trash" :title="t('terminal.clear')" @click="onClear" />
+          <SCPButton variant="ghost" size="sm" icon="refresh" :title="t('terminal.restart')" @click="onRestart" />
         </div>
         <div class="terminal-panel__toolbar-right">
           <SCPButton
             variant="ghost"
             size="sm"
-            :title="`Font: ${fontSize}px`"
+            :title="t('terminal.fontSize', { size: fontSize })"
             @click="onToggleFontSize"
           >
             <span class="terminal-panel__font-size">{{ fontSize > 14 ? 'A-' : 'A+' }}</span>
@@ -23,7 +23,7 @@
       <div ref="terminalContainerRef" class="terminal-panel__terminal" />
 
       <!-- Status Bar -->
-      <SCPStatusBar :left-items="['Terminal', 'bash']" :right-items="[`${fontSize}px`]" />
+      <SCPStatusBar :left-items="[t('app.terminal'), t('terminal.bash')]" :right-items="[`${fontSize}px`]" />
     </div>
   </SCPWindow>
 </template>
@@ -38,6 +38,7 @@ import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import { useTerminalPanelStore } from '../../stores/terminalPanel'
 import { useTerminalEmulator } from '../../composables/useTerminalEmulator'
 import { useThemeStore } from '../../stores/themeStore'
+import { useI18n } from '../../composables/useI18n'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -46,6 +47,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { t } = useI18n()
 const tpStore = useTerminalPanelStore()
 const themeStore = useThemeStore()
 const terminalContainerRef = ref<HTMLDivElement>()
@@ -107,7 +109,7 @@ function initTerminal(): void {
 
   tpStore.registerTerminal(props.windowInstance.config.id, term)
 
-  term.writeln('\x1b[32mWelcome to SCP Terminal Panel\x1b[0m')
+  term.writeln(`\x1b[32m${t('terminal.welcome')}\x1b[0m`)
   term.writeln('')
   writePrompt()
 
@@ -176,7 +178,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
 }
 
@@ -222,5 +224,10 @@ onBeforeUnmount(() => {
 .terminal-panel__terminal :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
   background: var(--gui-accent, #e94560);
   border-radius: 999px;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .terminal-panel__terminal :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
 }
 </style>

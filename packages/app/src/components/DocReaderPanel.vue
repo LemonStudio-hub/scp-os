@@ -91,7 +91,7 @@
             stroke-linecap="round"
           />
         </svg>
-        <p>No content to display</p>
+        <p>{{ t('docs.noContent') }}</p>
       </div>
     </template>
   </div>
@@ -100,7 +100,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import DOMPurify from 'dompurify'
+import { useI18n } from '../gui/composables/useI18n'
 import { applyImageProxyHook } from '../utils/imageProxy'
+
+const { t } = useI18n()
 
 // ── Props ────────────────────────────────────────────────────────────
 

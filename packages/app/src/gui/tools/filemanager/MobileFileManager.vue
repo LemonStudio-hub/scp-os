@@ -60,7 +60,7 @@
               <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
             </svg>
           </button>
-          <button class="mobile-file-manager__action-btn" title="New file" @click="createNewFile">
+          <button class="mobile-file-manager__action-btn" :title="t('fm.newFile')" @click="createNewFile">
             <svg
               width="18"
               height="18"
@@ -76,7 +76,7 @@
           </button>
           <button
             class="mobile-file-manager__action-btn"
-            title="New folder"
+            :title="t('fm.newFolder')"
             @click="createNewFolder"
           >
             <svg
@@ -829,7 +829,7 @@ onMounted(() => {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 14px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -875,7 +875,7 @@ onMounted(() => {
 }
 
 .mobile-file-manager__breadcrumb-btn:active {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .mobile-file-manager__breadcrumb-btn svg {
@@ -900,7 +900,7 @@ onMounted(() => {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -966,7 +966,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 12px 8px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-radius: 14px;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -980,7 +980,7 @@ onMounted(() => {
 
 .mobile-file-manager__item--selected {
   border-color: var(--gui-accent, #007aff);
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .mobile-file-manager__item--hidden {
@@ -1027,7 +1027,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-radius: 10px;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -1038,12 +1038,12 @@ onMounted(() => {
 
 .mobile-file-manager__list-item:active {
   transform: scale(0.98);
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .mobile-file-manager__list-item--selected {
   border-color: var(--gui-accent, #007aff);
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .mobile-file-manager__list-item--hidden {
@@ -1116,7 +1116,7 @@ onMounted(() => {
 }
 
 .mobile-file-manager__context-item:active {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .mobile-file-manager__context-item--danger {

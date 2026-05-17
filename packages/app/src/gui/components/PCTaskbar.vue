@@ -241,21 +241,21 @@ const latencyTipColor = computed(() => {
 
 const latencyDisplay = computed(() => {
   if (isMeasuring.value) return '···'
-  if (!isOnline.value) return 'Offline'
+  if (!isOnline.value) return t('pc.offline')
   if (backendLatency.value === 0) return '--'
-  if (backendLatency.value >= 9999) return 'Timeout'
+  if (backendLatency.value >= 9999) return t('pc.timeout')
   return `${backendLatency.value}ms`
 })
 
 const latencyLabel = computed(() => {
-  if (!isOnline.value) return 'No connection'
+  if (!isOnline.value) return t('pc.noConnection')
   const lat = backendLatency.value
-  if (lat >= 9999) return 'Backend unreachable'
-  if (lat >= 500) return 'Very slow'
-  if (lat >= 200) return 'Slow'
-  if (lat >= 80) return 'Moderate'
-  if (lat > 0) return 'Good'
-  return 'Measuring...'
+  if (lat >= 9999) return t('pc.backendUnreachable')
+  if (lat >= 500) return t('pc.verySlow')
+  if (lat >= 200) return t('pc.slow')
+  if (lat >= 80) return t('pc.moderate')
+  if (lat > 0) return t('pc.good')
+  return t('pc.measuring')
 })
 
 const latencyDebug = computed(() => {
@@ -318,9 +318,9 @@ const batteryColor = computed(() => {
 })
 
 const batteryTitle = computed(() => {
-  if (!batterySupported.value) return 'Battery status unavailable'
+  if (!batterySupported.value) return t('pc.batteryUnavailable')
   const pct = Math.round(batteryLevel.value * 100)
-  return batteryCharging.value ? `Charging: ${pct}%` : `Battery: ${pct}%`
+  return batteryCharging.value ? t('pc.batteryCharging', { pct }) : t('pc.batteryLevel', { pct })
 })
 
 async function initBattery() {

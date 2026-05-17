@@ -140,7 +140,7 @@ function onKeyDown(event: KeyboardEvent) {
   width: 100%;
   max-width: 600px;
   max-height: 90dvh;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-radius: 16px 16px 0 0;
   display: flex;
   flex-direction: column;
@@ -177,7 +177,7 @@ function onKeyDown(event: KeyboardEvent) {
 }
 
 .fm-text-editor__cancel-btn {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
 }
 
@@ -245,5 +245,12 @@ function onKeyDown(event: KeyboardEvent) {
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
 .light .fm-text-editor {
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .fm-text-editor__save-btn {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .fm-text-editor__save-btn:active {
+  background: rgba(99, 99, 102, 0.2);
 }
 </style>

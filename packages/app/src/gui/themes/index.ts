@@ -102,6 +102,7 @@ export interface Theme {
   name: string
   icon: string
   description: string
+  i18nKey: string
   isDark: boolean
   colors: ThemeColors
 }
@@ -112,6 +113,7 @@ export const darkTheme: Theme = {
   name: 'Dark',
   icon: 'Moon',
   description: 'Pure black background with gray accents',
+  i18nKey: 'dark',
   isDark: true,
   colors: {
     bgBase: '#000000',
@@ -204,6 +206,7 @@ export const lightTheme: Theme = {
   name: 'Light',
   icon: 'Sun',
   description: 'White background with dark text',
+  i18nKey: 'light',
   isDark: false,
   colors: {
     bgBase: '#F2F2F7',
@@ -296,6 +299,7 @@ export const scpTheme: Theme = {
   name: 'SCP Red',
   icon: 'SCP',
   description: 'SCP Foundation theme with red accents',
+  i18nKey: 'scpRed',
   isDark: true,
   colors: {
     bgBase: '#0A0A0A',
@@ -388,6 +392,7 @@ export const hackerTheme: Theme = {
   name: 'Hacker',
   icon: 'Code',
   description: 'Matrix-style green on black',
+  i18nKey: 'hacker',
   isDark: true,
   colors: {
     bgBase: '#000000',

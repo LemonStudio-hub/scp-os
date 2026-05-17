@@ -456,6 +456,15 @@ onBeforeUnmount(() => {
   background-color: var(--gui-terminal-bg, #1c1c1e) !important;
 }
 
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+}
+
+.light #terminal-container :deep(.xterm-viewport)::-webkit-scrollbar-thumb:hover {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.2));
+}
+
 /* ── Termux-style Virtual Keyboard ─────────────────────────────────── */
 .scp-terminal__keyboard {
   padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));

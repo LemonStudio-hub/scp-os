@@ -22,14 +22,12 @@
             v-model="searchQuery"
             class="user-mgmt__search-input"
             type="text"
-            placeholder="搜索用户ID或昵称..."
+            :placeholder="t('admin.users.searchPlaceholder')"
             @input="onSearchDebounce"
           />
         </div>
         <select v-model="banFilter" class="user-mgmt__select" @change="onFilterChange">
-          <option value="">全部状态</option>
-          <option value="0">正常</option>
-          <option value="1">已封禁</option>
+          <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
         </select>
       </div>
       <div class="user-mgmt__actions-right">
@@ -47,15 +45,15 @@
                 stroke-linejoin="round"
               />
             </svg>
-            导出
+            {{ t('admin.users.export') }}
           </button>
           <Transition name="dropdown">
             <div v-if="showExportMenu" class="user-mgmt__dropdown">
               <button class="user-mgmt__dropdown-item" @click="handleExport('csv')">
-                导出 CSV
+                {{ t('admin.users.exportCsv') }}
               </button>
               <button class="user-mgmt__dropdown-item" @click="handleExport('json')">
-                导出 JSON
+                {{ t('admin.users.exportJson') }}
               </button>
             </div>
           </Transition>
@@ -75,7 +73,7 @@
           class="user-mgmt__badge"
           :class="row.is_banned ? 'user-mgmt__badge--banned' : 'user-mgmt__badge--active'"
         >
-          {{ row.is_banned ? '已封禁' : '正常' }}
+          {{ row.is_banned ? t('admin.users.statusBanned') : t('admin.users.statusActive') }}
         </span>
       </template>
       <template #cell-created_at="{ value }">
@@ -88,21 +86,21 @@
             class="user-mgmt__action-btn user-mgmt__action-btn--warn"
             @click.stop="openBanModal(row)"
           >
-            封禁
+            {{ t('admin.users.ban') }}
           </button>
           <button
             v-else
             class="user-mgmt__action-btn user-mgmt__action-btn--success"
             @click.stop="handleUnban(row)"
           >
-            解封
+            {{ t('admin.users.unban') }}
           </button>
           <button
             v-if="adminStore.isSuperAdmin"
             class="user-mgmt__action-btn user-mgmt__action-btn--danger"
             @click.stop="openDeleteConfirm(row)"
           >
-            删除
+            {{ t('common.delete') }}
           </button>
         </div>
       </template>
@@ -124,39 +122,39 @@
 
     <Modal
       :visible="banModalVisible"
-      title="封禁用户"
+      :title="t('admin.users.banTitle')"
       width="420px"
       @close="banModalVisible = false"
     >
       <div class="user-mgmt__modal-body">
         <div class="user-mgmt__modal-field">
-          <label class="user-mgmt__modal-label">用户</label>
+          <label class="user-mgmt__modal-label">{{ t('admin.users.userLabel') }}</label>
           <span class="user-mgmt__modal-value"
             >{{ banTarget?.nickname }} ({{ banTarget?.user_id }})</span
           >
         </div>
         <div class="user-mgmt__modal-field">
-          <label class="user-mgmt__modal-label">封禁原因</label>
+          <label class="user-mgmt__modal-label">{{ t('admin.users.banReason') }}</label>
           <textarea
             v-model="banReason"
             class="user-mgmt__textarea"
             rows="3"
-            placeholder="请输入封禁原因..."
+            :placeholder="t('admin.users.banReasonPlaceholder')"
           ></textarea>
         </div>
       </div>
       <template #footer>
         <button class="user-mgmt__btn user-mgmt__btn--ghost" @click="banModalVisible = false">
-          取消
+          {{ t('common.cancel') }}
         </button>
-        <button class="user-mgmt__btn user-mgmt__btn--danger" @click="handleBan">确认封禁</button>
+        <button class="user-mgmt__btn user-mgmt__btn--danger" @click="handleBan">{{ t('admin.users.confirmBan') }}</button>
       </template>
     </Modal>
 
     <ConfirmDialog
       :visible="deleteConfirmVisible"
-      title="删除用户"
-      message="确定要删除该用户吗？此操作不可撤销。"
+      :title="t('admin.users.deleteTitle')"
+      :message="t('admin.users.deleteMessage')"
       type="danger"
       @confirm="handleDelete"
       @cancel="deleteConfirmVisible = false"
@@ -179,19 +177,21 @@ import { DataTable, BatchActionBar, Pagination, ConfirmDialog, Modal } from '../
 import type { BatchAction } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
+import { useI18n } from '../../../composables/useI18n'
 import * as adminApi from '../services/adminApi'
 
 const toast = useToast()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
-const columns = [
+const columns = computed(() => [
   { key: 'id', label: 'ID', width: '70px' },
-  { key: 'user_id', label: '用户ID' },
-  { key: 'nickname', label: '昵称' },
-  { key: 'created_at', label: '注册时间', sortable: true },
-  { key: 'is_banned', label: '状态', width: '100px' },
-  { key: 'actions', label: '操作', width: '160px' },
-]
+  { key: 'user_id', label: t('admin.users.userId'), width: '120px' },
+  { key: 'nickname', label: t('admin.users.nickname') },
+  { key: 'created_at', label: t('admin.users.regTime'), sortable: true },
+  { key: 'is_banned', label: t('admin.users.status'), width: '100px' },
+  { key: 'actions', label: t('admin.users.actions'), width: '160px' },
+])
 
 const users = ref<Record<string, any>[]>([])
 const loading = ref(false)
@@ -215,11 +215,17 @@ const pendingBatchAction = ref('')
 
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize)))
 
-const batchActions: BatchAction[] = [
-  { key: 'ban', label: '批量封禁', icon: 'archive', type: 'warning' },
-  { key: 'unban', label: '批量解封', icon: 'archive', type: 'default' },
-  { key: 'delete', label: '批量删除', icon: 'delete', type: 'danger' },
-]
+const batchActions = computed<BatchAction[]>(() => [
+  { key: 'ban', label: t('admin.users.batchBan'), icon: 'archive', type: 'warning' },
+  { key: 'unban', label: t('admin.users.batchUnban'), icon: 'archive', type: 'default' },
+  { key: 'delete', label: t('admin.users.batchDelete'), icon: 'delete', type: 'danger' },
+])
+
+const statusOptions = computed(() => [
+  { value: '', label: t('admin.users.allStatus') },
+  { value: '0', label: t('admin.users.statusActive') },
+  { value: '1', label: t('admin.users.statusBanned') },
+])
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -252,10 +258,10 @@ async function fetchUsers() {
       users.value = res.data || []
       totalItems.value = res.total ?? users.value.length
     } else {
-      toast.error(res.error || '获取用户列表失败')
+      toast.error(res.error || t('admin.users.fetchError'))
     }
   } catch {
-    toast.error('获取用户列表失败')
+    toast.error(t('admin.users.fetchError'))
   } finally {
     loading.value = false
     selectedIds.value = []
@@ -287,14 +293,14 @@ async function handleBan() {
   try {
     const res = await adminApi.banUser(token, banTarget.value.id, banReason.value || undefined)
     if (res.success) {
-      toast.success('用户已封禁')
+      toast.success(t('admin.users.bannedSuccess'))
       banModalVisible.value = false
       fetchUsers()
     } else {
-      toast.error(res.error || '封禁失败')
+      toast.error(res.error || t('admin.users.banError'))
     }
   } catch {
-    toast.error('封禁操作失败')
+    toast.error(t('admin.users.banActionError'))
   }
 }
 
@@ -304,13 +310,13 @@ async function handleUnban(row: Record<string, any>) {
   try {
     const res = await adminApi.unbanUser(token, row.id)
     if (res.success) {
-      toast.success('用户已解封')
+      toast.success(t('admin.users.unbannedSuccess'))
       fetchUsers()
     } else {
-      toast.error(res.error || '解封失败')
+      toast.error(res.error || t('admin.users.unbanError'))
     }
   } catch {
-    toast.error('解封操作失败')
+    toast.error(t('admin.users.unbanActionError'))
   }
 }
 
@@ -325,26 +331,26 @@ async function handleDelete() {
   try {
     const res = await adminApi.deleteAdminUser(token, deleteTarget.value.id)
     if (res.success) {
-      toast.success('用户已删除')
+      toast.success(t('admin.users.deletedSuccess'))
       deleteConfirmVisible.value = false
       fetchUsers()
     } else {
-      toast.error(res.error || '删除失败')
+      toast.error(res.error || t('admin.users.deleteError'))
     }
   } catch {
-    toast.error('删除操作失败')
+    toast.error(t('admin.users.deleteActionError'))
   }
 }
 
 function handleBatchAction(key: string) {
   pendingBatchAction.value = key
   const actionLabels: Record<string, string> = {
-    ban: '批量封禁',
-    unban: '批量解封',
-    delete: '批量删除',
+    ban: t('admin.users.batchBan'),
+    unban: t('admin.users.batchUnban'),
+    delete: t('admin.users.batchDelete'),
   }
-  batchConfirmTitle.value = actionLabels[key] || '批量操作'
-  batchConfirmMessage.value = `确定要对选中的 ${selectedIds.value.length} 个用户执行${actionLabels[key]}操作吗？`
+  batchConfirmTitle.value = actionLabels[key] || t('admin.users.batchOperation')
+  batchConfirmMessage.value = t('admin.users.batchConfirmMessage', { count: selectedIds.value.length, action: actionLabels[key] })
   batchConfirmVisible.value = true
 }
 
@@ -358,15 +364,15 @@ async function executeBatchAction() {
       selectedIds.value
     )
     if (res.success) {
-      toast.success('批量操作成功')
+      toast.success(t('admin.users.batchSuccess'))
       batchConfirmVisible.value = false
       selectedIds.value = []
       fetchUsers()
     } else {
-      toast.error(res.error || '批量操作失败')
+      toast.error(res.error || t('admin.users.batchError'))
     }
   } catch {
-    toast.error('批量操作失败')
+    toast.error(t('admin.users.batchError'))
   }
 }
 
@@ -387,12 +393,12 @@ async function handleExport(format: 'csv' | 'json') {
       a.download = `users_export.${format}`
       a.click()
       URL.revokeObjectURL(url)
-      toast.success('导出成功')
+      toast.success(t('admin.users.exportSuccess'))
     } else {
-      toast.error(res.error || '导出失败')
+      toast.error(res.error || t('admin.users.exportError'))
     }
   } catch {
-    toast.error('导出失败')
+    toast.error(t('admin.users.exportError'))
   }
 }
 

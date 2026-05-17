@@ -37,14 +37,14 @@
     </div>
     <template #footer>
       <button class="confirm-dialog__btn confirm-dialog__btn--cancel" @click="onCancel">
-        {{ cancelText }}
+        {{ cancelText || t('common.cancel') }}
       </button>
       <button
         class="confirm-dialog__btn"
         :class="`confirm-dialog__btn--${type}`"
         @click="onConfirm"
       >
-        {{ confirmText }}
+        {{ confirmText || t('common.confirm') }}
       </button>
     </template>
   </Modal>
@@ -52,6 +52,7 @@
 
 <script setup lang="ts">
 import Modal from './Modal.vue'
+import { useI18n } from '../../../composables/useI18n'
 
 interface Props {
   visible: boolean
@@ -62,9 +63,9 @@ interface Props {
   type?: 'danger' | 'warning' | 'info'
 }
 
+const { t } = useI18n()
+
 withDefaults(defineProps<Props>(), {
-  confirmText: '确认',
-  cancelText: '取消',
   type: 'danger',
 })
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useAdminStore } from './stores/adminStore'
+import { useI18n } from '../../composables/useI18n'
 import AdminLogin from './AdminLogin.vue'
 import AdminSidebar from './AdminSidebar.vue'
 import AdminTopbar from './AdminTopbar.vue'
@@ -14,21 +15,22 @@ import SystemSettings from './pages/SystemSettings.vue'
 import AuditLog from './pages/AuditLog.vue'
 
 const adminStore = useAdminStore()
+const { t } = useI18n()
 const currentPage = ref('dashboard')
 const isSidebarCollapsed = ref(false)
 const isInitializing = ref(true)
 
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
-    dashboard: '仪表盘',
-    users: '用户管理',
-    content: '内容管理',
-    chat: '聊天管理',
-    feedback: '反馈管理',
-    settings: '系统设置',
-    logs: '操作日志',
+    dashboard: t('admin.nav.dashboard'),
+    users: t('admin.nav.users'),
+    content: t('admin.nav.content'),
+    chat: t('admin.nav.chat'),
+    feedback: t('admin.nav.feedback'),
+    settings: t('admin.nav.settings'),
+    logs: t('admin.nav.logs'),
   }
-  return titles[currentPage.value] || '管理后台'
+  return titles[currentPage.value] || t('admin.title')
 })
 
 onMounted(async () => {
@@ -88,7 +90,7 @@ function handleLogout() {
   display: flex;
   width: 100%;
   height: 100%;
-  background: var(--gui-bg-base, #0a0a0a);
+  background: var(--gui-bg-base, #000000);
   color: var(--gui-text-primary, #ffffff);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow: hidden;

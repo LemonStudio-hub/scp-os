@@ -4,7 +4,7 @@
       <div class="score-header">
         <div class="score-label-group">
           <span class="score-icon">◎</span>
-          <span class="score-label">Overall Score</span>
+          <span class="score-label">{{ t('perf.overallScore') }}</span>
         </div>
         <div class="score-value-container">
           <span class="score-value" :class="scoreClass"> {{ score }}/100 </span>
@@ -27,11 +27,11 @@
 
       <div class="score-details">
         <div class="score-detail-item">
-          <span class="detail-label">Status:</span>
+          <span class="detail-label">{{ t('perf.status') }}:</span>
           <span class="detail-value" :class="scoreClass">{{ scoreStatus }}</span>
         </div>
         <div class="score-detail-item">
-          <span class="detail-label">Issues:</span>
+          <span class="detail-label">{{ t('perf.issues') }}:</span>
           <span class="detail-value">{{ issueCount }}</span>
         </div>
       </div>
@@ -41,6 +41,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from '../../gui/composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   score: number
@@ -63,12 +66,12 @@ const scoreGrade = computed(() => {
 })
 
 const scoreStatus = computed(() => {
-  if (props.score >= 90) return 'Excellent'
-  if (props.score >= 80) return 'Good'
-  if (props.score >= 70) return 'Fair'
-  if (props.score >= 60) return 'Warning'
-  if (props.score >= 50) return 'Poor'
-  return 'Critical'
+  if (props.score >= 90) return t('perf.scoreExcellent')
+  if (props.score >= 80) return t('perf.scoreGood')
+  if (props.score >= 70) return t('perf.scoreFair')
+  if (props.score >= 60) return t('perf.scoreWarning')
+  if (props.score >= 50) return t('perf.scorePoor')
+  return t('perf.scoreCritical')
 })
 </script>
 

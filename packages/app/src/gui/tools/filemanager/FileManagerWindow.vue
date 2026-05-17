@@ -8,14 +8,14 @@
             variant="ghost"
             size="sm"
             icon="sidebar"
-            title="Toggle sidebar"
+            :title="t('fm.toggleSidebar')"
             @click="fmStore.toggleSidebar"
           />
           <SCPButton
             variant="ghost"
             size="sm"
             icon="arrow-left"
-            title="Go up"
+            :title="t('fm.goUp')"
             @click="fmStore.goUp"
           />
         </div>
@@ -56,28 +56,28 @@
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
             size="sm"
             icon="grid"
-            title="Grid"
+            :title="t('fm.gridView')"
             @click="fmStore.setViewMode('grid')"
           />
           <SCPButton
             :variant="fmStore.viewMode === 'list' ? 'primary' : 'ghost'"
             size="sm"
             icon="list"
-            title="List"
+            :title="t('fm.listView')"
             @click="fmStore.setViewMode('list')"
           />
           <SCPButton
             :variant="fmStore.viewMode === 'column' ? 'primary' : 'ghost'"
             size="sm"
             icon="column"
-            title="Column"
+            :title="t('fm.columnView')"
             @click="fmStore.setViewMode('column')"
           />
           <SCPButton
             :variant="fmStore.viewMode === 'detail' ? 'primary' : 'ghost'"
             size="sm"
             icon="detail"
-            title="Detail"
+            :title="t('fm.detailView')"
             @click="fmStore.setViewMode('detail')"
           />
           <div class="file-manager__toolbar-divider" />
@@ -867,7 +867,7 @@ function openAudio(file: FileItem): void {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--gui-bg-base, #060606);
+  background: var(--gui-bg-base, #000000);
 }
 
 /* ── Toolbar ───────────────────────────────────────────────────────── */
@@ -877,7 +877,7 @@ function openAudio(file: FileItem): void {
   gap: var(--gui-spacing-xs, 4px);
   padding: var(--gui-spacing-xs, 4px) var(--gui-spacing-sm, 8px);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1C1C1E);
 }
 
 .file-manager__toolbar-nav {
@@ -947,7 +947,7 @@ function openAudio(file: FileItem): void {
   width: 200px;
   min-width: 200px;
   border-right: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1C1C1E);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -1120,7 +1120,7 @@ function openAudio(file: FileItem): void {
 .file-manager__list th {
   text-align: left;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1C1C1E);
   color: var(--gui-text-tertiary, #6a6a6a);
   font-weight: var(--gui-font-weight-semibold, 600);
   font-size: var(--gui-font-xs, 11px);
@@ -1179,7 +1179,7 @@ function openAudio(file: FileItem): void {
   min-width: 180px;
   max-width: 300px;
   flex: 1;
-  background: var(--gui-bg-base, #060606);
+  background: var(--gui-bg-base, #000000);
   display: flex;
   flex-direction: column;
 }
@@ -1189,7 +1189,7 @@ function openAudio(file: FileItem): void {
   font-size: var(--gui-font-xs, 11px);
   font-weight: var(--gui-font-weight-semibold, 600);
   color: var(--gui-text-tertiary, #6a6a6a);
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1251,13 +1251,13 @@ function openAudio(file: FileItem): void {
 .file-manager__detail-list {
   flex: 1;
   overflow: auto;
-  background: var(--gui-bg-base, #060606);
+  background: var(--gui-bg-base, #000000);
 }
 
 .file-manager__detail-panel {
   width: 240px;
   min-width: 240px;
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1C1C1E);
   padding: var(--gui-spacing-base, 16px);
   overflow-y: auto;
   display: flex;
@@ -1336,7 +1336,7 @@ function openAudio(file: FileItem): void {
   font-family: var(--gui-font-mono, monospace);
   font-size: 10px;
   color: var(--gui-text-secondary, #a8a8a8);
-  background: var(--gui-bg-base, #060606);
+  background: var(--gui-bg-base, #000000);
   padding: var(--gui-spacing-sm, 8px);
   border-radius: var(--gui-radius-sm, 4px);
   overflow: auto;
@@ -1354,7 +1354,7 @@ function openAudio(file: FileItem): void {
   gap: var(--gui-spacing-sm, 8px);
   color: var(--gui-text-tertiary, #6a6a6a);
   font-size: var(--gui-font-sm, 12px);
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1C1C1E);
 }
 
 /* ── Empty State ───────────────────────────────────────────────────── */

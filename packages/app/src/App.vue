@@ -293,7 +293,7 @@ body {
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: var(--gui-bg-base, #060606);
+  background: var(--gui-bg-base, #000000);
   color: var(--gui-text-primary, #ffffff);
 }
 

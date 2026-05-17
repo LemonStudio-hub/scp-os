@@ -131,7 +131,7 @@ function onCancel() {
 
 .fm-dialog {
   width: 270px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-radius: 14px;
   overflow: hidden;
   animation: fm-dialog-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -168,7 +168,7 @@ function onCancel() {
   padding: 0 12px;
   border-radius: 8px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-base, #0a0a0a);
+  background: var(--gui-bg-base, #000000);
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   outline: none;

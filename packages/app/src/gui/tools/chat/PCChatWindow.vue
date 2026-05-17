@@ -35,7 +35,7 @@
             v-model="roomSearchQuery"
             type="text"
             class="pc-chat__search-input"
-            :placeholder="t('chat.searchRooms') || 'Search rooms...'"
+            :placeholder="t('chat.searchRooms')"
           />
         </div>
 
@@ -131,7 +131,7 @@
             <div class="pc-chat__chat-room-info">
               <span class="pc-chat__chat-room-name">{{ currentRoom.name }}</span>
               <span class="pc-chat__chat-room-members"
-                >{{ currentRoom.member_count || 0 }} members</span
+                >{{ currentRoom.member_count || 0 }} {{ t('chat.members') }}</span
               >
             </div>
           </div>
@@ -192,7 +192,7 @@
                 @click="retryMessage(msg)"
               >
                 {{ msg.error }} ·
-                <span class="chat-bubble__retry">{{ t('chat.retry') || 'Retry' }}</span>
+                <span class="chat-bubble__retry">{{ t('chat.retry') }}</span>
               </div>
             </div>
 
@@ -257,7 +257,7 @@
               stroke-linecap="round"
             />
           </svg>
-          <p>{{ t('chat.selectRoom') || 'Select a room to start chatting' }}</p>
+          <p>{{ t('chat.selectRoom') }}</p>
         </div>
       </div>
 
@@ -281,7 +281,7 @@
             <textarea
               v-model="newRoomDescription"
               class="pc-chat__dialog-textarea"
-              :placeholder="'Description (optional)'"
+              :placeholder="t('chat.descriptionOptional')"
               maxlength="200"
               rows="3"
             />
@@ -292,7 +292,7 @@
                 type="checkbox"
                 class="pc-chat__dialog-checkbox-input"
               />
-              <label for="room-public" class="pc-chat__dialog-checkbox-label">Public Room</label>
+              <label for="room-public" class="pc-chat__dialog-checkbox-label">{{ t('chat.publicRoom') }}</label>
             </div>
             <div class="pc-chat__dialog-actions">
               <button
@@ -323,19 +323,19 @@
           @click.self="showRoomSettings = false"
         >
           <div class="pc-chat__dialog pc-chat__dialog--settings">
-            <h3 class="pc-chat__dialog-title">Room Settings</h3>
+            <h3 class="pc-chat__dialog-title">{{ t('chat.roomSettings') }}</h3>
             <div class="pc-chat__dialog-section">
               <input
                 v-model="editRoomName"
                 type="text"
                 class="pc-chat__dialog-input"
-                placeholder="Room name"
+                :placeholder="t('chat.roomName')"
                 maxlength="50"
               />
               <textarea
                 v-model="editRoomDescription"
                 class="pc-chat__dialog-textarea"
-                placeholder="Description"
+                :placeholder="t('chat.description')"
                 maxlength="200"
                 rows="3"
               />
@@ -347,7 +347,7 @@
                   class="pc-chat__dialog-checkbox-input"
                 />
                 <label for="edit-room-public" class="pc-chat__dialog-checkbox-label"
-                  >Public Room</label
+                  >{{ t('chat.publicRoom') }}</label
                 >
               </div>
             </div>
@@ -1830,5 +1830,56 @@ async function saveNickname() {
 }
 .light .pc-chat__ws-status--disconnected .pc-chat__ws-text {
   color: rgba(255, 59, 48, 0.8);
+}
+.light .pc-chat__dialog-btn {
+  background: var(--chat-surface-hover, rgba(0, 0, 0, 0.06));
+  color: var(--chat-text-primary, #000000);
+}
+.light .pc-chat__add-room-btn {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__add-room-btn:hover {
+  background: rgba(99, 99, 102, 0.2);
+}
+.light .pc-chat__room-item--active {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+}
+.light .pc-chat__room-item--active:hover {
+  background: rgba(99, 99, 102, 0.2);
+  opacity: 1;
+}
+.light .pc-chat__room-item--active .pc-chat__room-name {
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__room-item--active .pc-chat__room-time {
+  color: var(--chat-text-secondary, #6E6E73);
+}
+.light .pc-chat__room-item--active .pc-chat__room-preview {
+  color: var(--chat-text-secondary, #6E6E73);
+}
+.light .chat-bubble--self .chat-bubble__content {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .chat-bubble__status-dot {
+  background: var(--chat-accent, #636366);
+}
+.light .pc-chat__loading-dot {
+  background: var(--chat-accent, #636366);
+}
+.light .pc-chat__dialog-btn--primary {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__send-btn {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__action-btn {
+  color: var(--chat-text-secondary, #6E6E73);
+}
+.light .pc-chat__action-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 </style>

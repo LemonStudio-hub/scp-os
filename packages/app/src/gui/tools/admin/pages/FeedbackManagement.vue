@@ -3,18 +3,18 @@
     <div class="feedback-mgmt__toolbar">
       <div class="feedback-mgmt__filters">
         <select v-model="statusFilter" class="feedback-mgmt__select" @change="onFilterChange">
-          <option value="">全部状态</option>
-          <option value="pending">待处理</option>
-          <option value="in_progress">处理中</option>
-          <option value="resolved">已解决</option>
-          <option value="rejected">已拒绝</option>
+          <option value="">{{ t('admin.feedback.allStatus') }}</option>
+          <option value="pending">{{ t('admin.feedback.statusPending') }}</option>
+          <option value="in_progress">{{ t('admin.feedback.statusInProgress') }}</option>
+          <option value="resolved">{{ t('admin.feedback.statusResolved') }}</option>
+          <option value="rejected">{{ t('admin.feedback.statusRejected') }}</option>
         </select>
         <select v-model="categoryFilter" class="feedback-mgmt__select" @change="onFilterChange">
-          <option value="">全部分类</option>
+          <option value="">{{ t('admin.feedback.allCategories') }}</option>
           <option value="bug">BUG</option>
-          <option value="feature">功能建议</option>
-          <option value="content">内容反馈</option>
-          <option value="other">其他</option>
+          <option value="feature">{{ t('admin.feedback.catFeature') }}</option>
+          <option value="content">{{ t('admin.feedback.catContent') }}</option>
+          <option value="other">{{ t('admin.feedback.catOther') }}</option>
         </select>
       </div>
     </div>
@@ -28,10 +28,10 @@
           @change="handleStatusChange(row, ($event.target as HTMLSelectElement).value)"
           @click.stop
         >
-          <option value="pending">待处理</option>
-          <option value="in_progress">处理中</option>
-          <option value="resolved">已解决</option>
-          <option value="rejected">已拒绝</option>
+          <option value="pending">{{ t('admin.feedback.statusPending') }}</option>
+          <option value="in_progress">{{ t('admin.feedback.statusInProgress') }}</option>
+          <option value="resolved">{{ t('admin.feedback.statusResolved') }}</option>
+          <option value="rejected">{{ t('admin.feedback.statusRejected') }}</option>
         </select>
       </template>
       <template #cell-upvotes="{ value }">
@@ -59,13 +59,13 @@
             class="feedback-mgmt__action-btn feedback-mgmt__action-btn--view"
             @click.stop="openDetailModal(row)"
           >
-            查看
+            {{ t('admin.feedback.view') }}
           </button>
           <button
             class="feedback-mgmt__action-btn feedback-mgmt__action-btn--danger"
             @click.stop="openDeleteConfirm(row)"
           >
-            删除
+            {{ t('common.delete') }}
           </button>
         </div>
       </template>
@@ -78,34 +78,34 @@
       @page-change="currentPage = $event"
     />
 
-    <Modal :visible="detailVisible" title="反馈详情" width="520px" @close="detailVisible = false">
+    <Modal :visible="detailVisible" :title="t('admin.feedback.detailTitle')" width="520px" @close="detailVisible = false">
       <div class="feedback-mgmt__detail" v-if="detailTarget">
         <div class="feedback-mgmt__detail-row">
-          <span class="feedback-mgmt__detail-label">标题</span>
+          <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colTitle') }}</span>
           <span class="feedback-mgmt__detail-value">{{ detailTarget.title }}</span>
         </div>
         <div class="feedback-mgmt__detail-row">
-          <span class="feedback-mgmt__detail-label">提交者</span>
+          <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colSubmitter') }}</span>
           <span class="feedback-mgmt__detail-value">{{ detailTarget.nickname }}</span>
         </div>
         <div class="feedback-mgmt__detail-row">
-          <span class="feedback-mgmt__detail-label">分类</span>
+          <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colCategory') }}</span>
           <span class="feedback-mgmt__detail-value">{{ detailTarget.category }}</span>
         </div>
         <div class="feedback-mgmt__detail-row">
-          <span class="feedback-mgmt__detail-label">状态</span>
+          <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colStatus') }}</span>
           <span class="feedback-mgmt__detail-value">{{
-            statusLabels[detailTarget.status] ?? detailTarget.status
+            statusLabels.value[detailTarget.status] ?? detailTarget.status
           }}</span>
         </div>
         <div class="feedback-mgmt__detail-row">
-          <span class="feedback-mgmt__detail-label">时间</span>
+          <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colTime') }}</span>
           <span class="feedback-mgmt__detail-value">{{ formatDate(detailTarget.created_at) }}</span>
         </div>
         <div class="feedback-mgmt__detail-row feedback-mgmt__detail-row--full">
-          <span class="feedback-mgmt__detail-label">内容</span>
+          <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colContent') }}</span>
           <p class="feedback-mgmt__detail-content">
-            {{ detailTarget.content || detailTarget.description || '暂无详细内容' }}
+            {{ detailTarget.content || detailTarget.description || t('admin.feedback.noContent') }}
           </p>
         </div>
       </div>
@@ -113,8 +113,8 @@
 
     <ConfirmDialog
       :visible="deleteVisible"
-      title="删除反馈"
-      message="确定要删除此反馈吗？此操作不可撤销。"
+      :title="t('admin.feedback.deleteTitle')"
+      :message="t('admin.feedback.deleteMessage')"
       type="danger"
       @confirm="handleDelete"
       @cancel="deleteVisible = false"
@@ -128,29 +128,31 @@ import { DataTable, Pagination, ConfirmDialog, Modal } from '../components'
 import type { TableColumn } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
+import { useI18n } from '../../../composables/useI18n'
 import * as adminApi from '../services/adminApi'
 
 const toast = useToast()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
-const statusLabels: Record<string, string> = {
-  pending: '待处理',
-  in_progress: '处理中',
-  resolved: '已解决',
-  rejected: '已拒绝',
-}
+const statusLabels = computed<Record<string, string>>(() => ({
+  pending: t('admin.feedback.statusPending'),
+  in_progress: t('admin.feedback.statusInProgress'),
+  resolved: t('admin.feedback.statusResolved'),
+  rejected: t('admin.feedback.statusRejected'),
+}))
 
-const columns: TableColumn[] = [
+const columns = computed<TableColumn[]>(() => [
   { key: 'id', label: 'ID', width: '70px' },
-  { key: 'title', label: '标题' },
-  { key: 'nickname', label: '提交者' },
-  { key: 'category', label: '分类', width: '100px' },
-  { key: 'status', label: '状态', width: '120px' },
-  { key: 'upvotes', label: '赞成', width: '80px' },
-  { key: 'downvotes', label: '反对', width: '80px' },
-  { key: 'created_at', label: '提交时间' },
-  { key: 'actions', label: '操作', width: '130px' },
-]
+  { key: 'title', label: t('admin.feedback.colTitle') },
+  { key: 'nickname', label: t('admin.feedback.colSubmitter') },
+  { key: 'category', label: t('admin.feedback.colCategory'), width: '100px' },
+  { key: 'status', label: t('admin.feedback.colStatus'), width: '120px' },
+  { key: 'upvotes', label: t('admin.feedback.colUpvotes'), width: '80px' },
+  { key: 'downvotes', label: t('admin.feedback.colDownvotes'), width: '80px' },
+  { key: 'created_at', label: t('admin.feedback.colCreated') },
+  { key: 'actions', label: t('admin.feedback.colActions'), width: '130px' },
+])
 
 const feedbackList = ref<Record<string, any>[]>([])
 const loading = ref(false)
@@ -201,10 +203,10 @@ async function fetchFeedback() {
       feedbackList.value = res.data || []
       totalItems.value = res.total ?? feedbackList.value.length
     } else {
-      toast.error(res.error || '获取反馈列表失败')
+      toast.error(res.error || t('admin.feedback.fetchError'))
     }
   } catch {
-    toast.error('获取反馈列表失败')
+    toast.error(t('admin.feedback.fetchError'))
   } finally {
     loading.value = false
   }
@@ -216,13 +218,13 @@ async function handleStatusChange(row: Record<string, any>, newStatus: string) {
   try {
     const res = await adminApi.updateFeedbackStatus(token, row.id, newStatus)
     if (res.success) {
-      toast.success('状态已更新')
+      toast.success(t('admin.feedback.statusUpdated'))
       row.status = newStatus
     } else {
-      toast.error(res.error || '更新状态失败')
+      toast.error(res.error || t('admin.feedback.statusUpdateError'))
     }
   } catch {
-    toast.error('更新状态失败')
+    toast.error(t('admin.feedback.statusUpdateError'))
   }
 }
 
@@ -242,14 +244,14 @@ async function handleDelete() {
   try {
     const res = await adminApi.deleteAdminFeedback(token, deleteTarget.value.id)
     if (res.success) {
-      toast.success('反馈已删除')
+      toast.success(t('admin.feedback.deletedSuccess'))
       deleteVisible.value = false
       fetchFeedback()
     } else {
-      toast.error(res.error || '删除失败')
+      toast.error(res.error || t('admin.feedback.deleteError'))
     }
   } catch {
-    toast.error('删除操作失败')
+    toast.error(t('admin.feedback.deleteActionError'))
   }
 }
 

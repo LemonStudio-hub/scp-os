@@ -19,7 +19,7 @@
           <line x1="12" y1="9" x2="12" y2="13" />
           <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
-        Performance Issues
+        {{ t('perf.performanceIssues') }}
       </h3>
       <span class="issue-count">{{ issues.length }}</span>
     </div>
@@ -44,7 +44,7 @@
           <button
             class="issue-expand"
             :class="{ expanded: expandedIssues.has(issue.id) }"
-            aria-label="Toggle issue details"
+            :aria-label="t('perf.toggleIssueDetails')"
             @click="toggleIssue(issue.id)"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -63,7 +63,7 @@
           <div v-if="issue.recommendation" class="issue-recommendation">
             <div class="rec-header">
               <span class="rec-icon">→</span>
-              <span class="rec-label">Recommendation</span>
+              <span class="rec-label">{{ t('perf.recommendation') }}</span>
             </div>
             <p class="rec-text">{{ issue.recommendation }}</p>
           </div>
@@ -99,7 +99,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from '../../gui/composables/useI18n'
 import type { PerformanceIssue } from '../../platform/performance/performance-monitor.service'
+
+const { t } = useI18n()
 
 defineProps<{
   issues: PerformanceIssue[]

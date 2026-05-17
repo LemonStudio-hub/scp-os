@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAdminStore } from './stores/adminStore'
+import { useI18n } from '../../composables/useI18n'
 
 const emit = defineEmits<{ logout: [] }>()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
 const roleLabel = computed(() => {
-  if (adminStore.admin?.role === 'super_admin') return '超级管理员'
-  return '管理员'
+  if (adminStore.admin?.role === 'super_admin') return t('admin.role.superAdmin')
+  return t('admin.role.admin')
 })
 </script>
 
@@ -15,7 +17,7 @@ const roleLabel = computed(() => {
   <header class="admin-topbar">
     <div class="admin-topbar__title">
       <slot name="title">
-        <span class="admin-topbar__page-title">管理后台</span>
+        <span class="admin-topbar__page-title">{{ t('admin.title') }}</span>
       </slot>
     </div>
 
@@ -24,7 +26,7 @@ const roleLabel = computed(() => {
         <span class="admin-topbar__username">{{ adminStore.admin?.username || 'Admin' }}</span>
         <span class="admin-topbar__role">{{ roleLabel }}</span>
       </div>
-      <button class="admin-topbar__logout" title="退出登录" @click="emit('logout')">
+      <button class="admin-topbar__logout" :title="t('admin.logout')" @click="emit('logout')">
         <svg
           width="18"
           height="18"
@@ -51,7 +53,7 @@ const roleLabel = computed(() => {
   justify-content: space-between;
   height: 56px;
   padding: 0 20px;
-  background: var(--gui-bg-surface, #111111);
+  background: var(--gui-bg-surface, #1C1C1E);
   border-bottom: 1px solid var(--gui-border-subtle, #1a1a1a);
   flex-shrink: 0;
 }

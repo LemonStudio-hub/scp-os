@@ -99,7 +99,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);
   padding: 0 var(--gui-spacing-md, 12px);
@@ -114,7 +114,7 @@ defineExpose({ focus: () => inputRef.value?.focus() })
 .scp-input-wrapper--focus {
   border-color: var(--gui-accent, #8e8e93);
   box-shadow: 0 0 0 3px var(--gui-accent-soft, rgba(142, 142, 147, 0.12));
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
 }
 
 .scp-input-wrapper:active {

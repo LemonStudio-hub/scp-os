@@ -786,7 +786,7 @@ function formatBytes(bytes: number): string {
 .settings-confirm-dialog {
   width: 100%;
   max-width: 280px;
-  background: var(--gui-bg-surface-raised, #2c2c2e);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-xl, 14px);
   padding: var(--gui-spacing-xl, 24px);
@@ -906,7 +906,7 @@ function formatBytes(bytes: number): string {
   align-items: center;
   justify-content: space-between;
   padding: var(--gui-spacing-md, 12px) var(--gui-spacing-base, 16px);
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   border-radius: var(--gui-radius-base, 8px);
   cursor: pointer;
   transition: all var(--gui-transition-fast, 120ms ease);
@@ -944,5 +944,10 @@ function formatBytes(bytes: number): string {
 }
 .light .mobile-settings__lang-sheet {
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .k-ios-list__item-radio--active {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  border-color: var(--gui-accent, #636366);
+  box-shadow: inset 0 0 0 3px var(--gui-bg-surface-raised, #f2f2f7);
 }
 </style>

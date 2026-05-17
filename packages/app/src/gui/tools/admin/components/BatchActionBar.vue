@@ -2,8 +2,8 @@
   <Transition name="batch-bar">
     <div v-if="selectedCount > 0" class="admin-batch-bar">
       <div class="admin-batch-bar__info">
-        <span class="admin-batch-bar__count">已选择 {{ selectedCount }} 项</span>
-        <button class="admin-batch-bar__clear" @click="$emit('clear')">清除选择</button>
+        <span class="admin-batch-bar__count">{{ t('admin.batchBar.selected', { count: selectedCount }) }}</span>
+        <button class="admin-batch-bar__clear" @click="$emit('clear')">{{ t('admin.batchBar.clear') }}</button>
       </div>
       <div class="admin-batch-bar__actions">
         <button
@@ -64,6 +64,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '../../../composables/useI18n'
+
 export interface BatchAction {
   key: string
   label: string
@@ -82,6 +84,8 @@ defineEmits<{
   action: [key: string]
   clear: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <style scoped>

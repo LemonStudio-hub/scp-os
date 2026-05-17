@@ -19,11 +19,11 @@
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
           <path d="M7 11V7a5 5 0 0110 0v4" />
         </svg>
-        <span>仅超级管理员可编辑系统设置</span>
+        <span>{{ t('admin.settings.noPermission') }}</span>
       </div>
       <div class="sys-settings__card">
         <div class="sys-settings__card-header">
-          <span class="sys-settings__card-title">系统配置</span>
+          <span class="sys-settings__card-title">{{ t('admin.settings.systemConfig') }}</span>
         </div>
         <div class="sys-settings__list">
           <div v-for="item in settingsItems" :key="item.key" class="sys-settings__item">
@@ -41,7 +41,7 @@
                   <span class="sys-settings__toggle-knob" />
                 </button>
                 <span class="sys-settings__toggle-label">{{
-                  item.value === '1' ? '启用' : '禁用'
+                  item.value === '1' ? t('admin.settings.enabled') : t('admin.settings.disabled')
                 }}</span>
               </template>
               <template v-else-if="isNumericValue(item.value)">
@@ -69,7 +69,7 @@
             :disabled="saving"
             @click="handleSave"
           >
-            {{ saving ? '保存中...' : '保存设置' }}
+            {{ saving ? t('common.loading') : t('admin.settings.saveBtn') }}
           </button>
         </div>
       </div>
@@ -81,6 +81,7 @@
 import { ref, onMounted } from 'vue'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
+import { useI18n } from '../../../composables/useI18n'
 import * as adminApi from '../services/adminApi'
 
 interface SettingItem {
@@ -90,6 +91,7 @@ interface SettingItem {
 
 const toast = useToast()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -128,10 +130,10 @@ async function fetchSettings() {
       }
       settingsItems.value = items
     } else {
-      toast.error(res.error || '获取设置失败')
+      toast.error(res.error || t('admin.settings.fetchError'))
     }
   } catch {
-    toast.error('获取设置失败')
+    toast.error(t('admin.settings.fetchError'))
   } finally {
     loading.value = false
   }
@@ -148,12 +150,12 @@ async function handleSave() {
     }
     const res = await adminApi.updateSystemSettings(token, settings)
     if (res.success) {
-      toast.success('设置已保存')
+      toast.success(t('admin.settings.saveSuccess'))
     } else {
-      toast.error(res.error || '保存失败')
+      toast.error(res.error || t('admin.settings.saveError'))
     }
   } catch {
-    toast.error('保存设置失败')
+    toast.error(t('admin.settings.saveActionError'))
   } finally {
     saving.value = false
   }

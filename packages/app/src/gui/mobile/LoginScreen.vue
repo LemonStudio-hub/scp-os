@@ -27,7 +27,7 @@
             viewBox="0 0 80 80"
             fill="none"
             role="img"
-            aria-label="SCP Foundation Logo"
+            aria-label="SCP 基金会标志"
           >
             <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="2" opacity="0.6" />
             <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.4" />

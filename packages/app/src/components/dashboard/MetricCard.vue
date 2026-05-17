@@ -164,7 +164,7 @@ function formatTime(ms: number): string {
 
 <style scoped>
 .metric-card {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1C1C1E);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   padding: 18px;
@@ -235,7 +235,7 @@ function formatTime(ms: number): string {
   align-items: center;
   justify-content: center;
   border-radius: var(--gui-radius-md, 10px);
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
@@ -328,7 +328,7 @@ function formatTime(ms: number): string {
   align-items: center;
   margin-bottom: 12px;
   padding: 8px 10px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2C2C2E);
   border-radius: var(--gui-radius-sm, 6px);
 }
 

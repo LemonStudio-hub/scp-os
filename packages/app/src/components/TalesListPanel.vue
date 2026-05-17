@@ -25,12 +25,12 @@
           v-model="searchQuery"
           type="text"
           class="tales-panel__search-input"
-          placeholder="Search tales by title..."
+          :placeholder="t('docs.searchTales')"
         />
         <button
           v-if="searchQuery"
           class="tales-panel__search-clear"
-          title="Clear search"
+          :title="t('docs.clearSearch')"
           @click="clearSearch"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -47,7 +47,7 @@
       <!-- Info Bar -->
       <div class="tales-panel__info-bar">
         <span class="tales-panel__info-count"
-          >{{ filteredTales.length }} tale{{ filteredTales.length !== 1 ? 's' : '' }}</span
+          >{{ t('docs.talesCount', { count: filteredTales.length }) }}</span
         >
         <span v-if="error" class="tales-panel__info-error">{{ error }}</span>
       </div>
@@ -70,8 +70,8 @@
             stroke-linecap="round"
           />
         </svg>
-        <p>Failed to load tales</p>
-        <button class="tales-panel__retry-btn" @click="fetchTales">Retry</button>
+        <p>{{ t('docs.failedToLoad') }}</p>
+        <button class="tales-panel__retry-btn" @click="fetchTales">{{ t('docs.retry') }}</button>
       </div>
 
       <!-- Empty State -->
@@ -85,8 +85,8 @@
             stroke-linecap="round"
           />
         </svg>
-        <p v-if="searchQuery">No tales match "{{ searchQuery }}"</p>
-        <p v-else>No tales available</p>
+        <p v-if="searchQuery">{{ t('docs.noTalesMatch', { query: searchQuery }) }}</p>
+        <p v-else>{{ t('docs.noTalesAvailable') }}</p>
       </div>
 
       <!-- Tales List -->
@@ -100,7 +100,7 @@
         >
           <div class="tales-panel__item-main">
             <span class="tales-panel__item-title">{{ tale.title }}</span>
-            <span class="tales-panel__item-author">{{ tale.author || 'Unknown Author' }}</span>
+            <span class="tales-panel__item-author">{{ tale.author || t('docs.unknownAuthor') }}</span>
           </div>
           <div class="tales-panel__item-meta">
             <span v-if="tale.year" class="tales-panel__item-year">{{ tale.year }}</span>
@@ -130,7 +130,7 @@
     <template v-else>
       <!-- Toolbar -->
       <div class="tales-panel__toolbar">
-        <button class="tales-panel__toolbar-btn" title="Back to list" @click="backToList">
+        <button class="tales-panel__toolbar-btn" :title="t('docs.backToList')" @click="backToList">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path
               d="M10 3L5 8L10 13"
@@ -140,7 +140,7 @@
               stroke-linejoin="round"
             />
           </svg>
-          <span class="tales-panel__toolbar-label">Back</span>
+          <span class="tales-panel__toolbar-label">{{ t('docs.back') }}</span>
         </button>
         <span class="tales-panel__toolbar-title">{{ selectedTale?.title || '' }}</span>
         <div class="tales-panel__toolbar-spacer" />
@@ -170,7 +170,7 @@
           />
         </svg>
         <p>{{ detailError }}</p>
-        <button class="tales-panel__retry-btn" @click="retryLoadDetail">Retry</button>
+        <button class="tales-panel__retry-btn" @click="retryLoadDetail">{{ t('docs.retry') }}</button>
       </div>
     </template>
   </div>
@@ -180,7 +180,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { config } from '../config'
 import { getAuthToken } from '../utils/authFetch'
+import { useI18n } from '../gui/composables/useI18n'
 import DocReaderPanel from './DocReaderPanel.vue'
+
+const { t } = useI18n()
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -268,10 +271,10 @@ async function fetchTales(): Promise<void> {
       tales.value = data.map(normalizeTaleSummary)
     } else {
       tales.value = []
-      error.value = 'Unexpected response format from API'
+      error.value = t('docs.unexpectedFormat')
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to load tales'
+    const message = err instanceof Error ? err.message : t('docs.failedToLoad')
     error.value = message
     console.error('[TalesListPanel]', message)
   } finally {
@@ -340,7 +343,7 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
       }
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to load tale content'
+    const message = err instanceof Error ? err.message : t('docs.failedToLoadContent')
     detailError.value = message
     console.error('[TalesListPanel] Failed to load detail:', message)
   } finally {
@@ -354,8 +357,8 @@ async function fetchTaleDetail(tale: TaleSummary): Promise<void> {
 function normalizeTaleSummary(raw: any): TaleSummary {
   return {
     id: String(raw.id || raw._id || raw.slug || ''),
-    title: String(raw.title || 'Untitled'),
-    author: String(raw.author || raw.by || 'Unknown'),
+    title: String(raw.title || t('docs.untitled')),
+    author: String(raw.author || raw.by || t('docs.unknown')),
     year: raw.year ?? raw.published_year ?? raw.publishYear ?? null,
     rating: raw.rating ?? raw.score ?? null,
     url: String(raw.url || raw.link || ''),

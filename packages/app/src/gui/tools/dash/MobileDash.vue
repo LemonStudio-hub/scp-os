@@ -1,5 +1,5 @@
 <template>
-  <MobileWindow title="Dashboard" :show-back="true" @close="onClose">
+  <MobileWindow :title="t('app.dash')" :show-back="true" @close="onClose">
     <div class="mdash">
       <div class="mdash__bg">
         <div class="mdash__bg-orb mdash__bg-orb--1" />
@@ -56,7 +56,7 @@
           <div class="mdash__meta">
             <span class="mdash__meta-item">{{ currentTime }}</span>
             <span class="mdash__meta-sep">·</span>
-            <span class="mdash__meta-item">UPTIME: {{ formatUptime(uptime) }}</span>
+            <span class="mdash__meta-item">{{ t('mdash.uptime') }}: {{ formatUptime(uptime) }}</span>
           </div>
         </header>
 
@@ -84,6 +84,7 @@
                   stroke="rgba(255,255,255,0.04)"
                   stroke-width="10"
                   stroke-linecap="round"
+                  class="mdash__gauge-track"
                 />
                 <path
                   d="M 16 82 A 64 64 0 0 1 144 82"
@@ -123,8 +124,9 @@
                   font-size="7"
                   font-weight="600"
                   letter-spacing="0.18em"
+                  class="mdash__gauge-label"
                 >
-                  SYSTEM INDEX
+                  {{ t('mdash.systemIndex') }}
                 </text>
               </svg>
             </div>
@@ -138,6 +140,7 @@
                     stroke="rgba(255,255,255,0.04)"
                     stroke-width="4"
                     stroke-linecap="round"
+                    class="mdash__mini-gauge-track"
                   />
                   <path
                     d="M 5 24 A 19 19 0 0 1 43 24"
@@ -192,6 +195,7 @@
                     stroke="rgba(255,255,255,0.025)"
                     stroke-width="1"
                     stroke-dasharray="2 4"
+                    class="mdash__chart-grid-line"
                   />
                   <text
                     v-for="y in [1, 3]"
@@ -201,6 +205,7 @@
                     fill="rgba(255,255,255,0.07)"
                     font-size="6"
                     font-family="monospace"
+                    class="mdash__chart-grid-label"
                   >
                     {{ 100 - y * 25 }}
                   </text>
@@ -258,35 +263,35 @@
 
         <section v-if="activeTab === 'system'" class="mdash__tab">
           <div class="mdash__card">
-            <div class="mdash__card-head">System Info</div>
+            <div class="mdash__card-head">{{ t('perf.systemInfo') }}</div>
             <div class="mdash__info-list">
               <div class="mdash__info-row">
-                <span>CPU Cores</span>
+                <span>{{ t('mdash.cpuCores') }}</span>
                 <span>{{ cpuCores }} / {{ cpuThreads }}</span>
               </div>
               <div class="mdash__info-row">
-                <span>Platform</span>
+                <span>{{ t('mdash.platform') }}</span>
                 <span>{{ navigator.platform || 'Unknown' }}</span>
               </div>
               <div class="mdash__info-row">
-                <span>Memory</span>
+                <span>{{ t('perf.memory') }}</span>
                 <span>{{ deviceMemoryGB > 0 ? deviceMemoryGB + 'GB' : '?' }}</span>
               </div>
               <div class="mdash__info-row">
-                <span>Language</span>
+                <span>{{ t('mdash.language') }}</span>
                 <span>{{ navigator.language }}</span>
               </div>
               <div class="mdash__info-row">
-                <span>Online</span>
+                <span>{{ t('mdash.online') }}</span>
                 <span :style="{ color: onlineStatus ? '#34C759' : '#FF3B30' }">{{
-                  onlineStatus ? 'Yes' : 'No'
+                  onlineStatus ? t('perf.yes') : t('perf.no')
                 }}</span>
               </div>
             </div>
           </div>
 
           <div v-if="battery.level > 0 || true" class="mdash__card">
-            <div class="mdash__card-head">Battery</div>
+            <div class="mdash__card-head">{{ t('mdash.battery') }}</div>
             <div class="mdash__battery">
               <div
                 class="mdash__battery-icon"
@@ -307,14 +312,14 @@
               <div class="mdash__battery-detail">
                 <span class="mdash__battery-pct">{{ Math.round(battery.level * 100) }}%</span>
                 <span class="mdash__battery-state">{{
-                  battery.charging ? 'Charging' : battery.level > 0 ? 'On Battery' : 'AC Power'
+                  battery.charging ? t('mdash.charging') : battery.level > 0 ? t('mdash.onBattery') : t('mdash.acPower')
                 }}</span>
               </div>
             </div>
           </div>
 
           <div class="mdash__card">
-            <div class="mdash__card-head">Performance</div>
+            <div class="mdash__card-head">{{ t('mdash.performance') }}</div>
             <div class="mdash__info-list">
               <div class="mdash__info-row">
                 <span>FCP</span>
@@ -325,7 +330,7 @@
                 <span>{{ paintTiming.fp > 0 ? Math.round(paintTiming.fp) + 'ms' : '—' }}</span>
               </div>
               <div class="mdash__info-row">
-                <span>Long Tasks</span>
+                <span>{{ t('mdash.longTasks') }}</span>
                 <span :style="{ color: longTaskCount > 5 ? '#FF3B30' : '#34C759' }">{{
                   longTaskCount
                 }}</span>
@@ -337,18 +342,18 @@
                 }}</span>
               </div>
               <div class="mdash__info-row">
-                <span>Page Load</span>
+                <span>{{ t('mdash.pageLoad') }}</span>
                 <span>{{ pageLoadTime }}ms</span>
               </div>
               <div class="mdash__info-row">
-                <span>Session</span>
+                <span>{{ t('mdash.session') }}</span>
                 <span>{{ formatUptime(uptime) }}</span>
               </div>
             </div>
           </div>
 
           <div class="mdash__card">
-            <div class="mdash__card-head">Alerts ({{ alerts.length }})</div>
+            <div class="mdash__card-head">{{ t('mdash.alerts') }} ({{ alerts.length }})</div>
             <div class="mdash__alerts">
               <div
                 v-for="(a, i) in alerts"
@@ -359,7 +364,7 @@
                 <span>{{ a.message }}</span>
               </div>
               <div v-if="alerts.length === 0" class="mdash__alert mdash__alert--ok">
-                All systems nominal.
+                {{ t('mdash.allNominal') }}
               </div>
             </div>
           </div>
@@ -368,32 +373,32 @@
         <section v-if="activeTab === 'network'" class="mdash__tab">
           <div class="mdash__card">
             <div class="mdash__card-head">
-              <span>Network</span>
+              <span>{{ t('perf.network') }}</span>
               <span class="mdash__network-badge" :class="networkStatusClass">{{
-                networkStatus
+                networkStatusLabel
               }}</span>
             </div>
             <div class="mdash__network-grid">
               <div class="mdash__network-item">
-                <span class="mdash__network-key">Status</span>
+                <span class="mdash__network-key">{{ t('mdash.status') }}</span>
                 <span class="mdash__network-val" :class="networkStatusClass">{{
-                  networkStatus
+                  networkStatusLabel
                 }}</span>
               </div>
               <div class="mdash__network-item">
-                <span class="mdash__network-key">Latency</span>
+                <span class="mdash__network-key">{{ t('dash.latency') }}</span>
                 <span class="mdash__network-val" :style="{ color: latencyColor }"
                   >{{ latency }}ms</span
                 >
               </div>
               <div class="mdash__network-item">
-                <span class="mdash__network-key">Type</span>
-                <span class="mdash__network-val">{{ connectionType }}</span>
+                <span class="mdash__network-key">{{ t('dash.type') }}</span>
+                <span class="mdash__network-val">{{ connectionTypeLabel }}</span>
               </div>
               <div class="mdash__network-item">
-                <span class="mdash__network-key">Bandwidth</span>
+                <span class="mdash__network-key">{{ t('mdash.bandwidth') }}</span>
                 <span class="mdash__network-val">{{
-                  downlinkSpeed > 0 ? downlinkSpeed + ' Mbps' : 'Unknown'
+                  downlinkSpeed > 0 ? downlinkSpeed + ' Mbps' : t('mdash.unknown')
                 }}</span>
               </div>
             </div>
@@ -404,19 +409,19 @@
               @click="runSpeedTest"
             >
               <div v-if="isSpeedTesting" class="mdash__speed-spinner" />
-              <span>{{ isSpeedTesting ? 'Testing...' : 'Speed Test' }}</span>
+              <span>{{ isSpeedTesting ? t('mdash.testing') : t('mdash.speedTest') }}</span>
             </button>
             <div v-if="downloadSpeed > 0 || uploadSpeed > 0" class="mdash__speed-results">
               <div class="mdash__speed-item">
-                <span class="mdash__speed-item-lbl">Download</span>
+                <span class="mdash__speed-item-lbl">{{ t('mdash.download') }}</span>
                 <span class="mdash__speed-item-val">{{ downloadSpeed }}<small>Mbps</small></span>
               </div>
               <div class="mdash__speed-item">
-                <span class="mdash__speed-item-lbl">Upload</span>
+                <span class="mdash__speed-item-lbl">{{ t('mdash.upload') }}</span>
                 <span class="mdash__speed-item-val">{{ uploadSpeed }}<small>Mbps</small></span>
               </div>
               <div class="mdash__speed-item">
-                <span class="mdash__speed-item-lbl">Ping</span>
+                <span class="mdash__speed-item-lbl">{{ t('mdash.ping') }}</span>
                 <span class="mdash__speed-item-val">{{ ping }}<small>ms</small></span>
               </div>
             </div>
@@ -429,7 +434,7 @@
             :class="{ 'mdash__footer-pulse--live': isAutoRefresh }"
           />
           <span class="mdash__footer-text"
-            >{{ isAutoRefresh ? 'LIVE' : 'PAUSED' }} · {{ lastUpdated }}</span
+            >{{ isAutoRefresh ? t('mdash.live') : t('mdash.paused') }} · {{ lastUpdated }}</span
           >
         </footer>
       </div>
@@ -441,6 +446,7 @@
 import { ref, computed } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useDashboardData } from '../../composables/useDashboardData'
+import { useI18n } from '../../composables/useI18n'
 
 const {
   memoryUsage,
@@ -453,7 +459,8 @@ const {
   jsListeners,
   latency,
   networkStatus,
-  connectionType,
+  networkStatusLabel,
+  connectionTypeLabel,
   currentTime,
   lastUpdated,
   isRefreshing,
@@ -488,33 +495,35 @@ const {
   formatUptime,
 } = useDashboardData(4000)
 
+const { t } = useI18n()
+
 const activeTab = ref<'overview' | 'system' | 'network'>('overview')
 const isSpeedTesting = ref(false)
 const downloadSpeed = ref(0)
 const uploadSpeed = ref(0)
 const ping = ref(0)
 
-const tabs = [
-  { id: 'overview' as const, label: 'Overview' },
-  { id: 'system' as const, label: 'System' },
-  { id: 'network' as const, label: 'Net' },
-]
+const tabs = computed(() => [
+  { id: 'overview' as const, label: t('mdash.overview') },
+  { id: 'system' as const, label: t('mdash.system') },
+  { id: 'network' as const, label: t('mdash.networkShort') },
+])
 
 const statusLabel = computed(() => {
-  if (statusLevel.value === 'good') return 'NOMINAL'
-  if (statusLevel.value === 'warn') return 'CAUTION'
-  return 'FAILING'
+  if (statusLevel.value === 'good') return t('mdash.nominal')
+  if (statusLevel.value === 'warn') return t('mdash.caution')
+  return t('mdash.failing')
 })
 
 const heroStats = computed(() => [
   {
-    label: 'Memory',
+    label: t('perf.memory'),
     value: memoryUsage.value.percent,
     unit: '%',
     pct: memoryUsage.value.percent,
     color: memoryColor.value,
   },
-  { label: 'CPU', value: cpuUsage.value, unit: '%', pct: cpuUsage.value, color: cpuColor.value },
+  { label: t('dash.cpu'), value: cpuUsage.value, unit: '%', pct: cpuUsage.value, color: cpuColor.value },
   {
     label: 'FPS',
     value: fps.value,
@@ -523,7 +532,7 @@ const heroStats = computed(() => [
     color: fps.value >= 50 ? '#34C759' : fps.value >= 30 ? '#FF9500' : '#FF3B30',
   },
   {
-    label: 'Ping',
+    label: t('dash.latency'),
     value: latency.value,
     unit: 'ms',
     pct: Math.min(100, (latency.value / 200) * 100),
@@ -548,7 +557,7 @@ const latLastPt = computed(() => getLastPoint(latencyHistory.value, chartW, char
 const mobileCharts = computed(() => [
   {
     id: 'mem',
-    label: 'Memory',
+    label: t('perf.memory'),
     badge: `${memoryUsage.value.used}/${memoryUsage.value.limit}MB`,
     color: memoryColor.value,
     gradId: 'mMemGrad',
@@ -558,7 +567,7 @@ const mobileCharts = computed(() => [
   },
   {
     id: 'cpu',
-    label: 'CPU Load',
+    label: t('dash.cpu') + ' Load',
     badge: `${cpuCores.value} cores`,
     color: cpuColor.value,
     gradId: 'mCpuGrad',
@@ -568,7 +577,7 @@ const mobileCharts = computed(() => [
   },
   {
     id: 'lat',
-    label: 'Latency',
+    label: t('dash.latency'),
     badge: networkStatus.value,
     color: latencyColor.value,
     gradId: 'mLatGrad',
@@ -592,20 +601,20 @@ const metricItems = computed(() => [
     barColor: (parseInt(domNodes.value) || 0) > 2000 ? '#FF9500' : '#34C759',
   },
   {
-    label: 'Resources',
+    label: t('dash.resources'),
     value: resources.value,
     barWidth: Math.min(100, (parseInt(resources.value) || 0) / 2),
     barColor: (parseInt(resources.value) || 0) > 100 ? '#FF9500' : '#5AC8FA',
   },
-  { label: 'Listeners', value: jsListeners.value, barWidth: 0, barColor: scoreColor.value },
+  { label: t('dash.eventListeners'), value: jsListeners.value, barWidth: 0, barColor: scoreColor.value },
   {
-    label: 'Storage',
+    label: t('settings.usedSpace'),
     value: formatBytes(storageUsed.value),
     barWidth: storagePercent.value,
     barColor: storagePercent.value > 80 ? '#FF9500' : '#34C759',
   },
   {
-    label: 'Page Load',
+    label: t('mdash.pageLoad'),
     value: pageLoadTime.value + 'ms',
     barWidth: Math.min(100, pageLoadTime.value / 50),
     barColor: pageLoadTime.value > 3000 ? '#FF9500' : '#34C759',
@@ -773,9 +782,145 @@ async function runSpeedTest() {
   box-shadow: 0 0 3px rgba(255, 255, 255, 0.12);
 }
 
+.light .mdash {
+  background: var(--gui-bg-base, #F2F2F7);
+  color: var(--gui-text-primary, #000000);
+}
+
+.light .mdash__bg-orb--1 {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+}
+.light .mdash__bg-orb--2 {
+  background: rgba(94, 92, 230, 0.08);
+}
+.light .mdash__bg-orb--3 {
+  background: rgba(48, 176, 199, 0.06);
+}
+
+.light .mdash__bg-grid {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+}
+
+.light .mdash__bg-vignette {
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.04) 100%);
+}
+
 .light .mdash__particle {
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.light .mdash__tab-pills {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light .mdash__pill {
+  color: var(--gui-text-tertiary, #6E6E73);
+}
+.light .mdash__pill--active {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--gui-text-primary, #000000);
+}
+
+.light .mdash__refresh-btn {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--gui-text-tertiary, #6E6E73);
+}
+.light .mdash__refresh-btn:active {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.light .mdash__hero {
+  background: var(--gui-bg-surface, #FFFFFF);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .mdash__mini-stat {
+  background: var(--gui-bg-surface, #FFFFFF);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .mdash__mini-stat:active {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .mdash__chart-card {
+  background: var(--gui-bg-surface, #FFFFFF);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .mdash__chart-body {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .mdash__metric {
+  background: var(--gui-bg-surface, #FFFFFF);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .mdash__metric-bar {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .mdash__card {
+  background: var(--gui-bg-surface, #FFFFFF);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .mdash__info-row {
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .mdash__battery-icon {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+.light .mdash__battery-icon::after {
   background: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.light .mdash__speed-btn {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: var(--gui-bg-surface, #FFFFFF);
+  color: var(--gui-text-secondary, #6E6E73);
+}
+.light .mdash__speed-btn:active:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .mdash__speed-spinner {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: var(--gui-text-primary, #000000);
+}
+
+.light .mdash__speed-results {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .mdash__footer-pulse {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* SVG gauge tracks */
+.light .mdash__gauge-track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+.light .mdash__gauge-label {
+  fill: rgba(0, 0, 0, 0.22);
+}
+
+/* Mini gauge tracks */
+.light .mdash__mini-gauge-track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+/* Chart grid lines and labels */
+.light .mdash__chart-grid-line {
+  stroke: rgba(0, 0, 0, 0.05);
+}
+.light .mdash__chart-grid-label {
+  fill: rgba(0, 0, 0, 0.15);
 }
 
 @keyframes mParticleFloat {

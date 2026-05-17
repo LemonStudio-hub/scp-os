@@ -29,7 +29,7 @@
             v-model="roomSearchQuery"
             type="text"
             class="mobile-chat__search-input"
-            :placeholder="t('chat.searchRooms') || 'Search rooms...'"
+            :placeholder="t('chat.searchRooms')"
           />
         </div>
 
@@ -165,7 +165,7 @@
               @click="retryMessage(msg)"
             >
               {{ msg.error }} ·
-              <span class="chat-bubble__retry">{{ t('chat.retry') || 'Retry' }}</span>
+              <span class="chat-bubble__retry">{{ t('chat.retry') }}</span>
             </div>
           </div>
 
@@ -239,7 +239,7 @@
             <textarea
               v-model="newRoomDescription"
               class="mobile-chat__dialog-textarea"
-              placeholder="Description (optional)"
+              :placeholder="t('chat.descriptionOptional')"
               maxlength="200"
               rows="3"
             />
@@ -1414,5 +1414,27 @@ async function saveNickname() {
 }
 .light .mobile-chat__action-menu {
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
+.light .mobile-chat__dialog-btn {
+  background: var(--chat-surface-hover, rgba(0, 0, 0, 0.06));
+  color: var(--chat-text-primary, #000000);
+}
+.light .mobile-chat__dialog-btn--primary {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .chat-bubble--self .chat-bubble__content {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .mobile-chat__send-btn {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .mobile-chat__action-btn {
+  color: var(--chat-text-secondary, #6E6E73);
+}
+.light .mobile-chat__action-btn:active {
+  background: rgba(0, 0, 0, 0.06);
 }
 </style>
