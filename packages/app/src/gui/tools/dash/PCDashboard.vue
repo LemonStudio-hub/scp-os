@@ -66,17 +66,25 @@
               @click="activeTab = 'system'"
             >
               <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
               >
-                <rect x="1" y="3" width="14" height="10" rx="2" />
-                <path d="M5 16V13" />
-                <path d="M11 16V13" />
-                <path d="M1 10h14" />
+                <rect x="4" y="4" width="16" height="16" rx="2" />
+                <rect x="9" y="9" width="6" height="6" rx="1" />
+                <path d="M9 2v2" />
+                <path d="M15 2v2" />
+                <path d="M9 20v2" />
+                <path d="M15 20v2" />
+                <path d="M20 9h2" />
+                <path d="M20 15h2" />
+                <path d="M2 9h2" />
+                <path d="M2 15h2" />
               </svg>
             </button>
             <button
@@ -115,17 +123,19 @@
               @click="refreshMetrics"
             >
               <svg
-                width="14"
-                height="14"
-                viewBox="0 0 16 16"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <path d="M3 8a5 5 0 019.33-2.5M13 8a5 5 0 01-9.33 2.5" />
-                <path d="M15 4v3h-3M1 12v-3h3" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.7 9.7 0 0 1-6.74-2.74" />
+                <path d="M3 12a9 9 0 0 1 9-9 9.7 9.7 0 0 1 6.74 2.74" />
+                <path d="M8 18H5v3" />
+                <path d="M16 6h3V3" />
               </svg>
             </button>
           </div>
@@ -431,16 +441,23 @@
                   class="dash__battery-icon"
                   :class="{ 'dash__battery-icon--charging': battery.charging }"
                 >
-                  <div class="dash__battery-fill" :style="{ height: battery.level * 100 + '%' }" />
+                  <div
+                    class="dash__battery-fill"
+                    :style="{ transform: `scaleX(${battery.level})` }"
+                  />
                   <svg
                     class="dash__battery-zap"
                     v-if="battery.charging"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 16 16"
-                    fill="currentColor"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   >
-                    <path d="M8 1L3 9h4l-1 6 6-8H7l1-6z" />
+                    <path d="M13 2L4 14h7l-1 8 10-13h-7l1-7z" />
                   </svg>
                 </div>
                 <span class="dash__battery-pct">{{ Math.round(battery.level * 100) }}%</span>
@@ -1806,35 +1823,38 @@ async function runSpeedTest() {
 
 .dash__battery-icon {
   position: relative;
-  width: 32px;
-  height: 56px;
+  width: 96px;
+  height: 44px;
   border: 2px solid var(--gui-border-strong, rgba(255, 255, 255, 0.3));
-  border-radius: 6px;
-  padding: 3px;
-  overflow: hidden;
+  border-radius: 12px;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
+  overflow: visible;
 }
 
 .dash__battery-icon::after {
   content: '';
   position: absolute;
-  top: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 14px;
-  height: 3px;
+  top: 50%;
+  right: -8px;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 18px;
   background: rgba(255, 255, 255, 0.3);
-  border-radius: 2px 2px 0 0;
+  border-radius: 0 5px 5px 0;
 }
 
 .dash__battery-fill {
   background: #34c759;
-  border-radius: 3px;
-  transition: height 0.5s ease;
-  width: 100%;
+  border-radius: 8px;
+  transition:
+    transform 0.5s ease,
+    background 0.2s ease;
+  width: calc(100% - 8px);
   position: absolute;
-  bottom: 3px;
-  left: 3px;
-  right: 3px;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  transform-origin: left center;
 }
 
 .dash__battery-zap {
@@ -1842,11 +1862,12 @@ async function runSpeedTest() {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: var(--gui-text-primary, rgba(255, 255, 255, 0.8));
+  color: rgba(0, 0, 0, 0.82);
+  filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.25));
 }
 
 .dash__battery-icon--charging .dash__battery-fill {
-  background: #ff9500;
+  background: linear-gradient(90deg, #ff9500 0%, #ffb340 100%);
 }
 .dash__battery-pct {
   font-size: 20px;

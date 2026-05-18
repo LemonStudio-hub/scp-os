@@ -71,7 +71,32 @@
       "Bash(git -C I:\\\\help\\\\scp-os-main\\\\scp-os-main ls-tree -r --name-only HEAD)",
       "Bash(findstr -i \"server\\\\|api\\\\|backend\\\\|express\\\\|fastify\\\\|nest\\\\|src.*\\\\.\\(ts|js\\)$\")",
       "PowerShell(git *)",
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "PowerShell(pnpm *)",
+      "Bash(Select-Object FullName)",
+      "Bash(Get-ChildItem -Path . -Depth 2)",
+      "PowerShell(Invoke-Item *)",
+      "Bash(git rm *)",
+      "Bash(npx prettier *)",
+      "Bash(curl -s http://127.0.0.1:8787/)",
+      "Bash(sqlite3 *)",
+      "Bash(taskkill /F /IM node.exe)",
+      "PowerShell(Get-Process *)",
+      "Bash(cmd *)",
+      "Bash(curl -s http://localhost:4173/)",
+      "Bash(ping -n 1 github.com)",
+      "Bash(npx tsx *)",
+      "Bash(git config *)",
+      "Bash(npx tsc *)",
+      "Bash(curl -s http://127.0.0.1:8788/)",
+      "Bash(curl -s http://127.0.0.1:8788/chat/rooms)",
+      "Bash(curl -s http://127.0.0.1:8789/chat/rooms)",
+      "Bash(curl -s -N -H \"Upgrade: websocket\" -H \"Connection: Upgrade\" -H \"Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\" -H \"Sec-WebSocket-Version: 13\" \"http://127.0.0.1:8789/chat/ws?user_id=test1&username=Tester1&room_id=1\" -o /dev/null -w \"%{http_code}\")",
+      "Bash(gh secret *)",
+      "Bash(git check-ignore *)",
+      "Bash(timeout 5)",
+      "Bash(npx vite *)",
+      "Bash(netsh advfirewall *)"
     ]
   }
 }

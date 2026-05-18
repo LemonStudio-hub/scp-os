@@ -231,39 +231,6 @@
               >
                 <span class="pc-docs__font-label pc-docs__font-label--large">A+</span>
               </button>
-              <!-- Theme Toggle -->
-              <button
-                class="pc-docs__toolbar-btn"
-                :title="
-                  reader.readerTheme.value === 'dark' ? t('docs.lightMode') : t('docs.darkMode')
-                "
-                @click="reader.toggleTheme()"
-              >
-                <svg
-                  v-if="reader.readerTheme.value === 'dark'"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                >
-                  <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5" />
-                  <path
-                    d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"
-                    stroke="currentColor"
-                    stroke-width="1.3"
-                    stroke-linecap="round"
-                  />
-                </svg>
-                <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-              </button>
               <!-- Favorite -->
               <button
                 class="pc-docs__toolbar-btn"
@@ -530,6 +497,7 @@ onBeforeUnmount(() => {
   --docs-accent-soft: rgba(142, 142, 147, 0.12);
   --docs-content-bg: #111113;
   --docs-content-text: #e0e0e0;
+  --docs-popover-shadow: rgba(0, 0, 0, 0.2);
 
   display: flex;
   height: 100%;
@@ -552,6 +520,7 @@ onBeforeUnmount(() => {
   --docs-accent-soft: rgba(0, 122, 255, 0.12);
   --docs-content-bg: #ffffff;
   --docs-content-text: #1d1d1f;
+  --docs-popover-shadow: rgba(0, 0, 0, 0.1);
 }
 
 /* ── Sidebar ────────────────────────────────────────────────────────── */
@@ -968,7 +937,7 @@ onBeforeUnmount(() => {
   z-index: 50;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: -4px 4px 16px var(--docs-popover-shadow);
 }
 
 .pc-docs__toc-header {
@@ -1045,7 +1014,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.15s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px var(--docs-popover-shadow);
   z-index: 10;
 }
 
@@ -1126,6 +1095,62 @@ onBeforeUnmount(() => {
   max-width: 780px;
   margin: 0 auto;
   word-wrap: break-word;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-wrap) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-hero),
+.pc-docs--light .pc-docs__article :deep(.guide-intro-card),
+.pc-docs--light .pc-docs__article :deep(.guide-cmd-block) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-toc),
+.pc-docs--light .pc-docs__article :deep(.guide-app-card),
+.pc-docs--light .pc-docs__article :deep(.guide-step),
+.pc-docs--light .pc-docs__article :deep(.guide-faq-item),
+.pc-docs--light .pc-docs__article :deep(.guide-shortcut) {
+  background: #ffffff !important;
+  border-color: var(--docs-border) !important;
+  box-shadow: none !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-hero h1),
+.pc-docs--light .pc-docs__article :deep(.guide-section-title h2),
+.pc-docs--light .pc-docs__article :deep(.guide-app-card h4),
+.pc-docs--light .pc-docs__article :deep(.guide-step-content h4),
+.pc-docs--light .pc-docs__article :deep(.guide-faq-item h4),
+.pc-docs--light .pc-docs__article :deep(.guide-section li strong) {
+  color: var(--docs-text-primary) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-hero p),
+.pc-docs--light .pc-docs__article :deep(.guide-section p),
+.pc-docs--light .pc-docs__article :deep(.guide-section li),
+.pc-docs--light .pc-docs__article :deep(.guide-app-card p),
+.pc-docs--light .pc-docs__article :deep(.guide-step-content p),
+.pc-docs--light .pc-docs__article :deep(.guide-faq-item p),
+.pc-docs--light .pc-docs__article :deep(.guide-shortcut-desc) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-section code),
+.pc-docs--light .pc-docs__article :deep(.guide-shortcut-key),
+.pc-docs--light .pc-docs__article :deep(.guide-step-tools code) {
+  background: #eef1f5 !important;
+  border-color: var(--docs-border) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-section pre) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-section pre code) {
+  color: var(--docs-text-primary) !important;
 }
 
 .pc-docs__article :deep(h1) {

@@ -386,47 +386,6 @@
                   </button>
                 </div>
               </div>
-              <div class="mobile-docs__font-row">
-                <span class="mobile-docs__font-label">{{ t('docs.theme') }}</span>
-                <div class="mobile-docs__theme-toggle">
-                  <!-- prettier-ignore -->
-                  <button
-                    class="mobile-docs__theme-btn"
-                    :class="{
-                      'mobile-docs__theme-btn--active': reader.readerTheme.value === 'dark',
-                    }"
-                    @click="reader.readerTheme.value = 'dark'"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z"
-                        stroke="currentColor"
-                        stroke-width="1.3"
-                      />
-                    </svg>
-                    {{ t('docs.dark') }}
-                  </button>
-                  <!-- prettier-ignore -->
-                  <button
-                    class="mobile-docs__theme-btn"
-                    :class="{
-                      'mobile-docs__theme-btn--active': reader.readerTheme.value === 'light',
-                    }"
-                    @click="reader.readerTheme.value = 'light'"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3" />
-                      <path
-                        d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"
-                        stroke="currentColor"
-                        stroke-width="1.1"
-                        stroke-linecap="round"
-                      />
-                    </svg>
-                    {{ t('docs.light') }}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </Transition>
@@ -687,6 +646,7 @@ onBeforeUnmount(() => {
   --docs-content-text: #e0e0e0;
   --docs-card-bg: #1c1c1e;
   --docs-card-shadow: rgba(0, 0, 0, 0.3);
+  --docs-panel-shadow: rgba(0, 0, 0, 0.3);
 
   display: flex;
   flex-direction: column;
@@ -711,7 +671,8 @@ onBeforeUnmount(() => {
   --docs-content-bg: #ffffff;
   --docs-content-text: #1d1d1f;
   --docs-card-bg: #ffffff;
-  --docs-card-shadow: rgba(0, 0, 0, 0.08);
+  --docs-card-shadow: rgba(0, 0, 0, 0.05);
+  --docs-panel-shadow: rgba(0, 0, 0, 0.12);
 }
 
 /* ══════════════════════════════════════════════════════════════════════ */
@@ -1076,6 +1037,62 @@ onBeforeUnmount(() => {
   word-wrap: break-word;
 }
 
+.mobile-docs--light .mobile-docs__article :deep(.guide-wrap) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-hero),
+.mobile-docs--light .mobile-docs__article :deep(.guide-intro-card),
+.mobile-docs--light .mobile-docs__article :deep(.guide-cmd-block) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-toc),
+.mobile-docs--light .mobile-docs__article :deep(.guide-app-card),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step),
+.mobile-docs--light .mobile-docs__article :deep(.guide-faq-item),
+.mobile-docs--light .mobile-docs__article :deep(.guide-shortcut) {
+  background: #ffffff !important;
+  border-color: var(--docs-border) !important;
+  box-shadow: none !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-hero h1),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section-title h2),
+.mobile-docs--light .mobile-docs__article :deep(.guide-app-card h4),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step-content h4),
+.mobile-docs--light .mobile-docs__article :deep(.guide-faq-item h4),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section li strong) {
+  color: var(--docs-text-primary) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-hero p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section li),
+.mobile-docs--light .mobile-docs__article :deep(.guide-app-card p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step-content p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-faq-item p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-shortcut-desc) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-section code),
+.mobile-docs--light .mobile-docs__article :deep(.guide-shortcut-key),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step-tools code) {
+  background: #eef1f5 !important;
+  border-color: var(--docs-border) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-section pre) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-section pre code) {
+  color: var(--docs-text-primary) !important;
+}
+
 .mobile-docs__article :deep(h1) {
   font-size: 1.6em;
   font-weight: 700;
@@ -1219,7 +1236,7 @@ onBeforeUnmount(() => {
   background: var(--docs-surface);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -4px 20px var(--docs-panel-shadow);
   z-index: 100;
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
@@ -1299,32 +1316,6 @@ onBeforeUnmount(() => {
   font-family: var(--gui-font-mono, monospace);
 }
 
-.mobile-docs__theme-toggle {
-  display: flex;
-  gap: 8px;
-}
-
-.mobile-docs__theme-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--docs-border);
-  background: transparent;
-  color: var(--docs-text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  min-height: 44px;
-  transition: all 0.15s;
-}
-
-.mobile-docs__theme-btn--active {
-  background: var(--docs-accent);
-  color: var(--gui-text-primary, #ffffff);
-  border-color: var(--docs-accent);
-}
-
 /* ── TOC Panel ──────────────────────────────────────────────────────── */
 .mobile-docs__toc-panel {
   position: absolute;
@@ -1335,7 +1326,7 @@ onBeforeUnmount(() => {
   background: var(--docs-surface);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -4px 20px var(--docs-panel-shadow);
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -1427,16 +1418,17 @@ onBeforeUnmount(() => {
 }
 
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
-.light .mobile-docs__card {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+.mobile-docs--light .mobile-docs__card {
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
 }
-.light .mobile-docs__card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.mobile-docs--light .mobile-docs__card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
-.light .mobile-docs__search-bar {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+.mobile-docs--light .mobile-docs__search-bar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
 }
-.light .mobile-docs__filter-chips {
+.mobile-docs--light .mobile-docs__filter-scroll {
   box-shadow: none;
 }
 </style>

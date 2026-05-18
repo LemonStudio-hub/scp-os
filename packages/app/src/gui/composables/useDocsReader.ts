@@ -4,8 +4,8 @@
  * 搜索筛选、收藏管理、阅读进度保存、HTML 清洗等功能。
  */
 
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { config } from '../../config/index'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useThemeStore } from '../stores/themeStore'
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -20,6 +20,7 @@ export interface SCPArticle {
   series: number
   rating: number
   url: string
+  contentPath?: string
 }
 
 export interface SCPArticleDetail extends SCPArticle {
@@ -37,9 +38,20 @@ export interface TOCItem {
 
 export type ReaderTheme = 'dark' | 'light'
 
+interface LocalDocsManifest {
+  generatedAt?: string
+  source?: string
+  scp?: SCPArticle[]
+  goi?: SCPArticle[]
+  tales?: SCPArticle[]
+  hubs?: SCPArticle[]
+}
+
 // ── Constants ────────────────────────────────────────────────────────
 
 const TIMEOUT_MS = 20000
+const LOCAL_DOCS_BASE = '/docs-data'
+const LOCAL_DOCS_MANIFEST = `${LOCAL_DOCS_BASE}/manifest.json`
 
 const GUIDE_HTML = `<style>
 .guide-wrap{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.75;max-width:760px;margin:0 auto;padding:0 20px 40px;color:#c9d1d9}
@@ -415,7 +427,6 @@ export const GUIDE_SCP_NUMBER = 'GUIDE'
 
 // ── HTTP Helper ──────────────────────────────────────────────────────
 
-const API_BASE = config.api.workerUrl
 const PAGE_SIZE = 12
 
 async function fetchWithTimeout(url: string, timeoutMs: number = TIMEOUT_MS): Promise<Response> {
@@ -432,6 +443,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number = TIMEOUT_MS): Pr
 // ── Composable ───────────────────────────────────────────────────────
 
 export function useDocsReader() {
+  const themeStore = useThemeStore()
   const articles = ref<SCPArticle[]>([])
   const filteredArticles = ref<SCPArticle[]>([])
   const currentArticle = ref<SCPArticleDetail | null>(null)
@@ -444,15 +456,23 @@ export function useDocsReader() {
   const selectedSeries = ref<number | null>(null)
   const selectedClass = ref<SCPObjectClass | null>(null)
   const docType = ref<DocType>('scp')
-  const readerTheme = ref<ReaderTheme>('dark')
+  const readerTheme = ref<ReaderTheme>(themeStore.currentTheme.isDark ? 'dark' : 'light')
   const fontSize = ref(15)
   const isFavorited = ref(false)
   const cacheStatus = ref('')
   const isOnline = ref(navigator.onLine)
+  const localDocsLoaded = ref(false)
+  const localDocs = ref<Required<Pick<LocalDocsManifest, 'scp' | 'goi' | 'tales' | 'hubs'>>>({
+    scp: [],
+    goi: [],
+    tales: [],
+    hubs: [],
+  })
 
   let currentPage = 1
   let searchDebounce: ReturnType<typeof setTimeout> | null = null
   let progressInterval: ReturnType<typeof setInterval> | null = null
+  let localDocsPromise: Promise<void> | null = null
 
   const GUIDE_DETAIL: SCPArticleDetail = {
     ...GUIDE_ARTICLE,
@@ -486,6 +506,63 @@ export function useDocsReader() {
     return toc
   }
 
+  function normalizeArticle(item: Partial<SCPArticle>): SCPArticle {
+    return {
+      scpNumber: String(item.scpNumber || ''),
+      title: String(item.title || ''),
+      objectClass: item.objectClass || 'Unknown',
+      series: Number(item.series || 0),
+      rating: Number(item.rating || 0),
+      url: String(item.url || ''),
+      contentPath: item.contentPath,
+    }
+  }
+
+  async function loadLocalDocs() {
+    if (localDocsLoaded.value) return
+    if (!localDocsPromise) {
+      localDocsPromise = (async () => {
+        const res = await fetchWithTimeout(LOCAL_DOCS_MANIFEST)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const manifest = (await res.json()) as LocalDocsManifest
+        localDocs.value = {
+          scp: (manifest.scp || []).map(normalizeArticle),
+          goi: (manifest.goi || []).map(normalizeArticle),
+          tales: (manifest.tales || []).map(normalizeArticle),
+          hubs: (manifest.hubs || []).map(normalizeArticle),
+        }
+        localDocsLoaded.value = true
+      })()
+    }
+    await localDocsPromise
+  }
+
+  function currentLocalArticles(): SCPArticle[] {
+    return localDocs.value[docType.value] || []
+  }
+
+  function articleMatchesQuery(article: SCPArticle, query: string): boolean {
+    if (!query) return true
+    const haystack = [article.scpNumber, article.title, article.url].join(' ').toLowerCase()
+    return haystack.includes(query)
+  }
+
+  function filteredLocalArticles(): SCPArticle[] {
+    const query = searchQuery.value.trim().toLowerCase()
+    return currentLocalArticles().filter((article) => {
+      if (!articleMatchesQuery(article, query)) return false
+      if (docType.value !== 'scp') return true
+      if (selectedClass.value && article.objectClass !== selectedClass.value) return false
+      if (selectedSeries.value && article.series !== selectedSeries.value) return false
+      return true
+    })
+  }
+
+  function localContentUrl(article: SCPArticle): string {
+    if (!article.contentPath) throw new Error('Local content path missing')
+    return `${LOCAL_DOCS_BASE}/${article.contentPath}`
+  }
+
   async function fetchArticles(page = 1) {
     if (page === 1) {
       loading.value = true
@@ -496,60 +573,10 @@ export function useDocsReader() {
     error.value = null
 
     try {
+      await loadLocalDocs()
       const offset = (page - 1) * PAGE_SIZE
-      const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
-      if (searchQuery.value) params.set('q', searchQuery.value)
-
-      let endpoint = '/docs/items'
-      let mapper: (item: any) => SCPArticle
-
-      if (docType.value === 'scp') {
-        if (selectedClass.value) params.set('scp_class', selectedClass.value)
-        if (selectedSeries.value) params.set('series', String(selectedSeries.value))
-        mapper = (item: any) => ({
-          scpNumber: item.scp_number || '',
-          title: item.title || '',
-          objectClass: item.object_class || 'Unknown',
-          series: item.series ? Number(item.series) : 0,
-          rating: item.rating || 0,
-          url: '',
-        })
-      } else if (docType.value === 'goi') {
-        endpoint = '/docs/goi'
-        mapper = (item: any) => ({
-          scpNumber: item.link || String(item.id) || '',
-          title: item.title || '',
-          objectClass: 'Unknown',
-          series: 0,
-          rating: item.rating || 0,
-          url: item.link || '',
-        })
-      } else if (docType.value === 'tales') {
-        endpoint = '/docs/tales'
-        mapper = (item: any) => ({
-          scpNumber: item.link || String(item.id) || '',
-          title: item.title || '',
-          objectClass: 'Unknown',
-          series: 0,
-          rating: item.rating || 0,
-          url: item.link || '',
-        })
-      } else {
-        endpoint = '/docs/hubs'
-        mapper = (item: any) => ({
-          scpNumber: item.link || String(item.id) || '',
-          title: item.title || '',
-          objectClass: 'Unknown',
-          series: 0,
-          rating: 0,
-          url: item.link || '',
-        })
-      }
-
-      const res = await fetchWithTimeout(`${API_BASE}${endpoint}?${params}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = await res.json()
-      const list = (data.data || []).map(mapper)
+      const allMatching = filteredLocalArticles()
+      const list = allMatching.slice(offset, offset + PAGE_SIZE)
 
       if (page === 1) {
         filteredArticles.value = list
@@ -559,7 +586,7 @@ export function useDocsReader() {
         articles.value.push(...list)
       }
       currentPage = page
-      hasMore.value = data.pagination?.has_more ?? list.length >= PAGE_SIZE
+      hasMore.value = offset + PAGE_SIZE < allMatching.length
     } catch (e) {
       error.value = e instanceof Error ? e.message : '加载失败'
     } finally {
@@ -607,6 +634,7 @@ export function useDocsReader() {
   async function selectArticle(scpNumber: string, url?: string) {
     loadingDetail.value = true
     error.value = null
+    cacheStatus.value = ''
 
     try {
       if (docType.value !== 'scp') {
@@ -619,36 +647,37 @@ export function useDocsReader() {
         return
       }
 
-      const [contentRes, itemRes] = await Promise.all([
-        fetchWithTimeout(`${API_BASE}/docs/content/${encodeURIComponent(scpNumber)}`),
-        fetchWithTimeout(`${API_BASE}/docs/item/${encodeURIComponent(scpNumber)}`),
-      ])
-      if (!contentRes.ok) throw new Error(`HTTP ${contentRes.status}`)
+      await loadLocalDocs()
+      const article = localDocs.value.scp.find(
+        (item) =>
+          item.scpNumber === scpNumber ||
+          Number(item.scpNumber) === Number(scpNumber.replace(/^SCP-/i, ''))
+      )
+      if (!article) throw new Error(`Local document not found: ${scpNumber}`)
 
-      const contentData = await contentRes.json()
-      const rawHtml = contentData.data?.content || ''
+      cacheStatus.value = 'loading'
+      const contentRes = await fetchWithTimeout(localContentUrl(article))
+      if (!contentRes.ok) throw new Error(`HTTP ${contentRes.status}`)
+      const detail = (await contentRes.json()) as SCPArticleDetail
+      const rawHtml = detail.content || detail.rawHtml || ''
       const sanitized = sanitizeHtml(rawHtml)
       const toc = extractToc(sanitized)
 
-      let meta: any = {}
-      if (itemRes.ok) {
-        const itemData = await itemRes.json()
-        meta = itemData.data || {}
-      }
-
       currentArticle.value = {
-        scpNumber: meta.scp_number || scpNumber,
-        title: meta.title || '',
-        objectClass: meta.object_class || 'Unknown',
-        series: meta.series ? Number(meta.series) : 0,
-        rating: meta.rating || 0,
-        url: '',
+        scpNumber: detail.scpNumber || article.scpNumber,
+        title: detail.title || article.title,
+        objectClass: detail.objectClass || article.objectClass,
+        series: detail.series || article.series,
+        rating: detail.rating || article.rating,
+        url: detail.url || article.url,
         content: rawHtml,
         rawHtml: sanitized,
         toc,
-        wordCount: rawHtml.length,
+        wordCount: detail.wordCount || rawHtml.length,
       }
+      cacheStatus.value = 'cached'
     } catch (e) {
+      cacheStatus.value = ''
       error.value = e instanceof Error ? e.message : '加载详情失败'
     } finally {
       loadingDetail.value = false
@@ -661,10 +690,6 @@ export function useDocsReader() {
 
   function clearArticle() {
     currentArticle.value = null
-  }
-
-  function toggleTheme() {
-    readerTheme.value = readerTheme.value === 'dark' ? 'light' : 'dark'
   }
 
   function increaseFontSize() {
@@ -715,6 +740,13 @@ export function useDocsReader() {
     isOnline.value = false
   }
 
+  watch(
+    () => themeStore.currentTheme.isDark,
+    (isDark) => {
+      readerTheme.value = isDark ? 'dark' : 'light'
+    }
+  )
+
   onMounted(() => {
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
@@ -761,7 +793,6 @@ export function useDocsReader() {
     selectArticle,
     selectGuide,
     clearArticle,
-    toggleTheme,
     increaseFontSize,
     decreaseFontSize,
     toggleFavorite,
