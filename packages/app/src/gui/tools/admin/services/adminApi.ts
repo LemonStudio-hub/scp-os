@@ -91,6 +91,9 @@ export async function batchUserOperation(token: string, action: string, ids: num
 
 export async function exportUsers(token: string, format: 'csv' | 'json') {
   const response = await adminFetch(`/api/admin/users/export?format=${format}`, token)
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
+  }
   return response.json()
 }
 

@@ -804,8 +804,34 @@ async function itemById(c: Ctx, table: string): Promise<Response> {
   return row ? json({ success: true, data: row }) : json({ success: false, error: 'Not found' }, 404)
 }
 
+function convertToCsv(rows: Record<string, unknown>[]): string {
+  if (!rows.length) return '﻿'
+  const headers = Object.keys(rows[0])
+  const lines = [
+    headers.join(','),
+    ...rows.map((row) =>
+      headers
+        .map((h) => {
+          const val = String(row[h] ?? '')
+          if (/[",\n\r]/.test(val)) return `"${val.replace(/"/g, '""')}"`
+          return val
+        })
+        .join(','),
+    ),
+  ]
+  return '﻿' + lines.join('\n')
+}
+
 async function adminExport(c: Ctx, table: string): Promise<Response> {
-  return json({ success: true, data: await all(c.env.SCP_DB, `SELECT * FROM ${safeTable(table)} LIMIT 10000`), format: c.req.query('format') || 'json' })
+  const format = c.req.query('format') || 'json'
+  if (format !== 'json' && format !== 'csv') {
+    return json({ success: false, error: 'Invalid format. Use json or csv' }, 400)
+  }
+  const data = await all<Record<string, unknown>>(c.env.SCP_DB, `SELECT * FROM ${safeTable(table)} LIMIT 10000`)
+  if (format === 'csv') {
+    return json({ success: true, data: convertToCsv(data), format: 'csv' })
+  }
+  return json({ success: true, data, format: 'json' })
 }
 
 async function updateById(c: Ctx, table: string): Promise<Response> {
