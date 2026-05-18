@@ -858,9 +858,39 @@ async function batchUsers(c: Ctx): Promise<Response> {
 }
 
 async function batchContent(c: Ctx, table: string): Promise<Response> {
-  const body = await readJson<{ action?: string; ids?: number[] }>(c.req.raw)
-  if (body?.action === 'delete') for (const id of body.ids || []) await run(c.env.SCP_DB, `DELETE FROM ${safeTable(table)} WHERE id = ?`, [id])
-  return json({ success: true })
+  const body = await readJson<{ action?: string; ids?: number[]; status?: string; category?: string }>(c.req.raw)
+  const action = body?.action
+  const ids = body?.ids || []
+  const supportedActions = ['delete', 'update_status', 'move_category']
+
+  if (!action || !supportedActions.includes(action)) {
+    return json({ success: false, error: `Unsupported action. Supported: ${supportedActions.join(', ')}` }, 400)
+  }
+  if (!ids.length) {
+    return json({ success: false, error: 'No IDs provided' }, 400)
+  }
+
+  const safe = safeTable(table)
+  try {
+    if (action === 'delete') {
+      for (const id of ids) await run(c.env.SCP_DB, `DELETE FROM ${safe} WHERE id = ?`, [id])
+    } else if (action === 'update_status') {
+      const status = body?.status
+      if (!status) return json({ success: false, error: 'Missing status parameter' }, 400)
+      for (const id of ids) await run(c.env.SCP_DB, `UPDATE ${safe} SET status = ? WHERE id = ?`, [status, id])
+    } else if (action === 'move_category') {
+      const category = body?.category
+      if (!category) return json({ success: false, error: 'Missing category parameter' }, 400)
+      for (const id of ids) await run(c.env.SCP_DB, `UPDATE ${safe} SET category = ? WHERE id = ?`, [category, id])
+    }
+    return json({ success: true })
+  } catch (error) {
+    const msg = (error as Error).message || ''
+    if (msg.includes('no such column')) {
+      return json({ success: false, error: `Table ${safe} does not support ${action}` }, 400)
+    }
+    return json({ success: false, error: msg }, 500)
+  }
 }
 
 async function importContent(c: Ctx, table: string): Promise<Response> {

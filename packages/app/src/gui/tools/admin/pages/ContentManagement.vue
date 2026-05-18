@@ -303,9 +303,18 @@ const activeColumns = computed(() => activeTabConfig.value.columns)
 const editableFields = computed(() => activeTabConfig.value.editFields)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize)))
 
-const batchActions = computed<BatchAction[]>(() => [
-  { key: 'delete', label: t('admin.content.batchDelete'), icon: 'delete', type: 'danger' },
-])
+const batchActions = computed<BatchAction[]>(() => {
+  const actions: BatchAction[] = [
+    { key: 'delete', label: t('admin.content.batchDelete'), icon: 'delete', type: 'danger' },
+  ]
+  if (activeTab.value === 'feedbacks') {
+    actions.push(
+      { key: 'update_status', label: t('admin.content.batchUpdateStatus'), icon: 'archive', type: 'warning' },
+      { key: 'move_category', label: t('admin.content.batchMoveCategory'), icon: 'download', type: 'default' }
+    )
+  }
+  return actions
+})
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -418,26 +427,31 @@ async function handleDelete() {
 }
 
 async function handleBatchAction(key: string) {
-  if (key === 'delete') {
-    const token = adminStore.token
-    if (!token) return
-    try {
-      const res = await adminApi.batchContentOperation(
-        token,
-        activeTab.value,
-        'delete',
-        selectedIds.value
-      )
-      if (res.success) {
-        toast.success(t('admin.content.batchDeleteSuccess'))
-        selectedIds.value = []
-        fetchContent()
-      } else {
-        toast.error(res.error || t('admin.content.batchDeleteError'))
-      }
-    } catch {
-      toast.error(t('admin.content.batchDeleteError'))
+  const token = adminStore.token
+  if (!token) return
+
+  const extra: Record<string, string> = {}
+  if (key === 'update_status') {
+    const status = window.prompt(t('admin.content.promptStatus') || 'Enter new status:')
+    if (!status) return
+    extra.status = status
+  } else if (key === 'move_category') {
+    const category = window.prompt(t('admin.content.promptCategory') || 'Enter new category:')
+    if (!category) return
+    extra.category = category
+  }
+
+  try {
+    const res = await adminApi.batchContentOperation(token, activeTab.value, key, selectedIds.value, extra)
+    if (res.success) {
+      toast.success(t('admin.content.batchSuccess'))
+      selectedIds.value = []
+      fetchContent()
+    } else {
+      toast.error(res.error || t('admin.content.batchError'))
     }
+  } catch {
+    toast.error(t('admin.content.batchError'))
   }
 }
 

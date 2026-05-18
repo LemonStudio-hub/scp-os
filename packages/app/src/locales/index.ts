@@ -516,6 +516,17 @@ export const en = {
   'pc.batteryCharging': 'Charging: {pct}%',
   'pc.batteryLevel': 'Battery: {pct}%',
 
+  // ── Admin ───────────────────────────────────────────────────────────
+  'admin.content.batchDelete': 'Batch Delete',
+  'admin.content.batchUpdateStatus': 'Update Status',
+  'admin.content.batchMoveCategory': 'Move Category',
+  'admin.content.batchDeleteSuccess': 'Batch delete successful',
+  'admin.content.batchDeleteError': 'Batch delete failed',
+  'admin.content.batchSuccess': 'Batch operation successful',
+  'admin.content.batchError': 'Batch operation failed',
+  'admin.content.promptStatus': 'Enter new status (e.g. published, hidden):',
+  'admin.content.promptCategory': 'Enter new category (e.g. general, bug, feature):',
+
   // ── Languages ───────────────────────────────────────────────────────
   'lang.en': 'English',
   'lang.zhCN': '简体中文',
@@ -1030,6 +1041,17 @@ export const zhCN: Record<string, string> = {
   'pc.batteryUnavailable': '电池状态不可用',
   'pc.batteryCharging': '充电中: {pct}%',
   'pc.batteryLevel': '电池: {pct}%',
+
+  // ── Admin ───────────────────────────────────────────────────────────
+  'admin.content.batchDelete': '批量删除',
+  'admin.content.batchUpdateStatus': '更新状态',
+  'admin.content.batchMoveCategory': '移动分类',
+  'admin.content.batchDeleteSuccess': '批量删除成功',
+  'admin.content.batchDeleteError': '批量删除失败',
+  'admin.content.batchSuccess': '批量操作成功',
+  'admin.content.batchError': '批量操作失败',
+  'admin.content.promptStatus': '输入新状态（如 published, hidden）：',
+  'admin.content.promptCategory': '输入新分类（如 general, bug, feature）：',
 
   // ── Languages ───────────────────────────────────────────────────────
   'lang.en': 'English',

@@ -135,11 +135,12 @@ export async function batchContentOperation(
   token: string,
   type: string,
   action: string,
-  ids: number[]
+  ids: number[],
+  extra: Record<string, string> = {}
 ) {
   const response = await adminFetch(`/api/admin/content/${type}/batch`, token, {
     method: 'POST',
-    body: JSON.stringify({ action, ids }),
+    body: JSON.stringify({ action, ids, ...extra }),
   })
   return response.json()
 }
