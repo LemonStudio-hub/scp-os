@@ -893,16 +893,119 @@ async function batchContent(c: Ctx, table: string): Promise<Response> {
   }
 }
 
+interface ImportSchema {
+  required: string[]
+  uniqueField?: string
+}
+
+const importSchemas: Record<string, ImportSchema> = {
+  scp_items: { required: ['scp_number', 'title'], uniqueField: 'scp_number' },
+  scp_tales: { required: ['link', 'title'], uniqueField: 'link' },
+  scp_goi: { required: ['link', 'title'], uniqueField: 'link' },
+  scp_hubs: { required: ['link', 'title'], uniqueField: 'link' },
+  feedbacks: { required: ['user_id', 'title', 'content'] },
+}
+
+function validateImportRow(row: Record<string, unknown>, schema: ImportSchema): { valid: boolean; error?: string } {
+  for (const field of schema.required) {
+    const value = row[field]
+    if (value === undefined || value === null || value === '') {
+      return { valid: false, error: `Missing required field: ${field}` }
+    }
+  }
+  const illegalKeys = Object.keys(row).filter((key) => !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+  if (illegalKeys.length) {
+    return { valid: false, error: `Illegal field names: ${illegalKeys.join(', ')}` }
+  }
+  return { valid: true }
+}
+
 async function importContent(c: Ctx, table: string): Promise<Response> {
   const body = await readJson<{ data?: Record<string, unknown>[] }>(c.req.raw)
-  let imported = 0
-  for (const row of body?.data || []) {
-    const entries = Object.entries(row).filter(([key]) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
-    if (!entries.length) continue
-    await run(c.env.SCP_DB, `INSERT INTO ${safeTable(table)} (${entries.map(([key]) => key).join(', ')}) VALUES (${entries.map(() => '?').join(', ')})`, entries.map(([, value]) => value))
-    imported++
+  const rows = body?.data || []
+
+  if (!rows.length) {
+    return json({ success: false, error: 'No data provided' }, 400)
   }
-  return json({ success: true, imported })
+
+  const safe = safeTable(table)
+  const schema = importSchemas[safe] || { required: [] }
+  const results: { success: boolean; error?: string }[] = new Array(rows.length)
+  const validRows: { index: number; row: Record<string, unknown> }[] = []
+
+  // Step 1: 逐条字段校验
+  for (let i = 0; i < rows.length; i++) {
+    const validation = validateImportRow(rows[i], schema)
+    if (!validation.valid) {
+      results[i] = { success: false, error: validation.error }
+    } else {
+      validRows.push({ index: i, row: rows[i] })
+    }
+  }
+
+  // Step 2: 唯一性冲突检测
+  if (schema.uniqueField && validRows.length) {
+    const values = validRows.map((r) => r.row[schema.uniqueField!]).filter((v) => v !== undefined && v !== null)
+    if (values.length) {
+      const placeholders = values.map(() => '?').join(', ')
+      const existing = await all<Record<string, unknown>>(
+        c.env.SCP_DB,
+        `SELECT ${schema.uniqueField} FROM ${safe} WHERE ${schema.uniqueField} IN (${placeholders})`,
+        values,
+      )
+      const existingSet = new Set(existing.map((r) => r[schema.uniqueField!]))
+      const duplicates = new Set<unknown>()
+      for (let i = validRows.length - 1; i >= 0; i--) {
+        const value = validRows[i].row[schema.uniqueField!]
+        if (existingSet.has(value) || duplicates.has(value)) {
+          results[validRows[i].index] = {
+            success: false,
+            error: `${schema.uniqueField} "${value}" already exists`,
+          }
+          duplicates.add(value)
+          validRows.splice(i, 1)
+        } else {
+          duplicates.add(value)
+        }
+      }
+    }
+  }
+
+  // Step 3: batch 插入
+  let inserted = 0
+  if (validRows.length) {
+    try {
+      const statements = validRows.map(({ row }) => {
+        const entries = Object.entries(row).filter(([key]) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+        return c.env.SCP_DB
+          .prepare(`INSERT INTO ${safe} (${entries.map(([key]) => key).join(', ')}) VALUES (${entries.map(() => '?').join(', ')})`)
+          .bind(...entries.map(([, value]) => value))
+      })
+      await c.env.SCP_DB.batch(statements)
+      inserted = validRows.length
+    } catch (error) {
+      const msg = (error as Error).message || 'Batch insert failed'
+      for (const { index } of validRows) {
+        results[index] = { success: false, error: msg }
+      }
+      validRows.length = 0
+    }
+  }
+
+  for (const { index } of validRows) {
+    if (!results[index]) results[index] = { success: true }
+  }
+
+  const successCount = results.filter((r) => r.success).length
+  const failCount = results.filter((r) => !r.success).length
+
+  return json({
+    success: failCount === 0,
+    imported: successCount,
+    failed: failCount,
+    total: rows.length,
+    details: results.map((r, i) => ({ index: i, ...r })).filter((r) => !r.success),
+  })
 }
 
 async function setUserBan(c: Ctx, banned: boolean): Promise<Response> {

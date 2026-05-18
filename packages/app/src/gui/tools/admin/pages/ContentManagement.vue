@@ -497,11 +497,17 @@ async function handleImport() {
     }
     const res = await adminApi.importContent(token, activeTab.value, parsed)
     if (res.success) {
-      toast.success(t('admin.content.importSuccess'))
+      toast.success(t('admin.content.importSuccess', { count: res.imported }))
+      importModalVisible.value = false
+      fetchContent()
+    } else if (res.imported > 0) {
+      toast.warning(
+        t('admin.content.importPartial', { imported: res.imported, failed: res.failed }),
+      )
       importModalVisible.value = false
       fetchContent()
     } else {
-      toast.error(res.error || t('admin.content.importError'))
+      toast.error(res.error || res.details?.[0]?.error || t('admin.content.importError'))
     }
   } catch {
     toast.error(t('admin.content.importJsonError'))

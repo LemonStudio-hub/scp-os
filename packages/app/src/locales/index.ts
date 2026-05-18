@@ -526,6 +526,10 @@ export const en = {
   'admin.content.batchError': 'Batch operation failed',
   'admin.content.promptStatus': 'Enter new status (e.g. published, hidden):',
   'admin.content.promptCategory': 'Enter new category (e.g. general, bug, feature):',
+  'admin.content.importSuccess': 'Import successful ({count} items)',
+  'admin.content.importPartial': 'Import partially successful: {imported} imported, {failed} failed',
+  'admin.content.importError': 'Import failed',
+  'admin.content.importJsonError': 'Invalid JSON format',
 
   // ── Languages ───────────────────────────────────────────────────────
   'lang.en': 'English',
@@ -1052,6 +1056,10 @@ export const zhCN: Record<string, string> = {
   'admin.content.batchError': '批量操作失败',
   'admin.content.promptStatus': '输入新状态（如 published, hidden）：',
   'admin.content.promptCategory': '输入新分类（如 general, bug, feature）：',
+  'admin.content.importSuccess': '导入成功（{count} 项）',
+  'admin.content.importPartial': '部分导入成功：{imported} 项导入，{failed} 项失败',
+  'admin.content.importError': '导入失败',
+  'admin.content.importJsonError': 'JSON 格式无效',
 
   // ── Languages ───────────────────────────────────────────────────────
   'lang.en': 'English',
