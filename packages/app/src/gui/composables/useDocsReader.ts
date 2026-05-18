@@ -11,6 +11,8 @@ import { config } from '../../config/index'
 
 export type SCPObjectClass = 'Safe' | 'Euclid' | 'Keter' | 'Thaumiel' | 'Neutralized' | 'Unknown'
 
+export type DocType = 'scp' | 'goi' | 'tales' | 'hubs'
+
 export interface SCPArticle {
   scpNumber: string
   title: string
@@ -393,6 +395,13 @@ export const CLASS_OPTIONS: { label: string; value: SCPObjectClass }[] = [
   { label: 'Neutralized', value: 'Neutralized' },
 ]
 
+export const DOC_TYPE_OPTIONS: { label: string; value: DocType }[] = [
+  { label: 'SCP', value: 'scp' },
+  { label: 'GOI', value: 'goi' },
+  { label: 'Tales', value: 'tales' },
+  { label: 'Hubs', value: 'hubs' },
+]
+
 export const GUIDE_ARTICLE: SCPArticle = {
   scpNumber: 'GUIDE',
   title: 'SCP-OS 使用指南',
@@ -434,6 +443,7 @@ export function useDocsReader() {
   const searchQuery = ref('')
   const selectedSeries = ref<number | null>(null)
   const selectedClass = ref<SCPObjectClass | null>(null)
+  const docType = ref<DocType>('scp')
   const readerTheme = ref<ReaderTheme>('dark')
   const fontSize = ref(15)
   const isFavorited = ref(false)
@@ -488,21 +498,58 @@ export function useDocsReader() {
     try {
       const offset = (page - 1) * PAGE_SIZE
       const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
-      if (selectedClass.value) params.set('scp_class', selectedClass.value)
-      if (selectedSeries.value) params.set('series', String(selectedSeries.value))
       if (searchQuery.value) params.set('q', searchQuery.value)
 
-      const res = await fetchWithTimeout(`${API_BASE}/docs/items?${params}`)
+      let endpoint = '/docs/items'
+      let mapper: (item: any) => SCPArticle
+
+      if (docType.value === 'scp') {
+        if (selectedClass.value) params.set('scp_class', selectedClass.value)
+        if (selectedSeries.value) params.set('series', String(selectedSeries.value))
+        mapper = (item: any) => ({
+          scpNumber: item.scp_number || '',
+          title: item.title || '',
+          objectClass: item.object_class || 'Unknown',
+          series: item.series ? Number(item.series) : 0,
+          rating: item.rating || 0,
+          url: '',
+        })
+      } else if (docType.value === 'goi') {
+        endpoint = '/docs/goi'
+        mapper = (item: any) => ({
+          scpNumber: item.link || String(item.id) || '',
+          title: item.title || '',
+          objectClass: 'Unknown',
+          series: 0,
+          rating: item.rating || 0,
+          url: item.link || '',
+        })
+      } else if (docType.value === 'tales') {
+        endpoint = '/docs/tales'
+        mapper = (item: any) => ({
+          scpNumber: item.link || String(item.id) || '',
+          title: item.title || '',
+          objectClass: 'Unknown',
+          series: 0,
+          rating: item.rating || 0,
+          url: item.link || '',
+        })
+      } else {
+        endpoint = '/docs/hubs'
+        mapper = (item: any) => ({
+          scpNumber: item.link || String(item.id) || '',
+          title: item.title || '',
+          objectClass: 'Unknown',
+          series: 0,
+          rating: 0,
+          url: item.link || '',
+        })
+      }
+
+      const res = await fetchWithTimeout(`${API_BASE}${endpoint}?${params}`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
-      const list = (data.data || []).map((item: any) => ({
-        scpNumber: item.scp_number || '',
-        title: item.title || '',
-        objectClass: item.object_class || 'Unknown',
-        series: item.series ? Number(item.series) : 0,
-        rating: item.rating || 0,
-        url: '',
-      }))
+      const list = (data.data || []).map(mapper)
 
       if (page === 1) {
         filteredArticles.value = list
@@ -541,17 +588,37 @@ export function useDocsReader() {
     fetchArticles(1)
   }
 
+  function setDocType(value: DocType) {
+    docType.value = value
+    selectedSeries.value = null
+    selectedClass.value = null
+    searchQuery.value = ''
+    hasMore.value = true
+    currentArticle.value = null
+    fetchArticles(1)
+  }
+
   function loadMore() {
     if (!loadingMore.value && hasMore.value) {
       fetchArticles(currentPage + 1)
     }
   }
 
-  async function selectArticle(scpNumber: string) {
+  async function selectArticle(scpNumber: string, url?: string) {
     loadingDetail.value = true
     error.value = null
 
     try {
+      if (docType.value !== 'scp') {
+        if (url) {
+          window.open(url, '_blank')
+        } else {
+          error.value = '链接不可用'
+        }
+        loadingDetail.value = false
+        return
+      }
+
       const [contentRes, itemRes] = await Promise.all([
         fetchWithTimeout(`${API_BASE}/docs/content/${encodeURIComponent(scpNumber)}`),
         fetchWithTimeout(`${API_BASE}/docs/item/${encodeURIComponent(scpNumber)}`),
@@ -678,8 +745,10 @@ export function useDocsReader() {
     isFavorited,
     cacheStatus,
     isOnline,
+    docType,
     SERIES_OPTIONS,
     CLASS_OPTIONS,
+    DOC_TYPE_OPTIONS,
     OBJECT_CLASS_COLORS,
     GUIDE_ARTICLE,
     GUIDE_SCP_NUMBER,
@@ -687,6 +756,7 @@ export function useDocsReader() {
     search,
     setSeries,
     setObjectClass,
+    setDocType,
     loadMore,
     selectArticle,
     selectGuide,

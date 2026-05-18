@@ -23,8 +23,21 @@
           />
         </div>
 
+        <!-- Doc Type Tabs -->
+        <div class="pc-docs__doc-type-tabs">
+          <button
+            v-for="dt in reader.DOC_TYPE_OPTIONS"
+            :key="dt.value"
+            class="pc-docs__doc-type-tab"
+            :class="{ 'pc-docs__doc-type-tab--active': reader.docType.value === dt.value }"
+            @click="reader.setDocType(dt.value)"
+          >
+            {{ dt.label }}
+          </button>
+        </div>
+
         <!-- Filters -->
-        <div class="pc-docs__filters">
+        <div v-if="reader.docType.value === 'scp'" class="pc-docs__filters">
           <div class="pc-docs__filter-group">
             <select
               :value="reader.selectedSeries.value ?? ''"
@@ -125,12 +138,13 @@
                 'pc-docs__item--active':
                   reader.currentArticle.value?.scpNumber === article.scpNumber,
               }"
-              @click="reader.selectArticle(article.scpNumber)"
+              @click="reader.selectArticle(article.scpNumber, article.url)"
             >
               <div class="pc-docs__item-number">{{ article.scpNumber }}</div>
               <div class="pc-docs__item-body">
                 <span class="pc-docs__item-title">{{ article.title }}</span>
                 <span
+                  v-if="reader.docType.value === 'scp'"
                   class="pc-docs__item-class"
                   :style="{ color: reader.OBJECT_CLASS_COLORS[article.objectClass] }"
                   >{{ article.objectClass }}</span
@@ -507,11 +521,13 @@ onBeforeUnmount(() => {
   --docs-bg: #0e0e0e;
   --docs-surface: #1a1a1c;
   --docs-surface-hover: #2c2c2e;
+  --docs-bg-hover: #2c2c2e;
   --docs-border: rgba(255, 255, 255, 0.06);
   --docs-text-primary: #f0f0f0;
   --docs-text-secondary: #a8a8a8;
   --docs-text-tertiary: #6a6a6a;
   --docs-accent: #8e8e93;
+  --docs-accent-soft: rgba(142, 142, 147, 0.12);
   --docs-content-bg: #111113;
   --docs-content-text: #e0e0e0;
 
@@ -527,11 +543,13 @@ onBeforeUnmount(() => {
   --docs-bg: #f5f5f7;
   --docs-surface: #ffffff;
   --docs-surface-hover: #e8e8ed;
+  --docs-bg-hover: #e8e8ed;
   --docs-border: rgba(0, 0, 0, 0.08);
   --docs-text-primary: #1d1d1f;
   --docs-text-secondary: #6e6e73;
   --docs-text-tertiary: #86868b;
   --docs-accent: #007aff;
+  --docs-accent-soft: rgba(0, 122, 255, 0.12);
   --docs-content-bg: #ffffff;
   --docs-content-text: #1d1d1f;
 }
@@ -582,6 +600,43 @@ onBeforeUnmount(() => {
 
 .pc-docs__search-input::placeholder {
   color: var(--docs-text-tertiary);
+}
+
+/* ── Doc Type Tabs ──────────────────────────────────────────────────── */
+.pc-docs__doc-type-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--docs-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pc-docs__doc-type-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.pc-docs__doc-type-tab {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--docs-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.pc-docs__doc-type-tab:hover {
+  background: var(--docs-bg-hover);
+  color: var(--docs-text-primary);
+}
+
+.pc-docs__doc-type-tab--active {
+  background: var(--docs-accent-soft);
+  color: var(--docs-accent);
 }
 
 /* ── Filters ────────────────────────────────────────────────────────── */

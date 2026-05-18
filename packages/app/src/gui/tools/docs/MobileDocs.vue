@@ -37,8 +37,21 @@
           />
         </div>
 
+        <!-- Doc Type Tabs -->
+        <div class="mobile-docs__doc-type-tabs">
+          <button
+            v-for="dt in reader.DOC_TYPE_OPTIONS"
+            :key="dt.value"
+            class="mobile-docs__doc-type-tab"
+            :class="{ 'mobile-docs__doc-type-tab--active': reader.docType.value === dt.value }"
+            @click="reader.setDocType(dt.value)"
+          >
+            {{ dt.label }}
+          </button>
+        </div>
+
         <!-- Filter Tags (horizontal scroll) -->
-        <div class="mobile-docs__filter-scroll">
+        <div v-if="reader.docType.value === 'scp'" class="mobile-docs__filter-scroll">
           <div class="mobile-docs__filter-tags">
             <button
               class="mobile-docs__filter-tag"
@@ -195,11 +208,12 @@
               v-for="article in reader.filteredArticles.value"
               :key="article.scpNumber"
               class="mobile-docs__card"
-              @click="openArticle(article.scpNumber)"
+              @click="openArticle(article.scpNumber, article.url)"
             >
               <div class="mobile-docs__card-header">
                 <span class="mobile-docs__card-number">{{ article.scpNumber }}</span>
                 <span
+                  v-if="reader.docType.value === 'scp'"
                   class="mobile-docs__card-class"
                   :style="{
                     background: reader.OBJECT_CLASS_COLORS[article.objectClass] + '20',
@@ -381,7 +395,7 @@
                     :class="{
                       'mobile-docs__theme-btn--active': reader.readerTheme.value === 'dark',
                     }"
-                    @click="reader.readerTheme.value = 'dark'; reader.toggleTheme()"
+                    @click="reader.readerTheme.value = 'dark'"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <path
@@ -398,7 +412,7 @@
                     :class="{
                       'mobile-docs__theme-btn--active': reader.readerTheme.value === 'light',
                     }"
-                    @click="reader.readerTheme.value = 'light'; reader.toggleTheme()"
+                    @click="reader.readerTheme.value = 'light'"
                   >
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                       <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3" />
@@ -588,9 +602,11 @@ function onDetailTouchEnd(e: TouchEvent): void {
 
 // ── Navigation ───────────────────────────────────────────────────────
 
-async function openArticle(scpNumber: string): Promise<void> {
-  await reader.selectArticle(scpNumber)
-  view.value = 'detail'
+async function openArticle(scpNumber: string, url?: string): Promise<void> {
+  await reader.selectArticle(scpNumber, url)
+  if (reader.docType.value === 'scp') {
+    view.value = 'detail'
+  }
 }
 
 async function openGuide(): Promise<void> {
@@ -660,11 +676,13 @@ onBeforeUnmount(() => {
   --docs-bg: #0e0e0e;
   --docs-surface: #1a1a1c;
   --docs-surface-hover: #2c2c2e;
+  --docs-bg-hover: #2c2c2e;
   --docs-border: rgba(255, 255, 255, 0.06);
   --docs-text-primary: #f0f0f0;
   --docs-text-secondary: #a8a8a8;
   --docs-text-tertiary: #6a6a6a;
   --docs-accent: #8e8e93;
+  --docs-accent-soft: rgba(142, 142, 147, 0.12);
   --docs-content-bg: #111113;
   --docs-content-text: #e0e0e0;
   --docs-card-bg: #1c1c1e;
@@ -683,11 +701,13 @@ onBeforeUnmount(() => {
   --docs-bg: #f5f5f7;
   --docs-surface: #ffffff;
   --docs-surface-hover: #e8e8ed;
+  --docs-bg-hover: #e8e8ed;
   --docs-border: rgba(0, 0, 0, 0.08);
   --docs-text-primary: #1d1d1f;
   --docs-text-secondary: #6e6e73;
   --docs-text-tertiary: #86868b;
   --docs-accent: #007aff;
+  --docs-accent-soft: rgba(0, 122, 255, 0.12);
   --docs-content-bg: #ffffff;
   --docs-content-text: #1d1d1f;
   --docs-card-bg: #ffffff;
@@ -736,6 +756,44 @@ onBeforeUnmount(() => {
 
 .mobile-docs__search-input::placeholder {
   color: var(--docs-text-tertiary);
+}
+
+/* ── Doc Type Tabs ──────────────────────────────────────────────────── */
+.mobile-docs__doc-type-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--docs-surface);
+  border-bottom: 0.5px solid var(--docs-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mobile-docs__doc-type-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-docs__doc-type-tab {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--docs-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.mobile-docs__doc-type-tab:hover {
+  background: var(--docs-bg-hover);
+  color: var(--docs-text-primary);
+}
+
+.mobile-docs__doc-type-tab--active {
+  background: var(--docs-accent-soft);
+  color: var(--docs-accent);
 }
 
 /* ── Filter Tags ────────────────────────────────────────────────────── */
