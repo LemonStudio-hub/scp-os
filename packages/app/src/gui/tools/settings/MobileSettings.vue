@@ -241,6 +241,17 @@
           <div class="k-ios-list__item">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">{{ t('settings.cloudStorage') }}</div>
+                <div class="k-ios-list__item-description">{{ formatCloudFiles(cloudQuota) }}</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">{{ formatCloudQuota(cloudQuota) }}</span>
+            </div>
+          </div>
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
                 <div class="k-ios-list__item-label">{{ t('settings.terminalStates') }}</div>
               </div>
             </div>
@@ -456,6 +467,7 @@ import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import { useTerminalStore } from '../../../stores/terminal'
 import { useThemeStore } from '../../stores/themeStore'
+import { useCloudQuota } from '../../composables/useCloudQuota'
 import indexedDBService from '../../../utils/indexedDB'
 
 const { t, locale, availableLocales } = useI18n()
@@ -674,6 +686,17 @@ function resetSettings(): void {
 }
 
 const storageUsed = ref('--')
+const { quota: cloudQuota, refresh: refreshCloudQuota } = useCloudQuota()
+
+function formatCloudQuota(q: typeof cloudQuota.value): string {
+  if (!q) return '—'
+  return `${formatBytes(q.used)} / ${formatBytes(q.max)} (${q.percent}%)`
+}
+
+function formatCloudFiles(q: typeof cloudQuota.value): string {
+  if (!q) return '—'
+  return `${q.count} files`
+}
 
 async function calculateStorageUsed(): Promise<void> {
   let total = 0
@@ -693,6 +716,7 @@ async function calculateStorageUsed(): Promise<void> {
 
 onMounted(() => {
   calculateStorageUsed()
+  refreshCloudQuota()
 })
 
 const terminalStateCount = computed(() => {

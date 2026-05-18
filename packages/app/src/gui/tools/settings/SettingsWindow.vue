@@ -271,6 +271,13 @@
             </div>
             <div class="pc-settings__row">
               <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.cloudStorage') }}</div>
+                <div class="pc-settings__row-description">{{ formatCloudFiles(cloudQuota) }}</div>
+              </div>
+              <div class="pc-settings__row-value">{{ formatCloudQuota(cloudQuota) }}</div>
+            </div>
+            <div class="pc-settings__row">
+              <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.terminalStates') }}</div>
               </div>
               <div class="pc-settings__row-value">{{ terminalStateCount }}</div>
@@ -378,6 +385,7 @@ import PCWindow from '../../components/PCWindow.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import { useTerminalStore } from '../../../stores/terminal'
 import { useThemeStore } from '../../stores/themeStore'
+import { useCloudQuota } from '../../composables/useCloudQuota'
 import indexedDBService from '../../../utils/indexedDB'
 import type { WindowInstance } from '../../types'
 
@@ -544,6 +552,17 @@ const buildDate = computed(() => '2026-04-06')
 
 // Storage stats
 const storageUsed = ref('--')
+const { quota: cloudQuota, refresh: refreshCloudQuota } = useCloudQuota()
+
+function formatCloudQuota(q: typeof cloudQuota.value): string {
+  if (!q) return '—'
+  return `${formatBytes(q.used)} / ${formatBytes(q.max)} (${q.percent}%)`
+}
+
+function formatCloudFiles(q: typeof cloudQuota.value): string {
+  if (!q) return '—'
+  return `${q.count} files`
+}
 
 async function calculateStorageUsed(): Promise<void> {
   let total = 0
@@ -563,6 +582,7 @@ async function calculateStorageUsed(): Promise<void> {
 
 onMounted(() => {
   calculateStorageUsed()
+  refreshCloudQuota()
 })
 
 const terminalStateCount = computed(() => {
