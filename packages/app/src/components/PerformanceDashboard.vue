@@ -306,6 +306,15 @@ onMounted(() => {
       apiService.value.setUserId(authStore.userId)
     }
 
+    watch(
+      () => authStore.userId,
+      (newUserId) => {
+        if (apiService.value && newUserId) {
+          apiService.value.setUserId(newUserId)
+        }
+      },
+    )
+
     monitorService.value.startMonitoring(5000)
     isMonitoring.value = true
     checkApiStatus()
