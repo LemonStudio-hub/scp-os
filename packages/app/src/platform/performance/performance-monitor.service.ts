@@ -338,17 +338,16 @@ export class PerformanceMonitorService {
       if (totalResources > 0) {
         let totalDuration = 0
         let totalSize = 0
-        const errorCount = 0
+        let errorCount = 0
 
         for (const entry of resourceEntries) {
-          const res = entry as PerformanceResourceTiming
+          const res = entry as PerformanceResourceTiming & { responseStatus?: number }
           totalDuration += res.duration
           totalSize += res.transferSize || 0
 
-          // 暂时注释掉错误检测逻辑，因为PerformanceResourceTiming接口中不存在responseStatus属性
-          // if (res.responseStatus && res.responseStatus >= 400) {
-          //   errorCount++
-          // }
+          if (res.responseStatus && res.responseStatus >= 400) {
+            errorCount++
+          }
         }
 
         this.recordMetric('avg-resource-time', totalDuration / totalResources, 'ms', now)
