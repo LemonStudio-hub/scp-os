@@ -183,11 +183,20 @@ export class ChatRoomDO {
             )
             return
           }
-          await run(
+          const updateResult = await run(
             this.env.SCP_DB,
-            'UPDATE chat_messages SET content = ? WHERE id = ? AND room_id = ?',
+            'UPDATE chat_messages SET content = ?, edited = 1 WHERE id = ? AND room_id = ?',
             [newContent, messageId, roomId],
           )
+          if ((updateResult.meta as { changes?: number })?.changes === 0) {
+            server.send(
+              JSON.stringify({
+                type: 'error',
+                data: { code: 'NOT_FOUND', message: 'Message was deleted concurrently' },
+              }),
+            )
+            return
+          }
           this.broadcast(
             JSON.stringify({
               type: 'message_edited',
@@ -240,11 +249,20 @@ export class ChatRoomDO {
             )
             return
           }
-          await run(
+          const deleteResult = await run(
             this.env.SCP_DB,
             'DELETE FROM chat_messages WHERE id = ? AND room_id = ?',
             [messageId, roomId],
           )
+          if ((deleteResult.meta as { changes?: number })?.changes === 0) {
+            server.send(
+              JSON.stringify({
+                type: 'error',
+                data: { code: 'NOT_FOUND', message: 'Message was deleted concurrently' },
+              }),
+            )
+            return
+          }
           this.broadcast(
             JSON.stringify({
               type: 'message_deleted',
@@ -291,6 +309,7 @@ export class ChatRoomDO {
               content: row.content,
               room_id: row.room_id,
               created_at: row.created_at,
+              edited: row.edited === 1,
             })),
             users,
             count: users.length,

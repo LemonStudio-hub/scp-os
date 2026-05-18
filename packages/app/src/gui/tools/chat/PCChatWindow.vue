@@ -220,7 +220,9 @@
           <div class="pc-chat__input-bar">
             <div v-if="editingMessageId" class="pc-chat__edit-hint">
               <span>{{ t('chat.editing') }}</span>
-              <button class="pc-chat__edit-cancel" @click="cancelEdit">{{ t('common.cancel') }}</button>
+              <button class="pc-chat__edit-cancel" @click="cancelEdit">
+                {{ t('common.cancel') }}
+              </button>
             </div>
             <textarea
               ref="inputRef"
@@ -281,16 +283,35 @@
             :style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
           >
             <button class="pc-chat__context-item" @click="startEdit(contextMenuMsg)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
               </svg>
               {{ t('chat.edit') }}
             </button>
-            <button class="pc-chat__context-item pc-chat__context-item--danger" @click="startDelete(contextMenuMsg)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button
+              class="pc-chat__context-item pc-chat__context-item--danger"
+              @click="startDelete(contextMenuMsg)"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                />
               </svg>
               {{ t('chat.delete') }}
             </button>

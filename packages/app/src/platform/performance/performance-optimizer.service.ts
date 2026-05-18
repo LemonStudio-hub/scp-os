@@ -240,9 +240,8 @@ export class PerformanceOptimizerService {
     )
 
     // Calculate projected score after applying optimizations
-    const avgImprovement = recommended.length > 0
-      ? estimatedTotalImprovement / recommended.length
-      : 0
+    const avgImprovement =
+      recommended.length > 0 ? estimatedTotalImprovement / recommended.length : 0
     const score = Math.min(100, Math.round(currentScore + avgImprovement))
 
     return {

@@ -312,7 +312,7 @@ onMounted(() => {
         if (apiService.value && newUserId) {
           apiService.value.setUserId(newUserId)
         }
-      },
+      }
     )
 
     monitorService.value.startMonitoring(5000)

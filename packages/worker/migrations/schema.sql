@@ -119,7 +119,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   is_broadcast INTEGER DEFAULT 0,
   broadcast_count INTEGER DEFAULT 0,
-  room_id INTEGER DEFAULT 1
+  room_id INTEGER DEFAULT 1,
+  edited INTEGER DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_chat_user_id ON chat_messages(user_id);

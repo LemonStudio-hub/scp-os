@@ -585,8 +585,7 @@ async function onFileUpload(event: Event) {
 
   for (const file of files) {
     const safeName = sanitizeFileName(file.name)
-    const path =
-      fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
+    const path = fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
 
     try {
       const content = await readFileAsLocal(file)
@@ -933,8 +932,7 @@ async function onDrop(event: DragEvent) {
 
   for (const file of files) {
     const safeName = sanitizeFileName(file.name)
-    const path =
-      fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
+    const path = fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
 
     try {
       const content = await readFileAsLocal(file)

@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   is_broadcast INTEGER DEFAULT 0,
   broadcast_count INTEGER DEFAULT 0,
-  room_id INTEGER DEFAULT 1
+  room_id INTEGER DEFAULT 1,
+  edited INTEGER DEFAULT 0
 );
 
 -- 用户 ID 索引（加速查询特定用户的消息）

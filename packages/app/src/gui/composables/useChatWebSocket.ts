@@ -56,7 +56,12 @@ interface UseChatWebSocketOptions {
   onUsersUpdate?: (users: WSUser[], count: number) => void
   onUserJoined?: (data: { user_id: string; username: string; count: number }) => void
   onUserLeft?: (data: { user_id: string; username: string; count: number }) => void
-  onMessageEdited?: (data: { id: number; content: string; user_id: string; room_id: number }) => void
+  onMessageEdited?: (data: {
+    id: number
+    content: string
+    user_id: string
+    room_id: number
+  }) => void
   onMessageDeleted?: (data: { id: number; user_id: string; room_id: number }) => void
   onError?: (error: string) => void
 }

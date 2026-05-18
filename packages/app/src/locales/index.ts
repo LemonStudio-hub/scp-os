@@ -534,7 +534,8 @@ export const en = {
   'admin.content.promptStatus': 'Enter new status (e.g. published, hidden):',
   'admin.content.promptCategory': 'Enter new category (e.g. general, bug, feature):',
   'admin.content.importSuccess': 'Import successful ({count} items)',
-  'admin.content.importPartial': 'Import partially successful: {imported} imported, {failed} failed',
+  'admin.content.importPartial':
+    'Import partially successful: {imported} imported, {failed} failed',
   'admin.content.importError': 'Import failed',
   'admin.content.importJsonError': 'Invalid JSON format',
 

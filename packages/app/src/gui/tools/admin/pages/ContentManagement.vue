@@ -309,8 +309,18 @@ const batchActions = computed<BatchAction[]>(() => {
   ]
   if (activeTab.value === 'feedbacks') {
     actions.push(
-      { key: 'update_status', label: t('admin.content.batchUpdateStatus'), icon: 'archive', type: 'warning' },
-      { key: 'move_category', label: t('admin.content.batchMoveCategory'), icon: 'download', type: 'default' }
+      {
+        key: 'update_status',
+        label: t('admin.content.batchUpdateStatus'),
+        icon: 'archive',
+        type: 'warning',
+      },
+      {
+        key: 'move_category',
+        label: t('admin.content.batchMoveCategory'),
+        icon: 'download',
+        type: 'default',
+      }
     )
   }
   return actions
@@ -442,7 +452,13 @@ async function handleBatchAction(key: string) {
   }
 
   try {
-    const res = await adminApi.batchContentOperation(token, activeTab.value, key, selectedIds.value, extra)
+    const res = await adminApi.batchContentOperation(
+      token,
+      activeTab.value,
+      key,
+      selectedIds.value,
+      extra
+    )
     if (res.success) {
       toast.success(t('admin.content.batchSuccess'))
       selectedIds.value = []
@@ -502,7 +518,7 @@ async function handleImport() {
       fetchContent()
     } else if (res.imported > 0) {
       toast.warning(
-        t('admin.content.importPartial', { imported: res.imported, failed: res.failed }),
+        t('admin.content.importPartial', { imported: res.imported, failed: res.failed })
       )
       importModalVisible.value = false
       fetchContent()

@@ -1,7 +1,7 @@
 # SCP-OS 项目架构与快速定位指南
 
 > 本文档旨在帮助开发者快速理解项目结构、定位代码位置，并判断某功能的前后端实现状态。
-> 生成日期：2026-05-18
+> 最后更新：2026-05-18
 
 ***
 
@@ -135,16 +135,18 @@ scp-os/
 
 ### 5.2 聊天
 
-| 方法     | 路径                                                   | 功能       | 状态      |
-| ------ | ---------------------------------------------------- | -------- | ------- |
-| POST   | `/chat/send`                                         | 发送消息     | 已实现     |
-| GET    | `/chat/messages?room_id={id}&after={time}&limit={n}` | 获取消息     | 已实现     |
-| GET    | `/chat/rooms`                                        | 列出房间     | 已实现     |
-| POST   | `/chat/rooms`                                        | 创建房间     | 已实现     |
-| POST   | `/chat/nickname`                                     | 设置昵称     | 已实现     |
-| POST   | `/chat/broadcast`                                    | 广播消息     | 已实现     |
-| **缺失** | `PUT /chat/rooms/:id`                                | 普通用户修改房间 | **未实现** |
-| **缺失** | `DELETE /chat/rooms/:id`                             | 普通用户删除房间 | **未实现** |
+| 方法   | 路径                                                   | 功能           | 状态  |
+| ---- | ---------------------------------------------------- | ------------ | --- |
+| POST | `/chat/send`                                         | 发送消息         | 已实现 |
+| GET  | `/chat/messages?room_id={id}&after={time}&limit={n}` | 获取消息         | 已实现 |
+| GET  | `/chat/rooms`                                        | 列出房间         | 已实现 |
+| POST | `/chat/rooms`                                        | 创建房间         | 已实现 |
+| PUT  | `/chat/rooms/:id`                                    | 修改房间         | 已实现 |
+| DELETE | `/chat/rooms/:id`                                  | 删除房间         | 已实现 |
+| POST | `/chat/nickname`                                     | 设置昵称         | 已实现 |
+| POST | `/chat/broadcast`                                    | 广播消息         | 已实现 |
+| PUT  | `/chat/messages/:id`                                 | 编辑消息         | 已实现 |
+| DELETE | `/chat/messages/:id`                               | 删除消息         | 已实现 |
 
 ### 5.3 反馈系统
 
@@ -183,6 +185,7 @@ scp-os/
 | GET | `/docs/content/:scpNumber`                                                                    | SCP 内容文本 | 已实现 |
 | GET | `/docs/tales?limit={n}&offset={n}`                                                            | 故事列表     | 已实现 |
 | GET | `/docs/hubs?limit={n}&offset={n}`                                                             | Hub 列表   | 已实现 |
+| GET | `/docs/goi?limit={n}&offset={n}`                                                              | GOI 条目列表 | 已实现 |
 
 ### 5.7 通知
 
@@ -195,16 +198,18 @@ scp-os/
 | POST   | `/notifications/preferences`                    | 更新偏好设置           | 已实现     |
 | **缺失** | —                                               | 自动创建通知（反馈评论/点赞时） | **未实现** |
 
-### 5.8 文件存储
+### 5.8 文件存储（R2 云存储）
 
-| 方法     | 路径              | 功能   | 状态           |
-| ------ | --------------- | ---- | ------------ |
-| POST   | `/files/upload` | 上传文件 | **410 GONE** |
-| GET    | `/files`        | 文件列表 | **410 GONE** |
-| GET    | `/files/quota`  | 配额查询 | **410 GONE** |
-| GET    | `/files/:key`   | 获取文件 | **410 GONE** |
-| PUT    | `/files/:key`   | 更新文件 | **410 GONE** |
-| DELETE | `/files/:key`   | 删除文件 | **410 GONE** |
+| 方法     | 路径              | 功能   | 状态  |
+| ------ | --------------- | ---- | --- |
+| POST   | `/files/upload` | 上传文件 | 已实现 |
+| GET    | `/files`        | 文件列表 | 已实现 |
+| GET    | `/files/quota`  | 配额查询 | 已实现 |
+| GET    | `/files/:key`   | 获取文件 | 已实现 |
+| PUT    | `/files/:key`   | 更新文件 | 已实现 |
+| DELETE | `/files/:key`   | 删除文件 | 已实现 |
+
+> 注：基于 Cloudflare R2 对象存储实现，支持自动通知和配额管理。
 
 ### 5.9 管理后台
 
@@ -482,6 +487,32 @@ app.get('/myapi', async (c) => {
 // packages/app/src/utils/filesystem.ts
 // 修改初始化时的目录结构
 ```
+
+***
+
+## 15. 最近更新（2026-05-18）
+
+### 15.1 已实现功能
+
+| 功能             | 提交     | 说明                                                     |
+| -------------- | ------ | ------------------------------------------------------ |
+| 聊天消息编辑/删除    | ed4db1c | 支持用户编辑和删除自己发送的消息                                     |
+| GOI 公共 API     | 332f5fc | 新增 `/docs/goi` 端点，支持 GOI 条目列表查询                      |
+| R2 云文件存储      | 61f5b21 | 基于 Cloudflare R2 实现文件上传/下载/配额管理                      |
+| 批量操作增强        | 592a873 | 管理后台支持 `update_status` 和 `move_category` 批量操作           |
+| CSV 导出         | cd017c0 | 管理后台内容导出支持 CSV 格式                                     |
+| 导入校验与冲突检测    | 63cd34f | 内容导入时添加字段校验和唯一性冲突检测                                  |
+| 自动通知          | 61f5b21 | 反馈评论/点赞时自动创建通知记录                                     |
+
+### 15.2 技术改进
+
+- **Worker 后端重构**：迁移至 Hono 框架，提升路由处理性能
+- **聊天室管理**：支持用户端修改和删除聊天室（需为创建者或管理员）
+- **管理后台**：完整的用户/内容/聊天/反馈/系统设置管理界面
+
+### 15.3 待完成功能
+
+参见 `UNIMPLEMENTED_FEATURES.csv` 获取完整的未实现功能清单。
 
 ***
 
