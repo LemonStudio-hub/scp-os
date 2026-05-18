@@ -62,6 +62,25 @@
           </button>
           <button
             class="mobile-file-manager__action-btn"
+            :title="t('fm.syncCloud') || 'Sync from cloud'"
+            :disabled="cloudSyncing"
+            @click="syncFromCloud"
+          >
+            <svg
+              v-if="!cloudSyncing"
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M1 4h16M1 4l3-3M1 4l3 3M17 14H1M17 14l-3 3M17 14l-3-3" />
+            </svg>
+            <div v-else class="mobile-file-manager__spinner" />
+          </button>
+          <button
+            class="mobile-file-manager__action-btn"
             :title="t('fm.newFile')"
             @click="createNewFile"
           >
@@ -329,7 +348,8 @@ import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
 import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { filesystem } from '../../../utils/filesystem'
-// R2 upload disabled — files stored locally in IndexedDB
+import { useAuthStore } from '../../../stores/authStore'
+import { config } from '../../../config'
 
 interface Props {
   visible: boolean
@@ -353,7 +373,9 @@ const { t } = i18n
 setFileManagerI18n({ t: i18n.t })
 
 const fmStore = useFileManagerStore()
+const authStore = useAuthStore()
 const mobileViewMode = ref<'grid' | 'list'>('grid')
+const cloudSyncing = ref(false)
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
@@ -512,6 +534,26 @@ function triggerUpload() {
   fileInputRef.value?.click()
 }
 
+function sanitizeFileName(name: string): string {
+  return name.replace(/[\\/:*?"<>|]/g, '_').replace(/\.\.+ /g, '_')
+}
+
+function ensureDirectory(path: string): boolean {
+  const parts = path.split('/').filter(Boolean)
+  let current = ''
+  for (const part of parts) {
+    current += '/' + part
+    const node = filesystem.getNodeByPath(current)
+    if (!node) {
+      const ok = filesystem.createDirectory(current)
+      if (!ok) return false
+    } else if (node.type !== 'directory') {
+      return false
+    }
+  }
+  return true
+}
+
 function readFileAsLocal(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     if (
@@ -536,12 +578,15 @@ async function onFileUpload(event: Event) {
   const files = input.files
   if (!files || files.length === 0) return
 
-  let successCount = 0
-  let failCount = 0
+  let localSuccess = 0
+  let localFail = 0
+  let cloudSuccess = 0
+  let cloudFail = 0
 
   for (const file of files) {
+    const safeName = sanitizeFileName(file.name)
     const path =
-      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+      fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
 
     try {
       const content = await readFileAsLocal(file)
@@ -551,18 +596,119 @@ async function onFileUpload(event: Event) {
       } else {
         filesystem.createFile(path, content)
       }
-      successCount++
+      localSuccess++
+
+      if (authStore.userId) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('path', path)
+          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            cloudSuccess++
+          } else {
+            const data = await response.json().catch(() => ({}))
+            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
+            cloudFail++
+          }
+        } catch (err) {
+          console.error('[FileManager] Cloud upload error:', err)
+          cloudFail++
+        }
+      }
     } catch (error) {
       console.error('[FileManager] Failed to store file locally:', error)
-      failCount++
+      localFail++
     }
   }
 
   fmStore.loadDirectory(fmStore.currentPath)
   input.value = ''
 
-  if (failCount > 0) {
-    alert(`Stored ${successCount} file(s) locally, ${failCount} failed.`)
+  const messages: string[] = []
+  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
+  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
+  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (messages.length > 0) {
+    alert(messages.join('，'))
+  }
+}
+
+async function syncFromCloud(): Promise<void> {
+  if (!authStore.userId || cloudSyncing.value) return
+  cloudSyncing.value = true
+  try {
+    const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
+    if (!response.ok) {
+      alert(t('fm.syncFailed') || 'Cloud sync failed')
+      return
+    }
+    const result = await response.json()
+    const cloudFiles = result.data || []
+    let success = 0
+    let fail = 0
+    for (const file of cloudFiles) {
+      try {
+        const downloadRes = await authStore.authFetch(
+          `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`
+        )
+        if (!downloadRes.ok) {
+          fail++
+          continue
+        }
+        const blob = await downloadRes.blob()
+        const contentType = file.contentType || ''
+        const isText =
+          contentType.startsWith('text/') ||
+          /\.(txt|md|json|js|ts|css|html|vue|xml|yaml|csv)$/i.test(file.key)
+        const content = isText
+          ? await blob.text()
+          : await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.onerror = reject
+              reader.readAsDataURL(blob)
+            })
+        const path = `/home/scp/downloads/${file.key}`
+        const dirPath = path.substring(0, path.lastIndexOf('/'))
+        if (dirPath && !ensureDirectory(dirPath)) {
+          fail++
+          continue
+        }
+        const existingNode = filesystem.getNodeByPath(path)
+        let ok = false
+        if (existingNode && existingNode.type === 'file') {
+          ok = filesystem.writeFile(path, content)
+        } else {
+          ok = filesystem.createFile(path, content)
+        }
+        if (ok) {
+          success++
+        } else {
+          fail++
+        }
+      } catch {
+        fail++
+      }
+    }
+    fmStore.loadDirectory(fmStore.currentPath)
+    const messages: string[] = []
+    if (success > 0) messages.push(`同步成功 ${success} 个文件`)
+    if (fail > 0) messages.push(`同步失败 ${fail} 个`)
+    if (messages.length > 0) {
+      alert(messages.join('，'))
+    } else {
+      alert(t('fm.syncNoFiles') || 'No cloud files to sync')
+    }
+  } catch (err) {
+    console.error('[FileManager] Cloud sync error:', err)
+    alert(t('fm.syncFailed') || 'Cloud sync failed')
+  } finally {
+    cloudSyncing.value = false
   }
 }
 
@@ -780,12 +926,15 @@ async function onDrop(event: DragEvent) {
   const files = event.dataTransfer?.files
   if (!files || files.length === 0) return
 
-  let successCount = 0
-  let failCount = 0
+  let localSuccess = 0
+  let localFail = 0
+  let cloudSuccess = 0
+  let cloudFail = 0
 
   for (const file of files) {
+    const safeName = sanitizeFileName(file.name)
     const path =
-      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+      fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
 
     try {
       const content = await readFileAsLocal(file)
@@ -795,17 +944,44 @@ async function onDrop(event: DragEvent) {
       } else {
         filesystem.createFile(path, content)
       }
-      successCount++
+      localSuccess++
+
+      if (authStore.userId) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('path', path)
+          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            cloudSuccess++
+          } else {
+            const data = await response.json().catch(() => ({}))
+            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
+            cloudFail++
+          }
+        } catch (err) {
+          console.error('[FileManager] Cloud upload error:', err)
+          cloudFail++
+        }
+      }
     } catch (error) {
       console.error('[FileManager] Failed to store dropped file locally:', error)
-      failCount++
+      localFail++
     }
   }
 
   fmStore.loadDirectory(fmStore.currentPath)
 
-  if (failCount > 0) {
-    alert(`Stored ${successCount} file(s) locally, ${failCount} failed.`)
+  const messages: string[] = []
+  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
+  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
+  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (messages.length > 0) {
+    alert(messages.join('，'))
   }
 }
 
@@ -815,6 +991,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ── Spinner ────────────────────────────────────────────────────────── */
+.mobile-file-manager__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--gui-border-default, #2a2a2a);
+  border-top-color: var(--gui-text-primary, #ffffff);
+  border-radius: 50%;
+  animation: mobile-fm-spin 0.8s linear infinite;
+}
+@keyframes mobile-fm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ── Layout ─────────────────────────────────────────────────────────── */
 .mobile-file-manager {
   display: flex;

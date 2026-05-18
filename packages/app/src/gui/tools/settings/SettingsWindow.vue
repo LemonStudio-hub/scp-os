@@ -371,7 +371,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import { localeNames } from '../../../locales'
 import PCWindow from '../../components/PCWindow.vue'
@@ -543,14 +543,26 @@ indexedDBService
 const buildDate = computed(() => '2026-04-06')
 
 // Storage stats
-const storageUsed = computed(() => {
+const storageUsed = ref('--')
+
+async function calculateStorageUsed(): Promise<void> {
   let total = 0
   for (const key in localStorage) {
     if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
       total += (localStorage[key].length + key.length) * 2
     }
   }
-  return formatBytes(total)
+  try {
+    await indexedDBService.init()
+    total += await indexedDBService.getStorageSize()
+  } catch {
+    // ignore
+  }
+  storageUsed.value = formatBytes(total)
+}
+
+onMounted(() => {
+  calculateStorageUsed()
 })
 
 const terminalStateCount = computed(() => {

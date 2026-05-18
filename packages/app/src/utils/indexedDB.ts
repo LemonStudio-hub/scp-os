@@ -383,25 +383,39 @@ class IndexedDBService {
    * Get database size estimate
    */
   async getStorageSize(): Promise<number> {
+    await this.init()
     const db = this.getDB()
     return new Promise((resolve) => {
-      const transaction = db.transaction(
-        [STORES.TABS, STORES.TERMINAL_STATES, STORES.FILESYSTEM],
-        'readonly'
-      )
+      const allStores = [
+        STORES.TABS,
+        STORES.TERMINAL_STATES,
+        STORES.FILESYSTEM,
+        STORES.GUI_WINDOWS,
+        STORES.USER_SETTINGS,
+        STORES.SCP_CONTENT,
+        STORES.READING_PROGRESS,
+        STORES.SCP_FAVORITES,
+      ]
+      const availableStores = allStores.filter((name) => db.objectStoreNames.contains(name))
+      const transaction = db.transaction(availableStores, 'readonly')
 
       let totalSize = 0
       let completed = 0
-      const totalStores = 3
+      const totalStoresCount = availableStores.length
+      const encoder = new TextEncoder()
 
       const checkComplete = () => {
         completed++
-        if (completed === totalStores) {
+        if (completed === totalStoresCount) {
           resolve(totalSize)
         }
       }
 
       const estimateSize = (storeName: string) => {
+        if (!db.objectStoreNames.contains(storeName)) {
+          checkComplete()
+          return
+        }
         const store = transaction.objectStore(storeName)
         const request = store.getAllKeys()
 
@@ -420,7 +434,7 @@ class IndexedDBService {
             getReq.onsuccess = () => {
               const data = getReq.result
               if (data) {
-                totalSize += JSON.stringify(data).length
+                totalSize += encoder.encode(JSON.stringify(data)).length
               }
               keyCount++
               if (keyCount === keys.length) {
@@ -441,9 +455,7 @@ class IndexedDBService {
         }
       }
 
-      estimateSize(STORES.TABS)
-      estimateSize(STORES.TERMINAL_STATES)
-      estimateSize(STORES.FILESYSTEM)
+      allStores.forEach(estimateSize)
     })
   }
 

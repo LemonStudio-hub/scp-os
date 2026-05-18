@@ -176,17 +176,22 @@ export class PerformanceOptimizerService {
     const hasResourceIssues = issues.some((i) => i.id === 'slow-resource-loading')
 
     if (hasMemoryIssues) {
-      recommended.push(this.getStrategy('memory-optimization')!)
+      const s = this.getStrategy('memory-optimization')
+      if (s) recommended.push(s)
     }
 
     if (hasLoadTimeIssues) {
-      recommended.push(this.getStrategy('code-splitting')!)
-      recommended.push(this.getStrategy('bundle-analysis')!)
+      const s1 = this.getStrategy('code-splitting')
+      const s2 = this.getStrategy('bundle-analysis')
+      if (s1) recommended.push(s1)
+      if (s2) recommended.push(s2)
     }
 
     if (hasResourceIssues) {
-      recommended.push(this.getStrategy('image-optimization')!)
-      recommended.push(this.getStrategy('caching-strategy')!)
+      const s1 = this.getStrategy('image-optimization')
+      const s2 = this.getStrategy('caching-strategy')
+      if (s1) recommended.push(s1)
+      if (s2) recommended.push(s2)
     }
 
     return recommended
@@ -209,17 +214,96 @@ export class PerformanceOptimizerService {
     // Estimate total improvement
     const estimatedTotalImprovement = recommended.reduce((sum, strategy) => {
       // Remove % from the string and split
-      const cleanRange = strategy.estimatedImprovement.replace('%', '').split('-').map(Number)
-      const avgImprovement = (cleanRange[0] + cleanRange[1]) / 2
+      const cleanRange = strategy.estimatedImprovement
+        .replace('%', '')
+        .split('-')
+        .map(Number)
+        .filter((n) => !isNaN(n))
+      const avgImprovement =
+        cleanRange.length === 2 ? (cleanRange[0] + cleanRange[1]) / 2 : cleanRange[0] || 0
       return sum + avgImprovement
     }, 0)
 
+    // Calculate current score based on issue severity
+    const severityPenalty: Record<string, number> = {
+      critical: 25,
+      high: 15,
+      medium: 10,
+      low: 5,
+    }
+    const currentScore = Math.max(
+      0,
+      100 -
+        issues.reduce((sum, issue) => {
+          return sum + (severityPenalty[issue.severity] ?? 10)
+        }, 0)
+    )
+
+    // Calculate projected score after applying optimizations
+    const avgImprovement = recommended.length > 0
+      ? estimatedTotalImprovement / recommended.length
+      : 0
+    const score = Math.min(100, Math.round(currentScore + avgImprovement))
+
     return {
-      score: 0, // TODO: Calculate score
-      currentScore: 0, // TODO: Get current score
+      score,
+      currentScore: Math.round(currentScore),
       issues,
       strategies: recommended,
       estimatedTotalImprovement: `${estimatedTotalImprovement.toFixed(0)}%`,
+    }
+  }
+
+  /**
+   * Validate optimization strategy implementation
+   * @param strategyId Strategy ID
+   * @returns Validation result
+   */
+  /**
+   * Mark a strategy step as implemented (persisted in localStorage)
+   */
+  markStepImplemented(strategyId: string, stepIndex: number): void {
+    try {
+      const key = `scp:perf-opt:${strategyId}`
+      const raw = localStorage.getItem(key)
+      const parsed = raw ? JSON.parse(raw) : []
+      const completed: number[] = Array.isArray(parsed) ? parsed : []
+      if (!completed.includes(stepIndex)) {
+        completed.push(stepIndex)
+        localStorage.setItem(key, JSON.stringify(completed))
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  /**
+   * Mark a strategy step as not implemented
+   */
+  markStepNotImplemented(strategyId: string, stepIndex: number): void {
+    try {
+      const key = `scp:perf-opt:${strategyId}`
+      const raw = localStorage.getItem(key)
+      const parsed = raw ? JSON.parse(raw) : []
+      const completed: number[] = Array.isArray(parsed) ? parsed : []
+      const filtered = completed.filter((i) => i !== stepIndex)
+      localStorage.setItem(key, JSON.stringify(filtered))
+    } catch {
+      // ignore storage errors
+    }
+  }
+
+  /**
+   * Check if a specific step is marked as implemented
+   */
+  private isStepImplemented(strategyId: string, stepIndex: number): boolean {
+    try {
+      const raw = localStorage.getItem(`scp:perf-opt:${strategyId}`)
+      const parsed = raw ? JSON.parse(raw) : []
+      const completed: number[] = Array.isArray(parsed) ? parsed : []
+      return completed.includes(stepIndex)
+    } catch {
+      return false
     }
   }
 
@@ -245,9 +329,11 @@ export class PerformanceOptimizerService {
 
     strategy.steps.forEach((step, index) => {
       const key = `step-${index}`
-      // In a real implementation, this would check if each step is implemented
-      checks[key] = false
-      missingSteps.push(step)
+      const implemented = this.isStepImplemented(strategyId, index)
+      checks[key] = implemented
+      if (!implemented) {
+        missingSteps.push(step)
+      }
     })
 
     return {
