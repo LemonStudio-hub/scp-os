@@ -80,6 +80,14 @@ pnpm lint:check
 pnpm format
 ```
 
+> **必读：每次修改代码后，必须在本地至少运行一遍完整验证流程。**
+>
+> ```bash
+> pnpm typecheck && pnpm lint:check && pnpm test && pnpm build
+> ```
+>
+> 这是强制要求。任何跳过验证直接提交的代码，如果在 CI 中失败，会被直接打回。244 个 lint warning 是存量问题，**不要新增 error**。
+
 ### 5. 提交代码
 
 ```bash

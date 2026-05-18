@@ -1,0 +1,30 @@
+﻿模块,功能名称,UI/代码位置,后端API位置,已实现内容,缺失内容,严重程度,建议修复方案
+聊天,聊天室编辑（用户端）,packages/app/src/gui/tools/chat/PCChatWindow.vue:894-912,无普通用户接口,UI完整：弹窗、表单验证、本地状态更新,未调用API持久化修改（仅本地splice数组）,中,"1. 后端新增 PUT /chat/rooms/:id（限制为创建者或管理员）
+2. 前端 saveRoomSettings() 中调用 authFetch PUT 请求"
+聊天,聊天室删除（用户端）,packages/app/src/gui/tools/chat/PCChatWindow.vue:915-935,无普通用户接口,UI完整：确认弹窗、本地状态移除、自动切换房间,未调用API删除房间（仅本地splice数组）,中,"1. 后端新增 DELETE /chat/rooms/:id（限制为创建者或管理员）
+2. 前端 deleteRoom() 中调用 authFetch DELETE 请求"
+文件管理,云文件上传,packages/app/src/gui/tools/filemanager/FileManagerWindow.vue,packages/worker/src/app.ts:494-502,UI有上传按钮；本地虚拟文件系统完整,后端所有文件路由返回410 GONE；前端未调用上传API,高,"1. 实现后端文件存储（R2/S3兼容存储或D1 blob）
+2. 前端 fileManager store 增加上传/下载/同步逻辑
+3. 或：移除上传按钮，明确告知用户仅为本地文件系统"
+性能监控,性能优化评分计算,packages/app/src/platform/performance/performance-optimizer.service.ts:218-219,无,优化策略推荐、问题检测完整,score和currentScore硬编码为0（TODO占位）,低,"1. 基于检测到的issues数量/严重程度计算扣分
+2. 参考Lighthouse评分算法：按权重（内存、CPU、FPS、延迟）加权平均
+3. currentScore取当前performanceScore或实时计算"
+性能监控,优化策略验证,packages/app/src/platform/performance/performance-optimizer.service.ts:246-251,无,策略定义、步骤列表完整,validateImplementation()始终返回所有步骤未实现（checks全false）,低,"1. 实现步骤完成检测逻辑（如检查配置项、DOM状态、性能指标是否达标）
+2. 或通过副作用标记已完成步骤"
+通知,通知自动触发,packages/app/src/stores/notificationStore.ts,packages/worker/src/app.ts:375-411,通知列表、已读标记、偏好设置、轮询机制完整,"反馈被评论/点赞、收到聊天消息时，后端不会自动创建通知记录",中,"1. 在 /feedback/comment 路由中，提交成功后检查被评论feedback的作者，插入notifications记录
+2. 在 /feedback/vote 路由中，插入通知（若被投票者开启了对应偏好）
+3. 在 /chat/send 路由中，向房间内其他在线用户插入通知（可选）
+4. 或：前端轮询时根据其他数据推断，但不推荐"
+性能监控,性能指标后端上报,packages/app/src/gui/composables/useDashboardData.ts,packages/worker/src/app.ts:323-334,dashboard本地数据采集（内存、CPU、FPS、延迟）非常完整,前端未将性能数据POST到/performance；后端数据仅来自其他未知来源,低,"1. 在 useDashboardData.ts 的 refreshMetrics() 中，定期调用 authFetch POST /performance 上报关键指标
+2. 或：添加用户开关控制是否上报"
+聊天,WebSocket实时推送,packages/app/src/gui/tools/chat/PCChatWindow.vue,无,前端有ws对象、switchRoom、WebSocket事件处理代码,后端worker无WebSocket端点；消息依赖轮询GET /chat/messages,中,"1. Worker端使用Cloudflare Durable Objects实现WebSocket聊天室（已在env中声明ChatRoomDO）
+2. 或在Hono中集成WebSocket升级逻辑
+3. 前端ws连接现有代码可直接复用"
+文件管理,文件云端同步,packages/app/src/gui/stores/fileManager.ts,无,本地虚拟文件系统完整（增删改查、权限、收藏）,无云端同步机制；多设备数据不互通,低,"1. 实现云文件API（见上文）
+2. 增加同步逻辑：登录后拉取云端文件列表，合并到本地filesystem
+3. 或：明确本功能为纯本地文件系统，不上云"
+管理后台,内容批量导入校验,packages/app/src/gui/tools/admin/pages/ContentManagement.vue,packages/worker/src/app.ts:706-716,内容管理UI完整：列表、编辑、删除、批量操作、导出,importContent()无字段校验和冲突检测（直接INSERT）,低,"1. 导入时校验必填字段
+2. 对scp_number等唯一字段做ON CONFLICT处理
+3. 返回详细的导入成功/失败统计"
+Docs,GOI条目列表API,packages/app/src/gui/composables/useDocsReader.ts,packages/worker/src/app.ts:371-372,前端阅读器支持SCP、Tales、Hubs,后端listDocTable注册了/tales和/hubs，但无/goi路由,低,"1. 后端新增 app.get('/docs/goi', ...) 查询scp_goi表
+2. 前端useDocsReader中增加GOI分类获取逻辑"
