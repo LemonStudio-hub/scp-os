@@ -894,19 +894,39 @@ function openRoomSettings(room: ChatRoom) {
 async function saveRoomSettings() {
   if (!currentRoom.value) return
   savingSettings.value = true
+  const roomIndex = rooms.findIndex((r) => r.id === currentRoom.value?.id)
+  const originalRoom = roomIndex !== -1 ? { ...rooms[roomIndex] } : null
   try {
-    const roomIndex = rooms.findIndex((r) => r.id === currentRoom.value?.id)
-    if (roomIndex !== -1) {
+    const response = await authStore.authFetch(`${API_BASE}/chat/rooms/${currentRoom.value.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editRoomName.value,
+        description: editRoomDescription.value,
+        is_public: editRoomPublic.value ? 1 : 0,
+      }),
+    })
+    const data = await response.json()
+    if (data.success && roomIndex !== -1) {
       rooms[roomIndex] = {
         ...rooms[roomIndex],
         name: editRoomName.value,
         description: editRoomDescription.value,
         is_public: editRoomPublic.value ? 1 : 0,
       }
+      showRoomSettings.value = false
+    } else {
+      alert(data.error || 'Failed to save room settings')
+      if (originalRoom && roomIndex !== -1) {
+        rooms[roomIndex] = originalRoom
+      }
     }
-    showRoomSettings.value = false
   } catch (error) {
     console.error('[Chat] Failed to save room settings:', error)
+    alert('Failed to save room settings. Please try again.')
+    if (originalRoom && roomIndex !== -1) {
+      rooms[roomIndex] = originalRoom
+    }
   } finally {
     savingSettings.value = false
   }
@@ -916,19 +936,27 @@ async function deleteRoom() {
   if (!currentRoom.value) return
   if (!confirm('Are you sure you want to delete this room?')) return
   deletingRoom.value = true
+  const roomIndex = rooms.findIndex((r) => r.id === currentRoom.value?.id)
+  const deletedRoom = roomIndex !== -1 ? rooms[roomIndex] : null
   try {
-    const roomIndex = rooms.findIndex((r) => r.id === currentRoom.value?.id)
-    if (roomIndex !== -1) {
+    const response = await authStore.authFetch(`${API_BASE}/chat/rooms/${currentRoom.value.id}`, {
+      method: 'DELETE',
+    })
+    const data = await response.json()
+    if (data.success && roomIndex !== -1) {
       rooms.splice(roomIndex, 1)
-      if (currentRoomId.value === currentRoom.value?.id && rooms.length > 0) {
+      if (currentRoomId.value === deletedRoom?.id && rooms.length > 0) {
         currentRoomId.value = rooms[0].id
         messages.splice(0, messages.length)
         ws.switchRoom(rooms[0]?.id || 1)
       }
+      showRoomSettings.value = false
+    } else {
+      alert(data.error || 'Failed to delete room')
     }
-    showRoomSettings.value = false
   } catch (error) {
     console.error('[Chat] Failed to delete room:', error)
+    alert('Failed to delete room. Please try again.')
   } finally {
     deletingRoom.value = false
   }
