@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "include": [
+    "/scrape*",
+    "/search*",
+    "/list*",
+    "/stats*",
+    "/debug*",
+    "/image-proxy*",
+    "/chat*",
+    "/feedback*",
+    "/v1/*",
+    "/api/*",
+    "/performance*",
+    "/docs*",
+    "/notifications*",
+    "/admin*"
+  ],
+  "exclude": []
+}
