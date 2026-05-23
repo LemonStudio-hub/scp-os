@@ -170,7 +170,7 @@ const { toasts, removeToast } = useToast()
 
 .admin-toast__close:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
 }
 
 .admin-toast-enter-active {

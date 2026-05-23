@@ -595,7 +595,7 @@ function getCategoryIcon(category: string): string {
   top: 0;
   z-index: 10;
   display: flex;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -642,7 +642,7 @@ function getCategoryIcon(category: string): string {
   padding: 12px;
   border-radius: 10px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
@@ -679,7 +679,7 @@ function getCategoryIcon(category: string): string {
   padding: 8px 14px;
   border-radius: 16px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-secondary, #8e8e93);
   font-size: 13px;
   cursor: pointer;
@@ -774,7 +774,7 @@ function getCategoryIcon(category: string): string {
 
 /* ── Feedback Item ──────────────────────────────────────────────────── */
 .mobile-feedback__item {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 14px;
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
@@ -883,7 +883,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__vote-btn:hover {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
 }
 
@@ -916,7 +916,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__comment-btn:hover {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
 }
 
@@ -953,7 +953,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .mobile-feedback__comment {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border-radius: 12px;
   padding: 12px;
 }
@@ -1015,7 +1015,7 @@ function getCategoryIcon(category: string): string {
   padding: 10px;
   border-radius: 10px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-primary, #ffffff);
   font-size: 13px;
   outline: none;
@@ -1058,7 +1058,7 @@ function getCategoryIcon(category: string): string {
   margin-top: 16px;
   border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   font-weight: 500;
@@ -1069,5 +1069,43 @@ function getCategoryIcon(category: string): string {
 .mobile-feedback__load-more:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-feedback__item {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.light .mobile-feedback__compose {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+}
+.light .mobile-feedback__category--active {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+  border-color: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+}
+.light .mobile-feedback__submit-btn {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .mobile-feedback__submit-btn:not(:disabled):active {
+  background: rgba(99, 99, 102, 0.2);
+}
+.light .mobile-feedback__avatar {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .mobile-feedback__comment-avatar {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .mobile-feedback__comment-submit {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .mobile-feedback__comment-submit:not(:disabled):hover {
+  background: rgba(99, 99, 102, 0.2);
+}
+.light .mobile-feedback__loading-dot {
+  background: var(--gui-accent, #636366);
 }
 </style>

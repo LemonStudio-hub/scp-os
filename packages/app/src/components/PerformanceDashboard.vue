@@ -36,6 +36,9 @@ import {
 import { PerformanceOptimizerService } from '../platform/performance/performance-optimizer.service'
 import { PerformanceApiService } from '../platform/performance/performance-api.service'
 import { useAuthStore } from '../stores/authStore'
+import { useI18n } from '../gui/composables/useI18n'
+
+const { t } = useI18n()
 
 // Props
 const props = defineProps<{
@@ -54,11 +57,13 @@ const apiService = ref<PerformanceApiService | null>(null)
 
 // State
 const isMonitoring = ref(false)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const latestReport = ref<any>(null)
 const issues = ref<PerformanceIssue[]>([])
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const recommendations = ref<any[]>([])
 const lastUpdated = ref<string>('--:--:--')
-const apiStatus = ref<string>('Unknown')
+const apiStatus = ref<string>(t('common.unknown'))
 const statusMessage = ref<string>('')
 const version = ref('v2.0.0')
 
@@ -148,11 +153,11 @@ const toggleMonitoring = () => {
   if (isMonitoring.value) {
     monitorService.value.stopMonitoring()
     isMonitoring.value = false
-    statusMessage.value = 'Monitoring stopped'
+    statusMessage.value = t('perf.monitoringStopped')
   } else {
     monitorService.value.startMonitoring(5000)
     isMonitoring.value = true
-    statusMessage.value = 'Monitoring started'
+    statusMessage.value = t('perf.monitoringStarted')
   }
 
   setTimeout(() => {
@@ -163,7 +168,7 @@ const toggleMonitoring = () => {
 const refreshData = () => {
   if (!monitorService.value) return
 
-  statusMessage.value = 'Refreshing...'
+  statusMessage.value = t('perf.refreshing')
 
   collectRealTimeMetrics()
   generateReport()
@@ -224,7 +229,7 @@ const handleClear = () => {
   latestReport.value = null
   issues.value = []
   recommendations.value = []
-  statusMessage.value = 'Data cleared'
+  statusMessage.value = t('perf.dataCleared')
   setTimeout(() => {
     statusMessage.value = ''
   }, 2000)
@@ -232,7 +237,7 @@ const handleClear = () => {
 
 const handleExport = () => {
   if (!latestReport.value) {
-    statusMessage.value = 'No data to export'
+    statusMessage.value = t('perf.noDataToExport')
     setTimeout(() => {
       statusMessage.value = ''
     }, 2000)
@@ -266,7 +271,7 @@ const handleExport = () => {
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 
-  statusMessage.value = 'Report exported'
+  statusMessage.value = t('perf.reportExported')
   setTimeout(() => {
     statusMessage.value = ''
   }, 2000)
@@ -277,7 +282,7 @@ const handleClose = () => emit('close')
 const checkApiStatus = async () => {
   if (!apiService.value) return
   const isOnline = await apiService.value.getApiStatus()
-  apiStatus.value = isOnline ? 'Online' : 'Offline'
+  apiStatus.value = isOnline ? t('dash.online') : t('dash.offline')
 }
 
 watch(
@@ -308,6 +313,7 @@ onMounted(() => {
     if (apiService.value && monitorService.value) {
       apiService.value.startAutoSend(60000, () => {
         const names = monitorService.value?.getMetricNames() || []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const allMetrics: any[] = []
         for (const name of names) {
           const latest = monitorService.value?.getLatestMetric(name)
@@ -327,7 +333,7 @@ onMounted(() => {
     }, 500)
   } catch (error) {
     console.error('[PerformanceDashboard] Init error:', error)
-    statusMessage.value = 'Failed to initialize'
+    statusMessage.value = t('perf.failedToInitialize')
   }
 })
 
@@ -362,22 +368,23 @@ onUnmounted(() => {
           <!-- Real-time Metrics Grid -->
           <div class="metrics-section">
             <h3 class="section-title">
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <span class="title-icon" v-html="ICON_VITAL" />
-              Real-time Metrics
+              {{ t('perf.realtimeMetrics') }}
             </h3>
             <TransitionGroup name="metric-stagger" appear tag="div" class="metrics-grid">
               <!-- Memory -->
               <MetricCard
                 key="memory"
                 :icon="ICON_MEMORY"
-                name="Memory"
+                :name="t('perf.memory')"
                 :value="memoryPercentage"
                 unit="%"
                 type="memory"
                 :progress="memoryPercentage"
-                meta-label="Used"
+                :meta-label="t('perf.used')"
                 :meta-value="formatBytes(memoryUsage)"
-                :footer="`of ${formatBytes(memoryLimit)}`"
+                :footer="`${t('perf.of')} ${formatBytes(memoryLimit)}`"
                 :status="getMemoryStatus(memoryPercentage)"
               />
 
@@ -385,14 +392,14 @@ onUnmounted(() => {
               <MetricCard
                 key="fps"
                 :icon="ICON_FPS"
-                name="Frame Rate"
+                :name="t('perf.frameRate')"
                 :value="fpsInfo.current"
                 unit="FPS"
                 type="fps"
                 :progress="(fpsInfo.current / 60) * 100"
-                meta-label="Min / Avg / Max"
+                :meta-label="t('perf.minAvgMax')"
                 :meta-value="`${fpsInfo.min} / ${fpsInfo.avg} / ${fpsInfo.max}`"
-                footer="Target: 60 FPS"
+                :footer="t('perf.target60Fps')"
                 :status="getFPSStatus(fpsInfo.current)"
               />
 
@@ -400,11 +407,11 @@ onUnmounted(() => {
               <MetricCard
                 key="pageLoad"
                 :icon="ICON_TIME"
-                name="Page Load"
+                :name="t('perf.pageLoad')"
                 :value="pageLoadTime"
                 unit="ms"
                 type="time"
-                footer="Total load time"
+                :footer="t('perf.totalLoadTime')"
                 :status="pageLoadTime < 1500 ? 'good' : pageLoadTime < 3000 ? 'medium' : 'poor'"
               />
 
@@ -412,10 +419,10 @@ onUnmounted(() => {
               <MetricCard
                 key="domNodes"
                 :icon="ICON_DOM"
-                name="DOM Nodes"
+                :name="t('perf.domNodes')"
                 :value="domNodes"
                 type="count"
-                :footer="domNodes > 3000 ? 'Consider reducing DOM size' : 'Healthy DOM size'"
+                :footer="domNodes > 3000 ? t('perf.reduceDomSize') : t('perf.healthyDomSize')"
                 :status="domNodes < 1500 ? 'good' : domNodes < 3000 ? 'medium' : 'poor'"
               />
             </TransitionGroup>
@@ -424,8 +431,9 @@ onUnmounted(() => {
           <!-- Web Vitals Section -->
           <div class="metrics-section vitals-section">
             <h3 class="section-title">
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <span class="title-icon" v-html="ICON_VITAL" />
-              Web Vitals
+              {{ t('perf.webVitals') }}
             </h3>
             <div class="vitals-grid">
               <!-- LCP -->
@@ -444,9 +452,9 @@ onUnmounted(() => {
                   </span>
                 </div>
                 <div class="vital-value">
-                  {{ webVitals.lcp !== null ? formatMs(webVitals.lcp) : 'Collecting...' }}
+                  {{ webVitals.lcp !== null ? formatMs(webVitals.lcp) : t('perf.collecting') }}
                 </div>
-                <div class="vital-desc">Largest Contentful Paint - loading performance</div>
+                <div class="vital-desc">{{ t('perf.lcpDesc') }}</div>
                 <div class="vital-bar">
                   <div
                     class="vital-bar-fill"
@@ -473,9 +481,9 @@ onUnmounted(() => {
                   </span>
                 </div>
                 <div class="vital-value">
-                  {{ webVitals.cls !== null ? webVitals.cls.toFixed(3) : 'Collecting...' }}
+                  {{ webVitals.cls !== null ? webVitals.cls.toFixed(3) : t('perf.collecting') }}
                 </div>
-                <div class="vital-desc">Cumulative Layout Shift - visual stability</div>
+                <div class="vital-desc">{{ t('perf.clsDesc') }}</div>
                 <div class="vital-bar">
                   <div
                     class="vital-bar-fill"
@@ -502,9 +510,9 @@ onUnmounted(() => {
                   </span>
                 </div>
                 <div class="vital-value">
-                  {{ webVitals.inp !== null ? formatMs(webVitals.inp) : 'Collecting...' }}
+                  {{ webVitals.inp !== null ? formatMs(webVitals.inp) : t('perf.collecting') }}
                 </div>
-                <div class="vital-desc">Interaction to Next Paint - responsiveness</div>
+                <div class="vital-desc">{{ t('perf.inpDesc') }}</div>
                 <div class="vital-bar">
                   <div
                     class="vital-bar-fill"
@@ -533,9 +541,9 @@ onUnmounted(() => {
                   </span>
                 </div>
                 <div class="vital-value">
-                  {{ webVitals.ttfb !== null ? formatMs(webVitals.ttfb) : 'Collecting...' }}
+                  {{ webVitals.ttfb !== null ? formatMs(webVitals.ttfb) : t('perf.collecting') }}
                 </div>
-                <div class="vital-desc">Time to First Byte - server response time</div>
+                <div class="vital-desc">{{ t('perf.ttfbDesc') }}</div>
                 <div class="vital-bar">
                   <div
                     class="vital-bar-fill"
@@ -553,55 +561,62 @@ onUnmounted(() => {
           <!-- Network & Storage Section -->
           <div class="metrics-section info-section">
             <h3 class="section-title">
+              <!-- eslint-disable-next-line vue/no-v-html -->
               <span class="title-icon" v-html="ICON_NET" />
-              System Info
+              {{ t('perf.systemInfo') }}
             </h3>
             <div class="info-grid">
               <!-- Network -->
               <div class="info-card">
                 <div class="info-card-title">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="info-icon" v-html="ICON_NET" />
-                  Network
+                  {{ t('perf.network') }}
                 </div>
                 <div v-if="networkInfo" class="info-card-body">
                   <div class="info-row">
-                    <span>Type</span
+                    <span>{{ t('perf.type') }}</span
                     ><span class="info-val"
                       >{{ networkInfo.effectiveType.toUpperCase() }} ({{ networkInfo.type }})</span
                     >
                   </div>
                   <div class="info-row">
-                    <span>Downlink</span
+                    <span>{{ t('perf.downlink') }}</span
                     ><span class="info-val">{{ networkInfo.downlink }} Mbps</span>
                   </div>
                   <div class="info-row">
                     <span>RTT</span><span class="info-val">{{ networkInfo.rtt }} ms</span>
                   </div>
                   <div class="info-row">
-                    <span>Save Data</span
-                    ><span class="info-val">{{ networkInfo.saveData ? 'Yes' : 'No' }}</span>
+                    <span>{{ t('perf.saveData') }}</span
+                    ><span class="info-val">{{
+                      networkInfo.saveData ? t('perf.yes') : t('perf.no')
+                    }}</span>
                   </div>
                 </div>
                 <div v-else class="info-card-body">
-                  <p class="info-placeholder">Network API not available</p>
+                  <p class="info-placeholder">{{ t('perf.networkApiUnavailable') }}</p>
                 </div>
               </div>
 
               <!-- Storage -->
               <div class="info-card">
                 <div class="info-card-title">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="info-icon" v-html="ICON_STORAGE" />
-                  Storage
+                  {{ t('perf.storage') }}
                 </div>
                 <div class="info-card-body">
                   <div class="info-row">
-                    <span>Used</span><span class="info-val">{{ formatBytes(storageUsage) }}</span>
+                    <span>{{ t('perf.used') }}</span
+                    ><span class="info-val">{{ formatBytes(storageUsage) }}</span>
                   </div>
                   <div class="info-row">
-                    <span>Quota</span><span class="info-val">{{ formatBytes(storageQuota) }}</span>
+                    <span>{{ t('perf.quota') }}</span
+                    ><span class="info-val">{{ formatBytes(storageQuota) }}</span>
                   </div>
                   <div class="info-row">
-                    <span>Usage</span>
+                    <span>{{ t('perf.usage') }}</span>
                     <span class="info-val">{{ storagePercentage.toFixed(1) }}%</span>
                   </div>
                   <div class="storage-bar">
@@ -616,15 +631,18 @@ onUnmounted(() => {
               <!-- Resources -->
               <div class="info-card">
                 <div class="info-card-title">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="info-icon" v-html="ICON_DOM" />
-                  Resources
+                  {{ t('perf.resources') }}
                 </div>
                 <div class="info-card-body">
                   <div class="info-row">
-                    <span>Loaded</span><span class="info-val">{{ resourceCount }}</span>
+                    <span>{{ t('perf.loaded') }}</span
+                    ><span class="info-val">{{ resourceCount }}</span>
                   </div>
                   <div class="info-row">
-                    <span>DOM Nodes</span><span class="info-val">{{ domNodes }}</span>
+                    <span>{{ t('perf.domNodes') }}</span
+                    ><span class="info-val">{{ domNodes }}</span>
                   </div>
                 </div>
               </div>
@@ -843,7 +861,7 @@ onUnmounted(() => {
 }
 
 .vital-card {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 12px;
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
@@ -903,7 +921,7 @@ onUnmounted(() => {
 
 .vital-bar {
   height: 4px;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border-radius: 2px;
   overflow: hidden;
 }
@@ -941,7 +959,7 @@ onUnmounted(() => {
 }
 
 .info-card {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 12px;
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
@@ -993,7 +1011,7 @@ onUnmounted(() => {
 
 .storage-bar {
   height: 4px;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border-radius: 2px;
   overflow: hidden;
   margin-top: 4px;
@@ -1049,5 +1067,25 @@ onUnmounted(() => {
   .vitals-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .perf-modal {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+.light .perf-modal__backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+.light .perf-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .perf-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+.light .storage-bar-fill {
+  background: var(--gui-accent, #636366);
+}
+.light .title-icon {
+  color: var(--gui-accent, #636366);
 }
 </style>

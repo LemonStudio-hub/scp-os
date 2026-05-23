@@ -35,7 +35,7 @@
             v-model="roomSearchQuery"
             type="text"
             class="pc-chat__search-input"
-            :placeholder="t('chat.searchRooms') || 'Search rooms...'"
+            :placeholder="t('chat.searchRooms')"
           />
         </div>
 
@@ -131,7 +131,7 @@
             <div class="pc-chat__chat-room-info">
               <span class="pc-chat__chat-room-name">{{ currentRoom.name }}</span>
               <span class="pc-chat__chat-room-members"
-                >{{ currentRoom.member_count || 0 }} members</span
+                >{{ currentRoom.member_count || 0 }} {{ t('chat.members') }}</span
               >
             </div>
           </div>
@@ -142,9 +142,9 @@
               style="
                 padding: 4px 8px;
                 font-size: 10px;
-                color: #666;
+                color: var(--gui-text-tertiary, #666);
                 background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
               "
             >
               DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
@@ -192,7 +192,7 @@
                 @click="retryMessage(msg)"
               >
                 {{ msg.error }} ·
-                <span class="chat-bubble__retry">{{ t('chat.retry') || 'Retry' }}</span>
+                <span class="chat-bubble__retry">{{ t('chat.retry') }}</span>
               </div>
             </div>
 
@@ -257,7 +257,7 @@
               stroke-linecap="round"
             />
           </svg>
-          <p>{{ t('chat.selectRoom') || 'Select a room to start chatting' }}</p>
+          <p>{{ t('chat.selectRoom') }}</p>
         </div>
       </div>
 
@@ -281,7 +281,7 @@
             <textarea
               v-model="newRoomDescription"
               class="pc-chat__dialog-textarea"
-              :placeholder="'Description (optional)'"
+              :placeholder="t('chat.descriptionOptional')"
               maxlength="200"
               rows="3"
             />
@@ -292,7 +292,9 @@
                 type="checkbox"
                 class="pc-chat__dialog-checkbox-input"
               />
-              <label for="room-public" class="pc-chat__dialog-checkbox-label">Public Room</label>
+              <label for="room-public" class="pc-chat__dialog-checkbox-label">{{
+                t('chat.publicRoom')
+              }}</label>
             </div>
             <div class="pc-chat__dialog-actions">
               <button
@@ -323,19 +325,19 @@
           @click.self="showRoomSettings = false"
         >
           <div class="pc-chat__dialog pc-chat__dialog--settings">
-            <h3 class="pc-chat__dialog-title">Room Settings</h3>
+            <h3 class="pc-chat__dialog-title">{{ t('chat.roomSettings') }}</h3>
             <div class="pc-chat__dialog-section">
               <input
                 v-model="editRoomName"
                 type="text"
                 class="pc-chat__dialog-input"
-                placeholder="Room name"
+                :placeholder="t('chat.roomName')"
                 maxlength="50"
               />
               <textarea
                 v-model="editRoomDescription"
                 class="pc-chat__dialog-textarea"
-                placeholder="Description"
+                :placeholder="t('chat.description')"
                 maxlength="200"
                 rows="3"
               />
@@ -346,9 +348,9 @@
                   type="checkbox"
                   class="pc-chat__dialog-checkbox-input"
                 />
-                <label for="edit-room-public" class="pc-chat__dialog-checkbox-label"
-                  >Public Room</label
-                >
+                <label for="edit-room-public" class="pc-chat__dialog-checkbox-label">{{
+                  t('chat.publicRoom')
+                }}</label>
               </div>
             </div>
             <div class="pc-chat__dialog-section">
@@ -1810,5 +1812,76 @@ async function saveNickname() {
     width: 240px;
     min-width: 240px;
   }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-chat__container {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+.light .pc-chat__emoji-picker {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.light .pc-chat__dialog {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+.light .pc-chat__ws-status--connected .pc-chat__ws-dot {
+  box-shadow: 0 0 6px rgba(52, 199, 89, 0.3);
+}
+.light .pc-chat__ws-status--connected .pc-chat__ws-text {
+  color: rgba(52, 199, 89, 0.8);
+}
+.light .pc-chat__ws-status--disconnected .pc-chat__ws-text {
+  color: rgba(255, 59, 48, 0.8);
+}
+.light .pc-chat__dialog-btn {
+  background: var(--chat-surface-hover, rgba(0, 0, 0, 0.06));
+  color: var(--chat-text-primary, #000000);
+}
+.light .pc-chat__add-room-btn {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__add-room-btn:hover {
+  background: rgba(99, 99, 102, 0.2);
+}
+.light .pc-chat__room-item--active {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+}
+.light .pc-chat__room-item--active:hover {
+  background: rgba(99, 99, 102, 0.2);
+  opacity: 1;
+}
+.light .pc-chat__room-item--active .pc-chat__room-name {
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__room-item--active .pc-chat__room-time {
+  color: var(--chat-text-secondary, #6e6e73);
+}
+.light .pc-chat__room-item--active .pc-chat__room-preview {
+  color: var(--chat-text-secondary, #6e6e73);
+}
+.light .chat-bubble--self .chat-bubble__content {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .chat-bubble__status-dot {
+  background: var(--chat-accent, #636366);
+}
+.light .pc-chat__loading-dot {
+  background: var(--chat-accent, #636366);
+}
+.light .pc-chat__dialog-btn--primary {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__send-btn {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .pc-chat__action-btn {
+  color: var(--chat-text-secondary, #6e6e73);
+}
+.light .pc-chat__action-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
 }
 </style>

@@ -29,7 +29,7 @@
             v-model="roomSearchQuery"
             type="text"
             class="mobile-chat__search-input"
-            :placeholder="t('chat.searchRooms') || 'Search rooms...'"
+            :placeholder="t('chat.searchRooms')"
           />
         </div>
 
@@ -115,9 +115,9 @@
             style="
               padding: 4px 8px;
               font-size: 10px;
-              color: #666;
+              color: var(--gui-text-tertiary, #666);
               background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
-              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+              border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
             "
           >
             DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
@@ -165,7 +165,7 @@
               @click="retryMessage(msg)"
             >
               {{ msg.error }} ·
-              <span class="chat-bubble__retry">{{ t('chat.retry') || 'Retry' }}</span>
+              <span class="chat-bubble__retry">{{ t('chat.retry') }}</span>
             </div>
           </div>
 
@@ -239,7 +239,7 @@
             <textarea
               v-model="newRoomDescription"
               class="mobile-chat__dialog-textarea"
-              placeholder="Description (optional)"
+              :placeholder="t('chat.descriptionOptional')"
               maxlength="200"
               rows="3"
             />
@@ -1406,5 +1406,35 @@ async function saveNickname() {
 .mobile-fade-enter-from,
 .mobile-fade-leave-to {
   opacity: 0;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-chat__emoji-picker {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+.light .mobile-chat__action-menu {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
+.light .mobile-chat__dialog-btn {
+  background: var(--chat-surface-hover, rgba(0, 0, 0, 0.06));
+  color: var(--chat-text-primary, #000000);
+}
+.light .mobile-chat__dialog-btn--primary {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .chat-bubble--self .chat-bubble__content {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .mobile-chat__send-btn {
+  background: var(--chat-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--chat-accent, #636366);
+}
+.light .mobile-chat__action-btn {
+  color: var(--chat-text-secondary, #6e6e73);
+}
+.light .mobile-chat__action-btn:active {
+  background: rgba(0, 0, 0, 0.06);
 }
 </style>

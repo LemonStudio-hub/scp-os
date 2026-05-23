@@ -203,8 +203,10 @@
               @click="themeStore.setTheme(theme.id)"
             >
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">{{ theme.name }}</div>
-                <div class="pc-settings__row-description">{{ theme.description }}</div>
+                <div class="pc-settings__row-label">{{ t(`theme.${theme.i18nKey}`) }}</div>
+                <div class="pc-settings__row-description">
+                  {{ t(`theme.${theme.i18nKey}Desc`) }}
+                </div>
               </div>
               <div
                 class="pc-settings__radio"
@@ -489,7 +491,7 @@ const activeSection = ref('terminal')
 
 // Language
 const showLanguageDropdown = ref(false)
-const currentLanguageName = computed(() => localeNames[locale.value] || 'English')
+const currentLanguageName = computed(() => localeNames[locale.value] || t('common.english'))
 
 function selectLanguage(loc: 'en' | 'zh-CN') {
   locale.value = loc
@@ -529,14 +531,14 @@ function onWallpaperChange(_wallpaperId: string | null) {
 const showFontSizeSlider = ref(false)
 
 // User info
-const userId = ref<string>('Loading...')
+const userId = ref<string>(t('common.loading'))
 indexedDBService
   .getUserId()
   .then((id) => {
     userId.value = id
   })
   .catch(() => {
-    userId.value = 'Unknown'
+    userId.value = t('common.unknown')
   })
 const buildDate = computed(() => '2026-04-06')
 
@@ -616,7 +618,7 @@ function resetSettings(): void {
 .pc-settings__sidebar {
   width: 200px;
   flex-shrink: 0;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-right: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   padding: var(--gui-spacing-base, 16px) 0;
   display: flex;
@@ -684,7 +686,7 @@ function resetSettings(): void {
 
 /* ── Card ──────────────────────────────────────────────────────────── */
 .pc-settings__card {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   overflow: hidden;
@@ -794,7 +796,7 @@ function resetSettings(): void {
   flex-direction: column;
   align-items: center;
   gap: var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   animation: sliderFadeIn 0.2s ease both;
 }
@@ -819,7 +821,7 @@ function resetSettings(): void {
 /* ── Language Dropdown ─────────────────────────────────────────────── */
 .pc-settings__language-dropdown {
   padding: var(--gui-spacing-xs, 4px);
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   animation: sliderFadeIn 0.2s ease both;
 }
@@ -906,7 +908,7 @@ function resetSettings(): void {
 .pc-settings__dialog {
   width: 100%;
   max-width: 320px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-xl, 14px);
   padding: var(--gui-spacing-xl, 24px);
@@ -950,7 +952,7 @@ function resetSettings(): void {
 .pc-settings__dialog-btn {
   flex: 1;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);
@@ -1013,5 +1015,24 @@ function resetSettings(): void {
   .pc-settings__nav-label {
     display: none;
   }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-settings__modal-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+.light .pc-settings__modal {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+.light .pc-settings__theme-preview {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.light .pc-settings__theme-preview--active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.light .pc-settings__radio--active {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  border-color: var(--gui-accent, #636366);
+  box-shadow: inset 0 0 0 2px var(--gui-bg-surface, #ffffff);
 }
 </style>

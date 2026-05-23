@@ -157,7 +157,7 @@ function close() {
 .video-player {
   width: 90%;
   max-width: 800px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 16px;
   overflow: hidden;
   animation: video-fade-in 0.3s ease;
@@ -203,7 +203,7 @@ function close() {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -291,5 +291,13 @@ function close() {
 .media-modal-enter-from,
 .media-modal-leave-to {
   opacity: 0;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .video-player-modal {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .video-player-modal__controls {
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.9));
 }
 </style>

@@ -15,7 +15,7 @@
       <button
         v-if="closable"
         class="scp-tabs__close"
-        title="Close"
+        :title="t('window.close')"
         @click.stop="$emit('close', tab.id)"
       >
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -32,6 +32,10 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '../../composables/useI18n'
+
+const { t } = useI18n()
+
 interface TabItem {
   id: string
   label: string
@@ -62,7 +66,7 @@ defineEmits<{
 .scp-tabs {
   display: flex;
   align-items: stretch;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   overflow-x: auto;
   overflow-y: hidden;
@@ -105,7 +109,7 @@ defineEmits<{
 }
 
 .scp-tabs__tab--active {
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-text-primary, #ffffff);
   font-weight: var(--gui-font-weight-medium, 500);
 }
@@ -176,5 +180,13 @@ defineEmits<{
 
 .scp-tabs__close:active {
   transform: scale(0.85);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .scp-tabs__item--active {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.light .scp-tabs__tab--active::after {
+  background: var(--gui-accent, #636366);
 }
 </style>

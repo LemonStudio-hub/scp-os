@@ -2,6 +2,7 @@
   <div class="metric-card" :class="cardClass">
     <div class="metric-header">
       <div class="metric-icon-wrapper" :class="statusClass">
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <span class="metric-icon" v-html="icon" />
       </div>
       <div class="metric-info">
@@ -163,7 +164,7 @@ function formatTime(ms: number): string {
 
 <style scoped>
 .metric-card {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   padding: 18px;
@@ -234,7 +235,7 @@ function formatTime(ms: number): string {
   align-items: center;
   justify-content: center;
   border-radius: var(--gui-radius-md, 10px);
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
@@ -327,7 +328,7 @@ function formatTime(ms: number): string {
   align-items: center;
   margin-bottom: 12px;
   padding: 8px 10px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-sm, 6px);
 }
 
@@ -462,5 +463,13 @@ function formatTime(ms: number): string {
     align-items: flex-start;
     gap: 4px;
   }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .metric-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .metric-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 </style>

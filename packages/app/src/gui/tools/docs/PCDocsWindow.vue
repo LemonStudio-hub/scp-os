@@ -18,7 +18,7 @@
             v-model="reader.searchQuery.value"
             type="text"
             class="pc-docs__search-input"
-            placeholder="Search SCP..."
+            :placeholder="t('docs.searchPlaceholder')"
             @keydown.enter="reader.search()"
           />
         </div>
@@ -31,7 +31,7 @@
               class="pc-docs__filter-select"
               @change="onSeriesChange"
             >
-              <option value="">All Series</option>
+              <option value="">{{ t('docs.allSeries') }}</option>
               <option v-for="s in reader.SERIES_OPTIONS" :key="s.value" :value="s.value">
                 {{ s.label }} ({{ s.range }})
               </option>
@@ -43,7 +43,7 @@
               class="pc-docs__filter-select"
               @change="onClassChange"
             >
-              <option value="">All Classes</option>
+              <option value="">{{ t('docs.allClasses') }}</option>
               <option v-for="c in reader.CLASS_OPTIONS" :key="c.value" :value="c.value">
                 {{ c.label }}
               </option>
@@ -72,7 +72,9 @@
               />
             </svg>
             <p>{{ reader.error.value }}</p>
-            <button class="pc-docs__retry-btn" @click="reader.fetchArticles(1)">Retry</button>
+            <button class="pc-docs__retry-btn" @click="reader.fetchArticles(1)">
+              {{ t('docs.retry') }}
+            </button>
           </div>
 
           <!-- Empty State -->
@@ -94,7 +96,7 @@
                 stroke-linecap="round"
               />
             </svg>
-            <p>No articles found</p>
+            <p>{{ t('docs.noArticles') }}</p>
           </div>
 
           <!-- Article Items -->
@@ -110,7 +112,9 @@
               <div class="pc-docs__item-number pc-docs__item-number--guide">📖</div>
               <div class="pc-docs__item-body">
                 <span class="pc-docs__item-title">{{ reader.GUIDE_ARTICLE.title }}</span>
-                <span class="pc-docs__item-class" style="color: #58a6ff">使用指南</span>
+                <span class="pc-docs__item-class" style="color: #58a6ff">{{
+                  t('docs.guide')
+                }}</span>
               </div>
             </div>
             <div
@@ -145,7 +149,7 @@
               class="pc-docs__load-more"
               @click="reader.loadMore()"
             >
-              Load more
+              {{ t('docs.loadMore') }}
             </div>
           </template>
         </div>
@@ -172,7 +176,7 @@
               stroke-linecap="round"
             />
           </svg>
-          <p>Select an SCP article to read</p>
+          <p>{{ t('docs.selectArticle') }}</p>
         </div>
 
         <!-- Article View -->
@@ -181,7 +185,7 @@
           <div class="pc-docs__toolbar">
             <button
               class="pc-docs__toolbar-btn"
-              title="Back to list"
+              :title="t('docs.backToList')"
               @click="reader.clearArticle()"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -201,14 +205,14 @@
               <!-- Font Size -->
               <button
                 class="pc-docs__toolbar-btn"
-                title="Decrease font size"
+                :title="t('docs.decreaseFont')"
                 @click="reader.decreaseFontSize()"
               >
                 <span class="pc-docs__font-label">A-</span>
               </button>
               <button
                 class="pc-docs__toolbar-btn"
-                title="Increase font size"
+                :title="t('docs.increaseFont')"
                 @click="reader.increaseFontSize()"
               >
                 <span class="pc-docs__font-label pc-docs__font-label--large">A+</span>
@@ -216,7 +220,9 @@
               <!-- Theme Toggle -->
               <button
                 class="pc-docs__toolbar-btn"
-                :title="reader.readerTheme.value === 'dark' ? 'Light mode' : 'Dark mode'"
+                :title="
+                  reader.readerTheme.value === 'dark' ? t('docs.lightMode') : t('docs.darkMode')
+                "
                 @click="reader.toggleTheme()"
               >
                 <svg
@@ -248,7 +254,7 @@
               <button
                 class="pc-docs__toolbar-btn"
                 :class="{ 'pc-docs__toolbar-btn--active': reader.isFavorited.value }"
-                title="Favorite"
+                :title="t('docs.favorite')"
                 @click="reader.toggleFavorite()"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -274,7 +280,7 @@
           <Transition name="toc-slide">
             <div v-if="showTOC" class="pc-docs__toc">
               <div class="pc-docs__toc-header">
-                <span>Contents</span>
+                <span>{{ t('docs.contents') }}</span>
                 <button class="pc-docs__toc-close" @click="showTOC = false">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path
@@ -329,7 +335,7 @@
                 class="pc-docs__retry-btn"
                 @click="reader.selectArticle(reader.currentArticle.value!.scpNumber)"
               >
-                Retry
+                {{ t('docs.retry') }}
               </button>
             </div>
 
@@ -342,7 +348,7 @@
             v-if="reader.currentArticle.value?.toc.length"
             class="pc-docs__toc-toggle"
             :class="{ 'pc-docs__toc-toggle--active': showTOC }"
-            title="Table of Contents"
+            :title="t('docs.tableOfContents')"
             @click="showTOC = !showTOC"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -366,6 +372,7 @@ import DOMPurify from 'dompurify'
 import SCPWindow from '../../components/SCPWindow.vue'
 import { useDocsReader } from '../../composables/useDocsReader'
 import { applyImageProxyHook } from '../../../utils/imageProxy'
+import { useI18n } from '../../composables/useI18n'
 import type { WindowInstance } from '../../types'
 import type { SCPObjectClass } from '../../composables/useDocsReader'
 
@@ -375,6 +382,7 @@ interface Props {
 
 defineProps<Props>()
 const reader = useDocsReader()
+const { t } = useI18n()
 
 const sanitizedContent = computed(() => {
   const content = reader.currentArticle.value?.content

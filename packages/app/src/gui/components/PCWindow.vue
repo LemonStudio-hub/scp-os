@@ -357,6 +357,23 @@ function handleWindowResize() {
   border: none;
 }
 
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-window {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.light .pc-window:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.light .pc-window--focused {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.light .pc-window:not(.pc-window--focused) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
 /* ── Header / Title Bar - iOS Frosted Glass ────────────────────────── */
 .pc-window__header {
   display: flex;
@@ -428,7 +445,7 @@ function handleWindowResize() {
   justify-content: center;
   width: 14px;
   height: 14px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: none;
   border-radius: var(--gui-radius-full, 999px);
   color: transparent;
@@ -512,7 +529,7 @@ function handleWindowResize() {
 .pc-window__content {
   flex: 1;
   overflow: auto;
-  background: var(--gui-bg-base, #1c1c1e);
+  background: var(--gui-bg-base, #000000);
   min-height: 0;
   -webkit-overflow-scrolling: touch;
 }

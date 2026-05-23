@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from 'vue'
+import { useI18n } from './useI18n'
 
 export interface WSChatMessage {
   id?: number
@@ -55,6 +56,7 @@ interface UseChatWebSocketOptions {
 }
 
 export function useChatWebSocket(options: UseChatWebSocketOptions) {
+  const { t } = useI18n()
   const {
     apiUrl,
     userId,
@@ -108,7 +110,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
       ws = new WebSocket(getWsUrl())
     } catch {
       connectionState.value = 'disconnected'
-      lastError.value = 'Failed to create WebSocket connection'
+      lastError.value = t('chat.wsConnectFailed')
       scheduleReconnect()
       return
     }
@@ -136,9 +138,9 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     }
 
     ws.onerror = () => {
-      lastError.value = 'WebSocket connection error'
+      lastError.value = t('chat.wsError')
       connectionState.value = 'disconnected'
-      onError?.('WebSocket connection error')
+      onError?.(t('chat.wsError'))
     }
   }
 
@@ -180,17 +182,17 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
 
   function sendMessage(content: string, tempId?: string): boolean {
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      lastError.value = 'Not connected'
+      lastError.value = t('chat.notConnected')
       return false
     }
 
     if (!content.trim()) {
-      lastError.value = 'Message cannot be empty'
+      lastError.value = t('chat.emptyMessage')
       return false
     }
 
     if (content.length > 1000) {
-      lastError.value = 'Message too long (max 1000 characters)'
+      lastError.value = t('chat.messageTooLong')
       return false
     }
 
@@ -203,7 +205,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
       )
       return true
     } catch {
-      lastError.value = 'Failed to send message'
+      lastError.value = t('chat.sendFailed')
       return false
     }
   }
@@ -307,9 +309,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   function scheduleReconnect(): void {
     if (reconnectAttempts >= maxReconnectAttempts) {
       connectionState.value = 'disconnected'
-      const msg = import.meta.env.DEV
-        ? 'Chat server unavailable. Run pnpm worker:dev to start local worker.'
-        : 'Chat server unavailable. Please try again later.'
+      const msg = import.meta.env.DEV ? t('chat.serverUnavailableDev') : t('chat.serverUnavailable')
       lastError.value = msg
       onError?.(msg)
       return

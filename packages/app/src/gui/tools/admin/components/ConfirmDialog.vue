@@ -37,14 +37,14 @@
     </div>
     <template #footer>
       <button class="confirm-dialog__btn confirm-dialog__btn--cancel" @click="onCancel">
-        {{ cancelText }}
+        {{ cancelText || t('common.cancel') }}
       </button>
       <button
         class="confirm-dialog__btn"
         :class="`confirm-dialog__btn--${type}`"
         @click="onConfirm"
       >
-        {{ confirmText }}
+        {{ confirmText || t('common.confirm') }}
       </button>
     </template>
   </Modal>
@@ -52,6 +52,7 @@
 
 <script setup lang="ts">
 import Modal from './Modal.vue'
+import { useI18n } from '../../../composables/useI18n'
 
 interface Props {
   visible: boolean
@@ -62,9 +63,9 @@ interface Props {
   type?: 'danger' | 'warning' | 'info'
 }
 
+const { t } = useI18n()
+
 withDefaults(defineProps<Props>(), {
-  confirmText: '确认',
-  cancelText: '取消',
   type: 'danger',
 })
 
@@ -118,7 +119,7 @@ function onCancel() {
 .confirm-dialog__message {
   margin: 0;
   font-size: 14px;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   line-height: 1.5;
 }
 
@@ -138,12 +139,12 @@ function onCancel() {
 
 .confirm-dialog__btn--cancel {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .confirm-dialog__btn--cancel:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -172,5 +173,14 @@ function onCancel() {
 
 .confirm-dialog__btn--info:hover {
   background: rgba(10, 132, 255, 0.25);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .confirm-dialog__btn--cancel {
+  color: var(--gui-text-secondary, #666);
+}
+.light .confirm-dialog__btn--cancel:hover {
+  background: var(--gui-bg-surface-hover, #e8e8ed);
+  color: var(--gui-text-primary, #000);
 }
 </style>

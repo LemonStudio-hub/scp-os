@@ -25,7 +25,7 @@
         <button
           v-if="windowInstance.config.minimizable"
           class="scp-window__btn scp-window__btn--icon scp-window__btn--minimize"
-          title="Minimize"
+          :title="t('window.minimize')"
           @click.stop="onMinimize"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -35,7 +35,7 @@
         <button
           v-if="windowInstance.config.maximizable"
           class="scp-window__btn scp-window__btn--icon scp-window__btn--maximize"
-          :title="windowInstance.maximized ? 'Restore' : 'Maximize'"
+          :title="windowInstance.maximized ? t('window.restore') : t('window.maximize')"
           @click.stop="onMaximize"
         >
           <svg
@@ -76,7 +76,7 @@
         <button
           v-if="windowInstance.config.closable !== false"
           class="scp-window__btn scp-window__btn--icon scp-window__btn--close"
-          title="Close"
+          :title="t('window.close')"
           @click.stop="onClose"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -138,6 +138,7 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useDraggable } from '../composables/useDraggable'
 import { useResizable } from '../composables/useResizable'
+import { useI18n } from '../composables/useI18n'
 import type { WindowInstance } from '../types'
 import { useWindowManagerStore } from '../stores/windowManager'
 
@@ -153,6 +154,7 @@ const emit = defineEmits<{
   focus: []
 }>()
 
+const { t } = useI18n()
 const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
@@ -281,6 +283,19 @@ onBeforeUnmount(() => {
   display: none !important;
 }
 
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .scp-window {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.light .scp-window--focused {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.light .scp-window:not(.scp-window--focused) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 /* ── Header / Title Bar ────────────────────────────────────────────── */
 .scp-window__header {
   display: flex;
@@ -303,7 +318,7 @@ onBeforeUnmount(() => {
 }
 
 .scp-window__header--dragging {
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
 }
 
 .scp-window__header-title {
@@ -350,7 +365,7 @@ onBeforeUnmount(() => {
 }
 
 .scp-window__btn--icon:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
 }
 
@@ -372,7 +387,7 @@ onBeforeUnmount(() => {
 .scp-window__content {
   flex: 1;
   overflow: auto;
-  background: var(--gui-bg-base, #1c1c1e);
+  background: var(--gui-bg-base, #000000);
   min-height: 0;
   -webkit-overflow-scrolling: touch;
 }

@@ -591,7 +591,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .pc-feedback__content::-webkit-scrollbar-track {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
 }
 
 .pc-feedback__content::-webkit-scrollbar-thumb {
@@ -605,7 +605,7 @@ function getCategoryIcon(category: string): string {
   top: 0;
   z-index: 10;
   display: flex;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -656,7 +656,7 @@ function getCategoryIcon(category: string): string {
   padding: 12px;
   border-radius: 10px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   outline: none;
@@ -693,7 +693,7 @@ function getCategoryIcon(category: string): string {
   padding: 8px 14px;
   border-radius: 16px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-secondary, #8e8e93);
   font-size: 13px;
   cursor: pointer;
@@ -701,7 +701,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .pc-feedback__category:hover {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .pc-feedback__category--active {
@@ -796,7 +796,7 @@ function getCategoryIcon(category: string): string {
 
 /* ── Feedback Item ──────────────────────────────────────────────────── */
 .pc-feedback__item {
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 14px;
   padding: 14px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
@@ -910,7 +910,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .pc-feedback__vote-btn:hover {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
 }
 
@@ -943,7 +943,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .pc-feedback__comment-btn:hover {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
 }
 
@@ -980,7 +980,7 @@ function getCategoryIcon(category: string): string {
 }
 
 .pc-feedback__comment {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border-radius: 12px;
   padding: 12px;
 }
@@ -1042,7 +1042,7 @@ function getCategoryIcon(category: string): string {
   padding: 10px;
   border-radius: 10px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-primary, #ffffff);
   font-size: 13px;
   outline: none;
@@ -1085,7 +1085,7 @@ function getCategoryIcon(category: string): string {
   margin-top: 16px;
   border-radius: 12px;
   border: 0.5px solid var(--gui-border-subtle, #38383a);
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   color: var(--gui-text-primary, #ffffff);
   font-size: 14px;
   font-weight: 500;
@@ -1101,6 +1101,47 @@ function getCategoryIcon(category: string): string {
 }
 
 .pc-feedback__load-more:not(:disabled):hover {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-feedback__item {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.light .pc-feedback__item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.light .pc-feedback__compose {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.light .pc-feedback__category--active {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+  border-color: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+}
+.light .pc-feedback__submit-btn {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .pc-feedback__submit-btn:not(:disabled):hover {
+  background: rgba(99, 99, 102, 0.2);
+}
+.light .pc-feedback__avatar {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .pc-feedback__comment-avatar {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .pc-feedback__comment-submit {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+  color: var(--gui-accent, #636366);
+}
+.light .pc-feedback__comment-submit:not(:disabled):hover {
+  background: rgba(99, 99, 102, 0.2);
+}
+.light .pc-feedback__loading-dot {
+  background: var(--gui-accent, #636366);
 }
 </style>

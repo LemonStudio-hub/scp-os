@@ -95,7 +95,7 @@
                     opacity="0.2"
                   />
                 </svg>
-                <span>暂无数据</span>
+                <span>{{ t('admin.table.empty') }}</span>
               </div>
             </td>
           </tr>
@@ -135,6 +135,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from '../../../composables/useI18n'
 
 export interface TableColumn {
   key: string
@@ -156,6 +157,8 @@ const props = withDefaults(defineProps<Props>(), {
   selectedIds: () => [],
   selectable: true,
 })
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   sort: [column: string, direction: 'asc' | 'desc']

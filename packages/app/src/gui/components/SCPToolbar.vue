@@ -294,4 +294,9 @@ function onTap(_item: DockItemDef) {
     display: none;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .scp-dock__inner {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
 </style>

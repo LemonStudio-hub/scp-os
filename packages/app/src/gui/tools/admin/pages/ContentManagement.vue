@@ -26,15 +26,15 @@
               stroke-linejoin="round"
             />
           </svg>
-          导出
+          {{ t('admin.content.export') }}
         </button>
         <Transition name="dropdown">
           <div v-if="showExportMenu" class="content-mgmt__dropdown">
             <button class="content-mgmt__dropdown-item" @click="handleExport('csv')">
-              导出 CSV
+              {{ t('admin.content.exportCsv') }}
             </button>
             <button class="content-mgmt__dropdown-item" @click="handleExport('json')">
-              导出 JSON
+              {{ t('admin.content.exportJson') }}
             </button>
           </div>
         </Transition>
@@ -48,7 +48,7 @@
               stroke-linejoin="round"
             />
           </svg>
-          导入
+          {{ t('admin.content.import') }}
         </button>
       </div>
     </div>
@@ -74,7 +74,7 @@
           v-model="searchQuery"
           class="content-mgmt__search-input"
           type="text"
-          placeholder="搜索内容..."
+          :placeholder="t('admin.content.searchPlaceholder')"
           @input="onSearchDebounce"
         />
       </div>
@@ -96,13 +96,13 @@
             class="content-mgmt__action-btn content-mgmt__action-btn--edit"
             @click.stop="openEditModal(row)"
           >
-            编辑
+            {{ t('common.edit') }}
           </button>
           <button
             class="content-mgmt__action-btn content-mgmt__action-btn--danger"
             @click.stop="openDeleteConfirm(row)"
           >
-            删除
+            {{ t('common.delete') }}
           </button>
         </div>
       </template>
@@ -124,7 +124,7 @@
 
     <Modal
       :visible="editModalVisible"
-      title="编辑内容"
+      :title="t('admin.content.editTitle')"
       width="520px"
       @close="editModalVisible = false"
     >
@@ -144,28 +144,28 @@
           class="content-mgmt__btn content-mgmt__btn--ghost"
           @click="editModalVisible = false"
         >
-          取消
+          {{ t('common.cancel') }}
         </button>
         <button class="content-mgmt__btn content-mgmt__btn--primary" @click="handleSave">
-          保存
+          {{ t('common.save') }}
         </button>
       </template>
     </Modal>
 
     <Modal
       :visible="importModalVisible"
-      title="导入内容"
+      :title="t('admin.content.importTitle')"
       width="420px"
       @close="importModalVisible = false"
     >
       <div class="content-mgmt__modal-body">
         <div class="content-mgmt__modal-field">
-          <label class="content-mgmt__modal-label">粘贴 JSON 数据</label>
+          <label class="content-mgmt__modal-label">{{ t('admin.content.importLabel') }}</label>
           <textarea
             v-model="importData"
             class="content-mgmt__textarea"
             rows="8"
-            placeholder='[{"title": "...", ...}]'
+            :placeholder="t('admin.content.importPlaceholder')"
           ></textarea>
         </div>
       </div>
@@ -174,18 +174,18 @@
           class="content-mgmt__btn content-mgmt__btn--ghost"
           @click="importModalVisible = false"
         >
-          取消
+          {{ t('common.cancel') }}
         </button>
         <button class="content-mgmt__btn content-mgmt__btn--primary" @click="handleImport">
-          导入
+          {{ t('admin.content.import') }}
         </button>
       </template>
     </Modal>
 
     <ConfirmDialog
       :visible="deleteConfirmVisible"
-      title="删除内容"
-      message="确定要删除此内容吗？此操作不可撤销。"
+      :title="t('admin.content.deleteTitle')"
+      :message="t('admin.content.deleteMessage')"
       type="danger"
       @confirm="handleDelete"
       @cancel="deleteConfirmVisible = false"
@@ -199,10 +199,12 @@ import { DataTable, BatchActionBar, Pagination, ConfirmDialog, Modal } from '../
 import type { TableColumn, BatchAction } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
+import { useI18n } from '../../../composables/useI18n'
 import * as adminApi from '../services/adminApi'
 
 const toast = useToast()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
 interface ContentTab {
   key: string
@@ -211,71 +213,71 @@ interface ContentTab {
   editFields: { key: string; label: string }[]
 }
 
-const tabs: ContentTab[] = [
+const tabs = computed<ContentTab[]>(() => [
   {
     key: 'scp_items',
-    label: 'SCP条目',
+    label: t('admin.content.tabScp'),
     columns: [
       { key: 'id', label: 'ID', width: '70px' },
-      { key: 'item_number', label: '编号' },
-      { key: 'title', label: '标题' },
-      { key: 'object_class', label: '对象等级' },
-      { key: 'created_at', label: '创建时间' },
-      { key: 'actions', label: '操作', width: '140px' },
+      { key: 'item_number', label: t('admin.content.colNumber') },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'object_class', label: t('admin.content.colClass') },
+      { key: 'created_at', label: t('admin.content.colCreated') },
+      { key: 'actions', label: t('admin.content.colActions'), width: '140px' },
     ],
     editFields: [
-      { key: 'item_number', label: '编号' },
-      { key: 'title', label: '标题' },
-      { key: 'object_class', label: '对象等级' },
+      { key: 'item_number', label: t('admin.content.colNumber') },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'object_class', label: t('admin.content.colClass') },
     ],
   },
   {
     key: 'tales',
-    label: '故事',
+    label: t('admin.content.tabTales'),
     columns: [
       { key: 'id', label: 'ID', width: '70px' },
-      { key: 'title', label: '标题' },
-      { key: 'author', label: '作者' },
-      { key: 'rating', label: '评分' },
-      { key: 'created_at', label: '创建时间' },
-      { key: 'actions', label: '操作', width: '140px' },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'author', label: t('admin.content.colAuthor') },
+      { key: 'rating', label: t('admin.content.colRating') },
+      { key: 'created_at', label: t('admin.content.colCreated') },
+      { key: 'actions', label: t('admin.content.colActions'), width: '140px' },
     ],
     editFields: [
-      { key: 'title', label: '标题' },
-      { key: 'author', label: '作者' },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'author', label: t('admin.content.colAuthor') },
     ],
   },
   {
     key: 'goi',
-    label: 'GoI格式',
+    label: t('admin.content.tabGoi'),
     columns: [
       { key: 'id', label: 'ID', width: '70px' },
-      { key: 'name', label: '名称' },
-      { key: 'acronym', label: '缩写' },
-      { key: 'created_at', label: '创建时间' },
-      { key: 'actions', label: '操作', width: '140px' },
+      { key: 'name', label: t('admin.content.colName') },
+      { key: 'acronym', label: t('admin.content.colAcronym') },
+      { key: 'created_at', label: t('admin.content.colCreated') },
+      { key: 'actions', label: t('admin.content.colActions'), width: '140px' },
     ],
     editFields: [
-      { key: 'name', label: '名称' },
-      { key: 'acronym', label: '缩写' },
+      { key: 'name', label: t('admin.content.colName') },
+      { key: 'acronym', label: t('admin.content.colAcronym') },
     ],
   },
   {
     key: 'hubs',
-    label: '中心页',
+    label: t('admin.content.tabHubs'),
     columns: [
       { key: 'id', label: 'ID', width: '70px' },
-      { key: 'title', label: '标题' },
-      { key: 'description', label: '描述' },
-      { key: 'created_at', label: '创建时间' },
-      { key: 'actions', label: '操作', width: '140px' },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'description', label: t('admin.content.colDesc') },
+      { key: 'created_at', label: t('admin.content.colCreated') },
+      { key: 'actions', label: t('admin.content.colActions'), width: '140px' },
     ],
     editFields: [
-      { key: 'title', label: '标题' },
-      { key: 'description', label: '描述' },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'description', label: t('admin.content.colDesc') },
     ],
   },
-]
+])
 
 const activeTab = ref('scp_items')
 const searchQuery = ref('')
@@ -295,14 +297,14 @@ const importData = ref('')
 const deleteConfirmVisible = ref(false)
 const deleteTarget = ref<Record<string, any> | null>(null)
 
-const activeTabConfig = computed(() => tabs.find((t) => t.key === activeTab.value)!)
+const activeTabConfig = computed(() => tabs.value.find((t) => t.key === activeTab.value)!)
 const activeColumns = computed(() => activeTabConfig.value.columns)
 const editableFields = computed(() => activeTabConfig.value.editFields)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize)))
 
-const batchActions: BatchAction[] = [
-  { key: 'delete', label: '批量删除', icon: 'delete', type: 'danger' },
-]
+const batchActions = computed<BatchAction[]>(() => [
+  { key: 'delete', label: t('admin.content.batchDelete'), icon: 'delete', type: 'danger' },
+])
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -337,10 +339,10 @@ async function fetchContent() {
       contentList.value = res.data || []
       totalItems.value = res.total ?? contentList.value.length
     } else {
-      toast.error(res.error || '获取内容列表失败')
+      toast.error(res.error || t('admin.content.fetchError'))
     }
   } catch {
-    toast.error('获取内容列表失败')
+    toast.error(t('admin.content.fetchError'))
   } finally {
     loading.value = false
     selectedIds.value = []
@@ -381,14 +383,14 @@ async function handleSave() {
       editForm.value
     )
     if (res.success) {
-      toast.success('内容已更新')
+      toast.success(t('admin.content.saveSuccess'))
       editModalVisible.value = false
       fetchContent()
     } else {
-      toast.error(res.error || '更新失败')
+      toast.error(res.error || t('admin.content.saveError'))
     }
   } catch {
-    toast.error('更新操作失败')
+    toast.error(t('admin.content.saveActionError'))
   }
 }
 
@@ -403,14 +405,14 @@ async function handleDelete() {
   try {
     const res = await adminApi.deleteAdminContent(token, activeTab.value, deleteTarget.value.id)
     if (res.success) {
-      toast.success('内容已删除')
+      toast.success(t('admin.content.deleteSuccess'))
       deleteConfirmVisible.value = false
       fetchContent()
     } else {
-      toast.error(res.error || '删除失败')
+      toast.error(res.error || t('admin.content.deleteError'))
     }
   } catch {
-    toast.error('删除操作失败')
+    toast.error(t('admin.content.deleteActionError'))
   }
 }
 
@@ -426,14 +428,14 @@ async function handleBatchAction(key: string) {
         selectedIds.value
       )
       if (res.success) {
-        toast.success('批量删除成功')
+        toast.success(t('admin.content.batchDeleteSuccess'))
         selectedIds.value = []
         fetchContent()
       } else {
-        toast.error(res.error || '批量删除失败')
+        toast.error(res.error || t('admin.content.batchDeleteError'))
       }
     } catch {
-      toast.error('批量删除失败')
+      toast.error(t('admin.content.batchDeleteError'))
     }
   }
 }
@@ -455,12 +457,12 @@ async function handleExport(format: 'csv' | 'json') {
       a.download = `${activeTab.value}_export.${format}`
       a.click()
       URL.revokeObjectURL(url)
-      toast.success('导出成功')
+      toast.success(t('admin.content.exportSuccess'))
     } else {
-      toast.error(res.error || '导出失败')
+      toast.error(res.error || t('admin.content.exportError'))
     }
   } catch {
-    toast.error('导出失败')
+    toast.error(t('admin.content.exportError'))
   }
 }
 
@@ -475,19 +477,19 @@ async function handleImport() {
   try {
     const parsed = JSON.parse(importData.value)
     if (!Array.isArray(parsed)) {
-      toast.error('请输入有效的 JSON 数组')
+      toast.error(t('admin.content.importInvalid'))
       return
     }
     const res = await adminApi.importContent(token, activeTab.value, parsed)
     if (res.success) {
-      toast.success('导入成功')
+      toast.success(t('admin.content.importSuccess'))
       importModalVisible.value = false
       fetchContent()
     } else {
-      toast.error(res.error || '导入失败')
+      toast.error(res.error || t('admin.content.importError'))
     }
   } catch {
-    toast.error('JSON 格式错误')
+    toast.error(t('admin.content.importJsonError'))
   }
 }
 
@@ -532,7 +534,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__tab:hover {
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
 }
 
 .content-mgmt__tab--active {
@@ -606,11 +608,11 @@ onMounted(fetchContent)
 
 .content-mgmt__btn--secondary {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
 }
 
 .content-mgmt__btn--secondary:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -626,12 +628,12 @@ onMounted(fetchContent)
 
 .content-mgmt__btn--ghost {
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   border: 1px solid var(--gui-border-default, #2a2a2a);
 }
 
 .content-mgmt__btn--ghost:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -655,7 +657,7 @@ onMounted(fetchContent)
   padding: 8px 14px;
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   font-size: 13px;
   text-align: left;
   cursor: pointer;
@@ -696,7 +698,7 @@ onMounted(fetchContent)
 }
 
 .content-mgmt__action-btn:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
 }
 
 .content-mgmt__action-btn--edit {
@@ -775,5 +777,31 @@ onMounted(fetchContent)
 
 .content-mgmt__textarea::placeholder {
   color: var(--gui-text-disabled, #4a4a4a);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .content-mgmt__tabs {
+  background: var(--gui-bg-surface-hover, #e8e8ed);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .content-mgmt__tab--active {
+  background: var(--gui-bg-surface, #ffffff);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.light .content-mgmt__search-input,
+.light .content-mgmt__input,
+.light .content-mgmt__textarea {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #d1d1d6);
+}
+.light .content-mgmt__action-btn {
+  border-color: var(--gui-border-default, #d1d1d6);
+  background: var(--gui-bg-surface, #ffffff);
+}
+.light .content-mgmt__action-btn:hover {
+  background: var(--gui-bg-surface-hover, #f0f0f0);
+}
+.light .content-mgmt__dropdown {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 </style>

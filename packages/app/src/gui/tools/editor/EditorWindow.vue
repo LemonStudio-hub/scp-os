@@ -6,43 +6,43 @@
         <div class="text-editor__toolbar-left">
           <button
             class="text-editor__tool-btn"
-            :title="'New File (Ctrl+N)'"
+            :title="t('editor.newFileHint')"
             @click="editorStore.openNewFile"
           >
             <GUIIcon name="file" :size="14" />
-            <span>New</span>
+            <span>{{ t('editor.newFile') }}</span>
           </button>
-          <button class="text-editor__tool-btn" :title="'Save (Ctrl+S)'" @click="saveActive">
+          <button class="text-editor__tool-btn" :title="t('editor.saveHint')" @click="saveActive">
             <GUIIcon name="save" :size="14" />
-            <span>Save</span>
+            <span>{{ t('common.save') }}</span>
           </button>
-          <button class="text-editor__tool-btn" :title="'Save All'" @click="saveAll">
+          <button class="text-editor__tool-btn" :title="t('editor.saveAllHint')" @click="saveAll">
             <GUIIcon name="save" :size="14" />
-            <span>All</span>
+            <span>{{ t('editor.saveAll') }}</span>
           </button>
           <div class="text-editor__toolbar-divider" />
           <button
             class="text-editor__tool-btn"
             :class="{ 'text-editor__tool-btn--active': showFindReplace }"
-            :title="'Find & Replace (Ctrl+F)'"
+            :title="t('editor.findReplaceHint')"
             @click="toggleFindReplace"
           >
             <GUIIcon name="search" :size="14" />
-            <span>Find</span>
+            <span>{{ t('editor.findReplace') }}</span>
           </button>
           <button
             class="text-editor__tool-btn"
-            :title="'Go to Line (Ctrl+G)'"
+            :title="t('editor.goToLineHint')"
             @click="openGoToLine"
           >
             <GUIIcon name="arrow-right" :size="14" />
-            <span>Go</span>
+            <span>{{ t('editor.goToLine') }}</span>
           </button>
           <div class="text-editor__toolbar-divider" />
           <button
             class="text-editor__tool-btn"
             :class="{ 'text-editor__tool-btn--active': editorStore.wordWrap }"
-            :title="'Toggle Word Wrap (Alt+Z)'"
+            :title="t('editor.wordWrapHint')"
             @click="toggleWordWrap"
           >
             <svg
@@ -60,13 +60,13 @@
               <polyline points="14 15 11 18 14 21" />
               <path d="M3 18h7" />
             </svg>
-            <span>Wrap</span>
+            <span>{{ t('editor.wordWrap') }}</span>
           </button>
         </div>
         <div class="text-editor__toolbar-right">
           <button
             class="text-editor__tool-btn text-editor__tool-btn--icon"
-            :title="'Zoom Out (Ctrl+-)'"
+            :title="t('editor.zoomOutHint')"
             @click="zoomOut"
           >
             <svg
@@ -83,7 +83,7 @@
           <span class="text-editor__font-size-label">{{ editorStore.fontSize }}px</span>
           <button
             class="text-editor__tool-btn text-editor__tool-btn--icon"
-            :title="'Zoom In (Ctrl++)'"
+            :title="t('editor.zoomInHint')"
             @click="zoomIn"
           >
             <svg
@@ -129,26 +129,26 @@
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
               </svg>
             </div>
-            <p class="text-editor__empty-title">Text Editor</p>
+            <p class="text-editor__empty-title">{{ t('editor.textEditor') }}</p>
             <p class="text-editor__empty-desc">
-              Create a new file or open one from the File Manager
+              {{ t('editor.openHint') }}
             </p>
             <div class="text-editor__empty-shortcuts">
               <div class="text-editor__shortcut" @click="editorStore.openNewFile">
                 <kbd>Ctrl</kbd><kbd>N</kbd>
-                <span>New File</span>
+                <span>{{ t('editor.newFile') }}</span>
               </div>
               <div class="text-editor__shortcut" @click="toggleFindReplace">
                 <kbd>Ctrl</kbd><kbd>F</kbd>
-                <span>Find & Replace</span>
+                <span>{{ t('editor.findReplace') }}</span>
               </div>
               <div class="text-editor__shortcut" @click="saveActive">
                 <kbd>Ctrl</kbd><kbd>S</kbd>
-                <span>Save File</span>
+                <span>{{ t('common.save') }}</span>
               </div>
               <div class="text-editor__shortcut" @click="openGoToLine">
                 <kbd>Ctrl</kbd><kbd>G</kbd>
-                <span>Go to Line</span>
+                <span>{{ t('editor.goToLine') }}</span>
               </div>
             </div>
           </div>
@@ -176,14 +176,14 @@
                   ref="findInputRef"
                   v-model="findText"
                   class="text-editor__find-input"
-                  placeholder="Find..."
+                  :placeholder="t('editor.findPlaceholder')"
                   @input="performFind"
                   @keydown.enter="findNext"
                   @keydown.escape="closeFindReplace"
                 />
                 <button
                   class="text-editor__find-btn"
-                  title="Previous (Shift+Enter)"
+                  :title="t('editor.previousHint')"
                   @click="findPrev"
                 >
                   <svg
@@ -197,7 +197,11 @@
                     <path d="M13 10L8 5L3 10" />
                   </svg>
                 </button>
-                <button class="text-editor__find-btn" title="Next (Enter)" @click="findNext">
+                <button
+                  class="text-editor__find-btn"
+                  :title="t('editor.nextHint')"
+                  @click="findNext"
+                >
                   <svg
                     width="12"
                     height="12"
@@ -215,7 +219,7 @@
                 <span
                   v-else-if="findText && findCount === 0"
                   class="text-editor__find-count text-editor__find-count--none"
-                  >No results</span
+                  >{{ t('editor.noResults') }}</span
                 >
               </div>
               <div class="text-editor__find-row">
@@ -233,13 +237,17 @@
                 <input
                   v-model="replaceText"
                   class="text-editor__find-input"
-                  placeholder="Replace..."
+                  :placeholder="t('editor.replacePlaceholder')"
                   @keydown.enter.exact="replaceCurrent"
                   @keydown.ctrl.enter="replaceAll"
                   @keydown.escape="closeFindReplace"
                 />
-                <button class="text-editor__find-btn" @click="replaceCurrent">Replace</button>
-                <button class="text-editor__find-btn" @click="replaceAll">All</button>
+                <button class="text-editor__find-btn" @click="replaceCurrent">
+                  {{ t('editor.replace') }}
+                </button>
+                <button class="text-editor__find-btn" @click="replaceAll">
+                  {{ t('editor.replaceAll') }}
+                </button>
               </div>
               <button class="text-editor__find-close" @click="closeFindReplace">
                 <svg
@@ -258,7 +266,7 @@
           <!-- Go to Line Panel -->
           <Transition name="find-slide">
             <div v-if="showGoToLine" class="text-editor__goto-line">
-              <span class="text-editor__goto-label">Line:</span>
+              <span class="text-editor__goto-label">{{ t('editor.line') }}</span>
               <input
                 ref="gotoInputRef"
                 v-model="gotoLineText"
@@ -269,7 +277,7 @@
                 @keydown.enter="goToLine"
                 @keydown.escape="closeGoToLine"
               />
-              <button class="text-editor__find-btn" @click="goToLine">Go</button>
+              <button class="text-editor__find-btn" @click="goToLine">{{ t('editor.go') }}</button>
               <button class="text-editor__find-close" @click="closeGoToLine">
                 <svg
                   width="12"
@@ -333,6 +341,7 @@ import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useTextEditorStore } from '../../stores/textEditor'
 import { registerShortcut, setContext } from '../../composables/useKeyboardShortcuts'
+import { useI18n } from '../../composables/useI18n'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -341,6 +350,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { t } = useI18n()
 const editorStore = useTextEditorStore()
 const codemirrorRef = ref<HTMLElement>()
 const findInputRef = ref<HTMLInputElement>()
@@ -392,8 +402,8 @@ const statusLeftItems = computed(() => {
       if (selectedLen > 0) {
         items.push(`(${selectedLen} selected)`)
       }
-      items.push(`${lineCount} lines`)
-      items.push(`${charCount} chars`)
+      items.push(`${lineCount} ${t('editor.lines')}`)
+      items.push(`${charCount} ${t('editor.characters')}`)
     } else {
       items.push('Ln 1, Col 1')
     }
@@ -404,10 +414,10 @@ const statusLeftItems = computed(() => {
 const statusRightItems = computed(() => {
   const items: string[] = []
   if (editorStore.hasUnsavedChanges) {
-    items.push('● Modified')
+    items.push(`● ${t('editor.modified')}`)
   }
   items.push(`Tab: ${editorStore.tabSize}`)
-  items.push(editorStore.wordWrap ? 'Wrap: On' : 'Wrap: Off')
+  items.push(editorStore.wordWrap ? t('editor.wrapOn') : t('editor.wrapOff'))
   items.push('UTF-8')
   return items
 })
@@ -493,13 +503,17 @@ function createTheme(): any {
       color: 'var(--gui-text-primary, #f0f0f0)',
     },
     '.cm-selectionBackground': {
-      background: 'rgba(233, 69, 96, 0.2) !important',
+      background: isLight
+        ? 'rgba(99, 99, 102, 0.15) !important'
+        : 'rgba(233, 69, 96, 0.2) !important',
     },
     '&.cm-focused .cm-selectionBackground': {
-      background: 'rgba(233, 69, 96, 0.25) !important',
+      background: isLight
+        ? 'rgba(99, 99, 102, 0.2) !important'
+        : 'rgba(233, 69, 96, 0.25) !important',
     },
     '.cm-selectionMatch': {
-      background: 'rgba(233, 69, 96, 0.12)',
+      background: isLight ? 'rgba(99, 99, 102, 0.1)' : 'rgba(233, 69, 96, 0.12)',
     },
     '.cm-searchMatch': {
       background: 'rgba(255, 200, 50, 0.2)',
@@ -509,9 +523,9 @@ function createTheme(): any {
       background: 'rgba(255, 200, 50, 0.35)',
     },
     '.cm-matchingBracket': {
-      backgroundColor: 'rgba(233, 69, 96, 0.25)',
+      backgroundColor: isLight ? 'rgba(99, 99, 102, 0.15)' : 'rgba(233, 69, 96, 0.25)',
       outline: '1px solid var(--gui-accent, #e94560)',
-      color: '#fff !important',
+      color: isLight ? '#000 !important' : '#fff !important',
     },
     '.cm-nonmatchingBracket': {
       backgroundColor: 'rgba(255, 50, 50, 0.25)',
@@ -552,7 +566,7 @@ function createTheme(): any {
         padding: '4px 8px',
       },
       '& > ul > li[aria-selected]': {
-        background: 'rgba(233, 69, 96, 0.15)',
+        background: isLight ? 'rgba(99, 99, 102, 0.1)' : 'rgba(233, 69, 96, 0.15)',
         color: 'var(--gui-text-primary, #fff)',
       },
     },
@@ -673,7 +687,7 @@ async function saveAll(): Promise<void> {
 function onCloseFile(fileId: string): void {
   const file = editorStore.openFiles.find((f) => f.id === fileId)
   if (file?.dirty) {
-    if (!confirm(`"${file.name}" has unsaved changes. Close anyway?`)) {
+    if (!confirm(t('editor.unsavedChanges', { name: file.name }))) {
       return
     }
   }
@@ -972,7 +986,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: var(--gui-spacing-xxs, 2px) var(--gui-spacing-sm, 8px);
-  background: var(--gui-bg-surface, #0c0c0c);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   gap: var(--gui-spacing-xs, 4px);
 }
@@ -1107,7 +1121,7 @@ onUnmounted(() => {
 }
 
 .text-editor__find-btn {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-sm, 6px);
   padding: 4px 8px;
@@ -1144,7 +1158,7 @@ onUnmounted(() => {
 }
 
 .text-editor__find-close:hover {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #f0f0f0);
 }
 
@@ -1302,5 +1316,55 @@ onUnmounted(() => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .text-editor__find-replace,
+.light .text-editor__goto-line {
+  background: var(--gui-bg-surface, #fff);
+  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.light .text-editor__find-input,
+.light .text-editor__goto-input {
+  background: var(--gui-bg-base, #f2f2f7);
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.06));
+  color: var(--gui-text-primary, #000);
+}
+.light .text-editor__find-input:focus,
+.light .text-editor__goto-input:focus {
+  border-color: var(--gui-accent, #636366);
+}
+.light .text-editor__find-btn {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.06));
+  color: var(--gui-text-secondary, #6e6e73);
+}
+.light .text-editor__find-btn:hover {
+  background: var(--gui-bg-surface-active, rgba(0, 0, 0, 0.08));
+  color: var(--gui-text-primary, #000);
+}
+.light .text-editor__tool-btn--active {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.12));
+}
+.light .text-editor__tool-btn--active:hover {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.18));
+}
+.light .text-editor__shortcut {
+  background: var(--gui-bg-surface, rgba(0, 0, 0, 0.02));
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.06));
+}
+.light .text-editor__shortcut:hover {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+}
+.light .text-editor__shortcut kbd {
+  background: var(--gui-bg-surface-raised, rgba(0, 0, 0, 0.04));
+  border-color: var(--gui-border-subtle, rgba(0, 0, 0, 0.08));
+}
+.light .editor-cmd-palette {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+.light .editor-goto-line {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 </style>

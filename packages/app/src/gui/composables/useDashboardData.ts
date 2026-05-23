@@ -1,4 +1,5 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from './useI18n'
 
 interface PerformanceMemory {
   usedJSHeapSize: number
@@ -49,6 +50,7 @@ export interface ChartPoint {
 }
 
 export function useDashboardData(refreshIntervalMs: number = 3000) {
+  const { t } = useI18n()
   const memoryUsage = ref<MemoryInfo>({ used: 0, limit: 0, percent: 0 })
   const cpuUsage = ref(0)
   const cpuCores = ref(navigator.hardwareConcurrency || 4)
@@ -266,6 +268,20 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     if (networkStatus.value === 'Online') return 'status-online'
     if (networkStatus.value === 'Slow') return 'status-slow'
     return 'status-offline'
+  })
+
+  const networkStatusLabel = computed(() => {
+    if (networkStatus.value === 'Online') return t('dash.online')
+    if (networkStatus.value === 'Slow') return t('dash.slow')
+    if (networkStatus.value === 'Unstable') return t('dash.unstable')
+    if (networkStatus.value === 'Offline') return t('dash.offline')
+    return networkStatus.value
+  })
+
+  const connectionTypeLabel = computed(() => {
+    if (connectionType.value === 'Unknown') return t('dash.unknown')
+    if (connectionType.value === 'None') return t('dash.none')
+    return connectionType.value
   })
 
   function addHistoryPoint(history: typeof memoryHistory, value: number) {
@@ -569,7 +585,9 @@ export function useDashboardData(refreshIntervalMs: number = 3000) {
     jsListeners,
     latency,
     networkStatus,
+    networkStatusLabel,
     connectionType,
+    connectionTypeLabel,
     currentTime,
     lastUpdated,
     isRefreshing,

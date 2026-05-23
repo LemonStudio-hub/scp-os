@@ -1,6 +1,8 @@
 <template>
   <div class="admin-pagination">
-    <span class="admin-pagination__total">共 {{ totalItems }} 条</span>
+    <span class="admin-pagination__total">{{
+      t('admin.pagination.total', { total: totalItems })
+    }}</span>
     <div class="admin-pagination__controls">
       <button
         class="admin-pagination__btn"
@@ -49,6 +51,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from '../../../composables/useI18n'
 
 interface Props {
   currentPage: number
@@ -61,6 +64,8 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   pageChange: [page: number]
 }>()
+
+const { t } = useI18n()
 
 const displayPages = computed(() => {
   const pages: (number | string)[] = []
@@ -126,7 +131,7 @@ function onPageChange(page: number) {
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   font-size: 13px;
   cursor: pointer;
   transition: all 120ms ease;

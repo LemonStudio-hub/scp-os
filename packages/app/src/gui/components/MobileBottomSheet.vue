@@ -189,4 +189,9 @@ function onBackdropClick() {
     opacity: 1;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-bottom-sheet__content {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
+}
 </style>

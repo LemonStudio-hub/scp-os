@@ -5,7 +5,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { readFileContent, saveTextFile } from '../../services/fileService'
+import { filesystem } from '../../utils/filesystem'
 import type { OpenFile } from '../types'
 
 export const useTextEditorStore = defineStore('textEditor', () => {
@@ -36,7 +36,7 @@ export const useTextEditorStore = defineStore('textEditor', () => {
     }
 
     const name = path.split('/').pop() || path
-    const fileContent = content ?? (await readFileContent(path)) ?? ''
+    const fileContent = content ?? filesystem.readFile(path) ?? ''
     const language = detectLanguage(name)
 
     const newFile: OpenFile = {
@@ -110,7 +110,7 @@ export const useTextEditorStore = defineStore('textEditor', () => {
     const file = openFiles.value.find((f) => f.id === fileId)
     if (!file) return false
 
-    const result = await saveTextFile(file.path, file.content)
+    const result = filesystem.writeFile(file.path, file.content)
     if (result) {
       file.originalContent = file.content
       file.dirty = false

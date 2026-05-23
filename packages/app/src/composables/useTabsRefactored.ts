@@ -54,7 +54,7 @@ export function useTabsRefactored() {
     options?: {
       icon?: string
       closable?: boolean
-      data?: Record<string, any>
+      data?: Record<string, unknown>
     }
   ): Promise<TabEntity> => {
     const tab = new TabEntity({

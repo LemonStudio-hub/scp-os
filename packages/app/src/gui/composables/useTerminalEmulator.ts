@@ -12,10 +12,30 @@ import { ANSICode } from '../../constants/theme'
 export interface UseTerminalEmulatorOptions {
   /** Callback to get the active terminal instance */
   getTerminal: () => Terminal | null
+  t?: (key: string, params?: Record<string, string | number>) => string
 }
 
 export function useTerminalEmulator(options: UseTerminalEmulatorOptions) {
-  const { getTerminal } = options
+  const { getTerminal, t } = options
+
+  const _t = t || ((key: string) => key)
+
+  function translate(key: string, params?: Record<string, string | number>): string {
+    const result = _t(key, params)
+    if (result !== key) return result
+    // Fallbacks for Chinese
+    const fallbacks: Record<string, string> = {
+      'terminal.errorPrefix': '错误',
+      'terminal.commandNotFound': '未找到命令',
+    }
+    let str = fallbacks[key] || key
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v))
+      }
+    }
+    return str
+  }
 
   const inputBuffer = ref('')
 
@@ -56,11 +76,13 @@ export function useTerminalEmulator(options: UseTerminalEmulatorOptions) {
         )
       } catch (error) {
         terminal.writeln(
-          `${ANSICode.red}Error: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
+          `${ANSICode.red}${translate('terminal.errorPrefix')}: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
         )
       }
     } else {
-      terminal.writeln(`${ANSICode.yellow}Command not found: ${command}${ANSICode.reset}`)
+      terminal.writeln(
+        `${ANSICode.yellow}${translate('terminal.commandNotFound', { cmd: command })}: ${command}${ANSICode.reset}`
+      )
     }
 
     writePrompt()

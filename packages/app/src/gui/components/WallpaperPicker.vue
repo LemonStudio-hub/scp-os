@@ -271,7 +271,7 @@ function close() {
   width: 100%;
   max-width: 600px;
   max-height: 80dvh;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 16px 16px 0 0;
   display: flex;
   flex-direction: column;
@@ -317,7 +317,7 @@ function close() {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -418,7 +418,7 @@ function close() {
   aspect-ratio: 3 / 4;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .wallpaper-picker__item-preview--default {
@@ -503,7 +503,7 @@ function close() {
 }
 
 .wallpaper-picker__delete-actions button:first-child {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
 }
 
@@ -521,5 +521,23 @@ function close() {
 .wallpaper-picker-enter-from,
 .wallpaper-picker-leave-to {
   opacity: 0;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .wallpaper-picker-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+.light .wallpaper-picker {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .wallpaper-picker__item-preview {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+.light .wallpaper-picker__item-delete {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+.light .wallpaper-picker__delete-actions button:first-child {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 </style>

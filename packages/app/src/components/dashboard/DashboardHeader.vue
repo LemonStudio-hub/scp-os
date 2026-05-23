@@ -19,7 +19,7 @@
             <path d="M13 17V5" />
             <path d="M8 17v-3" /></svg
         ></span>
-        <h2>Performance Monitor</h2>
+        <h2>{{ t('perf.performanceMonitor') }}</h2>
       </div>
       <span class="version">{{ version }}</span>
     </div>
@@ -27,13 +27,15 @@
     <div class="header-right">
       <div class="monitoring-status" :class="{ active: isMonitoring }">
         <span class="status-dot"></span>
-        <span class="status-text">{{ isMonitoring ? 'Monitoring' : 'Stopped' }}</span>
+        <span class="status-text">{{
+          isMonitoring ? t('perf.monitoring') : t('perf.stopped')
+        }}</span>
       </div>
 
       <button
         class="btn-control"
-        :title="isMonitoring ? 'Stop monitoring' : 'Start monitoring'"
-        aria-label="Toggle monitoring"
+        :title="isMonitoring ? t('perf.stopMonitoring') : t('perf.startMonitoring')"
+        :aria-label="t('perf.toggleMonitoring')"
         @click="$emit('toggleMonitoring')"
       >
         {{ isMonitoring ? '⏹' : '▶' }}
@@ -41,8 +43,8 @@
 
       <button
         class="btn-control"
-        title="Refresh data"
-        aria-label="Refresh data"
+        :title="t('perf.refreshData')"
+        :aria-label="t('perf.refreshData')"
         @click="$emit('refresh')"
       >
         <svg
@@ -61,12 +63,18 @@
         </svg>
       </button>
 
-      <button class="btn-close" aria-label="Close dashboard" @click="$emit('close')">X</button>
+      <button class="btn-close" :aria-label="t('perf.closeDashboard')" @click="$emit('close')">
+        X
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '../../gui/composables/useI18n'
+
+const { t } = useI18n()
+
 defineProps<{
   isMonitoring: boolean
   version: string
@@ -85,7 +93,7 @@ defineEmits<{
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   flex-shrink: 0;
 }
@@ -120,7 +128,7 @@ defineEmits<{
   font-size: 11px;
   font-weight: 500;
   color: var(--gui-text-tertiary, #636366);
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   padding: 3px 8px;
   border-radius: var(--gui-radius-sm, 6px);
   letter-spacing: 0.02em;
@@ -137,7 +145,7 @@ defineEmits<{
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-md, 10px);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   transition: all 200ms ease;
@@ -193,7 +201,7 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-text-secondary, #8e8e93);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);
@@ -218,7 +226,7 @@ defineEmits<{
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-text-secondary, #8e8e93);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-md, 10px);

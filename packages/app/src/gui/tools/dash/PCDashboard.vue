@@ -26,23 +26,23 @@
               <span class="dash__class-level">
                 {{
                   statusLevel === 'good'
-                    ? 'UNRESTRICTED'
+                    ? t('dash.unrestricted')
                     : statusLevel === 'warn'
-                      ? 'RESTRICTED'
-                      : 'CLASSIFIED'
+                      ? t('dash.restricted')
+                      : t('dash.classified')
                 }}
               </span>
             </div>
           </div>
           <div class="dash__header-center">
             <span class="dash__clock">{{ currentTime }}</span>
-            <span class="dash__uptime">UPTIME: {{ formatUptime(uptime) }}</span>
+            <span class="dash__uptime">{{ t('dash.uptime') }} {{ formatUptime(uptime) }}</span>
           </div>
           <div class="dash__header-right">
             <button
               class="dash__btn-icon"
               :class="{ 'dash__btn-icon--active': activeTab === 'overview' }"
-              title="Overview"
+              :title="t('dash.overview')"
               @click="activeTab = 'overview'"
             >
               <svg
@@ -62,7 +62,7 @@
             <button
               class="dash__btn-icon"
               :class="{ 'dash__btn-icon--active': activeTab === 'system' }"
-              title="System"
+              :title="t('dash.system')"
               @click="activeTab = 'system'"
             >
               <svg
@@ -82,7 +82,7 @@
             <button
               class="dash__btn-icon"
               :class="{ 'dash__btn-icon--active': activeTab === 'network' }"
-              title="Network"
+              :title="t('dash.network')"
               @click="activeTab = 'network'"
             >
               <svg
@@ -111,7 +111,7 @@
             <button
               class="dash__btn-icon"
               :class="{ 'dash__btn-icon--spinning': isRefreshing }"
-              title="Refresh"
+              :title="t('dash.refresh')"
               @click="refreshMetrics"
             >
               <svg
@@ -156,6 +156,7 @@
                     stroke="rgba(255,255,255,0.04)"
                     stroke-width="12"
                     stroke-linecap="round"
+                    class="dash__gauge-track"
                   />
                   <path
                     d="M 20 100 A 80 80 0 0 1 180 100"
@@ -175,6 +176,7 @@
                     stroke-width="1"
                     stroke-dasharray="4 8"
                     opacity="0.2"
+                    class="dash__gauge-dots"
                   />
                   <text
                     x="100"
@@ -195,8 +197,9 @@
                     font-size="8"
                     font-weight="600"
                     letter-spacing="0.2em"
+                    class="dash__gauge-label"
                   >
-                    SYSTEM INDEX
+                    {{ t('dash.systemIndex') }}
                   </text>
                 </svg>
               </div>
@@ -211,6 +214,7 @@
                     stroke="rgba(255,255,255,0.04)"
                     stroke-width="5"
                     stroke-linecap="round"
+                    class="dash__mini-gauge-track"
                   />
                   <path
                     d="M 6 30 A 24 24 0 0 1 54 30"
@@ -274,6 +278,7 @@
                     stroke="rgba(255,255,255,0.025)"
                     stroke-width="1"
                     stroke-dasharray="2 4"
+                    class="dash__chart-grid-line"
                   />
                   <text
                     v-for="y in [1, 3]"
@@ -283,6 +288,7 @@
                     fill="rgba(255,255,255,0.08)"
                     font-size="7"
                     font-family="monospace"
+                    class="dash__chart-grid-label"
                   >
                     {{ 100 - y * 20 }}
                   </text>
@@ -355,46 +361,51 @@
                 >
                   <rect x="1" y="3" width="14" height="10" rx="2" />
                 </svg>
-                <span>System Information</span>
+                <span>{{ t('dash.systemInfo') }}</span>
               </div>
               <div class="dash__info-table">
                 <div class="dash__info-row">
-                  <span class="dash__info-key">Platform</span>
-                  <span class="dash__info-val">{{ navigator.platform || 'Unknown' }}</span>
-                </div>
-                <div class="dash__info-row">
-                  <span class="dash__info-key">CPU Cores</span>
-                  <span class="dash__info-val"
-                    >{{ cpuCores }} physical / {{ cpuThreads }} logical</span
-                  >
-                </div>
-                <div class="dash__info-row">
-                  <span class="dash__info-key">Device Memory</span>
+                  <span class="dash__info-key">{{ t('dash.platform') }}</span>
                   <span class="dash__info-val">{{
-                    deviceMemoryGB > 0 ? deviceMemoryGB + ' GB' : 'Unknown'
+                    navigator.platform || t('common.unknown')
                   }}</span>
                 </div>
                 <div class="dash__info-row">
-                  <span class="dash__info-key">User Agent</span>
+                  <span class="dash__info-key">{{ t('dash.cpuCores') }}</span>
+                  <span class="dash__info-val"
+                    >{{ cpuCores }} {{ t('dash.physical') }} / {{ cpuThreads }}
+                    {{ t('dash.logical') }}</span
+                  >
+                </div>
+                <div class="dash__info-row">
+                  <span class="dash__info-key">{{ t('dash.deviceMemory') }}</span>
+                  <span class="dash__info-val">{{
+                    deviceMemoryGB > 0 ? deviceMemoryGB + ' GB' : t('common.unknown')
+                  }}</span>
+                </div>
+                <div class="dash__info-row">
+                  <span class="dash__info-key">{{ t('dash.userAgent') }}</span>
                   <span class="dash__info-val dash__info-val--sm"
                     >{{ navigator.userAgent.substring(0, 60) }}...</span
                   >
                 </div>
                 <div class="dash__info-row">
-                  <span class="dash__info-key">Language</span>
+                  <span class="dash__info-key">{{ t('dash.language') }}</span>
                   <span class="dash__info-val">{{ navigator.language }}</span>
                 </div>
                 <div class="dash__info-row">
-                  <span class="dash__info-key">Cookie Enabled</span>
+                  <span class="dash__info-key">{{ t('dash.cookieEnabled') }}</span>
                   <span
                     class="dash__info-val"
                     :style="{ color: navigator.cookieEnabled ? '#34C759' : '#FF3B30' }"
-                    >{{ navigator.cookieEnabled ? 'Yes' : 'No' }}</span
+                    >{{ navigator.cookieEnabled ? t('dash.yes') : t('dash.no') }}</span
                   >
                 </div>
                 <div class="dash__info-row">
-                  <span class="dash__info-key">Do Not Track</span>
-                  <span class="dash__info-val">{{ navigator.doNotTrack || 'Unspecified' }}</span>
+                  <span class="dash__info-key">{{ t('dash.doNotTrack') }}</span>
+                  <span class="dash__info-val">{{
+                    navigator.doNotTrack || t('dash.unspecified')
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -413,7 +424,7 @@
                   <path d="M3 4h10v8H3z" />
                   <path d="M6 12v2h4v-2" />
                 </svg>
-                <span>Battery</span>
+                <span>{{ t('dash.battery') }}</span>
               </div>
               <div class="dash__battery-wrap">
                 <div
@@ -434,7 +445,7 @@
                 </div>
                 <span class="dash__battery-pct">{{ Math.round(battery.level * 100) }}%</span>
                 <span class="dash__battery-status">{{
-                  battery.charging ? 'Charging' : 'Discharging'
+                  battery.charging ? t('dash.charging') : t('dash.discharging')
                 }}</span>
               </div>
             </div>
@@ -452,31 +463,31 @@
                   <circle cx="8" cy="8" r="7" />
                   <path d="M8 4v4l3 3" />
                 </svg>
-                <span>Performance Metrics</span>
+                <span>{{ t('dash.performanceMetrics') }}</span>
               </div>
               <div class="dash__perf-metrics">
                 <div class="dash__perf-row">
-                  <span>FCP</span>
+                  <span>{{ t('dash.fcp') }}</span>
                   <span>{{ paintTiming.fcp > 0 ? Math.round(paintTiming.fcp) + 'ms' : '—' }}</span>
                 </div>
                 <div class="dash__perf-row">
-                  <span>FP</span>
+                  <span>{{ t('dash.fp') }}</span>
                   <span>{{ paintTiming.fp > 0 ? Math.round(paintTiming.fp) + 'ms' : '—' }}</span>
                 </div>
                 <div class="dash__perf-row">
-                  <span>Long Tasks</span>
+                  <span>{{ t('dash.longTasks') }}</span>
                   <span :style="{ color: longTaskCount > 5 ? '#FF3B30' : '#34C759' }">{{
                     longTaskCount
                   }}</span>
                 </div>
                 <div class="dash__perf-row">
-                  <span>CLS Score</span>
+                  <span>{{ t('dash.clsScore') }}</span>
                   <span :style="{ color: layoutShiftScore > 0.1 ? '#FF3B30' : '#34C759' }">{{
                     layoutShiftScore.toFixed(3)
                   }}</span>
                 </div>
                 <div class="dash__perf-row">
-                  <span>Page Load</span>
+                  <span>{{ t('dash.pageLoad') }}</span>
                   <span>{{ pageLoadTime }}ms</span>
                 </div>
               </div>
@@ -497,7 +508,7 @@
                 <path d="M8 6v3" />
                 <circle cx="8" cy="12" r="0.5" fill="currentColor" />
               </svg>
-              <span>System Alerts</span>
+              <span>{{ t('dash.systemAlerts') }}</span>
               <span class="dash__alerts-count">{{ alerts.length }}</span>
             </div>
             <div class="dash__alerts-list">
@@ -512,9 +523,7 @@
               </div>
               <div v-if="alerts.length === 0" class="dash__alert dash__alert--info">
                 <span class="dash__alert-time">{{ currentTime }}</span>
-                <span class="dash__alert-msg"
-                  >No active alerts. All systems operating within normal parameters.</span
-                >
+                <span class="dash__alert-msg">{{ t('dash.noAlerts') }}</span>
               </div>
             </div>
           </div>
@@ -544,52 +553,52 @@
                   stroke="none"
                 />
               </svg>
-              <span>Network Status</span>
+              <span>{{ t('dash.networkStatus') }}</span>
               <span class="dash__network-badge" :class="networkStatusClass">{{
-                networkStatus
+                networkStatusLabel
               }}</span>
             </div>
             <div class="dash__network-rows">
               <div class="dash__network-row">
-                <span class="dash__network-key">Status</span>
+                <span class="dash__network-key">{{ t('dash.status') }}</span>
                 <span class="dash__network-val" :class="networkStatusClass">{{
-                  networkStatus
+                  networkStatusLabel
                 }}</span>
               </div>
               <div class="dash__network-row">
-                <span class="dash__network-key">Latency</span>
+                <span class="dash__network-key">{{ t('dash.latency') }}</span>
                 <span class="dash__network-val" :style="{ color: latencyColor }"
                   >{{ latency }}ms</span
                 >
               </div>
               <div class="dash__network-row">
-                <span class="dash__network-key">Connection</span>
-                <span class="dash__network-val">{{ connectionType }}</span>
+                <span class="dash__network-key">{{ t('dash.connection') }}</span>
+                <span class="dash__network-val">{{ connectionTypeLabel }}</span>
               </div>
               <div class="dash__network-row">
-                <span class="dash__network-key">Bandwidth</span>
+                <span class="dash__network-key">{{ t('dash.bandwidth') }}</span>
                 <span class="dash__network-val">{{
-                  downlinkSpeed > 0 ? downlinkSpeed + ' Mbps' : 'Unknown'
+                  downlinkSpeed > 0 ? downlinkSpeed + ' Mbps' : t('common.unknown')
                 }}</span>
               </div>
               <div class="dash__network-row">
-                <span class="dash__network-key">Online</span>
+                <span class="dash__network-key">{{ t('dash.online') }}</span>
                 <span
                   class="dash__network-val"
                   :style="{ color: onlineStatus ? '#34C759' : '#FF3B30' }"
-                  >{{ onlineStatus ? 'Yes' : 'No' }}</span
+                  >{{ onlineStatus ? t('dash.yes') : t('dash.no') }}</span
                 >
               </div>
               <div class="dash__network-row">
-                <span class="dash__network-key">Data Saver</span>
+                <span class="dash__network-key">{{ t('dash.dataSaver') }}</span>
                 <span class="dash__network-val">{{
-                  (navigator as any).connection?.saveData ? 'Active' : 'Inactive'
+                  (navigator as any).connection?.saveData ? t('dash.active') : t('dash.inactive')
                 }}</span>
               </div>
             </div>
             <div class="dash__speed-section">
               <div class="dash__speed-head">
-                <span class="dash__speed-label">Network Speed Test</span>
+                <span class="dash__speed-label">{{ t('dash.networkSpeedTest') }}</span>
                 <button
                   class="dash__speed-btn"
                   :class="{ 'dash__speed-btn--testing': isSpeedTesting }"
@@ -619,12 +628,12 @@
                       stroke="none"
                     />
                   </svg>
-                  <span>{{ isSpeedTesting ? 'Testing...' : 'Run Test' }}</span>
+                  <span>{{ isSpeedTesting ? t('dash.testing') : t('dash.runTest') }}</span>
                 </button>
               </div>
               <div v-if="downloadSpeed > 0 || uploadSpeed > 0" class="dash__speed-results">
                 <div class="dash__speed-item">
-                  <span class="dash__speed-item-label">Download</span>
+                  <span class="dash__speed-item-label">{{ t('dash.download') }}</span>
                   <span class="dash__speed-item-value"
                     >{{ downloadSpeed }} <small>Mbps</small></span
                   >
@@ -636,7 +645,7 @@
                   </div>
                 </div>
                 <div class="dash__speed-item">
-                  <span class="dash__speed-item-label">Upload</span>
+                  <span class="dash__speed-item-label">{{ t('dash.upload') }}</span>
                   <span class="dash__speed-item-value">{{ uploadSpeed }} <small>Mbps</small></span>
                   <div class="dash__speed-bar">
                     <div
@@ -646,7 +655,7 @@
                   </div>
                 </div>
                 <div class="dash__speed-item">
-                  <span class="dash__speed-item-label">Ping</span>
+                  <span class="dash__speed-item-label">{{ t('dash.ping') }}</span>
                   <span class="dash__speed-item-value">{{ ping }} <small>ms</small></span>
                 </div>
               </div>
@@ -656,13 +665,13 @@
 
         <footer class="dash__footer">
           <span class="dash__footer-text">{{
-            isAutoRefresh ? 'LIVE MONITORING ACTIVE' : 'MONITORING PAUSED'
+            isAutoRefresh ? t('dash.liveMonitoring') : t('dash.monitoringPaused')
           }}</span>
           <span class="dash__footer-pulse" :class="{ 'dash__footer-pulse--live': isAutoRefresh }" />
           <span class="dash__footer-sep">|</span>
-          <span class="dash__footer-text">Last update: {{ lastUpdated }}</span>
+          <span class="dash__footer-text">{{ t('dash.lastUpdate') }} {{ lastUpdated }}</span>
           <span class="dash__footer-sep">|</span>
-          <span class="dash__footer-text">Session: {{ formatUptime(uptime) }}</span>
+          <span class="dash__footer-text">{{ t('dash.session') }} {{ formatUptime(uptime) }}</span>
         </footer>
       </div>
     </div>
@@ -674,6 +683,7 @@ import { ref, computed } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import type { WindowInstance } from '../../types'
 import { useDashboardData } from '../../composables/useDashboardData'
+import { useI18n } from '../../composables/useI18n'
 import logger from '../../../utils/logger'
 
 interface Props {
@@ -693,7 +703,8 @@ const {
   jsListeners,
   latency,
   networkStatus,
-  connectionType,
+  networkStatusLabel,
+  connectionTypeLabel,
   currentTime,
   lastUpdated,
   isRefreshing,
@@ -728,6 +739,8 @@ const {
   formatUptime,
 } = useDashboardData(3000)
 
+const { t } = useI18n()
+
 const activeTab = ref<'overview' | 'system' | 'network'>('overview')
 const isSpeedTesting = ref(false)
 const downloadSpeed = ref(0)
@@ -735,35 +748,35 @@ const uploadSpeed = ref(0)
 const ping = ref(0)
 
 const statusLabel = computed(() => {
-  if (statusLevel.value === 'good') return 'SYSTEMS NOMINAL'
-  if (statusLevel.value === 'warn') return 'ELEVATED LOAD'
-  return 'SYSTEM DEGRADED'
+  if (statusLevel.value === 'good') return t('dash.systemsNominal')
+  if (statusLevel.value === 'warn') return t('dash.elevatedLoad')
+  return t('dash.systemDegraded')
 })
 
 const heroStats = computed(() => [
   {
-    label: 'Memory',
+    label: t('dash.memory'),
     value: memoryUsage.value.percent,
     unit: '%',
     pct: memoryUsage.value.percent,
     color: memoryColor.value,
   },
   {
-    label: 'CPU Load',
+    label: t('dash.cpuLoad'),
     value: cpuUsage.value,
     unit: '%',
     pct: cpuUsage.value,
     color: cpuColor.value,
   },
   {
-    label: 'Frame Rate',
+    label: t('dash.frameRate'),
     value: fps.value,
     unit: 'fps',
     pct: Math.min(100, (fps.value / 60) * 100),
     color: fps.value >= 50 ? '#34C759' : fps.value >= 30 ? '#FF9500' : '#FF3B30',
   },
   {
-    label: 'Latency',
+    label: t('dash.latency'),
     value: latency.value,
     unit: 'ms',
     pct: Math.min(100, (latency.value / 200) * 100),
@@ -1100,9 +1113,191 @@ async function runSpeedTest() {
   box-shadow: 0 0 4px rgba(255, 255, 255, 0.15);
 }
 
+.light .dash {
+  background: var(--gui-bg-base, #f2f2f7);
+  color: var(--gui-text-primary, #000000);
+}
+
+.light .dash__bg-orb--1 {
+  background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
+}
+.light .dash__bg-orb--2 {
+  background: rgba(94, 92, 230, 0.08);
+}
+.light .dash__bg-orb--3 {
+  background: rgba(48, 176, 199, 0.06);
+}
+
+.light .dash__bg-grid {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.025) 1px, transparent 1px);
+}
+
+.light .dash__bg-scanline {
+  opacity: 0;
+}
+
+.light .dash__bg-vignette {
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.04) 100%);
+}
+
 .light .dash__particle {
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__class-badge {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.light .dash__btn-icon {
+  color: var(--gui-text-tertiary, #6e6e73);
+}
+.light .dash__btn-icon:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--gui-text-primary, #000000);
+}
+.light .dash__btn-icon--active {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--gui-text-primary, #000000);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .dash__header-divider {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.light .dash__hero {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__hero-stat {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .dash__hero-stat:hover {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .dash__chart-card {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .dash__chart-card:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .dash__chart-body {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.light .dash__metric {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.light .dash__metric:hover {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.light .dash__metric-icon {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--gui-text-tertiary, #6e6e73);
+}
+
+.light .dash__metric-bar-wrap {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.light .dash__system-card {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__info-row {
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+
+.light .dash__battery-icon {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+.light .dash__battery-icon::after {
   background: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.light .dash__alerts {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__alerts-count {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.light .dash__network-card--full {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__speed-btn {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: var(--gui-bg-surface, #ffffff);
+  color: var(--gui-text-secondary, #6e6e73);
+}
+.light .dash__speed-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--gui-text-primary, #000000);
+}
+
+.light .dash__speed-spinner {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: var(--gui-text-primary, #000000);
+}
+
+.light .dash__speed-results {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__speed-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__footer {
+  border-top-color: rgba(0, 0, 0, 0.06);
+}
+
+.light .dash__footer-pulse {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* SVG gauge tracks */
+.light .dash__gauge-track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+.light .dash__gauge-label {
+  fill: rgba(0, 0, 0, 0.25);
+}
+
+/* Mini gauge tracks */
+.light .dash__mini-gauge-track {
+  stroke: rgba(0, 0, 0, 0.06);
+}
+
+/* Chart grid lines and labels */
+.light .dash__chart-grid-line {
+  stroke: rgba(0, 0, 0, 0.05);
+}
+.light .dash__chart-grid-label {
+  fill: rgba(0, 0, 0, 0.15);
 }
 
 @keyframes particleFloat {
@@ -1738,7 +1933,7 @@ async function runSpeedTest() {
   background: rgba(255, 59, 48, 0.04);
 }
 .dash__alert--info {
-  border-left-color: rgba(255, 255, 255, 0.1);
+  border-left-color: var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
 }
 .dash__alert-time {
   flex-shrink: 0;

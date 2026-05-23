@@ -63,125 +63,176 @@
           <div
             class="desktop-screen__icon-bg"
             :class="`desktop-screen__icon-bg--${app.id}`"
-            :style="iconGradientStyle"
+            :style="{
+              background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+            }"
           >
-            <template v-if="app.id === 'terminal'">
-              <span class="desktop-screen__icon-text">&gt;_</span>
-            </template>
-            <template v-else-if="app.id === 'files'">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"
-                />
-              </svg>
-            </template>
-            <template v-else-if="app.id === 'settings'">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="3" />
-                <path
-                  d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
-                />
-              </svg>
-            </template>
-            <template v-else-if="app.id === 'chat'">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
-                />
-              </svg>
-            </template>
-            <template v-else-if="app.id === 'dash'">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="3" y="3" width="7" height="9" rx="1" />
-                <rect x="14" y="3" width="7" height="5" rx="1" />
-                <rect x="14" y="12" width="7" height="9" rx="1" />
-                <rect x="3" y="16" width="7" height="5" rx="1" />
-              </svg>
-            </template>
-            <template v-else-if="app.id === 'feedback'">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                <line x1="9" y1="9" x2="15" y2="9" />
-                <line x1="9" y1="13" x2="13" y2="13" />
-              </svg>
-            </template>
-            <template v-else-if="app.id === 'docs'">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
-                <line x1="9" y1="7" x2="15" y2="7" />
-                <line x1="9" y1="11" x2="15" y2="11" />
-              </svg>
-            </template>
-            <template v-else-if="app.id === 'editor'">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
-              </svg>
-            </template>
+            <div class="desktop-screen__icon-inner">
+              <template v-if="app.id === 'terminal'">
+                <span class="desktop-screen__icon-text">&gt;_</span>
+              </template>
+              <template v-else-if="app.id === 'files'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"
+                  />
+                </svg>
+              </template>
+              <template v-else-if="app.id === 'settings'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 8.6a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
+                  />
+                </svg>
+              </template>
+              <template v-else-if="app.id === 'chat'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                  />
+                </svg>
+              </template>
+              <template v-else-if="app.id === 'dash'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="7" height="9" rx="1" />
+                  <rect x="14" y="3" width="7" height="5" rx="1" />
+                  <rect x="14" y="12" width="7" height="9" rx="1" />
+                  <rect x="3" y="16" width="7" height="5" rx="1" />
+                </svg>
+              </template>
+              <template v-else-if="app.id === 'feedback'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                  <line x1="9" y1="9" x2="15" y2="9" />
+                  <line x1="9" y1="13" x2="13" y2="13" />
+                </svg>
+              </template>
+              <template v-else-if="app.id === 'docs'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
+                  <line x1="9" y1="7" x2="15" y2="7" />
+                  <line x1="9" y1="11" x2="15" y2="11" />
+                </svg>
+              </template>
+              <template v-else-if="app.id === 'editor'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
+                </svg>
+              </template>
+              <template v-else-if="app.isDirectory">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M4 20h16a2 2 0 002-2V8a2 2 0 00-2-2h-7.93a2 2 0 01-1.66-.9l-.82-1.2A2 2 0 007.93 3H4a2 2 0 00-2 2v13c0 1.1.9 2 2 2Z"
+                  />
+                </svg>
+              </template>
+              <template v-else-if="app.isFile">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+              </template>
+              <template v-else>
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M12 8v8" />
+                  <path d="M8 12h8" />
+                </svg>
+              </template>
+            </div>
           </div>
           <span class="desktop-screen__icon-label">{{ app.label }}</span>
         </div>
@@ -215,6 +266,15 @@
       :items="contextMenu.items"
       @select="onContextMenuSelect"
     />
+
+    <!-- Input Dialog -->
+    <DialogModal
+      v-model:visible="dialogVisible"
+      type="input"
+      :title="dialogTitle"
+      :placeholder="dialogPlaceholder"
+      @confirm="onDialogConfirm"
+    />
   </div>
 </template>
 
@@ -225,9 +285,16 @@ import { wallpaperService } from '../../utils/wallpaperService'
 import PCTaskbar, { type PCTaskbarItem } from '../components/PCTaskbar.vue'
 import PCStartMenu, { type StartMenuApp } from '../components/PCStartMenu.vue'
 import PCCContextMenu from '../components/ui/PCCContextMenu.vue'
+import DialogModal from '../tools/filemanager/DialogModal.vue'
 import { useDraggable } from '../composables/useDraggable'
 import { useI18n } from '../composables/useI18n'
 import type { ToolType, ContextMenuItem } from '../types'
+import { filesystem } from '../../utils/filesystem'
+import {
+  parseDesktopFile,
+  serializeDesktopFile,
+  type DesktopShortcut,
+} from '../../utils/desktopShortcut'
 import logger from '../../utils/logger'
 
 export interface DesktopApp {
@@ -237,76 +304,85 @@ export interface DesktopApp {
   color: string
   x?: number
   y?: number
+  shortcutFile?: string // path to .desktop file
+  filePath?: string // path to regular file/folder
+  isFile?: boolean
+  isDirectory?: boolean
+  data?: Record<string, unknown> // extra data passed to window
 }
 
 const { t } = useI18n()
 
-const apps = reactive<DesktopApp[]>([
-  {
-    id: 'terminal',
-    label: t('home.apps.terminal'),
-    tool: 'terminal',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 50,
-  },
-  {
-    id: 'files',
-    label: t('home.apps.files'),
-    tool: 'filemanager',
-    color: 'var(--gui-accent)',
-    x: 180,
-    y: 50,
-  },
-  {
-    id: 'chat',
-    label: t('home.apps.chat'),
-    tool: 'chat',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 50,
-  },
-  {
-    id: 'dash',
-    label: t('home.apps.dash'),
-    tool: 'dash',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 180,
-  },
-  {
-    id: 'feedback',
-    label: t('home.apps.feedback'),
-    tool: 'feedback',
-    color: 'var(--gui-accent)',
-    x: 180,
-    y: 180,
-  },
-  {
-    id: 'docs',
-    label: t('home.apps.docs'),
-    tool: 'docs',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 180,
-  },
-  {
-    id: 'settings',
-    label: t('home.apps.settings'),
-    tool: 'settings',
-    color: 'var(--gui-accent)',
-    x: 50,
-    y: 310,
-  },
-  {
-    id: 'editor',
-    label: t('home.apps.editor'),
-    tool: 'editor',
-    color: 'var(--gui-accent)',
-    x: 310,
-    y: 310,
-  },
-])
+const apps = reactive<DesktopApp[]>([])
+
+function loadDesktopApps() {
+  const desktopPath = '/home/scp/desktop'
+  const nodes = filesystem.listDirectory(desktopPath)
+  const loaded: DesktopApp[] = []
+
+  for (const node of nodes) {
+    const fullPath = `${desktopPath}/${node.name}`
+
+    if (node.type === 'file' && node.name.endsWith('.desktop')) {
+      // .desktop shortcut file
+      const content = filesystem.readFile(fullPath)
+      if (!content) continue
+      const shortcut = parseDesktopFile(content)
+      if (!shortcut) continue
+
+      loaded.push({
+        id: shortcut.tool,
+        label: shortcut.name,
+        tool: shortcut.tool,
+        color: 'var(--gui-accent)',
+        x: shortcut.x,
+        y: shortcut.y,
+        shortcutFile: fullPath,
+      })
+    } else if (node.type === 'directory') {
+      // Directory
+      loaded.push({
+        id: `dir-${node.name}`,
+        label: node.name,
+        tool: 'filemanager',
+        color: 'var(--gui-accent)',
+        x: 0,
+        y: 0,
+        filePath: fullPath,
+        isDirectory: true,
+        data: { initialPath: fullPath },
+      })
+    } else if (node.type === 'file') {
+      // Regular file
+      loaded.push({
+        id: `file-${node.name}`,
+        label: node.name,
+        tool: 'editor',
+        color: 'var(--gui-accent)',
+        x: 0,
+        y: 0,
+        filePath: fullPath,
+        isFile: true,
+        data: { filePath: fullPath },
+      })
+    }
+  }
+
+  apps.splice(0, apps.length, ...loaded)
+}
+
+function saveDesktopShortcut(app: DesktopApp) {
+  if (!app.shortcutFile) return
+  const shortcut: DesktopShortcut = {
+    name: app.label,
+    type: 'Application',
+    tool: app.tool,
+    icon: app.tool,
+    x: app.x ?? 0,
+    y: app.y ?? 0,
+  }
+  filesystem.writeFile(app.shortcutFile, serializeDesktopFile(shortcut))
+}
 
 const taskbarItems: PCTaskbarItem[] = [
   { id: 'terminal', tool: 'terminal' as ToolType, label: t('app.terminal'), iconName: 'terminal' },
@@ -322,12 +398,6 @@ const desktopIconSize = ref<'large' | 'medium' | 'small'>('medium')
 
 // Desktop sort order: name | date
 const desktopSortBy = ref<'name' | 'date'>('name')
-
-// Save default app order for 'sort by date' (later in array = newer)
-const defaultAppOrder = apps.map((a) => a.id)
-
-// Need to import toRaw for safe array access
-// (avoid reactive proxy issues during sort)
 
 // Load saved icon size from localStorage
 function loadIconSize() {
@@ -356,10 +426,7 @@ function arrangeApps() {
     if (desktopSortBy.value === 'name') {
       return a.label.localeCompare(b.label)
     }
-    // 'date' - use default array order (later = newer)
-    const idxA = defaultAppOrder.indexOf(a.id)
-    const idxB = defaultAppOrder.indexOf(b.id)
-    return idxB - idxA // newer first
+    return 0
   })
 
   // Reassign positions
@@ -378,6 +445,9 @@ function arrangeApps() {
     if (dragState) {
       dragState.setInitialPosition(newX, newY)
     }
+
+    // Save to filesystem
+    saveDesktopShortcut(app)
   })
 }
 
@@ -406,6 +476,7 @@ function setDesktopSortBy(sort: 'name' | 'date') {
 
 loadIconSize()
 loadSortBy()
+// Note: arrangeApps() is called in onMounted after drag states are initialized
 
 // Context menu state
 const contextMenu = ref({
@@ -415,6 +486,12 @@ const contextMenu = ref({
   items: [] as ContextMenuItem[],
   selectedApp: null as DesktopApp | null,
 })
+
+// Dialog state
+const dialogVisible = ref(false)
+const dialogTitle = ref('')
+const dialogPlaceholder = ref('')
+const dialogMode = ref<'folder' | 'file'>('folder')
 
 const emit = defineEmits<{
   launch: [app: DesktopApp]
@@ -427,6 +504,7 @@ themeStore.init()
 
 // Desktop app drag states
 const appDragStates = new Map<string, ReturnType<typeof useDraggable>>()
+let nextZIndex = 1
 
 function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
   if (!el || appDragStates.has(app.id)) return
@@ -438,6 +516,14 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
       maxY: window.innerHeight - 150,
     },
     onClick: () => emit('launch', app),
+    onStart: () => {
+      el?.classList.add('is-dragging')
+      // Increment z-index so dragged icon is always on top
+      nextZIndex++
+      if (el) {
+        el.style.zIndex = String(nextZIndex)
+      }
+    },
     onMove: (x, y) => {
       app.x = x
       app.y = y
@@ -445,6 +531,9 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
     onEnd: (x, y) => {
       app.x = x
       app.y = y
+      el?.classList.remove('is-dragging')
+      saveDesktopShortcut(app)
+      // Keep the elevated z-index so overlapping icons stay stacked by last-used
     },
   })
   state.setInitialPosition(app.x ?? 0, app.y ?? 0)
@@ -521,8 +610,10 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         label: t('fm.newFolder'),
         icon: 'folder',
         action: () => {
-          logger.info('Create new folder')
-          // Implement new folder creation
+          dialogMode.value = 'folder'
+          dialogTitle.value = t('fm.newFolder')
+          dialogPlaceholder.value = t('fm.newFolder')
+          dialogVisible.value = true
         },
       },
       {
@@ -530,8 +621,10 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
         label: t('pc.newTextFile'),
         icon: 'file-text',
         action: () => {
-          logger.info('Create new text file')
-          // Implement new text file creation
+          dialogMode.value = 'file'
+          dialogTitle.value = t('pc.newTextFile')
+          dialogPlaceholder.value = t('pc.newTextFile')
+          dialogVisible.value = true
         },
       },
       { id: 'divider-2', label: '', divider: true },
@@ -637,6 +730,27 @@ const onContextMenuSelect = (item: ContextMenuItem) => {
   // Additional handling if needed
 }
 
+// Handle dialog confirm
+const onDialogConfirm = (value: string | true) => {
+  const name = typeof value === 'string' ? value.trim() : ''
+  if (!name) return
+  const desktopPath = '/home/scp/desktop'
+
+  if (dialogMode.value === 'folder') {
+    const existing = filesystem.listDirectory(desktopPath).some((n) => n.name === name)
+    if (existing) return
+    filesystem.createDirectory(`${desktopPath}/${name}`)
+  } else {
+    const fileName = name.endsWith('.txt') ? name : `${name}.txt`
+    const existing = filesystem.listDirectory(desktopPath).some((n) => n.name === fileName)
+    if (existing) return
+    filesystem.writeFile(`${desktopPath}/${fileName}`, '')
+  }
+
+  loadDesktopApps()
+  arrangeApps()
+}
+
 // Close start menu when clicking outside
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const startMenuRef = ref<any>(null)
@@ -676,13 +790,10 @@ const wallpaperPatternColor1 = computed(() => themeStore.currentTheme.colors.bor
 const wallpaperPatternColor2 = computed(() => themeStore.currentTheme.colors.borderDefault)
 const wallpaperPatternColor3 = computed(() => themeStore.currentTheme.colors.borderStrong)
 
-// App icon gradient style
-const iconGradientStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
-}))
-
 // Load wallpaper
 onMounted(async () => {
+  // Load desktop shortcuts from filesystem
+  loadDesktopApps()
   // Arrange desktop icons after DOM is ready
   arrangeApps()
 
@@ -782,6 +893,7 @@ onUnmounted(() => {
 
 .desktop-screen__icon {
   position: absolute;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -791,10 +903,16 @@ onUnmounted(() => {
   cursor: move;
   -webkit-tap-highlight-color: transparent;
   transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
 }
 
 .desktop-screen__icon:hover {
   transform: translateY(-6px);
+  z-index: 10;
+}
+
+.desktop-screen__icon.is-dragging {
+  z-index: 100;
 }
 
 .desktop-screen__icon:active {
@@ -810,22 +928,29 @@ onUnmounted(() => {
 
 .desktop-screen__icon-bg {
   position: relative;
+  z-index: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 14px;
   width: 72px;
   height: 72px;
-  border-radius: var(--gui-radius-xl, 14px);
+  --icon-radius: var(--gui-radius-xl, 14px);
+  border-radius: var(--icon-radius);
   color: var(--gui-text-inverse, #ffffff);
+  /* background set by inline style from theme store */
   box-shadow: var(--gui-shadow-ios-card, 0 2px 12px rgba(0, 0, 0, 0.4));
   transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
+  isolation: isolate;
+  clip-path: inset(0 round var(--icon-radius));
 }
 
 /* Frosted glass overlay effect on icons */
-.desktop-screen__icon-bg::before {
+.desktop-screen__icon-bg::after {
   content: '';
   position: absolute;
+  z-index: 2;
   inset: 0;
   background: linear-gradient(
     135deg,
@@ -843,26 +968,40 @@ onUnmounted(() => {
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
-.light .desktop-screen__icon-bg::before {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, transparent 60%);
-}
-
-.light .desktop-screen__icon-bg svg {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
+.desktop-screen__icon-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .desktop-screen__icon-bg svg {
-  position: relative;
-  z-index: 1;
   width: 32px;
   height: 32px;
   flex-shrink: 0;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+  display: block;
+  overflow: hidden;
+  fill: none;
+  stroke: var(--gui-text-inverse, #ffffff);
+  shape-rendering: crispEdges;
+}
+
+/* SVG icon mask — icons rendered as mask-image for opaque fill */
+.desktop-screen__icon-mask {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: var(--gui-text-inverse, #ffffff);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 
 .desktop-screen__icon-text {
-  position: relative;
-  z-index: 1;
   font-family: var(
     --gui-font-mono,
     'JetBrains Mono',
@@ -941,6 +1080,7 @@ onUnmounted(() => {
   .desktop-screen__icon-bg {
     width: 64px;
     height: 64px;
+    padding-top: 12px;
   }
 
   .desktop-screen__icon-bg svg {
@@ -965,6 +1105,7 @@ onUnmounted(() => {
   .desktop-screen__icon-bg {
     width: 56px;
     height: 56px;
+    padding-top: 10px;
   }
 
   .desktop-screen__icon-bg svg {
@@ -991,7 +1132,7 @@ onUnmounted(() => {
 .icon-size-large .desktop-screen__icon-bg {
   width: 88px;
   height: 88px;
-  border-radius: var(--gui-radius-2xl, 18px);
+  --icon-radius: var(--gui-radius-2xl, 18px);
 }
 
 .icon-size-large .desktop-screen__icon-bg svg {
@@ -1016,7 +1157,7 @@ onUnmounted(() => {
 .icon-size-small .desktop-screen__icon-bg {
   width: 56px;
   height: 56px;
-  border-radius: var(--gui-radius-lg, 12px);
+  --icon-radius: var(--gui-radius-lg, 12px);
 }
 
 .icon-size-small .desktop-screen__icon-bg svg {

@@ -2,8 +2,12 @@
   <Transition name="batch-bar">
     <div v-if="selectedCount > 0" class="admin-batch-bar">
       <div class="admin-batch-bar__info">
-        <span class="admin-batch-bar__count">已选择 {{ selectedCount }} 项</span>
-        <button class="admin-batch-bar__clear" @click="$emit('clear')">清除选择</button>
+        <span class="admin-batch-bar__count">{{
+          t('admin.batchBar.selected', { count: selectedCount })
+        }}</span>
+        <button class="admin-batch-bar__clear" @click="$emit('clear')">
+          {{ t('admin.batchBar.clear') }}
+        </button>
       </div>
       <div class="admin-batch-bar__actions">
         <button
@@ -64,6 +68,8 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from '../../../composables/useI18n'
+
 export interface BatchAction {
   key: string
   label: string
@@ -82,6 +88,8 @@ defineEmits<{
   action: [key: string]
   clear: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <style scoped>
@@ -123,7 +131,7 @@ defineEmits<{
 }
 
 .admin-batch-bar__clear:hover {
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
@@ -141,7 +149,7 @@ defineEmits<{
   border: 1px solid var(--gui-border-default, #2a2a2a);
   border-radius: 6px;
   background: var(--gui-bg-surface-raised, #242424);
-  color: #a0a0a0;
+  color: var(--gui-text-secondary, #a0a0a0);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -150,7 +158,7 @@ defineEmits<{
 }
 
 .admin-batch-bar__action:hover {
-  background: #303030;
+  background: var(--gui-bg-surface-hover, #303030);
   color: var(--gui-text-primary, #e0e0e0);
 }
 
@@ -196,5 +204,22 @@ defineEmits<{
 .batch-bar-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .admin-batch-bar {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #e5e5ea);
+}
+.light .admin-batch-bar__clear:hover {
+  color: var(--gui-text-secondary, #666);
+}
+.light .admin-batch-bar__action {
+  color: var(--gui-text-secondary, #666);
+}
+.light .admin-batch-bar__action:hover {
+  background: var(--gui-bg-surface-hover, #f0f0f0);
+  color: var(--gui-text-primary, #000);
 }
 </style>

@@ -21,10 +21,16 @@
           :y1="y"
           :x2="svgWidth - padding.right"
           :y2="y"
-          stroke="#2a2a2a"
+          :stroke="gridStroke"
           stroke-width="0.5"
         />
-        <text :x="padding.left - 8" :y="y + 4" text-anchor="end" fill="#4a4a4a" font-size="10">
+        <text
+          :x="padding.left - 8"
+          :y="y + 4"
+          text-anchor="end"
+          :fill="gridTextFill"
+          font-size="10"
+        >
           {{ gridLabels[i] }}
         </text>
       </g>
@@ -58,7 +64,7 @@
         :y1="padding.top"
         :x2="points[hoverIndex].x"
         :y2="svgHeight - padding.bottom"
-        stroke="#2a2a2a"
+        :stroke="hoverLineStroke"
         stroke-width="1"
         stroke-dasharray="4 2"
       />
@@ -95,6 +101,24 @@ const props = withDefaults(defineProps<Props>(), {
   height: 200,
   color: '#3b82f6',
 })
+
+const isLight = ref(document.documentElement.classList.contains('light'))
+let themeObserver: MutationObserver | null = null
+
+onMounted(() => {
+  themeObserver = new MutationObserver(() => {
+    isLight.value = document.documentElement.classList.contains('light')
+  })
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+})
+
+onBeforeUnmount(() => {
+  themeObserver?.disconnect()
+})
+
+const gridStroke = computed(() => (isLight.value ? '#e5e5ea' : '#2a2a2a'))
+const gridTextFill = computed(() => (isLight.value ? '#8e8e93' : '#4a4a4a'))
+const hoverLineStroke = computed(() => (isLight.value ? '#c7c7cc' : '#2a2a2a'))
 
 const containerRef = ref<HTMLElement | null>(null)
 const containerWidth = ref(300)
@@ -278,5 +302,10 @@ watch(containerRef, (el, oldEl) => {
   font-size: 14px;
   font-weight: 600;
   color: var(--gui-text-primary, #e0e0e0);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .admin-trend-chart__tooltip {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 </style>

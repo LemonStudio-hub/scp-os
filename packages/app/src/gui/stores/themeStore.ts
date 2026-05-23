@@ -27,6 +27,11 @@ export const useThemeStore = defineStore('theme', () => {
 
   const currentTheme = ref<Theme>(themes[currentThemeId.value] || darkTheme)
 
+  // Apply theme immediately when store is created (before component mount)
+  if (typeof document !== 'undefined') {
+    applyTheme(currentTheme.value)
+  }
+
   /**
    * Apply a theme's colors to CSS custom properties.
    */

@@ -105,6 +105,155 @@ export class FileSystem {
                   mtime: Date.now(),
                   children: {},
                 },
+                desktop: {
+                  name: 'desktop',
+                  type: 'directory',
+                  permissions: {
+                    user: { read: true, write: true, execute: true },
+                    group: { read: true, write: true, execute: true },
+                    others: { read: true, write: false, execute: true },
+                  },
+                  owner: 'scp',
+                  group: 'foundation',
+                  size: 0,
+                  mtime: Date.now(),
+                  children: {
+                    'terminal.desktop': {
+                      name: 'terminal.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 70,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Terminal\nType=Application\nTool=terminal\nIcon=terminal\nX=50\nY=50',
+                    },
+                    'files.desktop': {
+                      name: 'files.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 62,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Files\nType=Application\nTool=filemanager\nIcon=folder\nX=180\nY=50',
+                    },
+                    'chat.desktop': {
+                      name: 'chat.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 58,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Chat\nType=Application\nTool=chat\nIcon=chat\nX=310\nY=50',
+                    },
+                    'dash.desktop': {
+                      name: 'dash.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 58,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Dash\nType=Application\nTool=dash\nIcon=grid\nX=50\nY=180',
+                    },
+                    'feedback.desktop': {
+                      name: 'feedback.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 70,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Feedback\nType=Application\nTool=feedback\nIcon=feedback\nX=180\nY=180',
+                    },
+                    'docs.desktop': {
+                      name: 'docs.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 58,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Docs\nType=Application\nTool=docs\nIcon=document\nX=310\nY=180',
+                    },
+                    'settings.desktop': {
+                      name: 'settings.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 72,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Settings\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
+                    },
+                    'editor.desktop': {
+                      name: 'editor.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 62,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=Editor\nType=Application\nTool=editor\nIcon=edit\nX=310\nY=310',
+                    },
+                  },
+                },
+                downloads: {
+                  name: 'downloads',
+                  type: 'directory',
+                  permissions: {
+                    user: { read: true, write: true, execute: true },
+                    group: { read: true, write: true, execute: true },
+                    others: { read: true, write: false, execute: true },
+                  },
+                  owner: 'scp',
+                  group: 'foundation',
+                  size: 0,
+                  mtime: Date.now(),
+                  children: {},
+                },
                 logs: {
                   name: 'logs',
                   type: 'directory',
@@ -212,6 +361,20 @@ export class FileSystem {
             },
           },
         },
+        tmp: {
+          name: 'tmp',
+          type: 'directory',
+          permissions: {
+            user: { read: true, write: true, execute: true },
+            group: { read: true, write: true, execute: true },
+            others: { read: true, write: true, execute: true },
+          },
+          owner: 'root',
+          group: 'root',
+          size: 0,
+          mtime: Date.now(),
+          children: {},
+        },
       },
     }
   }
@@ -223,6 +386,8 @@ export class FileSystem {
       if (data) {
         this.root = data.root
         this.currentPath = data.currentPath
+        // Migrate: ensure new default directories exist
+        this.ensureDefaultDirs()
       }
       this.isInitialized = true
     } catch (error) {
@@ -239,6 +404,43 @@ export class FileSystem {
     } catch (error) {
       console.error('[Filesystem] Failed to save to storage:', error)
     }
+  }
+
+  // 确保默认目录和桌面快捷方式存在（迁移旧数据）
+  private ensureDefaultDirs(): void {
+    const defaults = this.createDefaultFilesystem()
+
+    // Helper: recursively ensure a node exists in the live tree
+    const ensureNode = (path: string[], template: FileSystemNode) => {
+      const parent = this.getNode(path.slice(0, -1))
+      const name = path[path.length - 1]
+      if (!parent || parent.type !== 'directory' || !parent.children) return
+      if (!(name in parent.children)) {
+        parent.children[name] = JSON.parse(JSON.stringify(template))
+      } else if (template.type === 'directory' && template.children) {
+        // Recurse into children for directories that already exist
+        for (const [childName, childTemplate] of Object.entries(template.children)) {
+          ensureNode([...path, childName], childTemplate)
+        }
+      }
+    }
+
+    // Ensure top-level dirs
+    if (defaults.children) {
+      for (const [name, template] of Object.entries(defaults.children)) {
+        ensureNode(['', name], template)
+      }
+    }
+
+    // Ensure /home/scp subdirs
+    const home = defaults.children?.home?.children?.scp
+    if (home?.children) {
+      for (const [name, template] of Object.entries(home.children)) {
+        ensureNode(['', 'home', 'scp', name], template)
+      }
+    }
+
+    this.saveToStorage()
   }
 
   // 获取当前工作目录

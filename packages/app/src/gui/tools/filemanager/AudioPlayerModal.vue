@@ -169,7 +169,7 @@ function close() {
 .audio-player {
   width: 100%;
   max-width: 500px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 16px 16px 0 0;
   overflow: hidden;
   animation: audio-slide-up 0.3s ease;
@@ -210,7 +210,7 @@ function close() {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -266,7 +266,7 @@ function close() {
 
 /* Custom audio controls styling for WebKit */
 .audio-player__native::-webkit-media-controls-panel {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 /* ── Info ───────────────────────────────────────────────────────────── */
@@ -302,5 +302,10 @@ function close() {
 .media-modal-enter-from,
 .media-modal-leave-to {
   opacity: 0;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .audio-player-modal {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 </style>

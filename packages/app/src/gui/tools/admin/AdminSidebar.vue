@@ -1,5 +1,8 @@
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+
+const props = defineProps<{
   currentPage: string
   collapsed: boolean
 }>()
@@ -9,15 +12,17 @@ const emit = defineEmits<{
   toggleCollapse: []
 }>()
 
-const navItems = [
-  { id: 'dashboard', label: '仪表盘', icon: 'grid' },
-  { id: 'users', label: '用户管理', icon: 'users' },
-  { id: 'content', label: '内容管理', icon: 'document' },
-  { id: 'chat', label: '聊天管理', icon: 'chat' },
-  { id: 'feedback', label: '反馈管理', icon: 'message' },
-  { id: 'settings', label: '系统设置', icon: 'cog' },
-  { id: 'logs', label: '操作日志', icon: 'clipboard' },
-]
+const { t } = useI18n()
+
+const navItems = computed(() => [
+  { id: 'dashboard', label: t('admin.nav.dashboard'), icon: 'grid' },
+  { id: 'users', label: t('admin.nav.users'), icon: 'users' },
+  { id: 'content', label: t('admin.nav.content'), icon: 'document' },
+  { id: 'chat', label: t('admin.nav.chat'), icon: 'chat' },
+  { id: 'feedback', label: t('admin.nav.feedback'), icon: 'message' },
+  { id: 'settings', label: t('admin.nav.settings'), icon: 'cog' },
+  { id: 'logs', label: t('admin.nav.logs'), icon: 'clipboard' },
+])
 
 function getIconSvg(icon: string): string {
   const icons: Record<string, string> = {

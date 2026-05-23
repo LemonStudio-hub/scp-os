@@ -94,6 +94,7 @@ function onHomeLaunch(app: HomeApp | DesktopApp): void {
       iconName: config.iconName,
       width: config.width,
       height: config.height,
+      data: (app as DesktopApp).data,
     })
   })
 }

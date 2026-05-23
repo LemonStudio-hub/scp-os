@@ -1,7 +1,7 @@
 <template>
   <MobileWindow
     :visible="visible"
-    :title="view === 'list' ? 'SCP Docs' : reader.currentArticle.value?.scpNumber || ''"
+    :title="view === 'list' ? t('docs.scpDocs') : reader.currentArticle.value?.scpNumber || ''"
     :show-back="true"
     @close="$emit('close')"
     @back="view === 'detail' ? onBack() : $emit('close')"
@@ -32,7 +32,7 @@
             v-model="reader.searchQuery.value"
             type="text"
             class="mobile-docs__search-input"
-            placeholder="Search SCP..."
+            :placeholder="t('docs.searchPlaceholder')"
             @keydown.enter="reader.search()"
           />
         </div>
@@ -48,7 +48,7 @@
               }"
               @click="clearFilters"
             >
-              All
+              {{ t('docs.allSeries') }}
             </button>
             <button
               v-for="s in reader.SERIES_OPTIONS.slice(0, 6)"
@@ -93,7 +93,7 @@
               stroke-linecap="round"
             />
           </svg>
-          <span>Offline Mode</span>
+          <span>{{ t('docs.offlineMode') }}</span>
         </div>
 
         <!-- Card List -->
@@ -148,7 +148,9 @@
               />
             </svg>
             <p>{{ reader.error.value }}</p>
-            <button class="mobile-docs__retry-btn" @click="reader.fetchArticles(1)">Retry</button>
+            <button class="mobile-docs__retry-btn" @click="reader.fetchArticles(1)">
+              {{ t('docs.retry') }}
+            </button>
           </div>
 
           <!-- Empty -->
@@ -173,7 +175,7 @@
                 stroke-linecap="round"
               />
             </svg>
-            <p>No articles found</p>
+            <p>{{ t('docs.noArticles') }}</p>
           </div>
 
           <!-- Cards -->
@@ -184,7 +186,7 @@
                 <span
                   class="mobile-docs__card-class"
                   style="background: rgba(88, 166, 255, 0.15); color: #58a6ff"
-                  >使用指南</span
+                  >{{ t('docs.guide') }}</span
                 >
               </div>
               <div class="mobile-docs__card-title">{{ reader.GUIDE_ARTICLE.title }}</div>
@@ -229,7 +231,7 @@
               class="mobile-docs__load-more"
               @click="reader.loadMore()"
             >
-              Load more
+              {{ t('docs.loadMore') }}
             </div>
           </template>
         </div>
@@ -255,7 +257,7 @@
               stroke-linecap="round"
             />
           </svg>
-          Offline
+          {{ t('docs.offline') }}
         </div>
 
         <!-- Content -->
@@ -287,7 +289,7 @@
               class="mobile-docs__retry-btn"
               @click="reader.selectArticle(reader.currentArticle.value!.scpNumber)"
             >
-              Retry
+              {{ t('docs.retry') }}
             </button>
           </div>
 
@@ -310,7 +312,7 @@
                 stroke-linecap="round"
               />
             </svg>
-            <span>TOC</span>
+            <span>{{ t('docs.toc') }}</span>
           </button>
           <button class="mobile-docs__bottom-btn" @click="showFontSettings = !showFontSettings">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -322,7 +324,7 @@
                 stroke-linejoin="round"
               />
             </svg>
-            <span>Font</span>
+            <span>{{ t('docs.font') }}</span>
           </button>
           <button class="mobile-docs__bottom-btn" @click="scrollToTop">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -334,7 +336,7 @@
                 stroke-linejoin="round"
               />
             </svg>
-            <span>Top</span>
+            <span>{{ t('docs.top') }}</span>
           </button>
         </div>
 
@@ -342,7 +344,7 @@
         <Transition name="mobile-slide-up">
           <div v-if="showFontSettings" class="mobile-docs__font-panel">
             <div class="mobile-docs__font-panel-header">
-              <span>Reading Settings</span>
+              <span>{{ t('docs.readingSettings') }}</span>
               <button class="mobile-docs__font-panel-close" @click="showFontSettings = false">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
@@ -356,7 +358,7 @@
             </div>
             <div class="mobile-docs__font-panel-body">
               <div class="mobile-docs__font-row">
-                <span class="mobile-docs__font-label">Font Size</span>
+                <span class="mobile-docs__font-label">{{ t('docs.fontSize') }}</span>
                 <div class="mobile-docs__font-controls">
                   <button class="mobile-docs__font-btn" @click="reader.decreaseFontSize()">
                     A-
@@ -371,7 +373,7 @@
                 </div>
               </div>
               <div class="mobile-docs__font-row">
-                <span class="mobile-docs__font-label">Theme</span>
+                <span class="mobile-docs__font-label">{{ t('docs.theme') }}</span>
                 <div class="mobile-docs__theme-toggle">
                   <!-- prettier-ignore -->
                   <button
@@ -388,7 +390,7 @@
                         stroke-width="1.3"
                       />
                     </svg>
-                    Dark
+                    {{ t('docs.dark') }}
                   </button>
                   <!-- prettier-ignore -->
                   <button
@@ -407,7 +409,7 @@
                         stroke-linecap="round"
                       />
                     </svg>
-                    Light
+                    {{ t('docs.light') }}
                   </button>
                 </div>
               </div>
@@ -419,7 +421,7 @@
         <Transition name="mobile-slide-up">
           <div v-if="showMobileTOC" class="mobile-docs__toc-panel">
             <div class="mobile-docs__toc-panel-header">
-              <span>Table of Contents</span>
+              <span>{{ t('docs.tableOfContents') }}</span>
               <button class="mobile-docs__toc-panel-close" @click="showMobileTOC = false">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path
@@ -442,7 +444,7 @@
                 {{ item.text }}
               </button>
               <div v-if="!reader.currentArticle.value?.toc.length" class="mobile-docs__toc-empty">
-                No headings found
+                {{ t('docs.noHeadings') }}
               </div>
             </div>
           </div>
@@ -458,6 +460,7 @@ import DOMPurify from 'dompurify'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useDocsReader, type TOCItem } from '../../composables/useDocsReader'
 import { applyImageProxyHook } from '../../../utils/imageProxy'
+import { useI18n } from '../../composables/useI18n'
 
 interface Props {
   visible: boolean
@@ -467,6 +470,7 @@ defineProps<Props>()
 defineEmits<{ close: [] }>()
 
 const reader = useDocsReader()
+const { t } = useI18n()
 
 const sanitizedContent = computed(() => {
   const content = reader.currentArticle.value?.content
@@ -1362,5 +1366,19 @@ onBeforeUnmount(() => {
 }
 .mobile-docs__card-number--guide {
   font-size: 16px;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-docs__card {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.light .mobile-docs__card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.light .mobile-docs__search-bar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .mobile-docs__filter-chips {
+  box-shadow: none;
 }
 </style>

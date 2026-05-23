@@ -14,6 +14,7 @@ import type {
   FileItem,
   ContextMenuIcon,
   ContextMenuState,
+  ColumnEntry,
 } from '../types'
 import logger from '../../utils/logger'
 
@@ -44,6 +45,27 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   })
   const loading = ref(false)
   const showHidden = ref(false)
+
+  // Sidebar state
+  const sidebarCollapsed = ref(false)
+  const sidebarWidth = ref(200)
+
+  // Column view state
+  const columns = ref<ColumnEntry[]>([])
+  const detailFile = ref<FileItem | null>(null)
+
+  // Favorites
+  const favorites = ref<string[]>(['/home/scp', '/home/scp/documents'])
+
+  // Quick access paths
+  const quickAccess = computed(() => [
+    { label: 'Home', path: '/home/scp', icon: 'home' },
+    { label: 'Desktop', path: '/home/scp/desktop', icon: 'grid' },
+    { label: 'Documents', path: '/home/scp/documents', icon: 'document' },
+    { label: 'Downloads', path: '/home/scp/downloads', icon: 'archive' },
+    { label: 'Root', path: '/', icon: 'folder' },
+    { label: 'tmp', path: '/tmp', icon: 'folder' },
+  ])
 
   // Computed
   const sortedFiles = computed(() => {
@@ -121,6 +143,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
 
   function navigateTo(path: string): void {
     selectedFiles.value.clear()
+    detailFile.value = null
     loadDirectory(path)
   }
 
@@ -151,6 +174,9 @@ export const useFileManagerStore = defineStore('fileManager', () => {
 
   function setViewMode(mode: ViewMode): void {
     viewMode.value = mode
+    if (mode === 'column') {
+      initColumns()
+    }
   }
 
   function setSort(field: SortField): void {
@@ -168,6 +194,78 @@ export const useFileManagerStore = defineStore('fileManager', () => {
 
   function setSearch(query: string): void {
     searchQuery.value = query
+  }
+
+  // Sidebar
+  function toggleSidebar(): void {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+
+  // Favorites
+  function addToFavorites(path: string): void {
+    if (!favorites.value.includes(path)) {
+      favorites.value.push(path)
+    }
+  }
+
+  function removeFromFavorites(path: string): void {
+    favorites.value = favorites.value.filter((p) => p !== path)
+  }
+
+  function isFavorite(path: string): boolean {
+    return favorites.value.includes(path)
+  }
+
+  // Column view
+  function initColumns(): void {
+    const parts = currentPath.value.split('/').filter(Boolean)
+    const paths = ['/', ...parts.map((_, i) => '/' + parts.slice(0, i + 1).join('/'))]
+
+    columns.value = paths.map((path) => {
+      const nodes = getNodeChildren(path)
+      return {
+        path,
+        files: nodes.map(nodeToItem),
+        selectedName: undefined,
+      }
+    })
+  }
+
+  function getNodeChildren(path: string): FileSystemNode[] {
+    const oldPath = currentPath.value
+    filesystem.changeDirectory(path)
+    const nodes = filesystem.listDirectory()
+    filesystem.changeDirectory(oldPath)
+    return nodes
+  }
+
+  function selectInColumn(columnIndex: number, fileName: string): void {
+    const column = columns.value[columnIndex]
+    if (!column) return
+
+    column.selectedName = fileName
+    // Remove columns after this one
+    columns.value = columns.value.slice(0, columnIndex + 1)
+
+    const filePath = column.path === '/' ? `/${fileName}` : `${column.path}/${fileName}`
+    const file = column.files.find((f) => f.name === fileName)
+
+    if (file?.isDirectory) {
+      const childNodes = getNodeChildren(filePath)
+      columns.value.push({
+        path: filePath,
+        files: childNodes.map(nodeToItem),
+        selectedName: undefined,
+      })
+    }
+
+    // Update current path to the column's path
+    currentPath.value = column.path
+  }
+
+  // Detail view
+  function setDetailFile(file: FileItem | null): void {
+    detailFile.value = file
   }
 
   // File operations
@@ -242,6 +340,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   function getFileContextItems(fileName: string): FileContextAction[] {
     const file = files.value.find((f) => f.name === fileName)
     const isDir = file?.isDirectory ?? false
+    const filePath = currentPath.value === '/' ? `/${fileName}` : `${currentPath.value}/${fileName}`
 
     return [
       {
@@ -255,6 +354,26 @@ export const useFileManagerStore = defineStore('fileManager', () => {
         label: _t('common.rename'),
         icon: 'edit',
         action: () => promptRename(fileName),
+      },
+      {
+        id: 'copy-path',
+        label: 'Copy Path',
+        icon: 'copy',
+        action: () => {
+          navigator.clipboard?.writeText(filePath)
+        },
+      },
+      {
+        id: 'favorite',
+        label: isFavorite(filePath) ? 'Remove from Favorites' : 'Add to Favorites',
+        icon: 'star',
+        action: () => {
+          if (isFavorite(filePath)) {
+            removeFromFavorites(filePath)
+          } else {
+            addToFavorites(filePath)
+          }
+        },
       },
       {
         id: 'delete',
@@ -275,6 +394,12 @@ export const useFileManagerStore = defineStore('fileManager', () => {
         action: () => promptNewFolder(),
       },
       { id: 'refresh', label: _t('fm.refresh'), icon: 'refresh', action: () => loadDirectory() },
+      {
+        id: 'toggle-hidden',
+        label: showHidden.value ? 'Hide Hidden Files' : 'Show Hidden Files',
+        icon: 'eye',
+        action: () => toggleShowHidden(),
+      },
     ]
   }
 
@@ -351,6 +476,12 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     contextMenu,
     loading,
     showHidden,
+    sidebarCollapsed,
+    sidebarWidth,
+    columns,
+    detailFile,
+    favorites,
+    quickAccess,
 
     // Computed
     sortedFiles,
@@ -367,6 +498,13 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     setSort,
     setSearch,
     toggleShowHidden,
+    toggleSidebar,
+    addToFavorites,
+    removeFromFavorites,
+    isFavorite,
+    initColumns,
+    selectInColumn,
+    setDetailFile,
     createFile,
     createDirectory,
     deleteSelected,

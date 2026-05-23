@@ -9,7 +9,7 @@
         @click="handleTabClick(tab.id)"
       >
         <span class="tab-icon">
-          {{ tab.isLocked ? 'Locked' : '' }}
+          {{ tab.isLocked ? t('tabs.locked') : '' }}
         </span>
         <span class="tab-title" :title="tab.title">
           {{ tab.title }}
@@ -17,7 +17,7 @@
         <button
           v-if="!tab.isLocked"
           class="tab-close-btn"
-          aria-label="Close tab"
+          :aria-label="t('tabs.closeTab')"
           @click.stop="handleCloseTab(tab.id)"
         >
           &times;
@@ -27,8 +27,8 @@
       <button
         v-if="tabs.length < 10"
         class="tab-new-btn"
-        aria-label="New tab"
-        title="New tab"
+        :aria-label="t('tabs.newTab')"
+        :title="t('tabs.newTab')"
         @click="handleCreateTab"
       >
         +
@@ -46,7 +46,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useTabsStore } from '../stores/tabs'
+import { useI18n } from '../gui/composables/useI18n'
 import indexedDBService from '../utils/indexedDB'
+
+const { t } = useI18n()
 
 const tabsStore = useTabsStore()
 
@@ -138,7 +141,7 @@ const handleCloseTab = async (tabId: string) => {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-lg, 12px);
   cursor: pointer;
@@ -260,7 +263,7 @@ const handleCloseTab = async (tabId: string) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   color: var(--gui-accent, #8e8e93);
   border: 1px dashed var(--gui-border-strong, rgba(255, 255, 255, 0.12));
   border-radius: var(--gui-radius-lg, 12px);

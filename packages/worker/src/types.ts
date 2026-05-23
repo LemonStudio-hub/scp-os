@@ -1,0 +1,58 @@
+export interface Env {
+  SCP_DB: D1Database
+  SCP_READER_DB: D1Database
+  SCP_FILES: R2Bucket
+  CHAT_ROOM_DO: DurableObjectNamespace
+  JWT_SECRET?: string
+  ADMIN_JWT_SECRET?: string
+}
+
+export interface ApiResult<T = unknown> {
+  success: boolean
+  data?: T
+  error?: string
+  count?: number
+  total?: number
+  stats?: unknown
+  pagination?: unknown
+  available?: boolean
+}
+
+export interface RequestInfo {
+  ip: string
+  origin: string
+  userAgent: string
+}
+
+export type AdminRole = 'super_admin' | 'admin' | 'moderator'
+
+export interface AdminSession {
+  adminId: number
+  username: string
+  role: AdminRole
+}
+
+export interface JwtUserPayload {
+  userId: string
+  iat?: number
+  exp?: number
+}
+
+export interface JwtAdminPayload {
+  adminId: number
+  username: string
+  role: AdminRole
+  iat?: number
+  exp?: number
+}
+
+export interface SCPData {
+  id: string
+  name: string
+  objectClass: string
+  containment: string[]
+  description: string[]
+  appendix: string[]
+  author?: string
+  url: string
+}

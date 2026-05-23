@@ -17,6 +17,6 @@
     "skipLibCheck": true,
     "esModuleInterop": true
   },
-  "include": ["index.ts", "shared/**/*", "errors/**/*", "security/**/*", "parsers/**/*", "utils/**/*", "api/**/*", "download/**/*", "durableObjects/**/*", "benchmarks/**/*", "migrations/**/*"],
-  "exclude": ["node_modules", "scripts/**/*"]
+  "include": ["index.ts", "src/**/*", "__tests__/**/*"],
+  "exclude": ["node_modules", ".wrangler"]
 }

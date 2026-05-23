@@ -60,7 +60,11 @@
               <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
             </svg>
           </button>
-          <button class="mobile-file-manager__action-btn" title="New file" @click="createNewFile">
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.newFile')"
+            @click="createNewFile"
+          >
             <svg
               width="18"
               height="18"
@@ -76,7 +80,7 @@
           </button>
           <button
             class="mobile-file-manager__action-btn"
-            title="New folder"
+            :title="t('fm.newFolder')"
             @click="createNewFolder"
           >
             <svg
@@ -125,6 +129,37 @@
               <line x1="1" y1="1" x2="23" y2="23" />
             </svg>
           </button>
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="mobileViewMode === 'grid' ? 'List view' : 'Grid view'"
+            @click="mobileViewMode = mobileViewMode === 'grid' ? 'list' : 'grid'"
+          >
+            <svg
+              v-if="mobileViewMode === 'grid'"
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path d="M2 4h14M2 9h14M2 14h14" />
+            </svg>
+            <svg
+              v-else
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="2" width="5" height="5" rx="1" />
+              <rect x="11" y="2" width="5" height="5" rx="1" />
+              <rect x="2" y="11" width="5" height="5" rx="1" />
+              <rect x="11" y="11" width="5" height="5" rx="1" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -154,116 +189,59 @@
           <span>{{ t('fm.dropFiles') }}</span>
         </div>
 
-        <!-- File Items -->
-        <div class="mobile-file-manager__grid">
+        <!-- File Items: Grid View -->
+        <div v-if="mobileViewMode === 'grid'" class="mobile-file-manager__grid">
           <button
             v-for="file in fmStore.sortedFiles"
             :key="file.name"
             class="mobile-file-manager__item"
-            :class="{ 'mobile-file-manager__item--selected': fmStore.selectedFiles.has(file.name) }"
+            :class="{
+              'mobile-file-manager__item--selected': fmStore.selectedFiles.has(file.name),
+              'mobile-file-manager__item--hidden': file.isHidden,
+            }"
             @click="onFileTap(file)"
             @contextmenu.prevent="onFileContextMenu($event, file)"
           >
-            <div class="mobile-file-manager__item-icon" :class="getIconClass(file)">
-              <!-- Folder Icon -->
-              <svg
-                v-if="file.isDirectory"
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M4 8h10l4-4h10v20H4z" />
-                <path d="M4 8l4-4h10" />
-              </svg>
-              <!-- Image Icon -->
-              <svg
-                v-else-if="isImageFile(file)"
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <rect x="4" y="6" width="24" height="20" rx="2" />
-                <circle cx="12" cy="14" r="3" />
-                <path d="M4 22l8-6 4 3 12-9" />
-              </svg>
-              <!-- Text Icon -->
-              <svg
-                v-else-if="isTextFile(file)"
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z" />
-                <path d="M20 4v4h4" />
-                <path d="M10 16h12M10 22h8" />
-              </svg>
-              <!-- Code Icon -->
-              <svg
-                v-else-if="isCodeFile(file)"
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z" />
-                <path d="M20 4v4h4" />
-                <path d="M12 16l-3 3 3 3M20 16l3 3-3 3" />
-              </svg>
-              <!-- Audio Icon -->
-              <svg
-                v-else-if="isAudioFile(file)"
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M9 2v12M6 5l20-3v16L6 21V5z" />
-                <circle cx="9" cy="22" r="4" />
-              </svg>
-              <!-- Video Icon -->
-              <svg
-                v-else-if="isVideoFile(file)"
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <rect x="4" y="8" width="24" height="16" rx="2" />
-                <path d="M14 13l6 3-6 3V13z" />
-              </svg>
-              <!-- Default File Icon -->
-              <svg
-                v-else
-                width="32"
-                height="32"
-                viewBox="0 0 32 32"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M20 4H8a2 2 0 00-2 2v20a2 2 0 002 2h16a2 2 0 002-2V8z" />
-                <path d="M20 4v4h4" />
-              </svg>
+            <div class="mobile-file-manager__item-icon">
+              <SCPFileIcon
+                :name="file.name"
+                :is-directory="file.isDirectory"
+                :size="32"
+                size-class="xl"
+              />
             </div>
             <span class="mobile-file-manager__item-name" :title="file.name">{{ file.name }}</span>
             <span class="mobile-file-manager__item-meta">
               {{ file.isDirectory ? t('fm.folder') : formatSize(file.size) }}
             </span>
+          </button>
+        </div>
+
+        <!-- File Items: List View -->
+        <div v-else class="mobile-file-manager__list-view">
+          <button
+            v-for="file in fmStore.sortedFiles"
+            :key="file.name"
+            class="mobile-file-manager__list-item"
+            :class="{
+              'mobile-file-manager__list-item--selected': fmStore.selectedFiles.has(file.name),
+              'mobile-file-manager__list-item--hidden': file.isHidden,
+            }"
+            @click="onFileTap(file)"
+            @contextmenu.prevent="onFileContextMenu($event, file)"
+          >
+            <SCPFileIcon
+              :name="file.name"
+              :is-directory="file.isDirectory"
+              :size="20"
+              size-class="md"
+            />
+            <div class="mobile-file-manager__list-item-info">
+              <span class="mobile-file-manager__list-item-name">{{ file.name }}</span>
+              <span class="mobile-file-manager__list-item-meta">
+                {{ file.isDirectory ? t('fm.folder') : formatSize(file.size) }}
+              </span>
+            </div>
           </button>
         </div>
 
@@ -343,6 +321,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
+import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
 import DialogModal from './DialogModal.vue'
 import AudioPlayerModal from './AudioPlayerModal.vue'
 import VideoPlayerModal from './VideoPlayerModal.vue'
@@ -350,7 +329,7 @@ import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
 import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { filesystem } from '../../../utils/filesystem'
-import { uploadFile } from '../../../services/fileService'
+// R2 upload disabled — files stored locally in IndexedDB
 
 interface Props {
   visible: boolean
@@ -374,6 +353,7 @@ const { t } = i18n
 setFileManagerI18n({ t: i18n.t })
 
 const fmStore = useFileManagerStore()
+const mobileViewMode = ref<'grid' | 'list'>('grid')
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
@@ -470,44 +450,22 @@ const isDragOver = ref(false)
 
 // File type detection helpers
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
-const TEXT_EXTS = ['txt', 'md', 'log']
-const CODE_EXTS = ['js', 'ts', 'css', 'html', 'json', 'xml', 'yml', 'yaml']
 const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
 const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
-
-function getFileExt(file: any): string {
-  return file.name.split('.').pop()?.toLowerCase() || ''
-}
-
-function isImageFile(file: any): boolean {
-  return IMAGE_EXTS.includes(getFileExt(file))
-}
-
-function isTextFile(file: any): boolean {
-  return TEXT_EXTS.includes(getFileExt(file))
-}
-
-function isCodeFile(file: any): boolean {
-  return CODE_EXTS.includes(getFileExt(file))
-}
-
-function isAudioFile(file: any): boolean {
-  return AUDIO_EXTS.includes(getFileExt(file))
-}
-
-function isVideoFile(file: any): boolean {
-  return VIDEO_EXTS.includes(getFileExt(file))
-}
-
-function getIconClass(file: any): string {
-  if (file.isDirectory) return 'mobile-file-manager__item-icon--folder'
-  const ext = getFileExt(file)
-  if (IMAGE_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--image'
-  if (AUDIO_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--audio'
-  if (VIDEO_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--video'
-  if (CODE_EXTS.includes(ext)) return 'mobile-file-manager__item-icon--code'
-  return 'mobile-file-manager__item-icon--file'
-}
+const TEXT_EXTS = [
+  'txt',
+  'md',
+  'log',
+  'json',
+  'xml',
+  'yml',
+  'yaml',
+  'js',
+  'ts',
+  'css',
+  'html',
+  'vue',
+]
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -554,6 +512,25 @@ function triggerUpload() {
   fileInputRef.value?.click()
 }
 
+function readFileAsLocal(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (
+      file.type.startsWith('text/') ||
+      /\.(txt|md|json|js|ts|css|html|vue|py|sh|xml|yaml|yml|sql|log|csv|tsv)$/i.test(file.name)
+    ) {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsText(file)
+    } else {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    }
+  })
+}
+
 async function onFileUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files
@@ -567,21 +544,16 @@ async function onFileUpload(event: Event) {
       fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
 
     try {
-      // 所有文件都上传到 R2
-      const result = await uploadFile(file, 'uploads')
-      if (result.success && result.data) {
-        const existingNode = filesystem.getNodeByPath(path)
-        if (existingNode && existingNode.type === 'file') {
-          filesystem.writeFile(path, result.data.url)
-        } else {
-          filesystem.createFile(path, result.data.url)
-        }
-        successCount++
+      const content = await readFileAsLocal(file)
+      const existingNode = filesystem.getNodeByPath(path)
+      if (existingNode && existingNode.type === 'file') {
+        filesystem.writeFile(path, content)
       } else {
-        failCount++
+        filesystem.createFile(path, content)
       }
+      successCount++
     } catch (error) {
-      console.error('[FileManager] Failed to upload file:', error)
+      console.error('[FileManager] Failed to store file locally:', error)
       failCount++
     }
   }
@@ -590,7 +562,7 @@ async function onFileUpload(event: Event) {
   input.value = ''
 
   if (failCount > 0) {
-    alert(`Uploaded ${successCount} file(s), ${failCount} failed.`)
+    alert(`Stored ${successCount} file(s) locally, ${failCount} failed.`)
   }
 }
 
@@ -639,23 +611,10 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
   contextSheetTitle.value = file.name
 
   const ext = file.name.split('.').pop()?.toLowerCase() || ''
-  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'].includes(ext)
-  const isAudio = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].includes(ext)
-  const isVideo = ['mp4', 'webm', 'avi', 'mov', 'mkv'].includes(ext)
-  const isText = [
-    'txt',
-    'md',
-    'log',
-    'json',
-    'xml',
-    'yml',
-    'yaml',
-    'js',
-    'ts',
-    'css',
-    'html',
-    'vue',
-  ].includes(ext)
+  const isImage = IMAGE_EXTS.includes(ext)
+  const isAudio = AUDIO_EXTS.includes(ext)
+  const isVideo = VIDEO_EXTS.includes(ext)
+  const isText = TEXT_EXTS.includes(ext)
 
   contextActions.value = []
 
@@ -829,20 +788,16 @@ async function onDrop(event: DragEvent) {
       fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
 
     try {
-      const result = await uploadFile(file, 'uploads')
-      if (result.success && result.data) {
-        const existingNode = filesystem.getNodeByPath(path)
-        if (existingNode && existingNode.type === 'file') {
-          filesystem.writeFile(path, result.data.url)
-        } else {
-          filesystem.createFile(path, result.data.url)
-        }
-        successCount++
+      const content = await readFileAsLocal(file)
+      const existingNode = filesystem.getNodeByPath(path)
+      if (existingNode && existingNode.type === 'file') {
+        filesystem.writeFile(path, content)
       } else {
-        failCount++
+        filesystem.createFile(path, content)
       }
+      successCount++
     } catch (error) {
-      console.error('[FileManager] Failed to upload dropped file:', error)
+      console.error('[FileManager] Failed to store dropped file locally:', error)
       failCount++
     }
   }
@@ -850,7 +805,7 @@ async function onDrop(event: DragEvent) {
   fmStore.loadDirectory(fmStore.currentPath)
 
   if (failCount > 0) {
-    alert(`Uploaded ${successCount} file(s), ${failCount} failed.`)
+    alert(`Stored ${successCount} file(s) locally, ${failCount} failed.`)
   }
 }
 
@@ -878,7 +833,7 @@ onMounted(() => {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 14px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-bottom: 0.5px solid var(--gui-border-subtle, #38383a);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -924,7 +879,7 @@ onMounted(() => {
 }
 
 .mobile-file-manager__breadcrumb-btn:active {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .mobile-file-manager__breadcrumb-btn svg {
@@ -949,7 +904,7 @@ onMounted(() => {
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1015,7 +970,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 12px 8px;
-  background: var(--gui-bg-surface, #2c2c2e);
+  background: var(--gui-bg-surface, #1c1c1e);
   border-radius: 14px;
   border: 1.5px solid transparent;
   cursor: pointer;
@@ -1029,7 +984,15 @@ onMounted(() => {
 
 .mobile-file-manager__item--selected {
   border-color: var(--gui-accent, #007aff);
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+.mobile-file-manager__item--hidden {
+  opacity: 0.45;
+}
+
+.mobile-file-manager__item--hidden:active {
+  opacity: 0.7;
 }
 
 .mobile-file-manager__item-icon {
@@ -1038,30 +1001,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.mobile-file-manager__item-icon--folder {
-  color: #ff9500;
-}
-
-.mobile-file-manager__item-icon--image {
-  color: var(--gui-error, #ff3b30);
-}
-
-.mobile-file-manager__item-icon--audio {
-  color: #af52de;
-}
-
-.mobile-file-manager__item-icon--video {
-  color: #ff9500;
-}
-
-.mobile-file-manager__item-icon--code {
-  color: #5ac8fa;
-}
-
-.mobile-file-manager__item-icon--file {
-  color: var(--gui-text-secondary, #8e8e93);
 }
 
 .mobile-file-manager__item-name {
@@ -1077,6 +1016,63 @@ onMounted(() => {
 
 .mobile-file-manager__item-meta {
   font-size: 10px;
+  color: var(--gui-text-tertiary, #636366);
+}
+
+/* ── List View ─────────────────────────────────────────────────────── */
+.mobile-file-manager__list-view {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.mobile-file-manager__list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--gui-bg-surface, #1c1c1e);
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 4px;
+}
+
+.mobile-file-manager__list-item:active {
+  transform: scale(0.98);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+.mobile-file-manager__list-item--selected {
+  border-color: var(--gui-accent, #007aff);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+}
+
+.mobile-file-manager__list-item--hidden {
+  opacity: 0.45;
+}
+
+.mobile-file-manager__list-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobile-file-manager__list-item-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gui-text-primary, #ffffff);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mobile-file-manager__list-item-meta {
+  font-size: 11px;
   color: var(--gui-text-tertiary, #636366);
 }
 
@@ -1124,10 +1120,18 @@ onMounted(() => {
 }
 
 .mobile-file-manager__context-item:active {
-  background: var(--gui-bg-surface-hover, #3a3a3c);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
 }
 
 .mobile-file-manager__context-item--danger {
   color: var(--gui-error, #ff3b30);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .mobile-file-manager__context-menu {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+.light .mobile-file-manager__sheet {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
 }
 </style>

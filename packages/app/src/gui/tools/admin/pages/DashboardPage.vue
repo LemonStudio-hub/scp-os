@@ -6,28 +6,28 @@
     <template v-else>
       <div class="dashboard-page__stats">
         <StatCard
-          title="总用户数"
+          :title="t('admin.dashboard.totalUsers')"
           :value="stats.totalUsers ?? 0"
           icon="users"
           :trend="stats.totalUsersTrend"
           color="#E94560"
         />
         <StatCard
-          title="活跃用户"
+          :title="t('admin.dashboard.activeUsers')"
           :value="stats.activeUsers ?? 0"
           icon="activity"
           :trend="stats.activeUsersTrend"
           color="#34C759"
         />
         <StatCard
-          title="总内容数"
+          :title="t('admin.dashboard.totalContent')"
           :value="stats.totalContent ?? 0"
           icon="server"
           :trend="stats.totalContentTrend"
           color="#0A84FF"
         />
         <StatCard
-          title="总反馈数"
+          :title="t('admin.dashboard.totalFeedback')"
           :value="stats.totalFeedback ?? 0"
           icon="shield"
           :trend="stats.totalFeedbackTrend"
@@ -38,19 +38,23 @@
       <div class="dashboard-page__charts">
         <div class="dashboard-page__chart-card">
           <div class="dashboard-page__chart-header">
-            <span class="dashboard-page__chart-title">用户增长趋势</span>
+            <span class="dashboard-page__chart-title">{{ t('admin.dashboard.userGrowth') }}</span>
           </div>
           <TrendChart :data="userTrendData" color="#E94560" />
         </div>
         <div class="dashboard-page__chart-card">
           <div class="dashboard-page__chart-header">
-            <span class="dashboard-page__chart-title">内容增长趋势</span>
+            <span class="dashboard-page__chart-title">{{
+              t('admin.dashboard.contentGrowth')
+            }}</span>
           </div>
           <TrendChart :data="contentTrendData" color="#0A84FF" />
         </div>
         <div class="dashboard-page__chart-card">
           <div class="dashboard-page__chart-header">
-            <span class="dashboard-page__chart-title">反馈增长趋势</span>
+            <span class="dashboard-page__chart-title">{{
+              t('admin.dashboard.feedbackGrowth')
+            }}</span>
           </div>
           <TrendChart :data="feedbackTrendData" color="#FFCC00" />
         </div>
@@ -59,31 +63,45 @@
       <div class="dashboard-page__activity">
         <div class="dashboard-page__activity-card">
           <div class="dashboard-page__activity-header">
-            <span class="dashboard-page__activity-title">近期活动概况</span>
+            <span class="dashboard-page__activity-title">{{
+              t('admin.dashboard.recentActivity')
+            }}</span>
           </div>
           <div class="dashboard-page__activity-grid">
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">今日新增用户</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayNewUsers')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayNewUsers ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">今日新增内容</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayNewContent')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayNewContent ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">今日新增反馈</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayNewFeedback')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayNewFeedback ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">待处理反馈</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.pendingFeedback')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.pendingFeedback ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">封禁用户数</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.bannedUsers')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.bannedUsers ?? 0 }}</span>
             </div>
             <div class="dashboard-page__activity-item">
-              <span class="dashboard-page__activity-label">今日聊天消息</span>
+              <span class="dashboard-page__activity-label">{{
+                t('admin.dashboard.todayMessages')
+              }}</span>
               <span class="dashboard-page__activity-value">{{ stats.todayMessages ?? 0 }}</span>
             </div>
           </div>
@@ -98,6 +116,7 @@ import { ref, onMounted } from 'vue'
 import { StatCard, TrendChart } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
+import { useI18n } from '../../../composables/useI18n'
 import * as adminApi from '../services/adminApi'
 
 interface DataPoint {
@@ -107,6 +126,7 @@ interface DataPoint {
 
 const toast = useToast()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
 const loading = ref(true)
 const stats = ref<Record<string, number>>({})
@@ -126,17 +146,17 @@ async function fetchDashboard() {
     if (statsRes.success) {
       stats.value = statsRes.data || {}
     } else {
-      toast.error(statsRes.error || '获取统计数据失败')
+      toast.error(statsRes.error || t('admin.dashboard.statsError'))
     }
     if (trendRes.success && trendRes.data) {
       userTrendData.value = trendRes.data.users || []
       contentTrendData.value = trendRes.data.content || []
       feedbackTrendData.value = trendRes.data.feedback || []
     } else {
-      toast.error(trendRes.error || '获取趋势数据失败')
+      toast.error(trendRes.error || t('admin.dashboard.trendError'))
     }
   } catch {
-    toast.error('获取仪表盘数据失败')
+    toast.error(t('admin.dashboard.fetchError'))
   } finally {
     loading.value = false
   }
@@ -252,5 +272,16 @@ onMounted(fetchDashboard)
   font-weight: 700;
   color: var(--gui-text-primary, #e0e0e0);
   font-variant-numeric: tabular-nums;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .dashboard-page__stat-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.light .dashboard-page__stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+.light .dashboard-page__activity-item:hover {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
 }
 </style>

@@ -3,17 +3,17 @@
     <div class="audit-log__toolbar">
       <div class="audit-log__filters">
         <select v-model="actionFilter" class="audit-log__select" @change="onFilterChange">
-          <option value="">全部操作</option>
-          <option value="login">登录</option>
-          <option value="ban_user">封禁用户</option>
-          <option value="unban_user">解封用户</option>
-          <option value="delete_user">删除用户</option>
-          <option value="delete_content">删除内容</option>
-          <option value="update_content">更新内容</option>
-          <option value="delete_message">删除消息</option>
-          <option value="delete_feedback">删除反馈</option>
-          <option value="update_settings">更新设置</option>
-          <option value="batch_operation">批量操作</option>
+          <option value="">{{ t('admin.logs.allActions') }}</option>
+          <option value="login">{{ t('admin.logs.actionLogin') }}</option>
+          <option value="ban_user">{{ t('admin.logs.actionBanUser') }}</option>
+          <option value="unban_user">{{ t('admin.logs.actionUnbanUser') }}</option>
+          <option value="delete_user">{{ t('admin.logs.actionDeleteUser') }}</option>
+          <option value="delete_content">{{ t('admin.logs.actionDeleteContent') }}</option>
+          <option value="update_content">{{ t('admin.logs.actionUpdateContent') }}</option>
+          <option value="delete_message">{{ t('admin.logs.actionDeleteMessage') }}</option>
+          <option value="delete_feedback">{{ t('admin.logs.actionDeleteFeedback') }}</option>
+          <option value="update_settings">{{ t('admin.logs.actionUpdateSettings') }}</option>
+          <option value="batch_operation">{{ t('admin.logs.actionBatchOperation') }}</option>
         </select>
         <div class="audit-log__date-range">
           <input
@@ -22,7 +22,7 @@
             type="date"
             @change="onFilterChange"
           />
-          <span class="audit-log__date-sep">至</span>
+          <span class="audit-log__date-sep">{{ t('admin.logs.to') }}</span>
           <input
             v-model="endDate"
             class="audit-log__date-input"
@@ -60,36 +60,38 @@ import { DataTable, Pagination } from '../components'
 import type { TableColumn } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
+import { useI18n } from '../../../composables/useI18n'
 import * as adminApi from '../services/adminApi'
 
 const toast = useToast()
 const adminStore = useAdminStore()
+const { t } = useI18n()
 
-const actionLabels: Record<string, string> = {
-  login: '登录',
-  ban_user: '封禁用户',
-  unban_user: '解封用户',
-  delete_user: '删除用户',
-  delete_content: '删除内容',
-  update_content: '更新内容',
-  delete_message: '删除消息',
-  delete_feedback: '删除反馈',
-  update_settings: '更新设置',
-  batch_operation: '批量操作',
-  export_data: '导出数据',
-  import_data: '导入数据',
-}
+const actionLabels = computed<Record<string, string>>(() => ({
+  login: t('admin.logs.actionLogin'),
+  ban_user: t('admin.logs.actionBanUser'),
+  unban_user: t('admin.logs.actionUnbanUser'),
+  delete_user: t('admin.logs.actionDeleteUser'),
+  delete_content: t('admin.logs.actionDeleteContent'),
+  update_content: t('admin.logs.actionUpdateContent'),
+  delete_message: t('admin.logs.actionDeleteMessage'),
+  delete_feedback: t('admin.logs.actionDeleteFeedback'),
+  update_settings: t('admin.logs.actionUpdateSettings'),
+  batch_operation: t('admin.logs.actionBatchOperation'),
+  export_data: t('admin.logs.actionExportData'),
+  import_data: t('admin.logs.actionImportData'),
+}))
 
-const columns: TableColumn[] = [
+const columns = computed<TableColumn[]>(() => [
   { key: 'id', label: 'ID', width: '70px' },
-  { key: 'admin_username', label: '操作者' },
-  { key: 'action', label: '操作类型', width: '120px' },
-  { key: 'target_type', label: '目标类型', width: '100px' },
-  { key: 'target_id', label: '目标ID', width: '90px' },
-  { key: 'details', label: '详情' },
-  { key: 'ip_address', label: 'IP地址', width: '130px' },
-  { key: 'created_at', label: '操作时间' },
-]
+  { key: 'admin_username', label: t('admin.logs.colOperator') },
+  { key: 'action', label: t('admin.logs.colActionType'), width: '120px' },
+  { key: 'target_type', label: t('admin.logs.colTargetType'), width: '100px' },
+  { key: 'target_id', label: t('admin.logs.colTargetId'), width: '90px' },
+  { key: 'details', label: t('admin.logs.colDetails') },
+  { key: 'ip_address', label: t('admin.logs.colIp'), width: '130px' },
+  { key: 'created_at', label: t('admin.logs.colTime') },
+])
 
 const logs = ref<Record<string, any>[]>([])
 const loading = ref(false)
@@ -103,7 +105,7 @@ const pageSize = 20
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize)))
 
 function formatAction(action: string): string {
-  return actionLabels[action] || action
+  return actionLabels.value[action] || action
 }
 
 function truncateDetails(val: string): string {
@@ -148,10 +150,10 @@ async function fetchLogs() {
       logs.value = res.data || []
       totalItems.value = res.total ?? logs.value.length
     } else {
-      toast.error(res.error || '获取日志失败')
+      toast.error(res.error || t('admin.logs.fetchError'))
     }
   } catch {
-    toast.error('获取日志失败')
+    toast.error(t('admin.logs.fetchError'))
   } finally {
     loading.value = false
   }
@@ -215,6 +217,10 @@ onMounted(fetchLogs)
   color-scheme: dark;
 }
 
+.light .audit-log__date-input {
+  color-scheme: light;
+}
+
 .audit-log__date-input:focus {
   border-color: var(--gui-error, #e94560);
 }
@@ -242,5 +248,12 @@ onMounted(fetchLogs)
   white-space: nowrap;
   color: var(--gui-text-tertiary, #6a6a6a);
   font-size: 12px;
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .audit-log__select,
+.light .audit-log__date-input {
+  background: var(--gui-bg-surface, #ffffff);
+  border-color: var(--gui-border-default, #d1d1d6);
 }
 </style>

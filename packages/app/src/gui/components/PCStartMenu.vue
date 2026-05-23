@@ -310,7 +310,7 @@ onUnmounted(() => {
 .pc-start-menu__search-field {
   width: 100%;
   padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) var(--gui-spacing-sm, 8px) 36px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);
@@ -447,7 +447,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-lg, 12px);
   color: var(--gui-text-primary, #ffffff);
   transition: all var(--gui-transition-base, 200ms ease);
@@ -458,6 +458,27 @@ onUnmounted(() => {
   background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
   box-shadow: var(--gui-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.4));
   transform: scale(1.05);
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-start-menu {
+  box-shadow: var(--gui-shadow-ios-sheet, 0 -10px 40px rgba(0, 0, 0, 0.12));
+}
+
+.light .pc-start-menu:hover {
+  box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.15));
+}
+
+.light .pc-start-menu__search-results {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.light .pc-start-menu__app:hover .pc-start-menu__app-icon {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.light .pc-start-menu__app-icon {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .pc-start-menu__app-label {
@@ -520,7 +541,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-base, 8px);
   color: var(--gui-text-primary, #ffffff);
 }
@@ -569,7 +590,7 @@ onUnmounted(() => {
   justify-content: center;
   width: 48px;
   height: 48px;
-  background: var(--gui-bg-surface-raised, #3a3a3c);
+  background: var(--gui-bg-surface-raised, #2c2c2e);
   border-radius: var(--gui-radius-lg, 12px);
   color: var(--gui-text-primary, #ffffff);
 }
