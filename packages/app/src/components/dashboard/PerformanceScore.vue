@@ -318,40 +318,9 @@ const scoreStatus = computed(() => {
 }
 
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
-:global(.light) .score-section {
-  background: rgba(0, 0, 0, 0.005);
-  border-bottom-color: rgba(0, 0, 0, 0.04);
-}
-
-:global(.light) .score-card {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.005) 100%);
-  border-color: rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-}
-
 :global(.light) .score-label {
   color: #1c1c1e;
-  opacity: 0.65;
-}
-
-:global(.light) .score-value {
-  color: #1c1c1e;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-:global(.light) .score-value.score-good {
-  color: #28a745;
-  text-shadow: 0 1px 2px rgba(40, 167, 69, 0.1);
-}
-
-:global(.light) .score-value.score-medium {
-  color: #b58900;
-  text-shadow: 0 1px 2px rgba(181, 137, 0, 0.1);
-}
-
-:global(.light) .score-value.score-poor {
-  color: #dc3545;
-  text-shadow: 0 1px 2px rgba(220, 53, 69, 0.1);
+  opacity: 0.7;
 }
 
 :global(.light) .detail-label {
@@ -363,42 +332,20 @@ const scoreStatus = computed(() => {
   color: #1c1c1e;
 }
 
+/* Ensure original neon colors are active on colored elements */
 :global(.light) .detail-value.score-good {
-  color: #28a745;
+  color: #00ff00;
 }
 
 :global(.light) .detail-value.score-medium {
-  color: #b58900;
+  color: #ffff00;
 }
 
 :global(.light) .detail-value.score-poor {
-  color: #dc3545;
+  color: #ff4444;
 }
 
 :global(.light) .score-marks .mark {
-  background: rgba(0, 0, 0, 0.12);
-}
-
-:global(.light) .score-bar-bg {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-:global(.light) .score-bar-fill.score-good {
-  background: linear-gradient(90deg, #28a745, #34c759);
-  box-shadow: 0 0 12px rgba(52, 199, 89, 0.15);
-}
-
-:global(.light) .score-bar-fill.score-medium {
-  background: linear-gradient(90deg, #b58900, #ff9500);
-  box-shadow: 0 0 12px rgba(255, 149, 0, 0.15);
-}
-
-:global(.light) .score-bar-fill.score-poor {
-  background: linear-gradient(90deg, #dc3545, #ff3b30);
-  box-shadow: 0 0 12px rgba(255, 59, 48, 0.15);
-}
-
-:global(.light) .score-details {
-  border-top-color: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.15);
 }
 </style>
