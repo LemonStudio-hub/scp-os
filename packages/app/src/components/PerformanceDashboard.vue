@@ -62,6 +62,7 @@ const latestReport = ref<any>(null)
 const issues = ref<PerformanceIssue[]>([])
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const recommendations = ref<any[]>([])
+const completedSteps = ref<Record<string, number[]>>({})
 const lastUpdated = ref<string>('--:--:--')
 const apiStatus = ref<string>(t('common.unknown'))
 const statusMessage = ref<string>('')
@@ -218,9 +219,14 @@ const generateReport = () => {
   if (!monitorService.value || !optimizerService.value) return
 
   const report = monitorService.value.generateReport()
+  
+  // Use createOptimizationPlan to compute the dynamic currentScore and strategies
+  const plan = optimizerService.value.createOptimizationPlan(report.issues || [])
+  report.score = plan.currentScore
+  
   latestReport.value = report
   issues.value = report.issues || []
-  recommendations.value = optimizerService.value.recommendOptimizations(issues.value)
+  recommendations.value = plan.strategies
 }
 
 const handleClear = () => {
@@ -285,10 +291,42 @@ const checkApiStatus = async () => {
   apiStatus.value = isOnline ? t('dash.online') : t('dash.offline')
 }
 
+const initCompletedSteps = () => {
+  if (!optimizerService.value) return
+  const strategies = optimizerService.value.getAllStrategies()
+  const stepsMap: Record<string, number[]> = {}
+  strategies.forEach((s) => {
+    const validation = optimizerService.value!.validateImplementation(s.id)
+    const completed: number[] = []
+    s.steps.forEach((_, idx) => {
+      if (validation.checks[`step-${idx}`]) {
+        completed.push(idx)
+      }
+    })
+    stepsMap[s.id] = completed
+  })
+  completedSteps.value = stepsMap
+}
+
+const handleToggleStep = (strategyId: string, stepIndex: number) => {
+  if (!optimizerService.value) return
+  
+  const currentCompleted = completedSteps.value[strategyId] || []
+  if (currentCompleted.includes(stepIndex)) {
+    optimizerService.value.markStepNotImplemented(strategyId, stepIndex)
+  } else {
+    optimizerService.value.markStepImplemented(strategyId, stepIndex)
+  }
+  
+  initCompletedSteps()
+  refreshData()
+}
+
 watch(
   () => props.isVisible,
   (newValue) => {
     if (newValue) {
+      initCompletedSteps()
       refreshData()
       checkApiStatus()
     }
@@ -299,6 +337,7 @@ onMounted(() => {
   try {
     monitorService.value = new PerformanceMonitorService()
     optimizerService.value = new PerformanceOptimizerService()
+    initCompletedSteps()
     apiService.value = new PerformanceApiService()
 
     const authStore = useAuthStore()
@@ -662,7 +701,12 @@ onUnmounted(() => {
           <IssueList :issues="issues" />
 
           <!-- Recommendations Section -->
-          <RecommendationList :recommendations="recommendations" :show-steps="true" />
+          <RecommendationList
+            :recommendations="recommendations"
+            :show-steps="true"
+            :completed-steps="completedSteps"
+            @toggle-step="handleToggleStep"
+          />
 
           <!-- Footer -->
           <DashboardFooter

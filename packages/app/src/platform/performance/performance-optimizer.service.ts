@@ -224,14 +224,25 @@ export class PerformanceOptimizerService {
       return sum + avgImprovement
     }, 0)
 
-    // Calculate current score based on issue severity
+    // Calculate baseline and dynamic scores based on issue severity and completed steps
     const severityPenalty: Record<string, number> = {
       critical: 25,
       high: 15,
       medium: 10,
       low: 5,
     }
-    const currentScore = Math.max(
+
+    // Mapping: which strategies resolve which issues
+    const issueToStrategyMap: Record<string, string[]> = {
+      'high-memory': ['memory-optimization'],
+      'high-memory-usage': ['memory-optimization'],
+      'slow-page-load': ['code-splitting', 'bundle-analysis'],
+      'slow-resource-loading': ['image-optimization', 'caching-strategy'],
+      'resource-errors': ['caching-strategy']
+    }
+
+    // Calculate baseline score (0 steps completed)
+    const baseCurrentScore = Math.max(
       0,
       100 -
         issues.reduce((sum, issue) => {
@@ -239,14 +250,43 @@ export class PerformanceOptimizerService {
         }, 0)
     )
 
-    // Calculate projected score after applying optimizations
+    // Calculate dynamic currentScore by resolving issues based on steps completion ratio
+    let totalPenalty = 0
+    issues.forEach((issue) => {
+      const penalty = severityPenalty[issue.severity] ?? 10
+      const resolvingStrategies = issueToStrategyMap[issue.id] || []
+      
+      let resolvedProgress = 0
+      if (resolvingStrategies.length > 0) {
+        let sumRatio = 0
+        resolvingStrategies.forEach((stratId) => {
+          const strat = this.getStrategy(stratId)
+          if (strat) {
+            const validation = this.validateImplementation(stratId)
+            const totalSteps = strat.steps.length
+            const completedSteps = Object.values(validation.checks).filter(Boolean).length
+            const ratio = totalSteps > 0 ? completedSteps / totalSteps : 0
+            sumRatio += ratio
+          }
+        })
+        resolvedProgress = sumRatio / resolvingStrategies.length
+      }
+
+      // Dynamic penalty reduction: completed steps reduce the issue's penalty
+      const actualPenalty = penalty * (1 - resolvedProgress)
+      totalPenalty += actualPenalty
+    })
+
+    const currentScore = Math.max(0, Math.min(100, Math.round(100 - totalPenalty)))
+
+    // Calculate projected target score (base current score + average expected improvement)
     const avgImprovement =
       recommended.length > 0 ? estimatedTotalImprovement / recommended.length : 0
-    const score = Math.min(100, Math.round(currentScore + avgImprovement))
+    const score = Math.min(100, Math.round(baseCurrentScore + avgImprovement))
 
     return {
       score,
-      currentScore: Math.round(currentScore),
+      currentScore,
       issues,
       strategies: recommended,
       estimatedTotalImprovement: `${estimatedTotalImprovement.toFixed(0)}%`,
