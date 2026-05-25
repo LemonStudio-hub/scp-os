@@ -10,7 +10,7 @@
       },
     ]"
     :style="windowStyle"
-    :data-theme="themeStore.currentTheme.name"
+    :data-theme="themeStore.currentTheme.id"
     @mousedown="onWindowClick"
   >
     <!-- Title Bar -->
@@ -426,7 +426,8 @@ function handleWindowResize() {
 }
 
 /* Ensure title is visible in light mode */
-.pc-window[data-theme='light'] .pc-window__title {
+.pc-window[data-theme='light'] .pc-window__title,
+.pc-window[data-theme='claude'] .pc-window__title {
   color: var(--gui-text-primary, #000000);
 }
 

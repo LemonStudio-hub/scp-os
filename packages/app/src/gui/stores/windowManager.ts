@@ -74,8 +74,8 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       height: config.height ?? windowDefaults.height,
     }
 
-    // Handle fullscreen option - default to true for all apps
-    const isFullscreen = config.isFullscreen ?? true
+    // Settings is a control panel, not a workspace app; keeping it windowed avoids covering the desktop.
+    const isFullscreen = config.tool === 'settings' ? false : (config.isFullscreen ?? true)
 
     const windowInstance: WindowInstance = {
       config,
@@ -258,7 +258,27 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       const savedWindows = (await indexedDBService.loadGUIWindowStates()) as WindowInstance[]
       if (savedWindows && savedWindows.length > 0) {
         for (const savedWindow of savedWindows) {
-          updateWindow(savedWindow.config.id, savedWindow)
+          const windowToRestore =
+            savedWindow.config.tool === 'settings'
+              ? {
+                  ...savedWindow,
+                  config: {
+                    ...savedWindow.config,
+                    isFullscreen: false,
+                  },
+                  state: 'normal' as WindowState,
+                  maximized: false,
+                  size: {
+                    width: savedWindow.config.width ?? savedWindow.size.width,
+                    height: savedWindow.config.height ?? savedWindow.size.height,
+                  },
+                }
+              : savedWindow
+
+          updateWindow(windowToRestore.config.id, windowToRestore)
+          if (windowToRestore !== savedWindow) {
+            await saveWindowState(windowToRestore)
+          }
         }
         logger.info(`[WindowManager] Restored ${savedWindows.length} windows from IndexedDB`)
       }

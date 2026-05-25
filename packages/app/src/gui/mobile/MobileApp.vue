@@ -100,6 +100,7 @@ function onHomeLaunch(app: HomeApp | DesktopApp): void {
       iconName: config.iconName,
       width: config.width,
       height: config.height,
+      isFullscreen: config.isFullscreen,
       data: (app as DesktopApp).data,
     })
   })

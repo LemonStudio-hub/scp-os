@@ -79,7 +79,14 @@ export function registerAllTools(): void {
     id: 'settings',
     label: lbl('app.settings'),
     icon: 'settings',
-    windowConfig: { width: 800, height: 550, minWidth: 600, minHeight: 400, resizable: true },
+    windowConfig: {
+      width: 800,
+      height: 550,
+      minWidth: 600,
+      minHeight: 400,
+      resizable: true,
+      isFullscreen: false,
+    },
     desktopComponent: AsyncSettingsWindow,
     mobileComponent: AsyncMobileSettings,
   })

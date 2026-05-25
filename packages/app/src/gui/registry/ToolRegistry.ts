@@ -29,6 +29,8 @@ export interface ToolWindowConfig {
   minHeight?: number
   /** Whether the window is resizable */
   resizable?: boolean
+  /** Whether the window opens maximized */
+  isFullscreen?: boolean
 }
 
 export interface ToolModule {
@@ -146,7 +148,7 @@ export function openTool(
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
-    isFullscreen: true,
+    isFullscreen: tool.windowConfig.isFullscreen ?? true,
     data,
   })
 }

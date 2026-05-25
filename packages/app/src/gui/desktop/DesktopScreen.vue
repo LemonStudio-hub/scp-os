@@ -63,9 +63,7 @@
           <div
             class="desktop-screen__icon-bg"
             :class="`desktop-screen__icon-bg--${app.id}`"
-            :style="{
-              background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
-            }"
+            :style="desktopIconStyle"
           >
             <div class="desktop-screen__icon-inner">
               <template v-if="app.id === 'terminal'">
@@ -826,6 +824,21 @@ const desktopThemeStyles = computed(() => ({
   '--desktop-accent': themeStore.currentTheme.colors.accent,
 }))
 
+const desktopIconStyle = computed(() => {
+  if (themeStore.currentTheme.id === 'claude') {
+    return {
+      background: '#FAF9F5',
+      border: '1.5px solid #D97757',
+      color: '#D97757',
+      boxShadow: '0 4px 14px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.05)',
+    }
+  }
+
+  return {
+    background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+  }
+})
+
 // Wallpaper pattern colors
 const wallpaperPatternColor1 = computed(() => themeStore.currentTheme.colors.borderSubtle)
 const wallpaperPatternColor2 = computed(() => themeStore.currentTheme.colors.borderDefault)
@@ -1043,6 +1056,10 @@ onUnmounted(() => {
   color: #D97757 !important;
 }
 
+:global(.claude) .desktop-screen__icon-mask {
+  background: #D97757 !important;
+}
+
 .desktop-screen__icon-inner {
   display: flex;
   align-items: center;
@@ -1131,8 +1148,7 @@ onUnmounted(() => {
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
 }
 
-:global(.light) .desktop-screen__icon-label,
-:global(.claude) .desktop-screen__icon-label {
+:global(.light) .desktop-screen__icon-label {
   background: #FFFFFF !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
@@ -1142,14 +1158,28 @@ onUnmounted(() => {
   transition: all var(--gui-transition-base, 200ms ease);
 }
 
+:global(.claude) .desktop-screen__icon-label {
+  background: #d6d6d6 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #606060 !important;
+  font-weight: 600;
+  transition: all var(--gui-transition-base, 200ms ease);
+}
+
 .desktop-screen__icon:hover .desktop-screen__icon-label {
   background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.6));
   border-color: var(--gui-border-default, rgba(255, 255, 255, 0.12));
 }
 
-:global(.light) .desktop-screen__icon:hover .desktop-screen__icon-label,
-:global(.claude) .desktop-screen__icon:hover .desktop-screen__icon-label {
+:global(.light) .desktop-screen__icon:hover .desktop-screen__icon-label {
   background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+:global(.claude) .desktop-screen__icon:hover .desktop-screen__icon-label {
+  background: #dcdcdc;
   border-color: rgba(0, 0, 0, 0.15);
 }
 

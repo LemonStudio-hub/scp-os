@@ -283,7 +283,16 @@ const wallpaperPatternColor2 = computed(() => themeStore.currentTheme.colors.wal
 const wallpaperPatternColor3 = computed(() => themeStore.currentTheme.colors.wallpaperGradient3)
 
 const iconGradientStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+  background:
+    themeStore.currentTheme.id === 'claude'
+      ? '#FAF9F5'
+      : `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+  border: themeStore.currentTheme.id === 'claude' ? '1.5px solid #D97757' : undefined,
+  color: themeStore.currentTheme.id === 'claude' ? '#D97757' : undefined,
+  boxShadow:
+    themeStore.currentTheme.id === 'claude'
+      ? '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04)'
+      : undefined,
 }))
 
 useHammer(homeRef, {
@@ -537,10 +546,21 @@ onMounted(async () => {
   text-overflow: ellipsis;
 }
 
-:global(.light) .home-screen__app-label,
-:global(.claude) .home-screen__app-label {
+:global(.light) .home-screen__app-label {
   text-shadow: none;
   color: #000000;
+  font-weight: 600;
+}
+
+:global(.claude) .home-screen__app-label {
+  width: auto;
+  min-width: 64px;
+  max-width: 120px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #d6d6d6;
+  color: #606060;
+  text-shadow: none;
   font-weight: 600;
 }
 
