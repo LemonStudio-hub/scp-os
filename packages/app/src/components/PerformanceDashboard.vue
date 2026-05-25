@@ -219,11 +219,11 @@ const generateReport = () => {
   if (!monitorService.value || !optimizerService.value) return
 
   const report = monitorService.value.generateReport()
-  
+
   // Use createOptimizationPlan to compute the dynamic currentScore and strategies
   const plan = optimizerService.value.createOptimizationPlan(report.issues || [])
   report.score = plan.currentScore
-  
+
   latestReport.value = report
   issues.value = report.issues || []
   recommendations.value = plan.strategies
@@ -296,7 +296,9 @@ const initCompletedSteps = () => {
   const strategies = optimizerService.value.getAllStrategies()
   const stepsMap: Record<string, number[]> = {}
   strategies.forEach((s) => {
-    const validation = optimizerService.value!.validateImplementation(s.id)
+    const service = optimizerService.value
+    if (!service) return
+    const validation = service.validateImplementation(s.id)
     const completed: number[] = []
     s.steps.forEach((_, idx) => {
       if (validation.checks[`step-${idx}`]) {
@@ -310,14 +312,14 @@ const initCompletedSteps = () => {
 
 const handleToggleStep = (strategyId: string, stepIndex: number) => {
   if (!optimizerService.value) return
-  
+
   const currentCompleted = completedSteps.value[strategyId] || []
   if (currentCompleted.includes(stepIndex)) {
     optimizerService.value.markStepNotImplemented(strategyId, stepIndex)
   } else {
     optimizerService.value.markStepImplemented(strategyId, stepIndex)
   }
-  
+
   initCompletedSteps()
   refreshData()
 }
@@ -512,7 +514,9 @@ onUnmounted(() => {
                       :class="`vital-${getVitalStatus('lcp', webVitals.lcp)}`"
                     />
                   </div>
-                  <div class="vital-thresholds"><span>0</span><span>2.5s</span><span>4s+</span></div>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>2.5s</span><span>4s+</span>
+                  </div>
                 </div>
 
                 <!-- CLS -->
@@ -541,7 +545,9 @@ onUnmounted(() => {
                       :class="`vital-${getVitalStatus('cls', webVitals.cls)}`"
                     />
                   </div>
-                  <div class="vital-thresholds"><span>0</span><span>0.1</span><span>0.25+</span></div>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>0.1</span><span>0.25+</span>
+                  </div>
                 </div>
 
                 <!-- INP -->
@@ -627,7 +633,9 @@ onUnmounted(() => {
                     <div class="info-row">
                       <span>{{ t('perf.type') }}</span
                       ><span class="info-val"
-                        >{{ networkInfo.effectiveType.toUpperCase() }} ({{ networkInfo.type }})</span
+                        >{{ networkInfo.effectiveType.toUpperCase() }} ({{
+                          networkInfo.type
+                        }})</span
                       >
                     </div>
                     <div class="info-row">
@@ -954,20 +962,20 @@ onUnmounted(() => {
 }
 
 .vital-badge.vital-good {
-  background: rgba(52, 199, 89, 0.15);
-  color: #34c759;
+  background: var(--gui-success-bg, rgba(52, 199, 89, 0.15));
+  color: var(--gui-success, #34c759);
 }
 .vital-badge.vital-medium {
-  background: rgba(255, 149, 0, 0.15);
-  color: #ff9500;
+  background: var(--gui-warning-bg, rgba(255, 149, 0, 0.15));
+  color: var(--gui-warning, #ff9500);
 }
 .vital-badge.vital-poor {
-  background: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
+  color: var(--gui-error, #ff3b30);
 }
 .vital-badge.vital-unknown {
-  background: rgba(142, 142, 147, 0.15);
-  color: #8e8e93;
+  background: var(--gui-bg-surface-hover, rgba(142, 142, 147, 0.15));
+  color: var(--gui-text-tertiary, #8e8e93);
 }
 
 .vital-value {
@@ -998,13 +1006,13 @@ onUnmounted(() => {
     background 0.3s ease;
 }
 .vital-bar-fill.vital-good {
-  background: #34c759;
+  background: var(--gui-success, #34c759);
 }
 .vital-bar-fill.vital-medium {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
 }
 .vital-bar-fill.vital-poor {
-  background: #ff3b30;
+  background: var(--gui-error, #ff3b30);
 }
 
 .vital-thresholds {

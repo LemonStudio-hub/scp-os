@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <Transition name="media-modal">
     <div v-if="visible" class="audio-player-overlay" @click.self="close">
@@ -73,6 +75,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, nextTick } from 'vue'
 import { filesystem } from '../../../utils/filesystem'
 

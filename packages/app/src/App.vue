@@ -54,15 +54,15 @@ onMounted(() => {
 
   ;(async () => {
     try {
-      // Step 1: Initialize theme store
-      loadingStep.value = 'loading.steps.themes'
-      loadingProgress.value = 10
-      themeStore.init()
-
-      // Step 2: Inject GUI design tokens
+      // Step 1: Inject GUI design tokens (inject baseline design system variables first)
       loadingStep.value = 'loading.steps.ui'
-      loadingProgress.value = 20
+      loadingProgress.value = 10
       injectGUITokens()
+
+      // Step 2: Initialize theme store (so active theme colors correctly override baseline variables)
+      loadingStep.value = 'loading.steps.themes'
+      loadingProgress.value = 20
+      themeStore.init()
 
       // Step 3: Register all GUI tools
       loadingStep.value = 'loading.steps.components'

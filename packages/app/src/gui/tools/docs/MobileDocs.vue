@@ -1,4 +1,7 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <MobileWindow
     :visible="visible"
     :title="view === 'list' ? t('docs.scpDocs') : reader.currentArticle.value?.scpNumber || ''"
@@ -428,6 +431,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import DOMPurify from 'dompurify'
 import MobileWindow from '../../components/MobileWindow.vue'
@@ -658,21 +662,21 @@ onBeforeUnmount(() => {
 
 /* Light theme overrides */
 .mobile-docs--light {
-  --docs-bg: #f5f5f7;
+  --docs-bg: #f2f2f7;
   --docs-surface: #ffffff;
-  --docs-surface-hover: #e8e8ed;
-  --docs-bg-hover: #e8e8ed;
-  --docs-border: rgba(0, 0, 0, 0.08);
-  --docs-text-primary: #1d1d1f;
-  --docs-text-secondary: #6e6e73;
-  --docs-text-tertiary: #86868b;
-  --docs-accent: #007aff;
-  --docs-accent-soft: rgba(0, 122, 255, 0.12);
+  --docs-surface-hover: #e8e8ee;
+  --docs-bg-hover: #e8e8ee;
+  --docs-border: rgba(0, 0, 0, 0.12);
+  --docs-text-primary: #000000;
+  --docs-text-secondary: #48484a;
+  --docs-text-tertiary: #6c6c70;
+  --docs-accent: #0063d1;
+  --docs-accent-soft: rgba(0, 99, 209, 0.10);
   --docs-content-bg: #ffffff;
-  --docs-content-text: #1d1d1f;
+  --docs-content-text: #000000;
   --docs-card-bg: #ffffff;
-  --docs-card-shadow: rgba(0, 0, 0, 0.05);
-  --docs-panel-shadow: rgba(0, 0, 0, 0.12);
+  --docs-card-shadow: rgba(0, 0, 0, 0.06);
+  --docs-panel-shadow: rgba(0, 0, 0, 0.14);
 }
 
 /* ══════════════════════════════════════════════════════════════════════ */
@@ -811,8 +815,8 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(255, 149, 0, 0.15);
-  color: #ff9500;
+  background: var(--gui-warning-bg, rgba(255, 149, 0, 0.15));
+  color: var(--gui-warning, #ff9500);
   font-size: 12px;
   font-weight: 500;
 }
@@ -980,8 +984,8 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 4px;
   padding: 4px 10px;
-  background: rgba(255, 149, 0, 0.12);
-  color: #ff9500;
+  background: var(--gui-warning-bg, rgba(255, 149, 0, 0.12));
+  color: var(--gui-warning, #ff9500);
   font-size: 11px;
   font-weight: 500;
 }

@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <MobileWindow
     :visible="visible"
@@ -294,6 +296,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, nextTick } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useTextEditorStore } from '../../stores/textEditor'

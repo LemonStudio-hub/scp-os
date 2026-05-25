@@ -3,6 +3,8 @@
  * IndexedDB implementation for command history repository
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type {
   ICommandHistoryRepository,
   CommandHistoryQueryOptions,

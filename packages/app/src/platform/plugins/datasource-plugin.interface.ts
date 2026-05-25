@@ -26,6 +26,7 @@ export interface DataSourceQueryOptions {
 /**
  * Data Source Query Result
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface DataSourceQueryResult<T = any> {
   /** Query results */
   data: T[]
@@ -91,6 +92,7 @@ export interface IDataSourcePlugin extends Plugin {
    * @param options Query options
    * @returns Query results
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   query<T = any>(
     dataSourceId: string,
     options: DataSourceQueryOptions
@@ -102,6 +104,7 @@ export interface IDataSourcePlugin extends Plugin {
    * @param id Item ID
    * @returns Item or null
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   get<T = any>(dataSourceId: string, id: string): Promise<T | null>
 
   /**
@@ -111,6 +114,7 @@ export interface IDataSourcePlugin extends Plugin {
    * @param options Additional query options
    * @returns Search results
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   search<T = any>(
     dataSourceId: string,
     keyword: string,
@@ -152,7 +156,7 @@ export interface IDataSourcePlugin extends Plugin {
   getStatistics(dataSourceId: string): Promise<{
     totalItems: number
     lastUpdated?: string
-    [key: string]: any
+    [key: string]: unknown
   }>
 }
 

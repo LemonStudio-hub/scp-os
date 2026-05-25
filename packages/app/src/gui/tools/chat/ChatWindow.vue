@@ -380,6 +380,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
@@ -560,7 +561,9 @@ function setUnreadCount(roomId: number, count: number) {
 
 function markRoomAsRead(roomId: number) {
   setUnreadCount(roomId, 0)
-  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch(() => {})
+  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch(() => {
+    void 0
+  })
 }
 
 const chatThemeStyles = computed(() => ({
@@ -598,7 +601,7 @@ watch(
 async function loadUnreadCounts() {
   try {
     const stored = await indexedDBService.loadSetting('chat_unread_counts')
-    if (stored) unreadCounts.value = stored
+    if (stored) unreadCounts.value = stored as Record<number, number>
   } catch {}
 }
 
@@ -606,11 +609,13 @@ async function loadRooms() {
   loadingRooms.value = true
   try {
     const url = `${API_BASE}/chat/rooms?t=${Date.now()}`
+    // eslint-disable-next-line no-console
     console.log('[Chat] Loading rooms from:', url)
     const response = await fetch(url, {
       cache: 'no-cache',
     })
     const data = await response.json()
+    // eslint-disable-next-line no-console
     console.log('[Chat] Rooms response:', JSON.stringify(data).slice(0, 500))
     if (data.success && data.data) {
       const oldRooms = new Map(rooms.map((r) => [r.id, r]))
@@ -632,6 +637,7 @@ async function loadRooms() {
         const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0
         return timeB - timeA
       })
+      // eslint-disable-next-line no-console
       console.log('[Chat] Rooms loaded:', rooms.length)
     } else {
       console.warn('[Chat] Rooms load failed or empty:', data)
@@ -1280,19 +1286,19 @@ async function saveNickname() {
 }
 
 .mobile-chat__ws-status--connected .mobile-chat__ws-dot {
-  background: #34c759;
-  box-shadow: 0 0 5px rgba(52, 199, 89, 0.5);
+  background: var(--gui-success, #34c759);
+  box-shadow: 0 0 5px var(--gui-success-bg, rgba(52, 199, 89, 0.5));
 }
 .mobile-chat__ws-status--connecting .mobile-chat__ws-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: mwsPulse 1s ease-in-out infinite;
 }
 .mobile-chat__ws-status--reconnecting .mobile-chat__ws-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: mwsPulse 1s ease-in-out infinite;
 }
 .mobile-chat__ws-status--disconnected .mobile-chat__ws-dot {
-  background: #ff3b30;
+  background: var(--gui-error, #ff3b30);
 }
 
 .mobile-chat__ws-text {

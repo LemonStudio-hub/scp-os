@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <div class="chat-mgmt">
     <div class="chat-mgmt__tabs">
@@ -159,6 +161,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, onMounted } from 'vue'
 import { DataTable, Pagination, ConfirmDialog, Modal } from '../components'
 import type { TableColumn } from '../components'

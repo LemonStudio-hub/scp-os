@@ -46,7 +46,7 @@ export class TabEntity implements Entity {
   /**
    * Tab data (custom payload)
    */
-  data: Record<string, any>
+  data: Record<string, unknown>
 
   /**
    * Creation timestamp
@@ -65,7 +65,7 @@ export class TabEntity implements Entity {
     status?: TabStatus
     icon?: string
     closable?: boolean
-    data?: Record<string, any>
+    data?: Record<string, unknown>
     createdAt?: Date
     updatedAt?: Date
   }) {
@@ -99,7 +99,7 @@ export class TabEntity implements Entity {
   /**
    * Update tab data
    */
-  setData(key: string, value: any): void {
+  setData(key: string, value: unknown): void {
     this.data[key] = value
     this.updatedAt = new Date()
   }
@@ -107,7 +107,7 @@ export class TabEntity implements Entity {
   /**
    * Get tab data
    */
-  getData(key: string): any {
+  getData(key: string): unknown {
     return this.data[key]
   }
 
@@ -142,7 +142,7 @@ export class TabEntity implements Entity {
     status: TabStatus
     icon?: string
     closable: boolean
-    data: Record<string, any>
+    data: Record<string, unknown>
     createdAt: string
     updatedAt: string
   } {
@@ -169,7 +169,7 @@ export class TabEntity implements Entity {
     status: TabStatus
     icon?: string
     closable: boolean
-    data: Record<string, any>
+    data: Record<string, unknown>
     createdAt?: string
     updatedAt?: string
   }): TabEntity {

@@ -848,6 +848,7 @@ onMounted(async () => {
 
   // Listen for wallpaper changes
   if (typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     window.addEventListener('wallpaper-changed', async (event: any) => {
       try {
         const wallpaperId = event.detail?.wallpaperId
@@ -971,9 +972,8 @@ onUnmounted(() => {
   position: relative;
   z-index: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: 14px;
   width: 72px;
   height: 72px;
   --icon-radius: var(--gui-radius-xl, 14px);
@@ -1003,10 +1003,44 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-.light .desktop-screen__icon-bg {
+:global(.light) .desktop-screen__icon-bg {
+  border: 1.5px solid #D1D1D6;
+  background: #FFFFFF !important;
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    0 0 0 0.5px rgba(0, 0, 0, 0.04);
+    0 4px 14px rgba(0, 0, 0, 0.04),
+    0 1px 4px rgba(0, 0, 0, 0.02);
+}
+
+:global(.light) .desktop-screen__icon-bg::after {
+  background: none !important;
+}
+
+:global(.light) .desktop-screen__icon-bg svg {
+  stroke: #1C1C1E !important;
+}
+
+:global(.light) .desktop-screen__icon-text {
+  color: #1C1C1E !important;
+}
+
+:global(.claude) .desktop-screen__icon-bg {
+  border: 1.5px solid #D97757;
+  background: #FAF9F5 !important;
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+:global(.claude) .desktop-screen__icon-bg::after {
+  background: none !important;
+}
+
+:global(.claude) .desktop-screen__icon-bg svg {
+  stroke: #D97757 !important;
+}
+
+:global(.claude) .desktop-screen__icon-text {
+  color: #D97757 !important;
 }
 
 .desktop-screen__icon-inner {
@@ -1064,7 +1098,8 @@ onUnmounted(() => {
   transform: scale(1.1);
 }
 
-.light .desktop-screen__icon:hover .desktop-screen__icon-bg {
+:global(.light) .desktop-screen__icon:hover .desktop-screen__icon-bg,
+:global(.claude) .desktop-screen__icon:hover .desktop-screen__icon-bg {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
@@ -1073,7 +1108,8 @@ onUnmounted(() => {
   box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
-.light .desktop-screen__icon:active .desktop-screen__icon-bg {
+:global(.light) .desktop-screen__icon:active .desktop-screen__icon-bg,
+:global(.claude) .desktop-screen__icon:active .desktop-screen__icon-bg {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -1095,10 +1131,14 @@ onUnmounted(() => {
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
 }
 
-.light .desktop-screen__icon-label {
-  background: var(--gui-glass-bg, rgba(255, 255, 255, 0.8));
-  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
-  color: var(--gui-text-primary, #000000);
+:global(.light) .desktop-screen__icon-label,
+:global(.claude) .desktop-screen__icon-label {
+  background: #FFFFFF !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  color: #000000 !important;
+  font-weight: 600;
   transition: all var(--gui-transition-base, 200ms ease);
 }
 
@@ -1107,9 +1147,10 @@ onUnmounted(() => {
   border-color: var(--gui-border-default, rgba(255, 255, 255, 0.12));
 }
 
-.light .desktop-screen__icon:hover .desktop-screen__icon-label {
-  background: var(--gui-glass-bg-strong, rgba(255, 255, 255, 0.92));
-  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
+:global(.light) .desktop-screen__icon:hover .desktop-screen__icon-label,
+:global(.claude) .desktop-screen__icon:hover .desktop-screen__icon-label {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
 }
 
 /* Responsive adjustments */

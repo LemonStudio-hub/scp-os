@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <SCPWindow :window-instance="windowInstance" @close="onClose">
     <div ref="dashRoot" class="dash">
@@ -446,8 +448,8 @@
                     :style="{ transform: `scaleX(${battery.level})` }"
                   />
                   <svg
-                    class="dash__battery-zap"
                     v-if="battery.charging"
+                    class="dash__battery-zap"
                     width="16"
                     height="16"
                     viewBox="0 0 24 24"
@@ -696,6 +698,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import type { WindowInstance } from '../../types'
@@ -964,6 +967,7 @@ function particleStyle(n: number) {
 
 const navigator = window.navigator
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 function onClose(): void {}
 
 async function runSpeedTest() {
@@ -1371,18 +1375,18 @@ async function runSpeedTest() {
 }
 
 .dash__status-dot--good {
-  background: #34c759;
-  box-shadow: 0 0 14px rgba(52, 199, 89, 0.7);
+  background: var(--gui-success, #34c759);
+  box-shadow: 0 0 14px var(--gui-success-bg, rgba(52, 199, 89, 0.7));
   animation: dashStatusPulse 2s ease-in-out infinite;
 }
 .dash__status-dot--warn {
-  background: #ff9500;
-  box-shadow: 0 0 14px rgba(255, 149, 0, 0.7);
+  background: var(--gui-warning, #ff9500);
+  box-shadow: 0 0 14px var(--gui-warning-bg, rgba(255, 149, 0, 0.7));
   animation: dashStatusPulse 1.5s ease-in-out infinite;
 }
 .dash__status-dot--bad {
-  background: #ff3b30;
-  box-shadow: 0 0 14px rgba(255, 59, 48, 0.7);
+  background: var(--gui-error, #ff3b30);
+  box-shadow: 0 0 14px var(--gui-error-bg, rgba(255, 59, 48, 0.7));
   animation: dashStatusPulse 0.8s ease-in-out infinite;
 }
 
@@ -1867,7 +1871,7 @@ async function runSpeedTest() {
 }
 
 .dash__battery-icon--charging .dash__battery-fill {
-  background: linear-gradient(90deg, #ff9500 0%, #ffb340 100%);
+  background: linear-gradient(90deg, var(--gui-warning, #ff9500) 0%, #ffb340 100%);
 }
 .dash__battery-pct {
   font-size: 20px;
@@ -1999,19 +2003,19 @@ async function runSpeedTest() {
   color: var(--gui-success, #34c759);
 }
 .status-slow {
-  color: #ff9500;
+  color: var(--gui-warning, #ff9500);
 }
 .status-offline {
   color: var(--gui-error, #ff3b30);
 }
 
 .dash__network-badge.status-online {
-  background: rgba(52, 199, 89, 0.12);
+  background: var(--gui-success-bg, rgba(52, 199, 89, 0.12));
   color: var(--gui-success, #34c759);
 }
 .dash__network-badge.status-slow {
-  background: rgba(255, 149, 0, 0.12);
-  color: #ff9500;
+  background: var(--gui-warning-bg, rgba(255, 149, 0, 0.12));
+  color: var(--gui-warning, #ff9500);
 }
 .dash__network-badge.status-offline {
   background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));

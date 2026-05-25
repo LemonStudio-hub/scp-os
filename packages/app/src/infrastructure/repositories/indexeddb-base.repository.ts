@@ -93,7 +93,7 @@ export abstract class IndexedDBBaseRepository<T extends Entity> implements IRepo
       const request = store.getAll()
 
       request.onsuccess = () => {
-        const entities = request.result.map((data: any) => this.fromDB(data))
+        const entities = request.result.map((data: unknown) => this.fromDB(data))
         resolve(entities)
       }
 
@@ -112,7 +112,7 @@ export abstract class IndexedDBBaseRepository<T extends Entity> implements IRepo
       const request = store.getAll()
 
       request.onsuccess = () => {
-        let entities = request.result.map((data: any) => this.fromDB(data))
+        let entities = request.result.map((data: unknown) => this.fromDB(data))
 
         // Apply filter
         if (options.filter) {
@@ -160,7 +160,7 @@ export abstract class IndexedDBBaseRepository<T extends Entity> implements IRepo
       const request = store.getAll()
 
       request.onsuccess = () => {
-        const entities = request.result.map((data: any) => this.fromDB(data))
+        const entities = request.result.map((data: unknown) => this.fromDB(data))
         const entity = entities.find(filter)
         resolve(entity || null)
       }
@@ -243,11 +243,13 @@ export abstract class IndexedDBBaseRepository<T extends Entity> implements IRepo
    * Convert entity to DB format
    * Subclasses should override this
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract toDB(entity: T): any
 
   /**
    * Convert DB format to entity
    * Subclasses should override this
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract fromDB(data: any): T
 }

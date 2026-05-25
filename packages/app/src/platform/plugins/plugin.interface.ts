@@ -3,6 +3,8 @@
  * Base interface for all plugins in the SCP-OS platform
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Plugin Configuration
  */

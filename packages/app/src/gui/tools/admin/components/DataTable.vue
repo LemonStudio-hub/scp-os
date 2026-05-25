@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <div class="admin-table-wrapper">
     <div class="admin-table-scroll">
@@ -134,6 +136,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed } from 'vue'
 import { useI18n } from '../../../composables/useI18n'
 

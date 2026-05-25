@@ -35,7 +35,15 @@
                     "pnpm": ">=8.0.0"
           },
           "packageManager": "pnpm@10.3.0",
-  "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "sharp", "workerd"]
-  }
+          "pnpm": {
+                    "onlyBuiltDependencies": [
+                              "esbuild",
+                              "sharp",
+                              "workerd"
+                    ],
+                    "overrides": {
+                              "@xmldom/xmldom": "0.8.13",
+                              "postcss": "8.5.10"
+                    }
+          }
 }

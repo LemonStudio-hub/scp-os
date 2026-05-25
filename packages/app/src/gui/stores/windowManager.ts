@@ -255,7 +255,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
   async function loadWindowStates(): Promise<void> {
     try {
-      const savedWindows = await indexedDBService.loadGUIWindowStates()
+      const savedWindows = (await indexedDBService.loadGUIWindowStates()) as WindowInstance[]
       if (savedWindows && savedWindows.length > 0) {
         for (const savedWindow of savedWindows) {
           updateWindow(savedWindow.config.id, savedWindow)

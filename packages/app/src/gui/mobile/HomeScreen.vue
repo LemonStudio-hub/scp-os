@@ -322,6 +322,7 @@ onMounted(async () => {
   }
 
   // Listen for wallpaper changes
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   window.addEventListener('wallpaper-changed', async (event: any) => {
     try {
       const wallpaperId = event.detail?.wallpaperId
@@ -458,10 +459,32 @@ onMounted(async () => {
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
-.light .home-screen__app-icon {
+:global(.light) .home-screen__app-icon {
+  background: #FFFFFF !important;
+  border: 1.5px solid #D1D1D6;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 0 0 0.5px rgba(0, 0, 0, 0.02);
+}
+
+:global(.light) .home-screen__app-icon svg {
+  stroke: #1C1C1E !important;
+}
+
+:global(.light) .home-screen__app-icon--terminal-text {
+  color: #1C1C1E !important;
+}
+
+:global(.claude) .home-screen__app-icon {
+  background: #FAF9F5 !important;
+  border: 1.5px solid #D97757;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.08),
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
+:global(.claude) .home-screen__app-icon svg {
+  stroke: #D97757 !important;
 }
 
 .home-screen__app-icon svg {
@@ -487,12 +510,17 @@ onMounted(async () => {
   line-height: 1;
 }
 
+:global(.claude) .home-screen__app-icon--terminal-text {
+  color: #D97757 !important;
+}
+
 .home-screen__app:hover .home-screen__app-icon {
   box-shadow: var(--gui-shadow-md, 0 8px 24px rgba(0, 0, 0, 0.5));
   transform: scale(1.04);
 }
 
-.light .home-screen__app:hover .home-screen__app-icon {
+:global(.light) .home-screen__app:hover .home-screen__app-icon,
+:global(.claude) .home-screen__app:hover .home-screen__app-icon {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
@@ -509,9 +537,11 @@ onMounted(async () => {
   text-overflow: ellipsis;
 }
 
-.light .home-screen__app-label {
+:global(.light) .home-screen__app-label,
+:global(.claude) .home-screen__app-label {
   text-shadow: none;
-  color: var(--gui-text-primary, #000000);
+  color: #000000;
+  font-weight: 600;
 }
 
 /* Home Indicator */

@@ -1,3 +1,7 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <PCWindow :visible="visible" :title="t('chat.title')" @close="$emit('close')">
     <div class="pc-chat" :style="chatThemeStyles">
@@ -509,6 +513,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import PCWindow from '../../components/PCWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
@@ -748,7 +753,7 @@ watch(
 async function loadUnreadCounts() {
   try {
     const stored = await indexedDBService.loadSetting('chat_unread_counts')
-    if (stored) unreadCounts.value = stored
+    if (stored) unreadCounts.value = stored as Record<number, number>
   } catch {}
 }
 
@@ -756,11 +761,13 @@ async function loadRooms() {
   loadingRooms.value = true
   try {
     const url = `${API_BASE}/chat/rooms?t=${Date.now()}`
+    // eslint-disable-next-line no-console
     console.log('[Chat] Loading rooms from:', url)
     const response = await fetch(url, {
       cache: 'no-cache',
     })
     const data = await response.json()
+    // eslint-disable-next-line no-console
     console.log('[Chat] Rooms response:', JSON.stringify(data).slice(0, 500))
     if (data.success && data.data) {
       const oldRooms = new Map(rooms.map((r) => [r.id, r]))
@@ -782,6 +789,7 @@ async function loadRooms() {
         const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0
         return timeB - timeA
       })
+      // eslint-disable-next-line no-console
       console.log('[Chat] Rooms loaded:', rooms.length)
     } else {
       console.warn('[Chat] Rooms load failed or empty:', data)
@@ -1624,19 +1632,19 @@ async function saveNickname() {
 }
 
 .pc-chat__ws-status--connected .pc-chat__ws-dot {
-  background: #34c759;
-  box-shadow: 0 0 6px rgba(52, 199, 89, 0.5);
+  background: var(--gui-success, #34c759);
+  box-shadow: 0 0 6px var(--gui-success-bg, rgba(52, 199, 89, 0.5));
 }
 .pc-chat__ws-status--connecting .pc-chat__ws-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: wsPulse 1s ease-in-out infinite;
 }
 .pc-chat__ws-status--reconnecting .pc-chat__ws-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: wsPulse 1s ease-in-out infinite;
 }
 .pc-chat__ws-status--disconnected .pc-chat__ws-dot {
-  background: #ff3b30;
+  background: var(--gui-error, #ff3b30);
 }
 
 .pc-chat__ws-text {

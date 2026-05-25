@@ -128,6 +128,7 @@ export function registerAllTools(): void {
     desktopComponent: AsyncPCNotificationCenter,
     mobileComponent: {
       render() {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return h(AsyncMobileNotificationCenter, { visible: true, onClose: () => {} })
       },
     },

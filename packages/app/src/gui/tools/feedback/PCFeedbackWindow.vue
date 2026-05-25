@@ -479,7 +479,7 @@ async function voteFeedback(item: FeedbackItem, voteType: 'up' | 'down') {
 }
 
 async function toggleComments(item: FeedbackItem) {
-  const isExpanded = !!expandedComments.value[item.id]
+  const isExpanded = Boolean(expandedComments.value[item.id])
   if (isExpanded) {
     delete expandedComments.value[item.id]
   } else {
@@ -492,7 +492,7 @@ async function toggleComments(item: FeedbackItem) {
 }
 
 function isCommentsExpanded(itemId: number): boolean {
-  return !!expandedComments.value[itemId]
+  return Boolean(expandedComments.value[itemId])
 }
 
 async function loadComments(item: FeedbackItem) {

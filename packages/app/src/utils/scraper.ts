@@ -374,6 +374,7 @@ class SCPScraper {
   /**
    * 标准化API返回的数据格式
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private normalizeData(data: any): SCPWikiData {
     return {
       id: data.id || `SCP-${data.number}`,
@@ -400,7 +401,7 @@ class SCPScraper {
 
     if (isMobile) {
       // 移动端：简化格式，去除复杂边框
-      return this.formatForMobile(data, classInfo, terminalWidth)
+      return this.formatForMobile(data, classInfo as any, terminalWidth)
     }
 
     // 桌面端：完整格式带边框
@@ -488,7 +489,11 @@ class SCPScraper {
    * 移动端专用格式化方法
    * 使用简化的边框和布局，避免复杂的字符计算
    */
-  private formatForMobile(data: SCPWikiData, classInfo: any, terminalWidth: number): string[] {
+  private formatForMobile(
+    data: SCPWikiData,
+    classInfo: Record<string, unknown>,
+    terminalWidth: number
+  ): string[] {
     const lines: string[] = []
     const padding = ' '.repeat(2)
 
@@ -629,7 +634,7 @@ class SCPScraper {
    * 测试 API 连接
    * 用于诊断网络问题
    */
-  async testConnection(): Promise<{ success: boolean; message: string; details?: any }> {
+  async testConnection(): Promise<{ success: boolean; message: string; details?: unknown }> {
     try {
       logger.info('测试 API 连接...')
       const response = await axios.get(`${config.api.workerUrl}/`, {
@@ -713,7 +718,7 @@ class SCPScraper {
   }> {
     try {
       const apiUrl = `${config.api.workerUrl}/list`
-      const params: any = { limit, offset }
+      const params: Record<string, number | string> = { limit, offset }
 
       if (clearanceLevel !== undefined) {
         params.clearance_level = clearanceLevel

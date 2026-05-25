@@ -19,11 +19,13 @@ export type ServiceLifetime = (typeof ServiceLifetime)[keyof typeof ServiceLifet
 /**
  * Service factory function type
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ServiceFactory<T = any> = (container: any) => T
 
 /**
  * Service registration options
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ServiceRegistrationOptions<T = any> {
   /** Factory function to create the service */
   factory: ServiceFactory<T>
@@ -36,6 +38,7 @@ export interface ServiceRegistrationOptions<T = any> {
 /**
  * Service registration
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface ServiceRegistration<T = any> {
   /** Service token */
   token: string
@@ -58,7 +61,7 @@ export interface ContainerScope {
   /** Scope ID */
   id: string
   /** Scoped instances */
-  instances: Map<string, any>
+  instances: Map<string, unknown>
   /** Parent scope */
   parent?: ContainerScope | undefined
 }

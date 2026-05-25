@@ -41,9 +41,9 @@ export function createTerminalConfig(): TerminalConfig {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function updateTerminalFontSize(terminal: any): void {
   if (!terminal) return
-
   const newFontSize = getResponsiveFontSize()
   terminal.options.fontSize = newFontSize
   terminal.refresh(0, terminal.rows - 1)

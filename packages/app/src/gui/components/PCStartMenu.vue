@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <template>
   <div v-if="isOpen" class="pc-start-menu">
     <div class="pc-start-menu__container">
@@ -106,6 +107,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import GUIIcon from './ui/GUIIcon.vue'
@@ -461,24 +463,58 @@ onUnmounted(() => {
 }
 
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
-.light .pc-start-menu {
+.light .pc-start-menu,
+.claude .pc-start-menu {
   box-shadow: var(--gui-shadow-ios-sheet, 0 -10px 40px rgba(0, 0, 0, 0.12));
 }
 
-.light .pc-start-menu:hover {
+.light .pc-start-menu:hover,
+.claude .pc-start-menu:hover {
   box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.15));
 }
 
-.light .pc-start-menu__search-results {
+.light .pc-start-menu__search-results,
+.claude .pc-start-menu__search-results {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-.light .pc-start-menu__app:hover .pc-start-menu__app-icon {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.light .pc-start-menu__search-field,
+.claude .pc-start-menu__search-field {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #000000 !important;
 }
 
-.light .pc-start-menu__app-icon {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.light .pc-start-menu__search-field:focus {
+  border-color: #007AFF !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15) !important;
+}
+
+.claude .pc-start-menu__search-field:focus {
+  border-color: #D97757 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.15) !important;
+}
+
+.claude .pc-start-menu__app-icon,
+.claude .pc-start-menu__system-item-icon,
+.claude .pc-start-menu__power-item-icon {
+  background: #FAF9F5 !important;
+  border: 1.5px solid #D97757 !important;
+  color: #D97757 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.claude .pc-start-menu__app-icon :deep(svg),
+.claude .pc-start-menu__system-item-icon :deep(svg),
+.claude .pc-start-menu__power-item-icon :deep(svg) {
+  stroke: #D97757 !important;
+}
+
+.claude .pc-start-menu__app:hover .pc-start-menu__app-icon,
+.claude .pc-start-menu__system-item:hover .pc-start-menu__system-item-icon,
+.claude .pc-start-menu__power-item:hover .pc-start-menu__power-item-icon {
+  background: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
 }
 
 .pc-start-menu__app-label {

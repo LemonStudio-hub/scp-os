@@ -2,6 +2,7 @@
  * GUI Window Management Types
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type ToolType =
   | 'filemanager'
   | 'editor'

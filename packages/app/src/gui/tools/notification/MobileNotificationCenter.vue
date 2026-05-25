@@ -142,6 +142,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useNotificationStore } from '../../../stores/notificationStore'

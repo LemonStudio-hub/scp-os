@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-200" @contextmenu.prevent>
     <div class="pc-taskbar__container">
@@ -20,6 +22,7 @@
           :disabled="item.disabled"
           :title="t(item.label)"
           @click="onClick(item)"
+          @contextmenu.prevent="onContextMenu($event, item)"
         >
           <GUIIcon :name="item.iconName" :size="20" />
           <span v-if="activeTools.includes(item.tool)" class="pc-taskbar__indicator" />
@@ -138,6 +141,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import { useNotificationStore } from '../../stores/notificationStore'
@@ -195,6 +199,7 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   launch: [item: PCTaskbarItem]
   'start-click': []
+  'item-contextmenu': [event: MouseEvent, item: PCTaskbarItem]
 }>()
 
 const currentTime = ref('')
@@ -348,6 +353,10 @@ function onBatteryChargingChange() {
 
 function onClick(item: PCTaskbarItem) {
   emit('launch', item)
+}
+
+function onContextMenu(event: MouseEvent, item: PCTaskbarItem) {
+  emit('item-contextmenu', event, item)
 }
 
 function openNotifications() {

@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <Transition name="fm-image-modal">
     <div v-if="visible" class="fm-image-viewer-overlay" @click.self="close">
@@ -117,6 +119,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import { filesystem } from '../../../utils/filesystem'

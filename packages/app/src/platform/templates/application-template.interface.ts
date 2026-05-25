@@ -6,6 +6,8 @@
 import type { TerminalTheme } from '../../types/terminal'
 import type { ThemeConfig } from '../capabilities/capability.interfaces'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Application Template Metadata
  */

@@ -172,6 +172,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
 import { useNotificationStore } from '../../../stores/notificationStore'

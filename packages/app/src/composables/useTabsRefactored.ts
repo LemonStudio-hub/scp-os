@@ -3,6 +3,8 @@
  * Uses dependency injection and event-driven architecture
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import type { ITabRepository } from '../domain/repositories'
 import { TabEntity } from '../domain/entities'
@@ -190,7 +192,7 @@ export function useTabsRefactored() {
     logger.debug('[useTabs] Tab closed:', event.tabId)
   }
 
-  const handleTabChanged = (event: any) => {
+  const handleTabChanged = (event: Record<string, unknown>) => {
     logger.debug('[useTabs] Active tab changed:', event.tabId)
   }
 

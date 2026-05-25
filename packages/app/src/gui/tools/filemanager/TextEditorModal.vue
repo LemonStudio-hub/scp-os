@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <Transition name="fm-modal">
     <div v-if="visible" class="fm-text-editor-overlay" @click.self="close">
@@ -34,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, nextTick } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import { filesystem } from '../../../utils/filesystem'

@@ -117,9 +117,9 @@ export function openTool(
     width: number
     height: number
     isFullscreen?: boolean
-    data?: Record<string, any>
+    data?: Record<string, unknown>
   }) => void,
-  data?: Record<string, any>,
+  data?: Record<string, unknown>,
   existingToolIds?: string[]
 ): void {
   const tool = ToolRegistry.get(toolId)

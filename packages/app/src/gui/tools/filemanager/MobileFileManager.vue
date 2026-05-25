@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <MobileWindow
     :visible="visible"
@@ -336,7 +338,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
@@ -353,7 +356,8 @@ import { config } from '../../../config'
 
 interface Props {
   visible: boolean
-  windowInstance: any
+  windowInstance?: any
+  data?: any
 }
 
 interface ContextAction {
@@ -363,7 +367,7 @@ interface ContextAction {
   fn: () => void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<{ close: [] }>()
 
 const i18n = useI18n()
@@ -374,6 +378,21 @@ setFileManagerI18n({ t: i18n.t })
 
 const fmStore = useFileManagerStore()
 const authStore = useAuthStore()
+
+// Navigate to initial path if provided
+const initialPath = props.data?.initialPath || props.windowInstance?.config?.data?.initialPath
+if (initialPath) {
+  fmStore.navigateTo(initialPath)
+}
+
+watch(
+  () => props.data?.initialPath || props.windowInstance?.config?.data?.initialPath,
+  (newPath) => {
+    if (newPath) {
+      fmStore.navigateTo(newPath)
+    }
+  }
+)
 const mobileViewMode = ref<'grid' | 'list'>('grid')
 const cloudSyncing = ref(false)
 const currentFolderName = computed(() => {
@@ -723,7 +742,7 @@ async function createNewFile() {
   if (name && typeof name === 'string' && name.trim()) {
     const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
     try {
-      filesystem.writeFile(path, '')
+      filesystem.createFile(path, '')
       fmStore.loadDirectory(fmStore.currentPath)
     } catch (error) {
       console.error('[FileManager] Failed to create file:', error)

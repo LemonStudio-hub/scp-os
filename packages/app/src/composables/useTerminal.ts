@@ -680,6 +680,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   }
 
   // 辅助函数：执行命令处理器（带错误处理）
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const executeCommandHandler = (handler: any, args: string[], cmd: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return

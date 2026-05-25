@@ -499,7 +499,7 @@ export function useDocsReader() {
     div.innerHTML = html
     div.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((el) => {
       const level = parseInt(el.tagName.charAt(1))
-      let id = el.id || el.textContent?.trim().replace(/\s+/g, '-').toLowerCase() || ''
+      const id = el.id || el.textContent?.trim().replace(/\s+/g, '-').toLowerCase() || ''
       if (!el.id) el.id = id
       toc.push({ id, text: el.textContent?.trim() || '', level })
     })

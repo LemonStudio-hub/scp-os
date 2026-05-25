@@ -611,6 +611,9 @@ export class FileSystem {
 
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
@@ -650,6 +653,9 @@ export class FileSystem {
 
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
@@ -679,6 +685,9 @@ export class FileSystem {
     delete parentNode.children[nodeName]
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
@@ -742,6 +751,9 @@ export class FileSystem {
     }
 
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 

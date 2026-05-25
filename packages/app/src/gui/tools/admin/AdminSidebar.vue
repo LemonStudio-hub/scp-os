@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 
-const props = defineProps<{
+defineProps<{
   currentPage: string
   collapsed: boolean
 }>()
@@ -86,6 +86,7 @@ function getIconSvg(icon: string): string {
         :title="collapsed ? item.label : undefined"
         @click="emit('navigate', item.id)"
       >
+        <!-- eslint-disable-next-line vue/no-v-html -->
         <span class="admin-sidebar__icon" v-html="getIconSvg(item.icon)"></span>
         <span v-if="!collapsed" class="admin-sidebar__label">{{ item.label }}</span>
       </button>

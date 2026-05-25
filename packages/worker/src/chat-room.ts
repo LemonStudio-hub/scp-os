@@ -9,6 +9,7 @@ interface SocketMeta {
 
 export class ChatRoomDO {
   private sockets = new Map<WebSocket, SocketMeta>()
+  private closedSockets = new Set<WebSocket>()
 
   constructor(private readonly state: DurableObjectState, private readonly env: Env) {}
 
@@ -50,6 +51,8 @@ export class ChatRoomDO {
     })
 
     server.addEventListener('close', () => {
+      if (this.closedSockets.has(server)) return
+      this.closedSockets.add(server)
       this.sockets.delete(server)
       this.broadcast(
         JSON.stringify({
@@ -60,7 +63,11 @@ export class ChatRoomDO {
       )
     })
 
-    server.addEventListener('error', () => this.sockets.delete(server))
+    server.addEventListener('error', () => {
+      if (this.closedSockets.has(server)) return
+      this.closedSockets.add(server)
+      this.sockets.delete(server)
+    })
 
     return new Response(null, { status: 101, webSocket: client })
   }
@@ -293,7 +300,7 @@ export class ChatRoomDO {
       const seen = new Set<string>()
       const users: { user_id: string; username: string }[] = []
       for (const meta of this.sockets.values()) {
-        if (!seen.has(meta.userId)) {
+        if (meta.roomId === roomId && !seen.has(meta.userId)) {
           seen.add(meta.userId)
           users.push({ user_id: meta.userId, username: meta.username })
         }
@@ -322,13 +329,15 @@ export class ChatRoomDO {
   }
 
   private broadcast(data: string | ArrayBuffer, roomId?: number): void {
+    const dead: WebSocket[] = []
     for (const [socket, meta] of this.sockets) {
       if (roomId !== undefined && meta.roomId !== roomId) continue
       try {
         socket.send(data)
       } catch {
-        this.sockets.delete(socket)
+        dead.push(socket)
       }
     }
+    for (const socket of dead) this.sockets.delete(socket)
   }
 }

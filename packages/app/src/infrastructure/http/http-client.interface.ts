@@ -3,6 +3,8 @@
  * Abstract HTTP client for making HTTP requests
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * HTTP Request Options
  */

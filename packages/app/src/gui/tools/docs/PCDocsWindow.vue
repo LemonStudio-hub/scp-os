@@ -1,4 +1,7 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <SCPWindow :window-instance="windowInstance" @close="onClose">
     <div class="pc-docs" :class="`pc-docs--${reader.readerTheme.value}`">
       <!-- Left Sidebar -->
@@ -348,6 +351,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, onMounted, onBeforeUnmount, nextTick, watch, computed } from 'vue'
 import DOMPurify from 'dompurify'
 import SCPWindow from '../../components/SCPWindow.vue'
@@ -508,19 +512,19 @@ onBeforeUnmount(() => {
 
 /* Light theme overrides */
 .pc-docs--light {
-  --docs-bg: #f5f5f7;
+  --docs-bg: #f2f2f7;
   --docs-surface: #ffffff;
-  --docs-surface-hover: #e8e8ed;
-  --docs-bg-hover: #e8e8ed;
-  --docs-border: rgba(0, 0, 0, 0.08);
-  --docs-text-primary: #1d1d1f;
-  --docs-text-secondary: #6e6e73;
-  --docs-text-tertiary: #86868b;
-  --docs-accent: #007aff;
-  --docs-accent-soft: rgba(0, 122, 255, 0.12);
+  --docs-surface-hover: #e8e8ee;
+  --docs-bg-hover: #e8e8ee;
+  --docs-border: rgba(0, 0, 0, 0.12);
+  --docs-text-primary: #000000;
+  --docs-text-secondary: #48484a;
+  --docs-text-tertiary: #6c6c70;
+  --docs-accent: #0063d1;
+  --docs-accent-soft: rgba(0, 99, 209, 0.10);
   --docs-content-bg: #ffffff;
-  --docs-content-text: #1d1d1f;
-  --docs-popover-shadow: rgba(0, 0, 0, 0.1);
+  --docs-content-text: #000000;
+  --docs-popover-shadow: rgba(0, 0, 0, 0.12);
 }
 
 /* ── Sidebar ────────────────────────────────────────────────────────── */
@@ -905,13 +909,13 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__cache-status--loading .pc-docs__cache-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: cache-pulse 1s ease-in-out infinite;
 }
 
 .pc-docs__cache-status--cached .pc-docs__cache-dot {
-  background: #34c759;
-  box-shadow: 0 0 4px rgba(52, 199, 89, 0.5);
+  background: var(--gui-success, #34c759);
+  box-shadow: 0 0 4px var(--gui-success-bg, rgba(52, 199, 89, 0.5));
 }
 
 @keyframes cache-pulse {

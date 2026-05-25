@@ -36,6 +36,7 @@ export interface IEventBus {
    * @param event - Event name
    * @param handler - Event handler function
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   once<T = any>(event: string, handler: EventHandler<T>): void
 
   /**

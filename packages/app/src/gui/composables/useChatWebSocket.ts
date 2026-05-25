@@ -40,6 +40,7 @@ interface WSIncomingMessage {
     | 'message_edited'
     | 'message_deleted'
     | 'user_renamed'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data?: any
 }
 

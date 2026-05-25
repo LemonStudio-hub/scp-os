@@ -653,16 +653,20 @@ async function requiredAdmin(c: Ctx): Promise<AdminSession | Response> {
 
 async function rateLimit(env: Env, identifier: string): Promise<boolean> {
   if (!env.SCP_DB) return true
-  const now = Date.now()
   const windowMs = 60_000
   const max = 120
   try {
+    const now = Date.now()
     const row = await first<{ timestamps: string }>(env.SCP_DB, 'SELECT timestamps FROM rate_limits WHERE identifier = ?', [identifier])
-    const timestamps = (row ? safeParse(row.timestamps) : []) as number[]
-    const active = timestamps.filter((time) => now - time < windowMs)
-    if (active.length >= max) return false
-    active.push(now)
-    await run(env.SCP_DB, 'INSERT OR REPLACE INTO rate_limits (identifier, timestamps) VALUES (?, ?)', [identifier, JSON.stringify(active)])
+    const prev = (row ? safeParse(row.timestamps) : null) as { count: number; windowStart: number } | null
+    let count = 1
+    let windowStart = now
+    if (prev && now - prev.windowStart < windowMs) {
+      if (prev.count >= max) return false
+      count = prev.count + 1
+      windowStart = prev.windowStart
+    }
+    await run(env.SCP_DB, 'INSERT OR REPLACE INTO rate_limits (identifier, timestamps) VALUES (?, ?)', [identifier, JSON.stringify({ count, windowStart })])
   } catch {
   }
   return true

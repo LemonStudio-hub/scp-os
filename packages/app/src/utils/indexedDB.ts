@@ -174,7 +174,7 @@ class IndexedDBService {
   /**
    * Save tabs data
    */
-  async saveTabs(tabs: any[], activeTabId: string, sidebarOpen: boolean): Promise<void> {
+  async saveTabs(tabs: unknown[], activeTabId: string, sidebarOpen: boolean): Promise<void> {
     await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
@@ -220,7 +220,7 @@ class IndexedDBService {
   /**
    * Load tabs data
    */
-  async loadTabs(): Promise<{ tabs: any[]; activeTabId: string; sidebarOpen: boolean }> {
+  async loadTabs(): Promise<{ tabs: unknown[]; activeTabId: string; sidebarOpen: boolean }> {
     await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
@@ -231,8 +231,8 @@ class IndexedDBService {
 
       request.onsuccess = () => {
         const allData = request.result
-        const tabs = allData.filter((item: any) => item.id !== '_metadata')
-        const metadata = allData.find((item: any) => item.id === '_metadata')
+        const tabs = allData.filter((item: Record<string, unknown>) => item.id !== '_metadata')
+        const metadata = allData.find((item: Record<string, unknown>) => item.id === '_metadata')
 
         resolve({
           tabs,
@@ -301,8 +301,8 @@ class IndexedDBService {
 
       request.onsuccess = () => {
         const states: Record<string, string | string[]> = {}
-        request.result.forEach((item: any) => {
-          states[item.tabId] = item.content
+        request.result.forEach((item: Record<string, unknown>) => {
+          states[item.tabId as string] = item.content as string | string[]
         })
         resolve(states)
       }
@@ -462,6 +462,7 @@ class IndexedDBService {
   /**
    * Save filesystem data
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async saveFilesystem(root: any, currentPath: string[]): Promise<void> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
@@ -484,6 +485,7 @@ class IndexedDBService {
   /**
    * Load filesystem data
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async loadFilesystem(): Promise<{ root: any; currentPath: string[] } | null> {
     await this.init()
     const db = this.getDB()
@@ -511,14 +513,14 @@ class IndexedDBService {
 
   // ── GUI Windows Store ──────────────────────────────────────────────
 
-  async saveGUIWindowState(windowData: any): Promise<void> {
+  async saveGUIWindowState(windowData: unknown): Promise<void> {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([STORES.GUI_WINDOWS], 'readwrite')
       const store = transaction.objectStore(STORES.GUI_WINDOWS)
 
       const data = {
-        ...windowData,
+        ...(windowData as Record<string, unknown>),
         updatedAt: Date.now(),
       }
 
@@ -540,7 +542,7 @@ class IndexedDBService {
     })
   }
 
-  async loadGUIWindowStates(): Promise<any[]> {
+  async loadGUIWindowStates(): Promise<unknown[]> {
     await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
@@ -568,7 +570,7 @@ class IndexedDBService {
       const savedId = await this.loadSetting('user_id')
       if (savedId) {
         logger.info('[IndexedDB] Loaded existing user ID:', savedId)
-        return savedId
+        return savedId as string
       }
 
       // 首次访问，使用 uuid 包生成新的用户 ID
@@ -586,7 +588,7 @@ class IndexedDBService {
   /**
    * 保存设置项
    */
-  async saveSetting(key: string, value: any): Promise<void> {
+  async saveSetting(key: string, value: unknown): Promise<void> {
     await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {
@@ -607,7 +609,7 @@ class IndexedDBService {
   /**
    * 加载设置项
    */
-  async loadSetting(key: string): Promise<any> {
+  async loadSetting(key: string): Promise<unknown> {
     await this.init()
     const db = this.getDB()
     return new Promise((resolve, reject) => {

@@ -74,11 +74,11 @@ describe('terminal utils', () => {
 
   describe('updateTerminalFontSize', () => {
     it('应该在终端为 null 时不执行任何操作', () => {
-      expect(() => updateTerminalFontSize(null)).not.toThrow()
+      expect(() => updateTerminalFontSize(null as any)).not.toThrow()
     })
 
     it('应该在终端为 undefined 时不执行任何操作', () => {
-      expect(() => updateTerminalFontSize(undefined)).not.toThrow()
+      expect(() => updateTerminalFontSize(undefined as any)).not.toThrow()
     })
 
     it('应该更新终端字体大小', () => {

@@ -3,6 +3,8 @@
  * Manages data source plugins and data access
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { IDataSourcePlugin } from '../plugins/datasource-plugin.interface'
 import type {
   DataSourceDefinition,

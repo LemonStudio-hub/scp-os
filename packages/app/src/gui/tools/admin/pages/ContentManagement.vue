@@ -285,20 +285,24 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const totalItems = ref(0)
 const pageSize = 20
-const contentList = ref<Record<string, any>[]>([])
+const contentList = ref<Record<string, unknown>[]>([])
 const loading = ref(false)
 const selectedIds = ref<number[]>([])
 const showExportMenu = ref(false)
 
 const editModalVisible = ref(false)
-const editTarget = ref<Record<string, any> | null>(null)
+const editTarget = ref<Record<string, unknown> | null>(null)
 const editForm = ref<Record<string, string>>({})
 const importModalVisible = ref(false)
 const importData = ref('')
 const deleteConfirmVisible = ref(false)
-const deleteTarget = ref<Record<string, any> | null>(null)
+const deleteTarget = ref<Record<string, unknown> | null>(null)
 
-const activeTabConfig = computed(() => tabs.value.find((t) => t.key === activeTab.value)!)
+const activeTabConfig = computed(
+  () =>
+    tabs.value.find((t) => t.key === activeTab.value) ||
+    ({ key: '', label: '', columns: [], editFields: [] } as (typeof tabs.value)[0])
+)
 const activeColumns = computed(() => activeTabConfig.value.columns)
 const editableFields = computed(() => activeTabConfig.value.editFields)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize)))
@@ -349,7 +353,7 @@ async function fetchContent() {
   if (!token) return
   loading.value = true
   try {
-    const params: Record<string, any> = {
+    const params: Record<string, unknown> = {
       limit: pageSize,
       offset: (currentPage.value - 1) * pageSize,
     }
@@ -382,7 +386,7 @@ function formatDate(val: string | number) {
   })
 }
 
-function openEditModal(row: Record<string, any>) {
+function openEditModal(row: Record<string, unknown>) {
   editTarget.value = row
   const form: Record<string, string> = {}
   for (const field of editableFields.value) {
@@ -399,7 +403,7 @@ async function handleSave() {
     const res = await adminApi.updateAdminContent(
       token,
       activeTab.value,
-      editTarget.value.id,
+      (editTarget.value as any).id,
       editForm.value
     )
     if (res.success) {
@@ -414,7 +418,7 @@ async function handleSave() {
   }
 }
 
-function openDeleteConfirm(row: Record<string, any>) {
+function openDeleteConfirm(row: Record<string, unknown>) {
   deleteTarget.value = row
   deleteConfirmVisible.value = true
 }
@@ -423,7 +427,11 @@ async function handleDelete() {
   const token = adminStore.token
   if (!token || !deleteTarget.value) return
   try {
-    const res = await adminApi.deleteAdminContent(token, activeTab.value, deleteTarget.value.id)
+    const res = await adminApi.deleteAdminContent(
+      token,
+      activeTab.value,
+      (deleteTarget.value as any).id
+    )
     if (res.success) {
       toast.success(t('admin.content.deleteSuccess'))
       deleteConfirmVisible.value = false

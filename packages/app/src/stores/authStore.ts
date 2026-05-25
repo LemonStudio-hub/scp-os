@@ -197,7 +197,8 @@ export const useAuthStore = defineStore('auth', () => {
       nickname.value = trimmed
 
       try {
-        const response = await authenticatedFetch(`${API_BASE}/api/user/register`, userId.value!, {
+        const uid = userId.value ?? ''
+        const response = await authenticatedFetch(`${API_BASE}/api/user/register`, uid, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: userId.value, nickname: trimmed }),
@@ -217,7 +218,8 @@ export const useAuthStore = defineStore('auth', () => {
           logger.warn('[Auth] Failed to update nickname on remote API, but local update succeeded')
         } else {
           try {
-            await authenticatedFetch(`${API_BASE}/chat/nickname`, userId.value!, {
+            const uid2 = userId.value ?? ''
+            await authenticatedFetch(`${API_BASE}/chat/nickname`, uid2, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ user_id: userId.value, nickname: trimmed }),
@@ -244,7 +246,8 @@ export const useAuthStore = defineStore('auth', () => {
    * 执行需要认证的 POST 请求
    */
   async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    return authenticatedFetch(url, userId.value!, options)
+    const uid3 = userId.value ?? ''
+    return authenticatedFetch(url, uid3, options)
   }
 
   return {

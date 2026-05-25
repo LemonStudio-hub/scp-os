@@ -484,6 +484,15 @@ if (initialPath) {
   fmStore.navigateTo(initialPath)
 }
 
+watch(
+  () => props.windowInstance?.config?.data?.initialPath,
+  (newPath) => {
+    if (newPath) {
+      fmStore.navigateTo(newPath)
+    }
+  }
+)
+
 // Dialog state
 const dialogVisible = ref(false)
 const dialogType = ref<'input' | 'confirm'>('input')
@@ -749,7 +758,9 @@ async function promptDelete(fileName: string): Promise<void> {
 }
 
 // Use these functions to silence TS6133 warnings
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 promptRename
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 promptDelete
 
 // ── File upload ─────────────────────────────────────────────────────

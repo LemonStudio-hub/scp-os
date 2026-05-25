@@ -41,7 +41,7 @@ export const useTabsStore = defineStore('tabs', () => {
 
       // Load tabs from IndexedDB
       const data = await indexedDBService.loadTabs()
-      tabs.value = data.tabs || []
+      tabs.value = (data.tabs || []) as Tab[]
       activeTabId.value = data.activeTabId || ''
       sidebarOpen.value = data.sidebarOpen || false
 

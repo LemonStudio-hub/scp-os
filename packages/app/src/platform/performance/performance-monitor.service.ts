@@ -394,7 +394,8 @@ export class PerformanceMonitorService {
       this.metrics.set(name, [])
     }
 
-    const metricArray = this.metrics.get(name)!
+    const metricArray = this.metrics.get(name)
+    if (!metricArray) return
     metricArray.push(metric)
 
     // Keep only last 100 entries per metric

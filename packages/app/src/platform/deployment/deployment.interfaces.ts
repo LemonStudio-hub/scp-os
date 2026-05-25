@@ -3,6 +3,8 @@
  * Defines deployment configuration and targets for the SCP-OS platform
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Deployment Environment
  */

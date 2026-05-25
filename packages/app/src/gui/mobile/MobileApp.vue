@@ -75,6 +75,12 @@ function onHomeLaunch(app: HomeApp | DesktopApp): void {
   if (!mobile.isMobile.value) {
     const existingWindow = wmStore.getWindowByTool(app.tool as ToolType)
     if (existingWindow) {
+      // Update window data to navigate if pointing to a new path
+      if (existingWindow.config.data && (app as DesktopApp).data) {
+        Object.assign(existingWindow.config.data, (app as DesktopApp).data)
+      } else if ((app as DesktopApp).data) {
+        existingWindow.config.data = { ...(app as DesktopApp).data }
+      }
       // Window already open, just focus it
       wmStore.focusWindow(existingWindow.config.id)
       return
