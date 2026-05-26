@@ -481,14 +481,14 @@ onBeforeUnmount(stopToneDrag)
   transform: translateY(-6px) scale(0.98);
 }
 
-:global(.light) .accent-picker__panel {
+:global(.light .accent-picker__panel) {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(246, 246, 248, 0.96)),
     var(--gui-bg-surface-raised, #f2f2f7);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.14);
 }
 
-:global(.light) .accent-picker__field input {
+:global(.light .accent-picker__field input) {
   background: var(--gui-bg-surface, #ffffff);
 }
 </style>

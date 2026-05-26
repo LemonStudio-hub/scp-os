@@ -279,6 +279,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted, reactive } from 'vue'
 import { useThemeStore } from '../stores/themeStore'
+import { useWindowManagerStore } from '../stores/windowManager'
 import { wallpaperService } from '../../utils/wallpaperService'
 import PCTaskbar, { type PCTaskbarItem } from '../components/PCTaskbar.vue'
 import PCStartMenu, { type StartMenuApp } from '../components/PCStartMenu.vue'
@@ -429,7 +430,10 @@ const taskbarItems: PCTaskbarItem[] = [
   { id: 'editor', tool: 'editor' as ToolType, label: t('app.editor'), iconName: 'edit' },
 ]
 
-const activeTools = ref<ToolType[]>([])
+const wmStore = useWindowManagerStore()
+const activeTools = computed<ToolType[]>(() => [
+  ...new Set(wmStore.openWindows.map((win) => win.config.tool)),
+])
 const isStartMenuOpen = ref(false)
 
 // Desktop icon size: large | medium | small
@@ -544,6 +548,15 @@ themeStore.init()
 // Desktop app drag states
 const appDragStates = new Map<string, ReturnType<typeof useDraggable>>()
 let nextZIndex = 1
+const lastLaunchByApp = new Map<string, number>()
+
+function launchDesktopApp(app: DesktopApp) {
+  const now = Date.now()
+  const lastLaunch = lastLaunchByApp.get(app.id) ?? 0
+  if (now - lastLaunch < 250) return
+  lastLaunchByApp.set(app.id, now)
+  emit('launch', app)
+}
 
 function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
   if (!el || appDragStates.has(app.id)) return
@@ -554,7 +567,7 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
       maxX: window.innerWidth - 100,
       maxY: window.innerHeight - 150,
     },
-    onClick: () => emit('launch', app),
+    onClick: () => launchDesktopApp(app),
     onStart: () => {
       el?.classList.add('is-dragging')
       // Increment z-index so dragged icon is always on top
@@ -585,7 +598,7 @@ function handleAppMouseDown(e: MouseEvent, app: DesktopApp) {
 
 // Handle app double click
 const onAppDoubleClick = (app: DesktopApp) => {
-  emit('launch', app)
+  launchDesktopApp(app)
 }
 
 // Handle taskbar app launch
@@ -1016,48 +1029,48 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-:global(.light) .desktop-screen__icon-bg {
-  border: 1.5px solid #D1D1D6;
-  background: #FFFFFF !important;
+:global(.light:not(.claude) .desktop-screen__icon-bg) {
+  border: 1.5px solid #d1d1d6;
+  background: #ffffff !important;
   box-shadow:
     0 4px 14px rgba(0, 0, 0, 0.04),
     0 1px 4px rgba(0, 0, 0, 0.02);
 }
 
-:global(.light) .desktop-screen__icon-bg::after {
+:global(.light:not(.claude) .desktop-screen__icon-bg::after) {
   background: none !important;
 }
 
-:global(.light) .desktop-screen__icon-bg svg {
-  stroke: #1C1C1E !important;
+:global(.light:not(.claude) .desktop-screen__icon-bg svg) {
+  stroke: #1c1c1e !important;
 }
 
-:global(.light) .desktop-screen__icon-text {
-  color: #1C1C1E !important;
+:global(.light:not(.claude) .desktop-screen__icon-text) {
+  color: #1c1c1e !important;
 }
 
-:global(.claude) .desktop-screen__icon-bg {
-  border: 1.5px solid #D97757;
-  background: #FAF9F5 !important;
+:global(.claude .desktop-screen__icon-bg) {
+  border: 1.5px solid #d97757;
+  background: #faf9f5 !important;
   box-shadow:
     0 4px 14px rgba(0, 0, 0, 0.08),
     0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
-:global(.claude) .desktop-screen__icon-bg::after {
+:global(.claude .desktop-screen__icon-bg::after) {
   background: none !important;
 }
 
-:global(.claude) .desktop-screen__icon-bg svg {
-  stroke: #D97757 !important;
+:global(.claude .desktop-screen__icon-bg svg) {
+  stroke: #d97757 !important;
 }
 
-:global(.claude) .desktop-screen__icon-text {
-  color: #D97757 !important;
+:global(.claude .desktop-screen__icon-text) {
+  color: #d97757 !important;
 }
 
-:global(.claude) .desktop-screen__icon-mask {
-  background: #D97757 !important;
+:global(.claude .desktop-screen__icon-mask) {
+  background: #d97757 !important;
 }
 
 .desktop-screen__icon-inner {
@@ -1115,8 +1128,8 @@ onUnmounted(() => {
   transform: scale(1.1);
 }
 
-:global(.light) .desktop-screen__icon:hover .desktop-screen__icon-bg,
-:global(.claude) .desktop-screen__icon:hover .desktop-screen__icon-bg {
+:global(.light:not(.claude) .desktop-screen__icon:hover .desktop-screen__icon-bg),
+:global(.claude .desktop-screen__icon:hover .desktop-screen__icon-bg) {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
@@ -1125,8 +1138,8 @@ onUnmounted(() => {
   box-shadow: var(--gui-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
-:global(.light) .desktop-screen__icon:active .desktop-screen__icon-bg,
-:global(.claude) .desktop-screen__icon:active .desktop-screen__icon-bg {
+:global(.light:not(.claude) .desktop-screen__icon:active .desktop-screen__icon-bg),
+:global(.claude .desktop-screen__icon:active .desktop-screen__icon-bg) {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
@@ -1148,8 +1161,8 @@ onUnmounted(() => {
   border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
 }
 
-:global(.light) .desktop-screen__icon-label {
-  background: #FFFFFF !important;
+:global(.light:not(.claude) .desktop-screen__icon-label) {
+  background: #ffffff !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(0, 0, 0, 0.1) !important;
@@ -1158,12 +1171,12 @@ onUnmounted(() => {
   transition: all var(--gui-transition-base, 200ms ease);
 }
 
-:global(.claude) .desktop-screen__icon-label {
-  background: #d6d6d6 !important;
+:global(.claude .desktop-screen__icon-label) {
+  background: var(--gui-glass-bg-strong, rgba(250, 249, 245, 0.96)) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  color: #606060 !important;
+  border: 1px solid var(--gui-border-default, rgba(31, 30, 29, 0.1)) !important;
+  color: var(--gui-text-secondary, #4e4d49) !important;
   font-weight: 600;
   transition: all var(--gui-transition-base, 200ms ease);
 }
@@ -1173,14 +1186,14 @@ onUnmounted(() => {
   border-color: var(--gui-border-default, rgba(255, 255, 255, 0.12));
 }
 
-:global(.light) .desktop-screen__icon:hover .desktop-screen__icon-label {
+:global(.light:not(.claude) .desktop-screen__icon:hover .desktop-screen__icon-label) {
   background: #ffffff;
   border-color: rgba(0, 0, 0, 0.15);
 }
 
-:global(.claude) .desktop-screen__icon:hover .desktop-screen__icon-label {
-  background: #dcdcdc;
-  border-color: rgba(0, 0, 0, 0.15);
+:global(.claude .desktop-screen__icon:hover .desktop-screen__icon-label) {
+  background: var(--gui-bg-surface-raised, #ffffff);
+  border-color: var(--gui-border-strong, rgba(31, 30, 29, 0.18));
 }
 
 /* Responsive adjustments */

@@ -71,39 +71,43 @@ function onHomeLaunch(app: HomeApp | DesktopApp): void {
     return
   }
 
-  // Guard: prevent opening duplicate windows on desktop
-  if (!mobile.isMobile.value) {
-    const existingWindow = wmStore.getWindowByTool(app.tool as ToolType)
-    if (existingWindow) {
-      // Update window data to navigate if pointing to a new path
-      if (existingWindow.config.data && (app as DesktopApp).data) {
-        Object.assign(existingWindow.config.data, (app as DesktopApp).data)
-      } else if ((app as DesktopApp).data) {
-        existingWindow.config.data = { ...(app as DesktopApp).data }
-      }
-      // Window already open, just focus it
-      wmStore.focusWindow(existingWindow.config.id)
-      return
-    }
-  }
-
   // Mobile: prevent re-opening same active tool
   if (mobile.isMobile.value && activeTool.value === app.tool) {
     return
   }
 
-  openTool(app.tool as ToolType, (config) => {
-    wmStore.openWindow({
-      id: config.id,
-      tool: config.tool,
-      title: config.title,
-      iconName: config.iconName,
-      width: config.width,
-      height: config.height,
-      isFullscreen: config.isFullscreen,
-      data: (app as DesktopApp).data,
-    })
-  })
+  const tool = app.tool as ToolType
+  const toolModule = ToolRegistry.get(tool)
+  const existingSingleton = toolModule?.singleton
+    ? wmStore.openWindows.find((win) => win.config.tool === tool)
+    : undefined
+
+  if (existingSingleton) {
+    if (existingSingleton.minimized) {
+      wmStore.restoreWindow(existingSingleton.config.id)
+    } else {
+      wmStore.focusWindow(existingSingleton.config.id)
+    }
+    return
+  }
+
+  openTool(
+    tool,
+    (config) => {
+      wmStore.openWindow({
+        id: config.id,
+        tool: config.tool,
+        title: config.title,
+        iconName: config.iconName,
+        width: config.width,
+        height: config.height,
+        isFullscreen: config.isFullscreen,
+        data: config.data,
+      })
+    },
+    (app as DesktopApp).data,
+    wmStore.openWindows.map((win) => win.config.id)
+  )
 }
 
 function closeActiveTool(): void {

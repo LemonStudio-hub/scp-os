@@ -105,6 +105,13 @@ class ToolRegistryClass {
 // Singleton instance — modules import and use this
 export const ToolRegistry = new ToolRegistryClass()
 
+let nextWindowIdSeed = 0
+
+function createWindowId(toolId: ToolType): string {
+  nextWindowIdSeed += 1
+  return `${toolId}-${Date.now()}-${nextWindowIdSeed}`
+}
+
 /**
  * Open a tool window using the registry's configuration.
  * This is the single entry point for opening any tool window.
@@ -142,13 +149,13 @@ export function openTool(
   const resolvedLabel = typeof tool.label === 'function' ? tool.label() : tool.label
 
   openWindow({
-    id: `${toolId}-${Date.now()}`,
+    id: createWindowId(toolId),
     tool: toolId,
     title: resolvedLabel,
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
-    isFullscreen: tool.windowConfig.isFullscreen ?? true,
+    isFullscreen: tool.windowConfig.isFullscreen ?? false,
     data,
   })
 }

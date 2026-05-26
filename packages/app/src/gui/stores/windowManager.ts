@@ -35,6 +35,19 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     windows.value = newMap
   }
 
+  function blurWindowsExcept(activeWindowId: string): void {
+    const updates: Array<[string, WindowInstance]> = []
+    windows.value.forEach((w, id) => {
+      if (id !== activeWindowId && w.focused) {
+        updates.push([id, { ...w, focused: false }])
+      }
+    })
+
+    for (const [id, instance] of updates) {
+      updateWindow(id, instance)
+    }
+  }
+
   // Computed: ordered by insertion order (Map preserves insertion order)
   const openWindows = computed(() => {
     return Array.from(windows.value.values())
@@ -74,8 +87,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       height: config.height ?? windowDefaults.height,
     }
 
-    // Settings is a control panel, not a workspace app; keeping it windowed avoids covering the desktop.
-    const isFullscreen = config.tool === 'settings' ? false : (config.isFullscreen ?? true)
+    const isFullscreen = config.tool === 'settings' ? false : (config.isFullscreen ?? false)
 
     const windowInstance: WindowInstance = {
       config,
@@ -91,6 +103,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     }
 
     updateWindow(config.id, windowInstance)
+    blurWindowsExcept(config.id)
     setFocusedWindow(config.id)
 
     // Persist to IndexedDB
@@ -133,15 +146,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
       lastFocusedAt: Date.now(),
     })
 
-    const updates: Array<[string, WindowInstance]> = []
-    windows.value.forEach((w, id) => {
-      if (id !== windowId && w.focused) {
-        updates.push([id, { ...w, focused: false }])
-      }
-    })
-    for (const [id, instance] of updates) {
-      updateWindow(id, instance)
-    }
+    blurWindowsExcept(windowId)
 
     return true
   }
@@ -275,11 +280,34 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
                 }
               : savedWindow
 
-          updateWindow(windowToRestore.config.id, windowToRestore)
+          const restoredWindow = {
+            ...windowToRestore,
+            zIndex: getNextZIndex(),
+          }
+
+          updateWindow(restoredWindow.config.id, restoredWindow)
           if (windowToRestore !== savedWindow) {
-            await saveWindowState(windowToRestore)
+            await saveWindowState(restoredWindow)
           }
         }
+
+        const restoredWindows = openWindows.value
+        const activeWindow =
+          [...restoredWindows].reverse().find((w) => w.focused && !w.minimized) ??
+          [...restoredWindows].reverse().find((w) => !w.minimized)
+
+        if (activeWindow) {
+          updateWindow(activeWindow.config.id, {
+            ...activeWindow,
+            focused: true,
+          })
+          blurWindowsExcept(activeWindow.config.id)
+          setFocusedWindow(activeWindow.config.id)
+        } else {
+          blurWindowsExcept('')
+          setFocusedWindow(null)
+        }
+
         logger.info(`[WindowManager] Restored ${savedWindows.length} windows from IndexedDB`)
       }
     } catch (error) {

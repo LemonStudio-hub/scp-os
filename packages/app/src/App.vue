@@ -110,16 +110,22 @@ onMounted(() => {
       if (terminal) {
         import('./gui/registry/ToolRegistry')
           .then(({ openTool }) => {
-            openTool('terminal', (config) => {
-              wmStore.openWindow({
-                id: config.id,
-                tool: config.tool,
-                title: config.title,
-                iconName: config.iconName,
-                width: config.width,
-                height: config.height,
-              })
-            })
+            openTool(
+              'terminal',
+              (config) => {
+                wmStore.openWindow({
+                  id: config.id,
+                  tool: config.tool,
+                  title: config.title,
+                  iconName: config.iconName,
+                  width: config.width,
+                  height: config.height,
+                  isFullscreen: config.isFullscreen,
+                })
+              },
+              undefined,
+              wmStore.openWindows.map((win) => win.config.id)
+            )
           })
           .catch((err) => {
             logger.warn('[App] Failed to import ToolRegistry:', err)

@@ -12,20 +12,23 @@
       <!-- Pinned Apps -->
       <div class="pc-taskbar__pinned">
         <button
-          v-for="item in items"
+          v-for="item in props.items"
           :key="item.id"
           :class="[
             'pc-taskbar__app-btn',
             { 'pc-taskbar__app-btn--disabled': item.disabled },
-            { 'pc-taskbar__app-btn--active': activeTools.includes(item.tool) },
+            { 'pc-taskbar__app-btn--active': isToolOpen(item.tool) },
+            { 'pc-taskbar__app-btn--focused': isToolFocused(item.tool) },
           ]"
           :disabled="item.disabled"
-          :title="t(item.label)"
+          :title="getItemTitle(item)"
           @click="onClick(item)"
           @contextmenu.prevent="onContextMenu($event, item)"
         >
           <GUIIcon :name="item.iconName" :size="20" />
-          <span v-if="activeTools.includes(item.tool)" class="pc-taskbar__indicator" />
+          <span v-if="getWindowCount(item.tool) > 1" class="pc-taskbar__app-count">
+            {{ getWindowCount(item.tool) }}
+          </span>
         </button>
       </div>
 
@@ -177,7 +180,7 @@ interface Props {
 // TDZ errors. defineProps() is a compile-time macro that gets hoisted,
 // so referencing any <script setup> variable in default factories causes
 // a Temporal Dead Zone error at runtime.
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   items: () => [
     {
       id: 'terminal',
@@ -201,6 +204,45 @@ const emit = defineEmits<{
   'start-click': []
   'item-contextmenu': [event: MouseEvent, item: PCTaskbarItem]
 }>()
+
+const taskbarWindows = computed(() => windowManager.openWindows)
+
+function getWindowsForTool(tool: ToolType) {
+  return taskbarWindows.value.filter((win) => win.config.tool === tool)
+}
+
+function getWindowCount(tool: ToolType): number {
+  return getWindowsForTool(tool).length
+}
+
+function isToolOpen(tool: ToolType): boolean {
+  return getWindowCount(tool) > 0 || props.activeTools.includes(tool)
+}
+
+function isToolFocused(tool: ToolType): boolean {
+  return getWindowsForTool(tool).some((win) => win.focused && !win.minimized)
+}
+
+function getItemLabel(item: PCTaskbarItem): string {
+  return t(item.label)
+}
+
+function getItemTitle(item: PCTaskbarItem): string {
+  const label = getItemLabel(item)
+  const count = getWindowCount(item.tool)
+  return count > 1 ? `${label} (${count})` : label
+}
+
+function focusOrRestoreWindow(windowId: string): void {
+  const win = windowManager.getWindow(windowId)
+  if (!win) return
+
+  if (win.minimized) {
+    windowManager.restoreWindow(windowId)
+  } else {
+    windowManager.focusWindow(windowId)
+  }
+}
 
 const currentTime = ref('')
 let timeInterval: number | undefined
@@ -352,7 +394,30 @@ function onBatteryChargingChange() {
 }
 
 function onClick(item: PCTaskbarItem) {
-  emit('launch', item)
+  const windowsForTool = getWindowsForTool(item.tool)
+  if (windowsForTool.length === 0) {
+    emit('launch', item)
+    return
+  }
+
+  const visibleWindows = windowsForTool.filter((win) => !win.minimized)
+  if (visibleWindows.length === 0) {
+    focusOrRestoreWindow(windowsForTool[windowsForTool.length - 1].config.id)
+    return
+  }
+
+  if (visibleWindows.length === 1) {
+    focusOrRestoreWindow(visibleWindows[0].config.id)
+    return
+  }
+
+  const focusedIndex = visibleWindows.findIndex((win) => win.focused)
+  const targetWindow =
+    focusedIndex >= 0
+      ? visibleWindows[(focusedIndex + 1) % visibleWindows.length]
+      : [...visibleWindows].sort((a, b) => b.lastFocusedAt - a.lastFocusedAt)[0]
+
+  focusOrRestoreWindow(targetWindow.config.id)
 }
 
 function onContextMenu(event: MouseEvent, item: PCTaskbarItem) {
@@ -370,6 +435,7 @@ function openNotifications() {
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 380,
     height: tool.windowConfig.height ?? 520,
+    isFullscreen: tool.windowConfig.isFullscreen ?? false,
   })
 }
 
@@ -524,6 +590,10 @@ onUnmounted(() => {
   color: var(--gui-text-primary, #ffffff);
 }
 
+.pc-taskbar__app-btn--focused {
+  box-shadow: inset 0 0 0 1px var(--gui-accent, #8e8e93);
+}
+
 .pc-taskbar__app-btn--active::after {
   content: '';
   position: absolute;
@@ -535,6 +605,23 @@ onUnmounted(() => {
   background: var(--gui-accent, #8e8e93);
   border-radius: var(--radius-full, 999px);
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.pc-taskbar__app-count {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--gui-accent, #8e8e93);
+  color: var(--gui-text-inverse, #ffffff);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+  pointer-events: none;
 }
 
 @keyframes pulse {

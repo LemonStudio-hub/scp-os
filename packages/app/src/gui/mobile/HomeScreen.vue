@@ -468,7 +468,7 @@ onMounted(async () => {
   transition: all var(--gui-transition-bounce-spring, 400ms cubic-bezier(0.34, 1.56, 0.64, 1));
 }
 
-:global(.light) .home-screen__app-icon {
+:global(.light:not(.claude) .home-screen__app-icon) {
   background: #FFFFFF !important;
   border: 1.5px solid #D1D1D6;
   box-shadow:
@@ -476,15 +476,15 @@ onMounted(async () => {
     0 0 0 0.5px rgba(0, 0, 0, 0.02);
 }
 
-:global(.light) .home-screen__app-icon svg {
+:global(.light:not(.claude) .home-screen__app-icon svg) {
   stroke: #1C1C1E !important;
 }
 
-:global(.light) .home-screen__app-icon--terminal-text {
+:global(.light:not(.claude) .home-screen__app-icon--terminal-text) {
   color: #1C1C1E !important;
 }
 
-:global(.claude) .home-screen__app-icon {
+:global(.claude .home-screen__app-icon) {
   background: #FAF9F5 !important;
   border: 1.5px solid #D97757;
   box-shadow:
@@ -492,7 +492,7 @@ onMounted(async () => {
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
-:global(.claude) .home-screen__app-icon svg {
+:global(.claude .home-screen__app-icon svg) {
   stroke: #D97757 !important;
 }
 
@@ -519,7 +519,7 @@ onMounted(async () => {
   line-height: 1;
 }
 
-:global(.claude) .home-screen__app-icon--terminal-text {
+:global(.claude .home-screen__app-icon--terminal-text) {
   color: #D97757 !important;
 }
 
@@ -528,8 +528,8 @@ onMounted(async () => {
   transform: scale(1.04);
 }
 
-:global(.light) .home-screen__app:hover .home-screen__app-icon,
-:global(.claude) .home-screen__app:hover .home-screen__app-icon {
+:global(.light:not(.claude) .home-screen__app:hover .home-screen__app-icon),
+:global(.claude .home-screen__app:hover .home-screen__app-icon) {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
@@ -546,20 +546,20 @@ onMounted(async () => {
   text-overflow: ellipsis;
 }
 
-:global(.light) .home-screen__app-label {
+:global(.light:not(.claude) .home-screen__app-label) {
   text-shadow: none;
   color: #000000;
   font-weight: 600;
 }
 
-:global(.claude) .home-screen__app-label {
+:global(.claude .home-screen__app-label) {
   width: auto;
   min-width: 64px;
   max-width: 120px;
   padding: 4px 10px;
   border-radius: 12px;
-  background: #d6d6d6;
-  color: #606060;
+  background: var(--gui-glass-bg-strong, rgba(250, 249, 245, 0.96));
+  color: var(--gui-text-secondary, #4E4D49);
   text-shadow: none;
   font-weight: 600;
 }

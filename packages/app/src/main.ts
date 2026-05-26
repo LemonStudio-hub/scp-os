@@ -73,7 +73,7 @@ const app = createApp(App)
 app.use(pinia)
 
 // Initialize terminal store
-const terminalStore = useTerminalStore()
+const terminalStore = useTerminalStore(pinia)
 terminalStore.checkMobile()
 terminalStore.updateFontSize()
 
