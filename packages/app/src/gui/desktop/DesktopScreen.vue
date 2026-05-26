@@ -2,6 +2,10 @@
   <div
     ref="desktopRef"
     class="desktop-screen"
+    :class="[
+      `icon-size-${desktopIconSize}`,
+      { 'desktop-screen--grid-visible': isDraggingDesktopIcon && gridSnapEnabled },
+    ]"
     :style="desktopThemeStyles"
     @contextmenu="handleDesktopContextMenu"
   >
@@ -244,6 +248,7 @@
       :active-tools="activeTools"
       @launch="onTaskbarLaunch"
       @start-click="onStartClick"
+      @item-contextmenu="handleTaskbarContextMenu"
     />
 
     <!-- PC Start Menu -->
@@ -287,6 +292,8 @@ import PCCContextMenu from '../components/ui/PCCContextMenu.vue'
 import DialogModal from '../tools/filemanager/DialogModal.vue'
 import { useDraggable } from '../composables/useDraggable'
 import { useI18n } from '../composables/useI18n'
+import { ToolRegistry } from '../registry/ToolRegistry'
+import type { IconName } from '../icons'
 import type { ToolType, ContextMenuItem } from '../types'
 import { filesystem } from '../../utils/filesystem'
 import {
@@ -424,17 +431,111 @@ function getAppLabel(app: DesktopApp): string {
   return app.label
 }
 
-const taskbarItems: PCTaskbarItem[] = [
-  { id: 'terminal', tool: 'terminal' as ToolType, label: t('app.terminal'), iconName: 'terminal' },
-  { id: 'files', tool: 'filemanager' as ToolType, label: t('app.files'), iconName: 'folder' },
-  { id: 'editor', tool: 'editor' as ToolType, label: t('app.editor'), iconName: 'edit' },
+const DEFAULT_PINNED_TOOLS: ToolType[] = [
+  'terminal' as ToolType,
+  'filemanager' as ToolType,
+  'editor' as ToolType,
 ]
+
+function loadPinnedTools(): ToolType[] {
+  try {
+    const raw = localStorage.getItem('scp-os-taskbar-pinned')
+    if (!raw) return [...DEFAULT_PINNED_TOOLS]
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed) && parsed.every((v) => typeof v === 'string')) {
+      return parsed as ToolType[]
+    }
+  } catch {
+    // fall through
+  }
+  return [...DEFAULT_PINNED_TOOLS]
+}
+
+const pinnedTools = ref<ToolType[]>(loadPinnedTools())
+
+function persistPinnedTools() {
+  localStorage.setItem('scp-os-taskbar-pinned', JSON.stringify(pinnedTools.value))
+}
+
+const TOOL_LABEL_KEYS: Partial<Record<string, string>> = {
+  terminal: 'app.terminal',
+  filemanager: 'app.files',
+  editor: 'app.editor',
+  chat: 'app.chat',
+  dash: 'app.dash',
+  feedback: 'app.feedback',
+  docs: 'app.docs',
+  settings: 'app.settings',
+}
+
+function resolveToolLabel(tool: ToolType): string {
+  const meta = ToolRegistry.get(tool)
+  if (meta) {
+    const raw = typeof meta.label === 'function' ? meta.label() : meta.label
+    if (raw) return raw
+  }
+  const key = TOOL_LABEL_KEYS[tool as string]
+  if (key) {
+    const translated = t(key)
+    if (translated !== key) return translated
+  }
+  return tool
+}
+
+function resolveToolIcon(tool: ToolType): IconName {
+  const meta = ToolRegistry.get(tool)
+  return ((meta?.icon as IconName) ?? 'menu') as IconName
+}
+
+const taskbarItems = computed<PCTaskbarItem[]>(() =>
+  pinnedTools.value.map((tool) => ({
+    id: tool,
+    tool,
+    label: resolveToolLabel(tool),
+    iconName: resolveToolIcon(tool),
+  }))
+)
+
+function isToolPinned(tool: ToolType): boolean {
+  return pinnedTools.value.includes(tool)
+}
+
+function pinToolToTaskbar(tool: ToolType): void {
+  if (isToolPinned(tool)) return
+  pinnedTools.value = [...pinnedTools.value, tool]
+  persistPinnedTools()
+}
+
+function unpinToolFromTaskbar(tool: ToolType): void {
+  if (!isToolPinned(tool)) return
+  pinnedTools.value = pinnedTools.value.filter((t) => t !== tool)
+  persistPinnedTools()
+}
 
 const wmStore = useWindowManagerStore()
 const activeTools = computed<ToolType[]>(() => [
   ...new Set(wmStore.openWindows.map((win) => win.config.tool)),
 ])
 const isStartMenuOpen = ref(false)
+
+// Grid snap state — drives drop-snap AND visible grid overlay during drag
+function loadGridSnap(): boolean {
+  const saved = localStorage.getItem('scp-os-grid-snap')
+  if (saved === 'false') return false
+  return true
+}
+
+const gridSnapEnabled = ref<boolean>(loadGridSnap())
+const isDraggingDesktopIcon = ref(false)
+
+function setGridSnap(enabled: boolean): void {
+  gridSnapEnabled.value = enabled
+  localStorage.setItem('scp-os-grid-snap', String(enabled))
+}
+
+function toggleGridSnap(): void {
+  setGridSnap(!gridSnapEnabled.value)
+}
 
 // Desktop icon size: large | medium | small
 const desktopIconSize = ref<'large' | 'medium' | 'small'>('medium')
@@ -558,6 +659,20 @@ function launchDesktopApp(app: DesktopApp) {
   emit('launch', app)
 }
 
+const GRID_ORIGIN_X = 50
+const GRID_ORIGIN_Y = 50
+
+function snapToGrid(x: number, y: number): { x: number; y: number } {
+  if (!gridSnapEnabled.value) return { x, y }
+  const gap = getGridGap()
+  const col = Math.max(0, Math.round((x - GRID_ORIGIN_X) / gap))
+  const row = Math.max(0, Math.round((y - GRID_ORIGIN_Y) / gap))
+  return {
+    x: GRID_ORIGIN_X + col * gap,
+    y: GRID_ORIGIN_Y + row * gap,
+  }
+}
+
 function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
   if (!el || appDragStates.has(app.id)) return
   const state = useDraggable(ref(el), {
@@ -570,6 +685,7 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
     onClick: () => launchDesktopApp(app),
     onStart: () => {
       el?.classList.add('is-dragging')
+      isDraggingDesktopIcon.value = true
       // Increment z-index so dragged icon is always on top
       nextZIndex++
       if (el) {
@@ -581,9 +697,12 @@ function bindAppDrag(el: HTMLElement | null, app: DesktopApp) {
       app.y = y
     },
     onEnd: (x, y) => {
-      app.x = x
-      app.y = y
+      const snapped = snapToGrid(x, y)
+      app.x = snapped.x
+      app.y = snapped.y
+      state.setInitialPosition(snapped.x, snapped.y)
       el?.classList.remove('is-dragging')
+      isDraggingDesktopIcon.value = false
       saveDesktopShortcut(app)
       // Keep the elevated z-index so overlapping icons stay stacked by last-used
     },
@@ -719,6 +838,12 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
           },
         ],
       },
+      {
+        id: 'align-to-grid',
+        label: `${gridSnapEnabled.value ? '✓  ' : '     '}${t('pc.alignToGrid')}`,
+        icon: 'sort',
+        action: () => toggleGridSnap(),
+      },
       { id: 'divider-2', label: '', divider: true },
       {
         id: 'personalize',
@@ -739,40 +864,100 @@ const handleAppContextMenu = (event: MouseEvent, app: DesktopApp) => {
   event.preventDefault()
   event.stopPropagation()
 
+  const appTool = app.tool as ToolType
+  const canPin = ToolRegistry.has(appTool) && !app.isFile && !app.isDirectory
+  const pinned = canPin && isToolPinned(appTool)
+
+  const items: ContextMenuItem[] = [
+    {
+      id: 'open',
+      label: t('pc.open'),
+      icon: 'play',
+      action: () => {
+        emit('launch', app)
+      },
+    },
+  ]
+
+  if (canPin) {
+    items.push({
+      id: pinned ? 'unpin-from-taskbar' : 'pin-to-taskbar',
+      label: pinned ? t('pc.unpinTaskbar') : t('pc.pinTaskbar'),
+      icon: 'pin',
+      action: () => {
+        if (pinned) {
+          unpinToolFromTaskbar(appTool)
+        } else {
+          pinToolToTaskbar(appTool)
+        }
+      },
+    })
+  }
+
+  items.push(
+    { id: 'divider-3', label: '', divider: true },
+    {
+      id: 'properties',
+      label: t('pc.properties'),
+      icon: 'info',
+      action: () => {
+        logger.info('Properties:', app.id)
+        // Implement properties dialog
+      },
+    }
+  )
+
   contextMenu.value = {
     visible: true,
     x: event.clientX,
     y: event.clientY,
-    items: [
-      {
-        id: 'open',
-        label: t('pc.open'),
-        icon: 'play',
-        action: () => {
-          emit('launch', app)
-        },
-      },
-      {
-        id: 'pin-to-taskbar',
-        label: t('pc.pinTaskbar'),
-        icon: 'pin',
-        action: () => {
-          logger.info('Pin to taskbar:', app.id)
-          // Implement pin to taskbar
-        },
-      },
-      { id: 'divider-3', label: '', divider: true },
-      {
-        id: 'properties',
-        label: t('pc.properties'),
-        icon: 'info',
-        action: () => {
-          logger.info('Properties:', app.id)
-          // Implement properties dialog
-        },
-      },
-    ],
+    items,
     selectedApp: app,
+  }
+}
+
+// Handle taskbar item context menu (right-click on a pinned app button)
+const handleTaskbarContextMenu = (event: MouseEvent, item: PCTaskbarItem) => {
+  event.preventDefault()
+
+  const tool = item.tool
+  const wins = wmStore.openWindows.filter((win) => win.config.tool === tool)
+  const items: ContextMenuItem[] = []
+
+  if (wins.length > 0) {
+    items.push({
+      id: 'close-windows',
+      label: wins.length > 1 ? `${t('pc.closeAllWindows')} (${wins.length})` : t('pc.close'),
+      icon: 'x',
+      action: () => {
+        wins.forEach((win) => wmStore.closeWindow(win.config.id))
+      },
+    })
+    items.push({ id: 'taskbar-div', label: '', divider: true })
+  }
+
+  if (isToolPinned(tool)) {
+    items.push({
+      id: 'unpin-from-taskbar',
+      label: t('pc.unpinTaskbar'),
+      icon: 'pin',
+      action: () => unpinToolFromTaskbar(tool),
+    })
+  } else {
+    items.push({
+      id: 'pin-to-taskbar',
+      label: t('pc.pinTaskbar'),
+      icon: 'pin',
+      action: () => pinToolToTaskbar(tool),
+    })
+  }
+
+  contextMenu.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY,
+    items,
+    selectedApp: null,
   }
 }
 
@@ -912,6 +1097,51 @@ onUnmounted(() => {
   height: 100dvh;
   overflow: hidden;
   background: var(--desktop-bg, #000000);
+}
+
+/* Grid overlay — visible only while dragging a desktop icon with snap enabled.
+   Spacing matches getGridGap() in the script: small=110, medium=130, large=150.
+   We use a CSS variable so the grid pitch tracks the icon size. */
+.desktop-screen {
+  --desktop-grid-pitch: 130px;
+}
+.desktop-screen.icon-size-large {
+  --desktop-grid-pitch: 150px;
+}
+.desktop-screen.icon-size-small {
+  --desktop-grid-pitch: 110px;
+}
+
+.desktop-screen--grid-visible::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      to right,
+      var(--gui-border-default, rgba(255, 255, 255, 0.18)) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      var(--gui-border-default, rgba(255, 255, 255, 0.18)) 1px,
+      transparent 1px
+    );
+  background-size: var(--desktop-grid-pitch) var(--desktop-grid-pitch);
+  background-position: 50px 50px;
+  opacity: 0.85;
+  animation: desktopGridFadeIn 160ms ease-out;
+}
+
+@keyframes desktopGridFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.85;
+  }
 }
 
 /* Wallpaper */
