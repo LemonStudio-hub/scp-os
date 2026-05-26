@@ -20,6 +20,41 @@ import logger from '../../utils/logger'
 
 const { getNextZIndex, bringToFront, setFocusedWindow, getFocusedWindowId } = useZIndex()
 
+// Per-tool default placement: lets specific tools open in a dedicated region
+// instead of the generic cascading offset. Settings opens in the right-region
+// centered area so it doesn't cover the left-side desktop icons.
+const TASKBAR_HEIGHT = 48
+
+function computeDefaultPosition(
+  tool: ToolType | undefined,
+  size: { width: number; height: number },
+  openCount: number
+): { x: number; y: number } {
+  if (typeof window === 'undefined') {
+    return { x: 0, y: 0 }
+  }
+
+  if (tool === ('settings' as ToolType)) {
+    const availW = window.innerWidth
+    const availH = Math.max(0, window.innerHeight - TASKBAR_HEIGHT)
+    // Center the window on a vertical axis at 70% of viewport width,
+    // clamped so the window stays fully visible on narrow screens.
+    const rawX = Math.round(availW * 0.7 - size.width / 2)
+    const rawY = Math.round((availH - size.height) / 2)
+    const maxX = Math.max(0, availW - size.width - 12)
+    const maxY = Math.max(0, availH - size.height - 12)
+    return {
+      x: Math.min(maxX, Math.max(12, rawX)),
+      y: Math.min(maxY, Math.max(12, rawY)),
+    }
+  }
+
+  return {
+    x: windowDefaults.xOffset * (openCount % 5),
+    y: windowDefaults.yOffset * (openCount % 5),
+  }
+}
+
 export const useWindowManagerStore = defineStore('windowManager', () => {
   const windows = ref<Map<string, WindowInstance>>(new Map())
 
@@ -78,13 +113,14 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
     const zIndex = getNextZIndex()
     const openWindowCount = windows.value.size
-    const position = {
-      x: config.x ?? windowDefaults.xOffset * (openWindowCount % 5),
-      y: config.y ?? windowDefaults.yOffset * (openWindowCount % 5),
-    }
     const size = {
       width: config.width ?? windowDefaults.width,
       height: config.height ?? windowDefaults.height,
+    }
+    const defaultPos = computeDefaultPosition(config.tool, size, openWindowCount)
+    const position = {
+      x: config.x ?? defaultPos.x,
+      y: config.y ?? defaultPos.y,
     }
 
     const isFullscreen = config.tool === 'settings' ? false : (config.isFullscreen ?? false)
