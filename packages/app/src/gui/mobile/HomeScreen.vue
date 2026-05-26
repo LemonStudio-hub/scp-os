@@ -469,31 +469,31 @@ onMounted(async () => {
 }
 
 :global(.light:not(.claude) .home-screen__app-icon) {
-  background: #FFFFFF !important;
-  border: 1.5px solid #D1D1D6;
+  background: #ffffff !important;
+  border: 1.5px solid #d1d1d6;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.04),
     0 0 0 0.5px rgba(0, 0, 0, 0.02);
 }
 
 :global(.light:not(.claude) .home-screen__app-icon svg) {
-  stroke: #1C1C1E !important;
+  stroke: #1c1c1e !important;
 }
 
 :global(.light:not(.claude) .home-screen__app-icon--terminal-text) {
-  color: #1C1C1E !important;
+  color: #1c1c1e !important;
 }
 
 :global(.claude .home-screen__app-icon) {
-  background: #FAF9F5 !important;
-  border: 1.5px solid #D97757;
+  background: #faf9f5 !important;
+  border: 1.5px solid #d97757;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.08),
     0 0 0 0.5px rgba(0, 0, 0, 0.04);
 }
 
 :global(.claude .home-screen__app-icon svg) {
-  stroke: #D97757 !important;
+  stroke: #d97757 !important;
 }
 
 .home-screen__app-icon svg {
@@ -520,7 +520,7 @@ onMounted(async () => {
 }
 
 :global(.claude .home-screen__app-icon--terminal-text) {
-  color: #D97757 !important;
+  color: #d97757 !important;
 }
 
 .home-screen__app:hover .home-screen__app-icon {
@@ -559,7 +559,7 @@ onMounted(async () => {
   padding: 4px 10px;
   border-radius: 12px;
   background: var(--gui-glass-bg-strong, rgba(250, 249, 245, 0.96));
-  color: var(--gui-text-secondary, #4E4D49);
+  color: var(--gui-text-secondary, #4e4d49);
   text-shadow: none;
   font-weight: 600;
 }

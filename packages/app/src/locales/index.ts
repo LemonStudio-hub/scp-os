@@ -106,7 +106,7 @@ export const en = {
   'settings.fontPreview': 'Aa 123',
   'settings.customAccentColor': 'Custom Accent Color',
   'settings.enableCustomAccent': 'Enable Custom Accent',
-  'settings.enableCustomAccentDesc': 'Override the theme\'s default accent color',
+  'settings.enableCustomAccentDesc': "Override the theme's default accent color",
   'settings.pickAccentColor': 'Choose Accent Color',
 
   // ── File Manager ────────────────────────────────────────────────────

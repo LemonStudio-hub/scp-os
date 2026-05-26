@@ -217,17 +217,41 @@
 
           <!-- Custom Accent Color Selection -->
           <div class="pc-settings__card">
-            <div class="pc-settings__row" style="cursor: default; background: transparent; border-bottom: 0.5px solid var(--gui-border-subtle); padding-bottom: 4px; padding-top: 8px;">
-              <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gui-text-secondary);">
+            <div
+              class="pc-settings__row"
+              style="
+                cursor: default;
+                background: transparent;
+                border-bottom: 0.5px solid var(--gui-border-subtle);
+                padding-bottom: 4px;
+                padding-top: 8px;
+              "
+            >
+              <span
+                style="
+                  font-size: 11px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                  color: var(--gui-text-secondary);
+                "
+              >
                 {{ t('settings.customAccentColor') || 'Custom Accent Color' }}
               </span>
             </div>
-            
+
             <!-- Use Custom Accent Toggle -->
             <div class="pc-settings__row" @click="toggleCustomAccent">
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">{{ t('settings.enableCustomAccent') || 'Enable Custom Accent' }}</div>
-                <div class="pc-settings__row-description">{{ t('settings.enableCustomAccentDesc') || 'Override the theme\'s default accent color' }}</div>
+                <div class="pc-settings__row-label">
+                  {{ t('settings.enableCustomAccent') || 'Enable Custom Accent' }}
+                </div>
+                <div class="pc-settings__row-description">
+                  {{
+                    t('settings.enableCustomAccentDesc') ||
+                    "Override the theme's default accent color"
+                  }}
+                </div>
               </div>
               <div
                 class="pc-settings__toggle"
@@ -236,9 +260,15 @@
             </div>
 
             <!-- Custom Accent Color Picker Row -->
-            <div v-if="!!themeStore.customAccentColor" class="pc-settings__row" style="cursor: default; hover: none;">
+            <div
+              v-if="!!themeStore.customAccentColor"
+              class="pc-settings__row"
+              style="cursor: default; hover: none"
+            >
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">{{ t('settings.pickAccentColor') || 'Choose Color' }}</div>
+                <div class="pc-settings__row-label">
+                  {{ t('settings.pickAccentColor') || 'Choose Color' }}
+                </div>
                 <div class="pc-settings__row-description">{{ themeStore.customAccentColor }}</div>
               </div>
               <CustomAccentPicker
@@ -1119,5 +1149,4 @@ function resetSettings(): void {
   border-color: var(--gui-accent, #636366);
   box-shadow: inset 0 0 0 2px var(--gui-bg-surface, #ffffff);
 }
-
 </style>

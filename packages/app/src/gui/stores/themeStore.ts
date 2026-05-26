@@ -97,10 +97,18 @@ export const useThemeStore = defineStore('theme', () => {
 
     // Dynamic accent color calculation
     const accent = customAccentColor.value || c.accent
-    const accentHover = customAccentColor.value ? adjustColorBrightness(customAccentColor.value, 15) : c.accentHover
-    const accentMuted = customAccentColor.value ? adjustColorBrightness(customAccentColor.value, -15) : c.accentMuted
-    const accentGlow = customAccentColor.value ? hexToRgbA(customAccentColor.value, 0.25) : c.accentGlow
-    const accentSoft = customAccentColor.value ? hexToRgbA(customAccentColor.value, 0.08) : c.accentSoft
+    const accentHover = customAccentColor.value
+      ? adjustColorBrightness(customAccentColor.value, 15)
+      : c.accentHover
+    const accentMuted = customAccentColor.value
+      ? adjustColorBrightness(customAccentColor.value, -15)
+      : c.accentMuted
+    const accentGlow = customAccentColor.value
+      ? hexToRgbA(customAccentColor.value, 0.25)
+      : c.accentGlow
+    const accentSoft = customAccentColor.value
+      ? hexToRgbA(customAccentColor.value, 0.08)
+      : c.accentSoft
 
     root.style.setProperty('--gui-accent', accent)
     root.style.setProperty('--gui-accent-hover', accentHover)
@@ -155,29 +163,77 @@ export const useThemeStore = defineStore('theme', () => {
 
     // Apply dynamic shadows based on light/dark mode
     if (theme.isDark) {
-      root.style.setProperty('--gui-shadow-sm', '0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)')
-      root.style.setProperty('--gui-shadow-base', '0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)')
-      root.style.setProperty('--gui-shadow-md', '0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3)')
-      root.style.setProperty('--gui-shadow-lg', '0 16px 40px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4)')
+      root.style.setProperty(
+        '--gui-shadow-sm',
+        '0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-base',
+        '0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-md',
+        '0 8px 24px rgba(0, 0, 0, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-lg',
+        '0 16px 40px rgba(0, 0, 0, 0.6), 0 6px 12px rgba(0, 0, 0, 0.4)'
+      )
       root.style.setProperty('--gui-shadow-xl', '0 24px 48px rgba(0, 0, 0, 0.7)')
-      root.style.setProperty('--gui-shadow-ios-card', '0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3)')
-      root.style.setProperty('--gui-shadow-ios-sheet', '0 -10px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1)')
-      root.style.setProperty('--gui-shadow-ios-dropdown', '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08)')
-      root.style.setProperty('--gui-shadow-ios-modal', '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06)')
+      root.style.setProperty(
+        '--gui-shadow-ios-card',
+        '0 2px 12px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.3)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-ios-sheet',
+        '0 -10px 40px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-ios-dropdown',
+        '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px rgba(255, 255, 255, 0.08)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-ios-modal',
+        '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.06)'
+      )
     } else {
-      root.style.setProperty('--gui-shadow-sm', '0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02)')
-      root.style.setProperty('--gui-shadow-base', '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03)')
-      root.style.setProperty('--gui-shadow-md', '0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)')
-      root.style.setProperty('--gui-shadow-lg', '0 16px 36px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.05)')
+      root.style.setProperty(
+        '--gui-shadow-sm',
+        '0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 1px rgba(0, 0, 0, 0.02)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-base',
+        '0 4px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-md',
+        '0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-lg',
+        '0 16px 36px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.05)'
+      )
       root.style.setProperty('--gui-shadow-xl', '0 24px 48px rgba(0, 0, 0, 0.12)')
-      root.style.setProperty('--gui-shadow-ios-card', '0 4px 16px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.03)')
-      root.style.setProperty('--gui-shadow-ios-sheet', '0 -10px 40px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04)')
-      root.style.setProperty('--gui-shadow-ios-dropdown', '0 8px 32px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.04)')
-      root.style.setProperty('--gui-shadow-ios-modal', '0 20px 50px rgba(0, 0, 0, 0.10), 0 0 1px rgba(0, 0, 0, 0.05)')
+      root.style.setProperty(
+        '--gui-shadow-ios-card',
+        '0 4px 16px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.03)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-ios-sheet',
+        '0 -10px 40px rgba(0, 0, 0, 0.06), 0 0 1px rgba(0, 0, 0, 0.04)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-ios-dropdown',
+        '0 8px 32px rgba(0, 0, 0, 0.08), 0 0 1px rgba(0, 0, 0, 0.04)'
+      )
+      root.style.setProperty(
+        '--gui-shadow-ios-modal',
+        '0 20px 50px rgba(0, 0, 0, 0.10), 0 0 1px rgba(0, 0, 0, 0.05)'
+      )
     }
 
     // Remove previous theme classes
-    availableThemes.forEach(t => {
+    availableThemes.forEach((t) => {
       root.classList.remove(t.id)
     })
     // Add current theme class

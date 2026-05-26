@@ -671,7 +671,7 @@ onBeforeUnmount(() => {
   --docs-text-secondary: #48484a;
   --docs-text-tertiary: #6c6c70;
   --docs-accent: #0063d1;
-  --docs-accent-soft: rgba(0, 99, 209, 0.10);
+  --docs-accent-soft: rgba(0, 99, 209, 0.1);
   --docs-content-bg: #ffffff;
   --docs-content-text: #000000;
   --docs-card-bg: #ffffff;
