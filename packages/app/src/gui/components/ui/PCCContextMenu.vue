@@ -311,7 +311,7 @@ watch(
     0 8px 32px rgba(0, 0, 0, 0.6),
     0 0 1px rgba(255, 255, 255, 0.08)
   );
-  z-index: var(--gui-z-context-menu, 500);
+  z-index: var(--gui-z-context-menu, 900);
   max-height: 80vh;
   overflow-y: auto;
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
@@ -470,7 +470,7 @@ watch(
 /* ── Submenu ─────────────────────────────────────────────────────── */
 .pcc-context-menu__submenu {
   min-width: 200px;
-  z-index: calc(var(--gui-z-context-menu, 500) + 1);
+  z-index: calc(var(--gui-z-context-menu, 900) + 1);
 }
 
 /* ── Animations ───────────────────────────────────────────────────── */
