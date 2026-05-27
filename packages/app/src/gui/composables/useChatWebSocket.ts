@@ -101,11 +101,10 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   let currentUserId = userId
   let currentUsername = username
 
+  // Message queue for messages sent while WebSocket is connecting
+  const pendingMessages: Array<{ content: string; tempId?: string }> = []
+
   function getWsUrl(): string {
-    // 开发模式下优先连接本地 worker，避免被 Cloudflare 拦截
-    if (import.meta.env.DEV) {
-      return `ws://localhost:8787/chat/ws?user_id=${encodeURIComponent(currentUserId)}&username=${encodeURIComponent(currentUsername)}&room_id=${currentRoomId}`
-    }
     const base = apiUrl.startsWith('https')
       ? apiUrl.replace(/^https/, 'wss')
       : apiUrl.replace(/^http/, 'ws')
@@ -133,6 +132,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
       connectionState.value = 'connected'
       reconnectAttempts = 0
       startHeartbeat()
+      flushPendingMessages()
     }
 
     ws.onmessage = (event: MessageEvent) => {
@@ -162,6 +162,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     reconnectAttempts = maxReconnectAttempts
     stopHeartbeat()
     clearReconnectTimer()
+    pendingMessages.length = 0
 
     if (ws) {
       ws.onclose = null
@@ -176,30 +177,22 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
 
   function switchRoom(newRoomId: number): void {
     currentRoomId = newRoomId
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      try {
-        ws.send(
-          JSON.stringify({
-            type: 'switch_room',
-            data: { room_id: newRoomId },
-          })
-        )
-        return
-      } catch {
-        // fallback to reconnect
-      }
+    // Always disconnect and reconnect with new room ID for reliability
+    if (ws) {
+      ws.onclose = null
+      ws.onerror = null
+      ws.onmessage = null
+      try { ws.close(1000) } catch {}
+      ws = null
     }
-    disconnect()
+    stopHeartbeat()
+    clearReconnectTimer()
     reconnectAttempts = 0
+    connectionState.value = 'disconnected'
     connect()
   }
 
   function sendMessage(content: string, tempId?: string): boolean {
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-      lastError.value = t('chat.notConnected')
-      return false
-    }
-
     if (!content.trim()) {
       lastError.value = t('chat.emptyMessage')
       return false
@@ -207,6 +200,17 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
 
     if (content.length > 1000) {
       lastError.value = t('chat.messageTooLong')
+      return false
+    }
+
+    // If WebSocket is connecting, queue the message for later
+    if (!ws || ws.readyState === WebSocket.CONNECTING) {
+      pendingMessages.push({ content: content.trim(), tempId })
+      return true
+    }
+
+    if (ws.readyState !== WebSocket.OPEN) {
+      lastError.value = t('chat.notConnected')
       return false
     }
 
@@ -221,6 +225,25 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
     } catch {
       lastError.value = t('chat.sendFailed')
       return false
+    }
+  }
+
+  function flushPendingMessages(): void {
+    while (pendingMessages.length > 0) {
+      const msg = pendingMessages.shift()
+      if (!msg) break
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(
+            JSON.stringify({
+              type: 'chat_message',
+              data: { content: msg.content, temp_id: msg.tempId },
+            })
+          )
+        } catch {
+          lastError.value = t('chat.sendFailed')
+        }
+      }
     }
   }
 

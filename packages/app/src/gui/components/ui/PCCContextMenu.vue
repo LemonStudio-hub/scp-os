@@ -300,7 +300,7 @@ watch(
 .pcc-context-menu {
   position: fixed;
   min-width: 220px;
-  padding: var(--gui-spacing-xxs, 2px);
+  padding: 4px;
   background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.95));
   backdrop-filter: blur(30px) saturate(200%);
   -webkit-backdrop-filter: blur(30px) saturate(200%);
@@ -334,19 +334,20 @@ watch(
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
   width: 100%;
-  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px);
+  padding: 10px var(--gui-spacing-base, 16px);
   background: none;
   border: none;
   border-radius: var(--gui-radius-sm, 6px);
   color: var(--gui-text-primary, #ffffff);
-  font-size: var(--gui-font-sm, 12px);
+  font-size: var(--gui-font-base, 13px);
   font-weight: var(--gui-font-weight-medium, 500);
   cursor: pointer;
   transition: all var(--gui-transition-fast, 120ms ease);
   text-align: left;
   position: relative;
-  margin: 1px 2px;
+  margin: 2px 2px;
   -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
 }
 
 .pcc-context-menu__item:hover:not(.pcc-context-menu__item--disabled) {
@@ -401,8 +402,8 @@ watch(
   display: flex;
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
-  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 12px);
-  margin: 1px 2px 4px;
+  padding: 10px var(--gui-spacing-base, 12px);
+  margin: 2px 2px 4px;
   border-radius: var(--gui-radius-sm, 6px);
   background: linear-gradient(
     180deg,
