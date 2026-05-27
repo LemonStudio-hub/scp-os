@@ -590,21 +590,35 @@ onUnmounted(() => {
   color: var(--gui-text-primary, #ffffff);
 }
 
-.pc-taskbar__app-btn--focused {
-  box-shadow: inset 0 0 0 1px var(--gui-accent, #8e8e93);
+/* Open-window indicator: a thin underline beneath the icon. */
+.pc-taskbar__app-btn::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: currentColor;
+  border-radius: 999px;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition:
+    width 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 160ms ease-out,
+    background-color 200ms ease;
+  pointer-events: none;
 }
 
 .pc-taskbar__app-btn--active::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  opacity: 0.55;
+  background: var(--gui-text-secondary, #8e8e93);
+}
+
+.pc-taskbar__app-btn--focused::after {
+  width: 22px;
+  opacity: 1;
   background: var(--gui-accent, #8e8e93);
-  border-radius: var(--radius-full, 999px);
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .pc-taskbar__app-count {

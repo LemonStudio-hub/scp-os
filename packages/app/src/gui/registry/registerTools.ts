@@ -20,6 +20,12 @@ const AsyncSettingsWindow = defineAsyncComponent(
 const AsyncMobileSettings = defineAsyncComponent(
   () => import('../tools/settings/MobileSettings.vue')
 )
+const AsyncAppManagerWindow = defineAsyncComponent(
+  () => import('../tools/appmanager/AppManagerWindow.vue')
+)
+const AsyncMobileAppManager = defineAsyncComponent(
+  () => import('../tools/appmanager/MobileAppManager.vue')
+)
 const AsyncChatWindow = defineAsyncComponent(() => import('../tools/chat/ChatWindow.vue'))
 const AsyncPCChatWindow = defineAsyncComponent(() => import('../tools/chat/PCChatWindow.vue'))
 const AsyncMobileDash = defineAsyncComponent(() => import('../tools/dash/MobileDash.vue'))
@@ -92,10 +98,19 @@ export function registerAllTools(): void {
   })
 
   ToolRegistry.register({
+    id: 'appmanager',
+    label: lbl('app.appManager'),
+    icon: 'grid',
+    windowConfig: { width: 720, height: 560, minWidth: 520, minHeight: 380, resizable: true },
+    desktopComponent: AsyncAppManagerWindow,
+    mobileComponent: AsyncMobileAppManager,
+  })
+
+  ToolRegistry.register({
     id: 'chat',
     label: lbl('app.chat'),
     icon: 'chat',
-    windowConfig: { width: 400, height: 600, minWidth: 300, minHeight: 400, resizable: true },
+    windowConfig: { width: 920, height: 620, minWidth: 760, minHeight: 480, resizable: true },
     desktopComponent: AsyncPCChatWindow,
     mobileComponent: AsyncChatWindow,
   })

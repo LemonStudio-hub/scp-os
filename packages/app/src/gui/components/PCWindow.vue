@@ -22,7 +22,7 @@
       <div class="pc-window__header-title">
         <span class="pc-window__title">{{ win.config.title }}</span>
       </div>
-      <div class="pc-window__header-actions">
+      <div class="pc-window__header-actions" @mousedown.stop>
         <button
           v-if="win.config.minimizable"
           class="pc-window__btn pc-window__btn--icon pc-window__btn--minimize"
@@ -178,26 +178,34 @@ const win = computed(
 const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
+const TASKBAR_HEIGHT = 48
+const WINDOW_MARGIN = 12
 
 // ── Screen Boundaries (reactive) ──────────────────────────────────────
 const getScreenBounds = () => {
+  const { width, height } = win.value.size
+
   return {
-    minX: 0,
-    minY: 0,
-    maxX: window.innerWidth - 100,
-    maxY: window.innerHeight - 100,
+    minX: WINDOW_MARGIN,
+    minY: WINDOW_MARGIN,
+    maxX: Math.max(WINDOW_MARGIN, window.innerWidth - width - WINDOW_MARGIN),
+    maxY: Math.max(WINDOW_MARGIN, window.innerHeight - TASKBAR_HEIGHT - height - WINDOW_MARGIN),
   }
 }
 
 // ── Draggable ────────────────────────────────────────────────────────
 const {
   dragState,
-  handleMouseDown: onTitleBarMouseDown,
+  handleMouseDown: startTitleBarDrag,
   stop: stopDrag,
+  setInitialPosition,
+  setCurrentPosition,
 } = useDraggable(windowRef, {
-  boundary: getScreenBounds(),
+  boundary: getScreenBounds,
   onMove: (x: number, y: number) => {
     windowManager.updateWindowPosition(win.value.config.id, Math.round(x), Math.round(y))
+    syncCurrentDragPosition()
+    syncCurrentResizeState()
   },
 })
 
@@ -209,8 +217,8 @@ const {
 } = useResizable(windowRef, {
   minWidth: win.value.config.minWidth ?? 320,
   minHeight: win.value.config.minHeight ?? 240,
-  maxWidth: window.innerWidth,
-  maxHeight: window.innerHeight,
+  maxWidth: Math.max(320, window.innerWidth - WINDOW_MARGIN * 2),
+  maxHeight: Math.max(240, window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN * 2),
   onResize: (width: number, height: number, x: number, y: number) => {
     windowManager.updateWindowDimensions(win.value.config.id, {
       x: Math.round(x),
@@ -218,6 +226,7 @@ const {
       width: Math.round(width),
       height: Math.round(height),
     })
+    syncCurrentResizeState()
   },
 })
 
@@ -234,7 +243,7 @@ const windowStyle = computed(() => {
       left: '0',
       top: '0',
       width: '100vw',
-      height: 'calc(100vh - 48px)',
+      height: `calc(100vh - ${TASKBAR_HEIGHT}px)`,
       zIndex,
     }
   }
@@ -244,6 +253,8 @@ const windowStyle = computed(() => {
     top: `${position.y}px`,
     width: `${size.width}px`,
     height: `${size.height}px`,
+    maxWidth: `calc(100vw - ${WINDOW_MARGIN * 2}px)`,
+    maxHeight: `calc(100vh - ${TASKBAR_HEIGHT + WINDOW_MARGIN * 2}px)`,
     zIndex,
   }
 })
@@ -254,6 +265,33 @@ function onWindowClick() {
     windowManager.focusWindow(win.value.config.id)
     emit('focus')
   }
+}
+
+function onTitleBarMouseDown(event: MouseEvent) {
+  const { position, size } = win.value
+  setInitialPosition(position.x, position.y)
+  setInitialSize(size.width, size.height, position.x, position.y)
+  startTitleBarDrag(event)
+}
+
+function getManagedWindow() {
+  return windowManager.getWindow(win.value.config.id) ?? win.value
+}
+
+function syncCurrentDragPosition() {
+  const current = getManagedWindow()
+  setCurrentPosition(current.position.x, current.position.y)
+}
+
+function syncCurrentResizeState() {
+  const current = getManagedWindow()
+  setInitialSize(current.size.width, current.size.height, current.position.x, current.position.y)
+}
+
+function syncInteractionState() {
+  const current = getManagedWindow()
+  setInitialPosition(current.position.x, current.position.y)
+  setInitialSize(current.size.width, current.size.height, current.position.x, current.position.y)
 }
 
 function onClose() {
@@ -277,12 +315,8 @@ onMounted(() => {
   themeStore.init()
 
   // Set initial position/size in composables
-  const { position, size } = win.value
-  dragState.value.currentX = position.x
-  dragState.value.currentY = position.y
-  dragState.value.initialX = position.x
-  dragState.value.initialY = position.y
-  setInitialSize(size.width, size.height, position.x, position.y)
+  handleWindowResize()
+  syncInteractionState()
 
   // Listen for window resize to update boundaries
   window.addEventListener('resize', handleWindowResize)
@@ -296,9 +330,15 @@ onBeforeUnmount(() => {
 })
 
 function handleWindowResize() {
-  // Update drag boundary
-  // Boundary is captured in closure - for a full fix we'd need reactive boundaries
-  // For now, the user can't drag beyond the initial boundary, which is acceptable
+  if (win.value.minimized || win.value.maximized) return
+
+  windowManager.updateWindowDimensions(win.value.config.id, {
+    x: win.value.position.x,
+    y: win.value.position.y,
+    width: win.value.size.width,
+    height: win.value.size.height,
+  })
+  syncInteractionState()
 }
 </script>
 
@@ -380,7 +420,7 @@ function handleWindowResize() {
   align-items: center;
   justify-content: space-between;
   height: 44px;
-  padding: 0 var(--gui-spacing-base, 16px);
+  padding: 0 0 0 var(--gui-spacing-base, 16px);
   background: var(--gui-glass-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -421,7 +461,7 @@ function handleWindowResize() {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   transition: color var(--gui-transition-base, 200ms ease);
 }
 
@@ -431,99 +471,57 @@ function handleWindowResize() {
   color: var(--gui-text-primary, #000000);
 }
 
-/* ── Header Actions - macOS Style Buttons ──────────────────────────── */
+/* ── Header Actions - Windows Caption Buttons ──────────────────────── */
 .pc-window__header-actions {
   display: flex;
   align-items: center;
-  gap: var(--gui-spacing-xs, 4px);
+  align-self: stretch;
+  gap: 0;
   margin-left: var(--gui-spacing-sm, 8px);
+  margin-top: -1px;
+  margin-right: -1px;
 }
 
 .pc-window__btn--icon {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
-  background: var(--gui-bg-surface-raised, #2c2c2e);
+  width: 46px;
+  height: calc(100% + 1px);
+  background: transparent;
   border: none;
-  border-radius: var(--gui-radius-full, 999px);
-  color: transparent;
+  border-radius: 0;
+  color: var(--gui-text-secondary, #8e8e93);
   cursor: pointer;
-  transition: all var(--gui-transition-snappy, 250ms cubic-bezier(0.2, 0.9, 0.3, 1.1));
+  transition:
+    background var(--gui-transition-fast, 120ms ease),
+    color var(--gui-transition-fast, 120ms ease);
   -webkit-tap-highlight-color: transparent;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .pc-window__btn--icon:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #ffffff);
 }
 
 .pc-window__btn--icon:active {
-  transform: scale(0.9);
-  filter: brightness(0.9);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-/* Minimize button - Yellow */
-.pc-window__btn--minimize {
-  background: var(--gui-warning, #ffcc00);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.pc-window__btn--minimize:hover {
-  background: var(--gui-warning, #ffcc00);
-  filter: brightness(1.1);
-}
-
-.pc-window__btn--minimize:hover svg {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Maximize button - Green */
-.pc-window__btn--maximize {
-  background: var(--gui-success, #34c759);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.pc-window__btn--maximize:hover {
-  background: var(--gui-success, #34c759);
-  filter: brightness(1.1);
-}
-
-.pc-window__btn--maximize:hover svg {
-  color: rgba(0, 0, 0, 0.6);
-}
-
-/* Close button - Red */
-.pc-window__btn--close {
-  background: var(--gui-error, #ff3b30);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.12));
 }
 
 .pc-window__btn--close:hover {
-  background: var(--gui-error, #ff3b30);
-  filter: brightness(1.1);
+  background: #e81123;
+  color: #ffffff;
 }
 
-.pc-window__btn--close:hover svg {
-  color: var(--gui-text-primary, rgba(255, 255, 255, 0.9));
-}
-
-.pc-window__btn--icon:active {
-  transform: scale(0.9);
-  filter: brightness(0.9);
+.pc-window__btn--close:active {
+  background: #c50f1f;
+  color: #ffffff;
 }
 
 .pc-window__btn--icon svg {
-  position: absolute;
-  opacity: 0;
-  transition: opacity var(--gui-transition-fast, 120ms ease);
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
+  opacity: 1;
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */
@@ -625,7 +623,7 @@ function handleWindowResize() {
 
   .pc-window__header {
     height: 44px;
-    padding: 0 var(--gui-spacing-base, 16px);
+    padding: 0 0 0 var(--gui-spacing-base, 16px);
   }
 
   .pc-window__resize {
@@ -636,7 +634,7 @@ function handleWindowResize() {
 @media (max-width: 768px) {
   .pc-window__header {
     height: 48px;
-    padding: 0 var(--gui-spacing-sm, 8px);
+    padding: 0 0 0 var(--gui-spacing-sm, 8px);
   }
 
   .pc-window__resize {

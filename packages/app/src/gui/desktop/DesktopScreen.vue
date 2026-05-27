@@ -106,6 +106,23 @@
                   />
                 </svg>
               </template>
+              <template v-else-if="app.id === 'appmanager'">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="7" height="7" rx="1" />
+                  <rect x="14" y="3" width="7" height="7" rx="1" />
+                  <rect x="3" y="14" width="7" height="7" rx="1" />
+                  <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+              </template>
               <template v-else-if="app.id === 'chat'">
                 <svg
                   width="28"
@@ -294,8 +311,9 @@ import { useDraggable } from '../composables/useDraggable'
 import { useI18n } from '../composables/useI18n'
 import { ToolRegistry } from '../registry/ToolRegistry'
 import type { IconName } from '../icons'
-import type { ToolType, ContextMenuItem } from '../types'
+import type { ToolType, ContextMenuItem, ContextMenuIcon } from '../types'
 import { filesystem } from '../../utils/filesystem'
+import { isToolUninstalled } from '../utils/appCatalog'
 import {
   parseDesktopFile,
   serializeDesktopFile,
@@ -335,6 +353,7 @@ function loadDesktopApps() {
       if (!content) continue
       const shortcut = parseDesktopFile(content)
       if (!shortcut) continue
+      if (isToolUninstalled(shortcut.tool as ToolType)) continue
 
       loaded.push({
         id: shortcut.tool,
@@ -375,6 +394,13 @@ function loadDesktopApps() {
   }
 
   apps.splice(0, apps.length, ...loaded)
+  const loadedIds = new Set(loaded.map((app) => app.id))
+  for (const [id, dragState] of appDragStates) {
+    if (!loadedIds.has(id)) {
+      dragState.stop()
+      appDragStates.delete(id)
+    }
+  }
 
   // Translate known system app labels from legacy English names
   const enToKey: Record<string, string> = {
@@ -387,6 +413,7 @@ function loadDesktopApps() {
     Docs: 'app.docs',
     'Docs Reader': 'app.docs',
     Settings: 'app.settings',
+    'App Manager': 'app.appManager',
     Editor: 'app.editor',
     'Text Editor': 'app.editor',
   }
@@ -422,6 +449,7 @@ function getAppLabel(app: DesktopApp): string {
     feedback: 'app.feedback',
     docs: 'app.docs',
     settings: 'app.settings',
+    appmanager: 'app.appManager',
   }
   const key = toolToKey[app.tool]
   if (key) {
@@ -457,6 +485,10 @@ function persistPinnedTools() {
   localStorage.setItem('scp-os-taskbar-pinned', JSON.stringify(pinnedTools.value))
 }
 
+function reloadPinnedTools(): void {
+  pinnedTools.value = loadPinnedTools()
+}
+
 const TOOL_LABEL_KEYS: Partial<Record<string, string>> = {
   terminal: 'app.terminal',
   filemanager: 'app.files',
@@ -466,6 +498,7 @@ const TOOL_LABEL_KEYS: Partial<Record<string, string>> = {
   feedback: 'app.feedback',
   docs: 'app.docs',
   settings: 'app.settings',
+  appmanager: 'app.appManager',
 }
 
 function resolveToolLabel(tool: ToolType): string {
@@ -487,14 +520,37 @@ function resolveToolIcon(tool: ToolType): IconName {
   return ((meta?.icon as IconName) ?? 'menu') as IconName
 }
 
-const taskbarItems = computed<PCTaskbarItem[]>(() =>
-  pinnedTools.value.map((tool) => ({
+const wmStore = useWindowManagerStore()
+const activeTools = computed<ToolType[]>(() => [
+  ...new Set(wmStore.openWindows.map((win) => win.config.tool)),
+])
+
+const installedTaskbarTools = computed(
+  () =>
+    new Set(
+      apps
+        .filter((app) => !app.isFile && !app.isDirectory && ToolRegistry.has(app.tool as ToolType))
+        .map((app) => app.tool as ToolType)
+    )
+)
+
+function createTaskbarItem(tool: ToolType): PCTaskbarItem {
+  return {
     id: tool,
     tool,
     label: resolveToolLabel(tool),
     iconName: resolveToolIcon(tool),
-  }))
-)
+  }
+}
+
+const taskbarItems = computed<PCTaskbarItem[]>(() => {
+  const pinned = pinnedTools.value.filter(
+    (tool) => installedTaskbarTools.value.has(tool) || activeTools.value.includes(tool)
+  )
+  const temporary = activeTools.value.filter((tool) => !pinned.includes(tool))
+
+  return [...pinned, ...temporary].map(createTaskbarItem)
+})
 
 function isToolPinned(tool: ToolType): boolean {
   return pinnedTools.value.includes(tool)
@@ -512,10 +568,6 @@ function unpinToolFromTaskbar(tool: ToolType): void {
   persistPinnedTools()
 }
 
-const wmStore = useWindowManagerStore()
-const activeTools = computed<ToolType[]>(() => [
-  ...new Set(wmStore.openWindows.map((win) => win.config.tool)),
-])
 const isStartMenuOpen = ref(false)
 
 // Grid snap state — drives drop-snap AND visible grid overlay during drag
@@ -840,8 +892,9 @@ const handleDesktopContextMenu = (event: MouseEvent) => {
       },
       {
         id: 'align-to-grid',
-        label: `${gridSnapEnabled.value ? '✓  ' : '     '}${t('pc.alignToGrid')}`,
+        label: t('pc.alignToGrid'),
         icon: 'sort',
+        checked: gridSnapEnabled.value,
         action: () => toggleGridSnap(),
       },
       { id: 'divider-2', label: '', divider: true },
@@ -922,7 +975,28 @@ const handleTaskbarContextMenu = (event: MouseEvent, item: PCTaskbarItem) => {
 
   const tool = item.tool
   const wins = wmStore.openWindows.filter((win) => win.config.tool === tool)
-  const items: ContextMenuItem[] = []
+  const headerSublabel =
+    wins.length === 0
+      ? t('pc.notRunning')
+      : wins.length === 1
+        ? t('pc.oneWindowOpen')
+        : t('pc.nWindowsOpen', { n: wins.length })
+
+  const items: ContextMenuItem[] = [
+    {
+      id: 'header',
+      header: true,
+      label: item.label,
+      sublabel: headerSublabel,
+      icon: (item.iconName as ContextMenuIcon | undefined) ?? 'play',
+    },
+    {
+      id: 'open-new',
+      label: wins.length > 0 ? t('pc.openNewWindow') : t('pc.open'),
+      icon: 'play',
+      action: () => emit('launch', findOrCreateAppForTool(tool, item.label)),
+    },
+  ]
 
   if (wins.length > 0) {
     items.push({
@@ -933,8 +1007,9 @@ const handleTaskbarContextMenu = (event: MouseEvent, item: PCTaskbarItem) => {
         wins.forEach((win) => wmStore.closeWindow(win.config.id))
       },
     })
-    items.push({ id: 'taskbar-div', label: '', divider: true })
   }
+
+  items.push({ id: 'taskbar-div', label: '', divider: true })
 
   if (isToolPinned(tool)) {
     items.push({
@@ -958,6 +1033,19 @@ const handleTaskbarContextMenu = (event: MouseEvent, item: PCTaskbarItem) => {
     y: event.clientY,
     items,
     selectedApp: null,
+  }
+}
+
+function findOrCreateAppForTool(tool: ToolType, label: string): DesktopApp {
+  const existing = apps.find((a) => a.tool === tool)
+  if (existing) return existing
+  return {
+    id: tool,
+    label,
+    tool,
+    color: 'var(--gui-accent)',
+    x: 50,
+    y: 50,
   }
 }
 
@@ -986,6 +1074,10 @@ const onDialogConfirm = (value: string | true) => {
 
   loadDesktopApps()
   arrangeApps()
+}
+
+function reloadDesktopApps(): void {
+  loadDesktopApps()
 }
 
 // Close start menu when clicking outside
@@ -1074,6 +1166,9 @@ onMounted(async () => {
       }
     })
 
+    window.addEventListener('app-catalog-changed', reloadDesktopApps)
+    window.addEventListener('taskbar-pins-changed', reloadPinnedTools)
+
     // Add click outside listener
     document.addEventListener('click', handleClickOutside)
   }
@@ -1082,6 +1177,8 @@ onMounted(async () => {
 onUnmounted(() => {
   // Remove click outside listener
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('app-catalog-changed', reloadDesktopApps)
+  window.removeEventListener('taskbar-pins-changed', reloadPinnedTools)
 
   // Clean up drag states
   appDragStates.forEach((state) => state.stop())

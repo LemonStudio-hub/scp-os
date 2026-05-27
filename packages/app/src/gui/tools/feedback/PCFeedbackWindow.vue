@@ -1,5 +1,5 @@
 <template>
-  <PCWindow :visible="visible" :title="t('fb.title')" @close="$emit('close')">
+  <PCWindow :window-instance="windowInstance" @close="$emit('close')">
     <div class="pc-feedback">
       <div class="pc-feedback__content">
         <!-- Tab Bar -->
@@ -234,6 +234,7 @@ import indexedDBService from '../../../utils/indexedDB'
 import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '../../../stores/authStore'
 import logger from '../../../utils/logger'
+import type { WindowInstance } from '../../types'
 
 interface FeedbackItem {
   id: number
@@ -264,7 +265,8 @@ interface CommentItem {
 }
 
 interface Props {
-  visible: boolean
+  visible?: boolean
+  windowInstance?: WindowInstance
 }
 
 defineProps<Props>()

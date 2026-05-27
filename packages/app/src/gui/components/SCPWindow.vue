@@ -21,7 +21,7 @@
       <div class="scp-window__header-title">
         <span class="scp-window__title">{{ windowInstance.config.title }}</span>
       </div>
-      <div class="scp-window__header-actions">
+      <div class="scp-window__header-actions" @mousedown.stop>
         <button
           v-if="windowInstance.config.minimizable"
           class="scp-window__btn scp-window__btn--icon scp-window__btn--minimize"
@@ -158,21 +158,49 @@ const { t } = useI18n()
 const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
+const TASKBAR_HEIGHT = 48
+const WINDOW_MARGIN = 12
 
-const { dragState, handleMouseDown: onTitleBarMouseDown } = useDraggable(windowRef, {
-  boundary: { minX: 0, minY: 0 },
+const {
+  dragState,
+  handleMouseDown: startTitleBarDrag,
+  stop: stopDrag,
+  setInitialPosition,
+  setCurrentPosition,
+} = useDraggable(windowRef, {
+  boundary: getScreenBounds,
   onMove: (x: number, y: number) => {
     windowManager.updateWindowPosition(props.windowInstance.config.id, x, y)
+    syncCurrentDragPosition()
+    syncCurrentResizeState()
   },
 })
 
-const { handleMouseDown: onResizeStart } = useResizable(windowRef, {
+const {
+  handleMouseDown: onResizeStart,
+  stop: stopResize,
+  setInitialSize,
+} = useResizable(windowRef, {
   minWidth: props.windowInstance.config.minWidth ?? 320,
   minHeight: props.windowInstance.config.minHeight ?? 240,
+  maxWidth: Math.max(320, window.innerWidth - WINDOW_MARGIN * 2),
+  maxHeight: Math.max(240, window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN * 2),
   onResize: (width: number, height: number, x: number, y: number) => {
     windowManager.updateWindowDimensions(props.windowInstance.config.id, { x, y, width, height })
+    syncCurrentResizeState()
   },
 })
+
+function getScreenBounds() {
+  const { width, height } = props.windowInstance.size
+
+  return {
+    minX: WINDOW_MARGIN,
+    minY: WINDOW_MARGIN,
+    maxX: Math.max(WINDOW_MARGIN, window.innerWidth - width - WINDOW_MARGIN),
+    maxY: Math.max(WINDOW_MARGIN, window.innerHeight - TASKBAR_HEIGHT - height - WINDOW_MARGIN),
+  }
+}
 
 const windowStyle = computed(() => {
   const { position, size, zIndex, minimized, maximized } = props.windowInstance
@@ -186,7 +214,7 @@ const windowStyle = computed(() => {
       left: '0',
       top: '0',
       width: '100vw',
-      height: '100vh',
+      height: `calc(100vh - ${TASKBAR_HEIGHT}px)`,
       zIndex,
     }
   }
@@ -196,6 +224,8 @@ const windowStyle = computed(() => {
     top: `${position.y}px`,
     width: `${size.width}px`,
     height: `${size.height}px`,
+    maxWidth: `calc(100vw - ${WINDOW_MARGIN * 2}px)`,
+    maxHeight: `calc(100vh - ${TASKBAR_HEIGHT + WINDOW_MARGIN * 2}px)`,
     zIndex,
   }
 })
@@ -205,6 +235,33 @@ function onWindowClick() {
     windowManager.focusWindow(props.windowInstance.config.id)
     emit('focus')
   }
+}
+
+function onTitleBarMouseDown(event: MouseEvent) {
+  const { position, size } = props.windowInstance
+  setInitialPosition(position.x, position.y)
+  setInitialSize(size.width, size.height, position.x, position.y)
+  startTitleBarDrag(event)
+}
+
+function getManagedWindow() {
+  return windowManager.getWindow(props.windowInstance.config.id) ?? props.windowInstance
+}
+
+function syncCurrentDragPosition() {
+  const current = getManagedWindow()
+  setCurrentPosition(current.position.x, current.position.y)
+}
+
+function syncCurrentResizeState() {
+  const current = getManagedWindow()
+  setInitialSize(current.size.width, current.size.height, current.position.x, current.position.y)
+}
+
+function syncInteractionState() {
+  const current = getManagedWindow()
+  setInitialPosition(current.position.x, current.position.y)
+  setInitialSize(current.size.width, current.size.height, current.position.x, current.position.y)
 }
 
 function onClose() {
@@ -223,17 +280,28 @@ function onMaximize() {
 }
 
 onMounted(() => {
-  if (windowRef.value && !props.windowInstance.maximized) {
-    windowRef.value.style.left = `${props.windowInstance.position.x}px`
-    windowRef.value.style.top = `${props.windowInstance.position.y}px`
-    windowRef.value.style.width = `${props.windowInstance.size.width}px`
-    windowRef.value.style.height = `${props.windowInstance.size.height}px`
-  }
+  handleWindowResize()
+  syncInteractionState()
+  window.addEventListener('resize', handleWindowResize)
 })
 
 onBeforeUnmount(() => {
-  dragState.value.isDragging = false
+  stopDrag()
+  stopResize()
+  window.removeEventListener('resize', handleWindowResize)
 })
+
+function handleWindowResize() {
+  if (props.windowInstance.minimized || props.windowInstance.maximized) return
+
+  windowManager.updateWindowDimensions(props.windowInstance.config.id, {
+    x: props.windowInstance.position.x,
+    y: props.windowInstance.position.y,
+    width: props.windowInstance.size.width,
+    height: props.windowInstance.size.height,
+  })
+  syncInteractionState()
+}
 </script>
 
 <style scoped>
@@ -283,6 +351,11 @@ onBeforeUnmount(() => {
   display: none !important;
 }
 
+.scp-window--maximized {
+  border-radius: 0;
+  border: none;
+}
+
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
 .light .scp-window {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -302,7 +375,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   height: 40px;
-  padding: 0 14px;
+  padding: 0 0 0 14px;
   background: var(--gui-glass-bg);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
@@ -326,6 +399,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1;
 }
 
 .scp-window__title {
@@ -336,29 +410,31 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 /* ── Header Actions ────────────────────────────────────────────────── */
 .scp-window__header-actions {
   display: flex;
   align-items: center;
-  gap: 2px;
+  align-self: stretch;
+  gap: 0;
+  margin-top: -1px;
+  margin-right: -1px;
 }
 
 .scp-window__btn--icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 46px;
+  height: calc(100% + 1px);
   background: transparent;
   border: none;
-  border-radius: var(--gui-radius-full, 999px);
+  border-radius: 0;
   color: var(--gui-text-secondary, #8e8e93);
   cursor: pointer;
   transition:
-    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
     background 120ms ease,
     color 120ms ease;
   -webkit-tap-highlight-color: transparent;
@@ -370,17 +446,17 @@ onBeforeUnmount(() => {
 }
 
 .scp-window__btn--icon:active {
-  transform: scale(0.88);
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.12));
 }
 
 .scp-window__btn--close:hover {
-  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
-  color: var(--gui-error, #ff3b30);
+  background: #e81123;
+  color: #ffffff;
 }
 
-.scp-window__btn--minimize:hover {
-  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.12));
-  color: var(--gui-warning, #ffcc00);
+.scp-window__btn--close:active {
+  background: #c50f1f;
+  color: #ffffff;
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */
@@ -461,7 +537,7 @@ onBeforeUnmount(() => {
     left: 0 !important;
     top: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
+    height: calc(100vh - 48px) !important;
     border-radius: 0;
   }
 
@@ -471,7 +547,7 @@ onBeforeUnmount(() => {
 
   .scp-window__header {
     height: 44px;
-    padding: 0 12px;
+    padding: 0 0 0 12px;
   }
 }
 </style>

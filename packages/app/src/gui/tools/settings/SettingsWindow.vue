@@ -709,6 +709,15 @@ function confirmResetSettings(): void {
   confirmDialog.value = {
     title: t('settings.resetTitle'),
     text: t('settings.resetMsg'),
+    confirmText: t('settings.resetContinue'),
+    action: confirmResetSettingsFinal,
+  }
+}
+
+function confirmResetSettingsFinal(): void {
+  confirmDialog.value = {
+    title: t('settings.resetFinalTitle'),
+    text: t('settings.resetFinalMsg'),
     confirmText: t('settings.reset'),
     action: resetSettings,
   }

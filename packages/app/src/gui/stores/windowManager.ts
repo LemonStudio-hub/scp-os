@@ -20,10 +20,163 @@ import logger from '../../utils/logger'
 
 const { getNextZIndex, bringToFront, setFocusedWindow, getFocusedWindowId } = useZIndex()
 
-// Per-tool default placement: lets specific tools open in a dedicated region
-// instead of the generic cascading offset. Settings opens in the right-region
-// centered area so it doesn't cover the left-side desktop icons.
+// Default placement keeps new windows away from the desktop icons.
 const TASKBAR_HEIGHT = 48
+const WINDOW_MARGIN = 12
+const RIGHT_REGION_CENTER_RATIO = 0.7
+
+function getViewportLimit(): { width: number; height: number } {
+  if (typeof window === 'undefined') {
+    return { width: windowDefaults.width, height: windowDefaults.height }
+  }
+
+  return {
+    width: Math.max(320, window.innerWidth - WINDOW_MARGIN * 2),
+    height: Math.max(240, window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN * 2),
+  }
+}
+
+function getEffectiveMinSize(config: WindowConfig): { minWidth: number; minHeight: number } {
+  const minWidth = config.minWidth ?? 320
+  const minHeight = config.minHeight ?? 240
+
+  if (config.tool === 'chat') {
+    return {
+      minWidth: Math.max(minWidth, 760),
+      minHeight: Math.max(minHeight, 480),
+    }
+  }
+
+  return { minWidth, minHeight }
+}
+
+function clampWindowSize(
+  size: { width: number; height: number },
+  config: WindowConfig
+): { width: number; height: number } {
+  const viewportLimit = getViewportLimit()
+  const { minWidth, minHeight } = getEffectiveMinSize(config)
+  const safeMinWidth = Math.min(minWidth, viewportLimit.width)
+  const safeMinHeight = Math.min(minHeight, viewportLimit.height)
+
+  return {
+    width: Math.min(viewportLimit.width, Math.max(safeMinWidth, size.width)),
+    height: Math.min(viewportLimit.height, Math.max(safeMinHeight, size.height)),
+  }
+}
+
+function clampPosition(value: number, max: number): number {
+  if (max < WINDOW_MARGIN) return WINDOW_MARGIN
+  return Math.min(max, Math.max(WINDOW_MARGIN, value))
+}
+
+function clampWindowPosition(
+  position: { x: number; y: number },
+  size: { width: number; height: number }
+): { x: number; y: number } {
+  if (typeof window === 'undefined') {
+    return position
+  }
+
+  const availH = Math.max(0, window.innerHeight - TASKBAR_HEIGHT)
+
+  return {
+    x: clampPosition(position.x, window.innerWidth - size.width - WINDOW_MARGIN),
+    y: clampPosition(position.y, availH - size.height - WINDOW_MARGIN),
+  }
+}
+
+function clampWindowDimensions(
+  dimensions: WindowDimensions,
+  config: WindowConfig
+): { position: { x: number; y: number }; size: { width: number; height: number } } {
+  if (typeof window === 'undefined') {
+    const size = clampWindowSize(dimensions, config)
+    return {
+      position: { x: dimensions.x, y: dimensions.y },
+      size,
+    }
+  }
+
+  const viewportLimit = getViewportLimit()
+  const { minWidth, minHeight } = getEffectiveMinSize(config)
+  const safeMinWidth = Math.min(minWidth, viewportLimit.width)
+  const safeMinHeight = Math.min(minHeight, viewportLimit.height)
+  const maxRight = window.innerWidth - WINDOW_MARGIN
+  const maxBottom = window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN
+
+  let left = dimensions.x
+  let top = dimensions.y
+  let right = dimensions.x + dimensions.width
+  let bottom = dimensions.y + dimensions.height
+
+  if (left < WINDOW_MARGIN) left = WINDOW_MARGIN
+  if (top < WINDOW_MARGIN) top = WINDOW_MARGIN
+  if (right > maxRight) right = maxRight
+  if (bottom > maxBottom) bottom = maxBottom
+
+  if (right - left < safeMinWidth) {
+    right = Math.min(maxRight, left + safeMinWidth)
+    left = Math.max(WINDOW_MARGIN, right - safeMinWidth)
+  }
+
+  if (bottom - top < safeMinHeight) {
+    bottom = Math.min(maxBottom, top + safeMinHeight)
+    top = Math.max(WINDOW_MARGIN, bottom - safeMinHeight)
+  }
+
+  return {
+    position: { x: Math.round(left), y: Math.round(top) },
+    size: {
+      width: Math.round(right - left),
+      height: Math.round(bottom - top),
+    },
+  }
+}
+
+function normalizeWindowConfig(config: WindowConfig, size: { width: number; height: number }) {
+  const { minWidth, minHeight } = getEffectiveMinSize(config)
+
+  return {
+    ...config,
+    width: size.width,
+    height: size.height,
+    minWidth,
+    minHeight,
+  }
+}
+
+function normalizeWindowInstance(instance: WindowInstance): WindowInstance {
+  const size = clampWindowSize(instance.size, instance.config)
+  const position = clampWindowPosition(instance.position, size)
+
+  return {
+    ...instance,
+    config: normalizeWindowConfig(instance.config, size),
+    position,
+    size,
+  }
+}
+
+function computeRightRegionPosition(
+  size: { width: number; height: number },
+  openCount: number
+): { x: number; y: number } {
+  const availW = window.innerWidth
+  const availH = Math.max(0, window.innerHeight - TASKBAR_HEIGHT)
+  const cascadeIndex = openCount % 5
+  const rawX = Math.round(
+    availW * RIGHT_REGION_CENTER_RATIO - size.width / 2 + windowDefaults.xOffset * cascadeIndex
+  )
+  const rawY = Math.round((availH - size.height) / 2 + windowDefaults.yOffset * cascadeIndex)
+  const maxX = availW - size.width - WINDOW_MARGIN
+  const maxY = availH - size.height - WINDOW_MARGIN
+
+  return {
+    x: clampPosition(rawX, maxX),
+    y: clampPosition(rawY, maxY),
+  }
+}
 
 function computeDefaultPosition(
   tool: ToolType | undefined,
@@ -35,24 +188,10 @@ function computeDefaultPosition(
   }
 
   if (tool === ('settings' as ToolType)) {
-    const availW = window.innerWidth
-    const availH = Math.max(0, window.innerHeight - TASKBAR_HEIGHT)
-    // Center the window on a vertical axis at 70% of viewport width,
-    // clamped so the window stays fully visible on narrow screens.
-    const rawX = Math.round(availW * 0.7 - size.width / 2)
-    const rawY = Math.round((availH - size.height) / 2)
-    const maxX = Math.max(0, availW - size.width - 12)
-    const maxY = Math.max(0, availH - size.height - 12)
-    return {
-      x: Math.min(maxX, Math.max(12, rawX)),
-      y: Math.min(maxY, Math.max(12, rawY)),
-    }
+    return computeRightRegionPosition(size, 0)
   }
 
-  return {
-    x: windowDefaults.xOffset * (openCount % 5),
-    y: windowDefaults.yOffset * (openCount % 5),
-  }
+  return computeRightRegionPosition(size, openCount)
 }
 
 export const useWindowManagerStore = defineStore('windowManager', () => {
@@ -113,20 +252,22 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
 
     const zIndex = getNextZIndex()
     const openWindowCount = windows.value.size
-    const size = {
+    const requestedSize = {
       width: config.width ?? windowDefaults.width,
       height: config.height ?? windowDefaults.height,
     }
+    const size = clampWindowSize(requestedSize, config)
     const defaultPos = computeDefaultPosition(config.tool, size, openWindowCount)
-    const position = {
+    const position = clampWindowPosition({
       x: config.x ?? defaultPos.x,
       y: config.y ?? defaultPos.y,
-    }
+    }, size)
+    const normalizedConfig = normalizeWindowConfig(config, size)
 
     const isFullscreen = config.tool === 'settings' ? false : (config.isFullscreen ?? false)
 
     const windowInstance: WindowInstance = {
-      config,
+      config: normalizedConfig,
       state: isFullscreen ? 'maximized' : 'normal',
       position,
       size,
@@ -244,10 +385,13 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     const win = windows.value.get(windowId)
     if (!win) return false
 
+    const { position, size } = clampWindowDimensions(dimensions, win.config)
+
     updateWindow(windowId, {
       ...win,
-      position: { x: dimensions.x, y: dimensions.y },
-      size: { width: dimensions.width, height: dimensions.height },
+      config: normalizeWindowConfig(win.config, size),
+      position,
+      size,
     })
 
     return true
@@ -257,9 +401,11 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     const win = windows.value.get(windowId)
     if (!win) return false
 
+    const position = clampWindowPosition({ x, y }, win.size)
+
     updateWindow(windowId, {
       ...win,
-      position: { x, y },
+      position,
     })
 
     return true
@@ -316,15 +462,13 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
                 }
               : savedWindow
 
-          const restoredWindow = {
+          const restoredWindow = normalizeWindowInstance({
             ...windowToRestore,
             zIndex: getNextZIndex(),
-          }
+          })
 
           updateWindow(restoredWindow.config.id, restoredWindow)
-          if (windowToRestore !== savedWindow) {
-            await saveWindowState(restoredWindow)
-          }
+          await saveWindowState(restoredWindow)
         }
 
         const restoredWindows = openWindows.value

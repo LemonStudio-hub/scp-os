@@ -3,7 +3,7 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 
 <template>
-  <PCWindow :visible="visible" :title="t('chat.title')" @close="$emit('close')">
+  <PCWindow :window-instance="windowInstance" @close="$emit('close')">
     <div class="pc-chat" :style="chatThemeStyles">
       <!-- Sidebar: Room List -->
       <div class="pc-chat__sidebar">
@@ -522,9 +522,11 @@ import { useChatWebSocket, type WSChatMessage } from '../../composables/useChatW
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
+import type { WindowInstance } from '../../types'
 
 interface Props {
-  visible: boolean
+  visible?: boolean
+  windowInstance?: WindowInstance
 }
 
 interface ChatMessage {
