@@ -29,6 +29,14 @@ export interface ToolWindowConfig {
   minHeight?: number
   /** Whether the window is resizable */
   resizable?: boolean
+  /** Whether the window is draggable */
+  draggable?: boolean
+  /** Whether the window can be closed */
+  closable?: boolean
+  /** Whether the window can be minimized */
+  minimizable?: boolean
+  /** Whether the window can be maximized */
+  maximizable?: boolean
   /** Whether the window opens maximized */
   isFullscreen?: boolean
 }
@@ -125,6 +133,13 @@ export function openTool(
     iconName?: string
     width: number
     height: number
+    minWidth?: number
+    minHeight?: number
+    resizable?: boolean
+    draggable?: boolean
+    closable?: boolean
+    minimizable?: boolean
+    maximizable?: boolean
     isFullscreen?: boolean
     data?: Record<string, unknown>
   }) => void,
@@ -155,6 +170,13 @@ export function openTool(
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
+    minWidth: tool.windowConfig.minWidth,
+    minHeight: tool.windowConfig.minHeight,
+    resizable: tool.windowConfig.resizable,
+    draggable: tool.windowConfig.draggable,
+    closable: tool.windowConfig.closable,
+    minimizable: tool.windowConfig.minimizable,
+    maximizable: tool.windowConfig.maximizable,
     isFullscreen: tool.windowConfig.isFullscreen ?? false,
     data,
   })

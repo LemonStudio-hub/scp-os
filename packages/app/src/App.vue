@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import PCNotification from './gui/components/PCNotification.vue'
+import ErrorBoundary from './gui/components/ErrorBoundary.vue'
 import MobileApp from './gui/mobile/MobileApp.vue'
 import LoginScreen from './gui/mobile/LoginScreen.vue'
 import PCLoginScreen from './gui/desktop/PCLoginScreen.vue'
@@ -120,7 +121,15 @@ onMounted(() => {
                   iconName: config.iconName,
                   width: config.width,
                   height: config.height,
+                  minWidth: config.minWidth,
+                  minHeight: config.minHeight,
+                  resizable: config.resizable,
+                  draggable: config.draggable,
+                  closable: config.closable,
+                  minimizable: config.minimizable,
+                  maximizable: config.maximizable,
                   isFullscreen: config.isFullscreen,
+                  data: config.data,
                 })
               },
               undefined,
@@ -266,11 +275,13 @@ function handleLoginSuccess(): void {
           />
 
           <template v-for="win in wmStore.openWindows" :key="win.config.id">
-            <component
-              :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
-              :window-instance="win"
-              :window-id="win.config.id"
-            />
+            <ErrorBoundary :label="win.config.tool">
+              <component
+                :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
+                :window-instance="win"
+                :window-id="win.config.id"
+              />
+            </ErrorBoundary>
           </template>
         </template>
 

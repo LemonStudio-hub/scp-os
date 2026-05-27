@@ -101,6 +101,13 @@ function onHomeLaunch(app: HomeApp | DesktopApp): void {
         iconName: config.iconName,
         width: config.width,
         height: config.height,
+        minWidth: config.minWidth,
+        minHeight: config.minHeight,
+        resizable: config.resizable,
+        draggable: config.draggable,
+        closable: config.closable,
+        minimizable: config.minimizable,
+        maximizable: config.maximizable,
         isFullscreen: config.isFullscreen,
         data: config.data,
       })

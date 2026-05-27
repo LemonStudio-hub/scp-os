@@ -21,74 +21,19 @@
       <div class="scp-window__header-title">
         <span class="scp-window__title">{{ windowInstance.config.title }}</span>
       </div>
-      <div class="scp-window__header-actions" @mousedown.stop>
-        <button
-          v-if="windowInstance.config.minimizable"
-          class="scp-window__btn scp-window__btn--icon scp-window__btn--minimize"
-          :title="t('window.minimize')"
-          @click.stop="onMinimize"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="2" y="6" width="8" height="1.5" rx="0.75" />
-          </svg>
-        </button>
-        <button
-          v-if="windowInstance.config.maximizable"
-          class="scp-window__btn scp-window__btn--icon scp-window__btn--maximize"
-          :title="windowInstance.maximized ? t('window.restore') : t('window.maximize')"
-          @click.stop="onMaximize"
-        >
-          <svg
-            v-if="!windowInstance.maximized"
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-          >
-            <rect
-              x="2"
-              y="2"
-              width="8"
-              height="8"
-              rx="1.5"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-          </svg>
-          <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect
-              x="1"
-              y="3"
-              width="8"
-              height="8"
-              rx="1.5"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-            <path
-              d="M3 3V2C3 1.45 3.45 1 4 1H11V4L10 3"
-              stroke="currentColor"
-              stroke-width="1.2"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
-        <button
-          v-if="windowInstance.config.closable !== false"
-          class="scp-window__btn scp-window__btn--icon scp-window__btn--close"
-          :title="t('window.close')"
-          @click.stop="onClose"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M3 3L9 9M9 3L3 9"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
-      </div>
+      <WindowCaptionControls
+        :minimizable="windowInstance.config.minimizable !== false"
+        :maximizable="windowInstance.config.maximizable !== false"
+        :closable="windowInstance.config.closable !== false"
+        :maximized="windowInstance.maximized"
+        :minimize-title="t('window.minimize')"
+        :maximize-title="t('window.maximize')"
+        :restore-title="t('window.restore')"
+        :close-title="t('window.close')"
+        @minimize="onMinimize"
+        @maximize="onMaximize"
+        @close="onClose"
+      />
     </div>
 
     <!-- Content Area -->
@@ -141,6 +86,7 @@ import { useResizable } from '../composables/useResizable'
 import { useI18n } from '../composables/useI18n'
 import type { WindowInstance } from '../types'
 import { useWindowManagerStore } from '../stores/windowManager'
+import WindowCaptionControls from './WindowCaptionControls.vue'
 
 interface Props {
   windowInstance: WindowInstance
@@ -159,7 +105,8 @@ const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
 const TASKBAR_HEIGHT = 48
-const WINDOW_MARGIN = 12
+const EDGE_SLOP = 96
+const MIN_VISIBLE = 80
 
 const {
   dragState,
@@ -183,8 +130,8 @@ const {
 } = useResizable(windowRef, {
   minWidth: props.windowInstance.config.minWidth ?? 320,
   minHeight: props.windowInstance.config.minHeight ?? 240,
-  maxWidth: Math.max(320, window.innerWidth - WINDOW_MARGIN * 2),
-  maxHeight: Math.max(240, window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN * 2),
+  maxWidth: Math.max(320, window.innerWidth + EDGE_SLOP),
+  maxHeight: Math.max(240, window.innerHeight + EDGE_SLOP),
   onResize: (width: number, height: number, x: number, y: number) => {
     windowManager.updateWindowDimensions(props.windowInstance.config.id, { x, y, width, height })
     syncCurrentResizeState()
@@ -192,13 +139,11 @@ const {
 })
 
 function getScreenBounds() {
-  const { width, height } = props.windowInstance.size
-
   return {
-    minX: WINDOW_MARGIN,
-    minY: WINDOW_MARGIN,
-    maxX: Math.max(WINDOW_MARGIN, window.innerWidth - width - WINDOW_MARGIN),
-    maxY: Math.max(WINDOW_MARGIN, window.innerHeight - TASKBAR_HEIGHT - height - WINDOW_MARGIN),
+    minX: -EDGE_SLOP,
+    minY: -EDGE_SLOP,
+    maxX: Math.max(-EDGE_SLOP, window.innerWidth - MIN_VISIBLE),
+    maxY: Math.max(-EDGE_SLOP, window.innerHeight - MIN_VISIBLE),
   }
 }
 
@@ -224,8 +169,8 @@ const windowStyle = computed(() => {
     top: `${position.y}px`,
     width: `${size.width}px`,
     height: `${size.height}px`,
-    maxWidth: `calc(100vw - ${WINDOW_MARGIN * 2}px)`,
-    maxHeight: `calc(100vh - ${TASKBAR_HEIGHT + WINDOW_MARGIN * 2}px)`,
+    maxWidth: `calc(100vw + ${EDGE_SLOP}px)`,
+    maxHeight: `calc(100vh + ${EDGE_SLOP}px)`,
     zIndex,
   }
 })
@@ -411,52 +356,6 @@ function handleWindowResize() {
   overflow: hidden;
   text-overflow: ellipsis;
   letter-spacing: 0;
-}
-
-/* ── Header Actions ────────────────────────────────────────────────── */
-.scp-window__header-actions {
-  display: flex;
-  align-items: center;
-  align-self: stretch;
-  gap: 0;
-  margin-top: -1px;
-  margin-right: -1px;
-}
-
-.scp-window__btn--icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 46px;
-  height: calc(100% + 1px);
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  color: var(--gui-text-secondary, #8e8e93);
-  cursor: pointer;
-  transition:
-    background 120ms ease,
-    color 120ms ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.scp-window__btn--icon:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
-  color: var(--gui-text-primary, #ffffff);
-}
-
-.scp-window__btn--icon:active {
-  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.12));
-}
-
-.scp-window__btn--close:hover {
-  background: #e81123;
-  color: #ffffff;
-}
-
-.scp-window__btn--close:active {
-  background: #c50f1f;
-  color: #ffffff;
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */

@@ -435,6 +435,13 @@ function openNotifications() {
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 380,
     height: tool.windowConfig.height ?? 520,
+    minWidth: tool.windowConfig.minWidth,
+    minHeight: tool.windowConfig.minHeight,
+    resizable: tool.windowConfig.resizable,
+    draggable: tool.windowConfig.draggable,
+    closable: tool.windowConfig.closable,
+    minimizable: tool.windowConfig.minimizable,
+    maximizable: tool.windowConfig.maximizable,
     isFullscreen: tool.windowConfig.isFullscreen ?? false,
   })
 }

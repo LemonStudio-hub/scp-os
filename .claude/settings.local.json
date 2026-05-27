@@ -96,7 +96,29 @@
       "Bash(git check-ignore *)",
       "Bash(timeout 5)",
       "Bash(npx vite *)",
-      "Bash(netsh advfirewall *)"
+      "Bash(netsh advfirewall *)",
+      "Bash(gh pr *)",
+      "Bash(git restore *)",
+      "Bash(git -C /i/help/scp-os-main/scp-os-main restore .claude/launch.json)",
+      "Bash(git -C /i/help/scp-os-main/scp-os-main status --short)",
+      "Bash(git -C /i/help/scp-os-main/scp-os-main add packages/app/src/gui/desktop/DesktopScreen.vue packages/app/src/locales/index.ts)",
+      "Bash(git -C /i/help/scp-os-main/scp-os-main add packages/app/src/gui/stores/windowManager.ts)",
+      "Bash(git -C /i/help/scp-os-main/scp-os-main commit -m ' *)",
+      "Bash(git -C /i/help/scp-os-main/scp-os-main push)",
+      "Bash(Get-ChildItem -Path \"packages/app/src/gui/tools\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(npx vitest *)",
+      "Bash(git worktree *)",
+      "Bash(cd \"I:\\\\help\\\\scp-os-main\\\\scp-wt-main\" && pnpm install --frozen-lockfile 2>&1 | tail -5)",
+      "Read(//i/help/scp-os-main/scp-wt-main/**)",
+      "Bash(cd \"I:\\\\help\\\\scp-os-main\\\\scp-wt-fix\" && pnpm install --frozen-lockfile 2>&1 | tail -5)",
+      "Read(//i/help/scp-os-main/scp-wt-fix/**)",
+      "Bash(cd \"I:\\\\help\\\\scp-os-main\\\\scp-wt-codex\" && pnpm install --frozen-lockfile 2>&1 | tail -5)",
+      "Read(//i/help/scp-os-main/scp-wt-codex/**)",
+      "Bash(timeout 3)",
+      "Bash(powershell -Command \"Start-Sleep -Seconds 3; Get-Content 'C:\\\\Users\\\\24702\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\i--help-scp-os-main-scp-os-main\\\\d03acaf2-18b7-4b0a-be3b-d16794cd2552\\\\tasks\\\\bheyd2b1a.output' -ErrorAction SilentlyContinue; Write-Host '---'; Get-Content 'C:\\\\Users\\\\24702\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\i--help-scp-os-main-scp-os-main\\\\d03acaf2-18b7-4b0a-be3b-d16794cd2552\\\\tasks\\\\b2eh181t1.output' -ErrorAction SilentlyContinue; Write-Host '---'; Get-Content 'C:\\\\Users\\\\24702\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\i--help-scp-os-main-scp-os-main\\\\d03acaf2-18b7-4b0a-be3b-d16794cd2552\\\\tasks\\\\bavojqezc.output' -ErrorAction SilentlyContinue\")",
+      "Bash(git branch *)",
+      "Bash(xargs -I {} git branch -D \"{}\")"
     ]
   }
 }

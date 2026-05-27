@@ -19,18 +19,7 @@
             </svg>
             {{ fileName }}
           </div>
-          <button class="audio-player__close-btn" @click="close">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M5 5l10 10M15 5L5 15" />
-            </svg>
-          </button>
+          <WindowCloseButton class="audio-player__close-btn" aria-label="Close" @click="close" />
         </div>
 
         <!-- Audio Player -->
@@ -78,6 +67,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, nextTick } from 'vue'
 import { filesystem } from '../../../utils/filesystem'
+import WindowCloseButton from '../../components/WindowCloseButton.vue'
 
 interface Props {
   visible: boolean
@@ -203,25 +193,6 @@ function close() {
   font-size: 15px;
   font-weight: 600;
   color: var(--gui-text-primary, #ffffff);
-}
-
-.audio-player__close-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  border: none;
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
-  color: var(--gui-text-primary, #ffffff);
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.audio-player__close-btn:active {
-  opacity: 0.7;
 }
 
 /* ── Body ───────────────────────────────────────────────────────────── */

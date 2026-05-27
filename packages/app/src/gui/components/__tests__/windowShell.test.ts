@@ -6,6 +6,8 @@ import PCWindow from '../PCWindow.vue'
 import PCWindowSource from '../PCWindow.vue?raw'
 import SCPWindow from '../SCPWindow.vue'
 import SCPWindowSource from '../SCPWindow.vue?raw'
+import WindowCaptionControlsSource from '../WindowCaptionControls.vue?raw'
+import WindowCloseButtonSource from '../WindowCloseButton.vue?raw'
 import { useWindowManagerStore } from '../../stores/windowManager'
 import type { WindowInstance } from '../../types'
 
@@ -22,6 +24,19 @@ const toolWindowSources = import.meta.glob('../../tools/**/*.vue', {
   import: 'default',
   eager: true,
 }) as Record<string, string>
+const desktopToolWindowSuffixes = [
+  '/terminal/TerminalPanel.vue',
+  '/filemanager/FileManagerWindow.vue',
+  '/editor/EditorWindow.vue',
+  '/settings/SettingsWindow.vue',
+  '/appmanager/AppManagerWindow.vue',
+  '/chat/PCChatWindow.vue',
+  '/dash/PCDashboard.vue',
+  '/feedback/PCFeedbackWindow.vue',
+  '/docs/PCDocsWindow.vue',
+  '/notification/PCNotificationCenter.vue',
+  '/admin/AdminLayout.vue',
+]
 let pinia: ReturnType<typeof createPinia>
 
 function setViewport(width: number, height: number) {
@@ -46,6 +61,29 @@ function openShellWindow(id: string): WindowInstance {
     maximizable: true,
     closable: true,
   })
+}
+
+function openShellWindowWithDefaultCapabilities(id: string): WindowInstance {
+  const store = useWindowManagerStore()
+  return store.openWindow({
+    id,
+    tool: 'terminal',
+    title: 'Default Controls Window',
+    width: 500,
+    height: 320,
+    minWidth: 240,
+    minHeight: 180,
+    x: 200,
+    y: 120,
+  })
+}
+
+function getToolWindowSourceBySuffix(suffix: string) {
+  const match = Object.entries(toolWindowSources).find(([file]) =>
+    file.replace(/\\/g, '/').endsWith(suffix)
+  )
+  expect(match, `Missing desktop tool source ending with ${suffix}`).toBeDefined()
+  return match?.[1] ?? ''
 }
 
 async function dragThenResizeFromBottomRight(
@@ -81,30 +119,57 @@ describe('desktop window shells', () => {
   it.each([
     ['PCWindow', PCWindow, { header: '.pc-window__header', resize: '.pc-window__resize--se' }],
     ['SCPWindow', SCPWindow, { header: '.scp-window__header', resize: '.scp-window__resize--se' }],
-  ])('%s keeps the moved origin when resizing immediately after a drag', async (name, component, selectors) => {
-    const store = useWindowManagerStore()
-    const windowInstance = openShellWindow(`${name}-drag-resize`)
+  ])(
+    '%s keeps the moved origin when resizing immediately after a drag',
+    async (name, component, selectors) => {
+      const store = useWindowManagerStore()
+      const windowInstance = openShellWindow(`${name}-drag-resize`)
+      const wrapper = mount(component, {
+        props: { windowInstance },
+        global: { plugins: [pinia] },
+      })
+
+      await dragThenResizeFromBottomRight(wrapper, selectors)
+
+      const win = store.getWindow(`${name}-drag-resize`)
+      expect(win?.position).toEqual({ x: 280, y: 160 })
+      expect(win?.size).toEqual({ width: 540, height: 360 })
+    }
+  )
+
+  it('routes window shells through the shared Windows caption controls', () => {
+    for (const source of [PCWindowSource, SCPWindowSource]) {
+      expect(source).toContain('<WindowCaptionControls')
+      expect(source).toContain('minimizable !== false')
+      expect(source).toContain('maximizable !== false')
+      expect(source).toContain('closable !== false')
+      expect(source).not.toContain('__header-actions')
+      expect(source).not.toContain('__btn--icon')
+      expect(source).not.toContain('__btn--close')
+      expect(source).not.toMatch(/__header\s*{[^}]*padding:\s*0\s+var\(/s)
+      expect(source).not.toMatch(/__header\s*{[^}]*padding:\s*0\s+\d+px/s)
+    }
+
+    expect(WindowCaptionControlsSource).toContain('@mousedown.stop')
+    expect(WindowCaptionControlsSource).toContain('margin-right: -1px')
+    expect(WindowCaptionControlsSource).toContain('height: calc(100% + 1px)')
+    expect(WindowCaptionControlsSource).toContain('<WindowCloseButton')
+    expect(WindowCloseButtonSource).toContain('class="window-close-button"')
+    expect(WindowCloseButtonSource).not.toContain('<style')
+  })
+
+  it.each([
+    ['PCWindow', PCWindow],
+    ['SCPWindow', SCPWindow],
+  ])('%s renders the full caption button set when capabilities are omitted', (name, component) => {
+    const windowInstance = openShellWindowWithDefaultCapabilities(`${name}-default-controls`)
     const wrapper = mount(component, {
       props: { windowInstance },
       global: { plugins: [pinia] },
     })
 
-    await dragThenResizeFromBottomRight(wrapper, selectors)
-
-    const win = store.getWindow(`${name}-drag-resize`)
-    expect(win?.position).toEqual({ x: 280, y: 160 })
-    expect(win?.size).toEqual({ width: 540, height: 360 })
-  })
-
-  it('keeps close buttons as the rightmost caption button without their own corner radius', () => {
-    for (const source of [PCWindowSource, SCPWindowSource]) {
-      expect(source).toContain('__header-actions" @mousedown.stop')
-      expect(source).toContain('margin-right: -1px')
-      expect(source).toContain('height: calc(100% + 1px)')
-      expect(source).not.toMatch(/__btn--close\s*{[^}]*border-top-right-radius/s)
-      expect(source).not.toMatch(/__header\s*{[^}]*padding:\s*0\s+var\(/s)
-      expect(source).not.toMatch(/__header\s*{[^}]*padding:\s*0\s+\d+px/s)
-    }
+    expect(wrapper.findAll('.window-caption-controls__button')).toHaveLength(2)
+    expect(wrapper.findAll('.window-close-button')).toHaveLength(1)
   })
 
   it('uses the managed window instance for every desktop tool window shell', () => {
@@ -117,5 +182,27 @@ describe('desktop window shells', () => {
 
     expect(oldPcWindowCalls).toEqual([])
     expect(oldScpWindowCalls).toEqual([])
+  })
+
+  it('keeps every registered desktop app on a shared window shell', () => {
+    for (const suffix of desktopToolWindowSuffixes) {
+      const source = getToolWindowSourceBySuffix(suffix)
+      if (suffix === '/admin/AdminLayout.vue') {
+        expect(source).toContain('PCWindow')
+        expect(source).toContain('windowInstance')
+      } else {
+        expect(source).toMatch(/<(PCWindow|SCPWindow)\b/)
+      }
+    }
+  })
+
+  it('does not use the legacy global close style in app windows or tool modals', () => {
+    const legacyUses = Object.entries(toolWindowSources)
+      .filter(([, source]) => source.includes('win-caption-close'))
+      .map(([file]) => file)
+
+    expect(legacyUses).toEqual([])
+    expect(PCWindowSource).not.toContain('win-caption-close')
+    expect(SCPWindowSource).not.toContain('win-caption-close')
   })
 })
