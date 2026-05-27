@@ -651,7 +651,11 @@ const ws = useChatWebSocket({
     }
     // Re-append pending optimistic messages not yet in history
     for (const p of pending) {
-      if (!messages.some((m) => m.tempId === p.tempId || (m.content === p.content && m.user_id === p.user_id))) {
+      if (
+        !messages.some(
+          (m) => m.tempId === p.tempId || (m.content === p.content && m.user_id === p.user_id)
+        )
+      ) {
         messages.push(p)
       }
     }

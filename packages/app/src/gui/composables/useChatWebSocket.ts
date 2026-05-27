@@ -182,7 +182,9 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
       ws.onclose = null
       ws.onerror = null
       ws.onmessage = null
-      try { ws.close(1000) } catch {}
+      try {
+        ws.close(1000)
+      } catch {}
       ws = null
     }
     stopHeartbeat()
