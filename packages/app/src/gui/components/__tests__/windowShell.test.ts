@@ -155,7 +155,7 @@ describe('desktop window shells', () => {
     expect(WindowCaptionControlsSource).toContain('height: calc(100% + 1px)')
     expect(WindowCaptionControlsSource).toContain('<WindowCloseButton')
     expect(WindowCloseButtonSource).toContain('class="window-close-button"')
-    expect(WindowCloseButtonSource).not.toContain('<style')
+    expect(WindowCloseButtonSource).toContain('<style')
   })
 
   it.each([
