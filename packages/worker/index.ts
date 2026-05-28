@@ -8,6 +8,17 @@ export { ChatRoomDO }
 
 const app = createApp()
 
+const API_PATH_PREFIXES = [
+  '/scrape', '/search', '/list', '/stats', '/debug', '/image-proxy',
+  '/chat', '/feedback', '/v1/', '/api/', '/performance',
+  '/docs', '/notifications', '/admin',
+]
+
+function isApiPath(path: string): boolean {
+  if (path === '/') return true
+  return API_PATH_PREFIXES.some(prefix => path.startsWith(prefix))
+}
+
 export default {
   fetch(request: Request, env: Env, ctx: ExecutionContext): Response | Promise<Response> {
     if (isChatSocket(request)) {
