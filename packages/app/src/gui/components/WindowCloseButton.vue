@@ -7,8 +7,8 @@
     :aria-label="ariaLabel ?? title ?? 'Close'"
     @click.stop="emit('click', $event)"
   >
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-      <path d="M1 1L9 9M9 1L1 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M2.5 2.5L9.5 9.5M9.5 2.5L2.5 9.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
     </svg>
   </button>
 </template>
@@ -62,8 +62,18 @@ const emit = defineEmits<{
 }
 
 .window-close-button svg {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   pointer-events: none;
+}
+
+.window-close-button--caption:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #ffffff);
+}
+
+.window-close-button--caption:active {
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.12));
+  opacity: 1;
 }
 </style>
