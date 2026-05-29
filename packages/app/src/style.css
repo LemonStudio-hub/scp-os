@@ -2,6 +2,10 @@
 @import 'xterm/css/xterm.css';
 @import './gui/konsta/ios.css';
 
+* {
+  cursor: none !important;
+}
+
 @theme {
   --radius-squircle-xs: 3px;
   --radius-squircle-sm: 6px;
