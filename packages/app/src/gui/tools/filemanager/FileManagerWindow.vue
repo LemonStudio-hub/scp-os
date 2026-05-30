@@ -467,7 +467,17 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { t, fmStore, fileInputRef, formatSize, onFileUpload: baseOnFileUpload, createFile, createFolder, renameFile, deleteFile } = useFileManagerOps()
+const {
+  t,
+  fmStore,
+  fileInputRef,
+  formatSize,
+  onFileUpload: baseOnFileUpload,
+  createFile,
+  createFolder,
+  renameFile,
+  deleteFile,
+} = useFileManagerOps()
 
 setFileManagerI18n({ t })
 

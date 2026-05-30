@@ -5,7 +5,18 @@ const MAX_HANDLE_CACHE = 20
 
 interface WorkerRequest {
   id: string
-  type: 'init' | 'saveMeta' | 'loadMeta' | 'saveFile' | 'loadFile' | 'deleteFile' | 'hasFile' | 'flush' | 'reset' | 'estimate' | 'destroy'
+  type:
+    | 'init'
+    | 'saveMeta'
+    | 'loadMeta'
+    | 'saveFile'
+    | 'loadFile'
+    | 'deleteFile'
+    | 'hasFile'
+    | 'flush'
+    | 'reset'
+    | 'estimate'
+    | 'destroy'
   payload?: unknown
 }
 
@@ -57,7 +68,11 @@ function evictOldestHandle(): void {
   if (oldestKey) {
     const entry = handleCache.get(oldestKey)
     if (entry) {
-      try { entry.handle.close() } catch { /* ignore */ }
+      try {
+        entry.handle.close()
+      } catch {
+        /* ignore */
+      }
       handleCache.delete(oldestKey)
     }
   }
@@ -85,7 +100,11 @@ function closeFileHandle(fileName: string): void {
   const key = getHandleCacheKey(fileName)
   const entry = handleCache.get(key)
   if (entry) {
-    try { entry.handle.close() } catch { /* ignore */ }
+    try {
+      entry.handle.close()
+    } catch {
+      /* ignore */
+    }
     handleCache.delete(key)
   }
 }
@@ -202,25 +221,39 @@ async function handleFlush(): Promise<void> {
     metaHandle.flush()
   }
   for (const [, entry] of handleCache) {
-    try { entry.handle.flush() } catch { /* ignore */ }
+    try {
+      entry.handle.flush()
+    } catch {
+      /* ignore */
+    }
   }
 }
 
 async function handleReset(): Promise<void> {
   if (metaHandle) {
-    try { metaHandle.close() } catch { /* ignore */ }
+    try {
+      metaHandle.close()
+    } catch {
+      /* ignore */
+    }
     metaHandle = null
   }
 
   for (const [, entry] of handleCache) {
-    try { entry.handle.close() } catch { /* ignore */ }
+    try {
+      entry.handle.close()
+    } catch {
+      /* ignore */
+    }
   }
   handleCache.clear()
 
   if (fsDir) {
     try {
       await fsDir.removeEntry(META_FILE)
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     try {
       const contentHandle = await fsDir.getDirectoryHandle(CONTENT_DIR)
@@ -228,11 +261,17 @@ async function handleReset(): Promise<void> {
       for await (const [name] of entries) {
         await contentHandle.removeEntry(name)
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 }
 
-async function handleEstimate(): Promise<{ usage: number; quota: number; usagePercent: number } | null> {
+async function handleEstimate(): Promise<{
+  usage: number
+  quota: number
+  usagePercent: number
+} | null> {
   try {
     const estimate = await navigator.storage.estimate()
     const usage = estimate.usage ?? 0
@@ -249,12 +288,20 @@ async function handleEstimate(): Promise<{ usage: number; quota: number; usagePe
 
 function handleDestroy(): void {
   if (metaHandle) {
-    try { metaHandle.close() } catch { /* ignore */ }
+    try {
+      metaHandle.close()
+    } catch {
+      /* ignore */
+    }
     metaHandle = null
   }
 
   for (const [, entry] of handleCache) {
-    try { entry.handle.close() } catch { /* ignore */ }
+    try {
+      entry.handle.close()
+    } catch {
+      /* ignore */
+    }
   }
   handleCache.clear()
 

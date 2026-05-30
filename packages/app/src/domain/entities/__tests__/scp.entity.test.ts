@@ -2,16 +2,17 @@ import { describe, it, expect } from 'vitest'
 import { SCPEntity } from '../scp.entity'
 
 describe('SCPEntity', () => {
-  const createEntity = (overrides = {}) => new SCPEntity({
-    id: 'SCP-173',
-    name: 'The Sculpture',
-    class: 'Euclid',
-    site: 'Site-19',
-    description: 'A concrete sculpture',
-    containmentProcedures: ['Keep in locked container'],
-    warningLevel: 'high',
-    ...overrides,
-  })
+  const createEntity = (overrides = {}) =>
+    new SCPEntity({
+      id: 'SCP-173',
+      name: 'The Sculpture',
+      class: 'Euclid',
+      site: 'Site-19',
+      description: 'A concrete sculpture',
+      containmentProcedures: ['Keep in locked container'],
+      warningLevel: 'high',
+      ...overrides,
+    })
 
   describe('isSafe', () => {
     it('returns true for Safe class', () => {
@@ -36,13 +37,19 @@ describe('SCPEntity', () => {
 
   describe('isExtremelyDangerous', () => {
     it('returns true for Keter class', () => {
-      expect(createEntity({ class: 'Keter', warningLevel: 'low' }).isExtremelyDangerous()).toBe(true)
+      expect(createEntity({ class: 'Keter', warningLevel: 'low' }).isExtremelyDangerous()).toBe(
+        true
+      )
     })
     it('returns true for extreme warning level', () => {
-      expect(createEntity({ class: 'Safe', warningLevel: 'extreme' }).isExtremelyDangerous()).toBe(true)
+      expect(createEntity({ class: 'Safe', warningLevel: 'extreme' }).isExtremelyDangerous()).toBe(
+        true
+      )
     })
     it('returns false for Safe with low warning', () => {
-      expect(createEntity({ class: 'Safe', warningLevel: 'low' }).isExtremelyDangerous()).toBe(false)
+      expect(createEntity({ class: 'Safe', warningLevel: 'low' }).isExtremelyDangerous()).toBe(
+        false
+      )
     })
   })
 

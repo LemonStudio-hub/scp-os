@@ -125,7 +125,10 @@ class OPFSStorage {
 
   private cache = new LRUCache(MAX_CACHE_ENTRIES, MAX_CACHE_BYTES)
   private pendingTimers = new Map<string, ReturnType<typeof setTimeout>>()
-  private pendingWriteResolvers = new Map<string, { resolve: () => void; reject: (err: Error) => void }[]>()
+  private pendingWriteResolvers = new Map<
+    string,
+    { resolve: () => void; reject: (err: Error) => void }[]
+  >()
   private metaSaveTimer: ReturnType<typeof setTimeout> | null = null
   private pendingMeta: { root: unknown; currentPath: string[] } | null = null
   private metaSaveResolvers: { resolve: () => void; reject: (err: Error) => void }[] = []
@@ -324,7 +327,10 @@ class OPFSStorage {
     this.metrics.readCount++
 
     try {
-      const result = await this.sendRequest<{ root: unknown; currentPath: string[] } | null>('loadMeta', undefined)
+      const result = await this.sendRequest<{ root: unknown; currentPath: string[] } | null>(
+        'loadMeta',
+        undefined
+      )
       if (result) {
         const json = JSON.stringify(result)
         this.metrics.totalReadBytes += json.length
@@ -413,13 +419,15 @@ class OPFSStorage {
         const content = this.cache.get(key) || ''
         const virtualPath = key.replace(/__/g, '/')
         flushPromises.push(
-          this.sendRequest('saveFile', { path: virtualPath, content }).then(() => {
-            this.metrics.writeCount++
-            this.metrics.totalWriteBytes += content.length
-            for (const r of resolvers) r.resolve()
-          }).catch((err) => {
-            for (const r of resolvers) r.reject(err)
-          })
+          this.sendRequest('saveFile', { path: virtualPath, content })
+            .then(() => {
+              this.metrics.writeCount++
+              this.metrics.totalWriteBytes += content.length
+              for (const r of resolvers) r.resolve()
+            })
+            .catch((err) => {
+              for (const r of resolvers) r.reject(err)
+            })
         )
         this.pendingWriteResolvers.delete(key)
       }
@@ -538,7 +546,9 @@ class OPFSStorage {
   }
 
   isSupported(): boolean {
-    return typeof Worker !== 'undefined' && Boolean(navigator.storage && navigator.storage.getDirectory)
+    return (
+      typeof Worker !== 'undefined' && Boolean(navigator.storage && navigator.storage.getDirectory)
+    )
   }
 
   async destroy(): Promise<void> {

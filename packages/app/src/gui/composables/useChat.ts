@@ -364,8 +364,7 @@ export function useChat() {
     const date = new Date(dateStr)
     const now = new Date()
     const diff = now.getTime() - date.getTime()
-    if (diff < 86400000)
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    if (diff < 86400000) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     if (diff < 604800000) return date.toLocaleDateString([], { weekday: 'short' })
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
   }

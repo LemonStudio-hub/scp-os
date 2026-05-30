@@ -183,7 +183,17 @@ interface Props {
 defineProps<Props>()
 const emit = defineEmits<{ close: [] }>()
 
-const { t, store, showPrefs, prefItems, typeLabel, formatTimeAgo, handleClick: baseHandleClick, markAllRead, togglePref } = useNotificationCenter()
+const {
+  t,
+  store,
+  showPrefs,
+  prefItems,
+  typeLabel,
+  formatTimeAgo,
+  handleClick: baseHandleClick,
+  markAllRead,
+  togglePref,
+} = useNotificationCenter()
 
 async function handleClick(item: any): Promise<void> {
   await baseHandleClick(item)

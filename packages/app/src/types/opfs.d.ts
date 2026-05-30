@@ -33,7 +33,10 @@ interface FileSystemRemoveOptions {
 
 interface FileSystemDirectoryHandle {
   getFileHandle(name: string, options?: FileSystemGetFileOptions): Promise<FileSystemFileHandle>
-  getDirectoryHandle(name: string, options?: FileSystemGetDirectoryOptions): Promise<FileSystemDirectoryHandle>
+  getDirectoryHandle(
+    name: string,
+    options?: FileSystemGetDirectoryOptions
+  ): Promise<FileSystemDirectoryHandle>
   removeEntry(name: string, options?: FileSystemRemoveOptions): Promise<void>
   entries(): AsyncIterableIterator<[string, FileSystemHandle]>
   keys(): AsyncIterableIterator<string>

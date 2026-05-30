@@ -351,7 +351,18 @@ interface ContextAction {
 defineProps<Props>()
 defineEmits<{ close: [] }>()
 
-const { t, fmStore, fileInputRef, formatSize, triggerUpload, onFileUpload: baseOnFileUpload, createFile, createFolder, renameFile, deleteFile } = useFileManagerOps()
+const {
+  t,
+  fmStore,
+  fileInputRef,
+  formatSize,
+  triggerUpload,
+  onFileUpload: baseOnFileUpload,
+  createFile,
+  createFolder,
+  renameFile,
+  deleteFile,
+} = useFileManagerOps()
 
 // Suppress TypeScript warning - fileInputRef is used in template
 void fileInputRef

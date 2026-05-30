@@ -151,7 +151,17 @@ interface Props {
 defineProps<Props>()
 defineEmits<{ close: [] }>()
 
-const { t, store, showPrefs, prefItems, typeLabel, formatTimeAgo, handleClick, markAllRead, togglePref } = useNotificationCenter()
+const {
+  t,
+  store,
+  showPrefs,
+  prefItems,
+  typeLabel,
+  formatTimeAgo,
+  handleClick,
+  markAllRead,
+  togglePref,
+} = useNotificationCenter()
 </script>
 
 <style scoped>

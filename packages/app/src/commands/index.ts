@@ -318,7 +318,11 @@ export const commandHandlers: CommandMap = {
 
         // 检查中文分部结果是否有效（非空内容）
         const cnData = cnResult.data
-        const cnIsEmpty = cnData && cnData.objectClass === 'UNKNOWN' && cnData.containment.length === 0 && cnData.description.length === 0
+        const cnIsEmpty =
+          cnData &&
+          cnData.objectClass === 'UNKNOWN' &&
+          cnData.containment.length === 0 &&
+          cnData.description.length === 0
 
         if (cnResult.success && cnData && !cnIsEmpty) {
           if (cnResult.cached) {

@@ -7,8 +7,21 @@ export const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'i
 export const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
 export const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
 export const TEXT_EXTS = [
-  'txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml',
-  'js', 'ts', 'css', 'html', 'vue', 'py', 'sh', 'desktop',
+  'txt',
+  'md',
+  'log',
+  'json',
+  'xml',
+  'yml',
+  'yaml',
+  'js',
+  'ts',
+  'css',
+  'html',
+  'vue',
+  'py',
+  'sh',
+  'desktop',
 ]
 
 export function formatSize(bytes: number): string {
