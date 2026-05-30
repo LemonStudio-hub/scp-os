@@ -23,10 +23,6 @@ database_name = "scp-reader-db"
 database_id = "03f2e67c-a50d-4db5-ae72-1612dd9090d9"
 migrations_dir = "migrations"
 
-[[r2_buckets]]
-binding = "SCP_FILES"
-bucket_name = "scp-os-files"
-
 [[kv_namespaces]]
 binding = "SCP_CACHE"
 id = "c3296c65b63f4b99af6fd2e957d2932e"
@@ -59,10 +55,6 @@ database_name = "scp-reader-db"
 database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
 migrations_dir = "migrations"
 
-[[env.production.r2_buckets]]
-binding = "SCP_FILES"
-bucket_name = "scp-os-files"
-
 [[env.production.kv_namespaces]]
 binding = "SCP_CACHE"
 id = "40f0d23a05e14f7484232bc1960e217f"
@@ -87,10 +79,6 @@ binding = "SCP_READER_DB"
 database_name = "scp-reader-db-dev"
 database_id = "local-dev-scp-reader-db"
 migrations_dir = "migrations"
-
-[[env.development.r2_buckets]]
-binding = "SCP_FILES"
-bucket_name = "scp-os-files"
 
 [[env.development.kv_namespaces]]
 binding = "SCP_CACHE"

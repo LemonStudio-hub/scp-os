@@ -24,7 +24,6 @@ const env = {
   SCP_DB: db(),
   SCP_READER_DB: db(),
   CHAT_ROOM_DO: {} as DurableObjectNamespace,
-  SCP_FILES: {} as R2Bucket,
   JWT_SECRET: 'test-secret',
   ADMIN_JWT_SECRET: 'admin-secret',
 } satisfies Env
