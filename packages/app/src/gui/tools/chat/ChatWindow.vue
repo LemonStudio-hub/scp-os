@@ -389,6 +389,7 @@ import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
 import { useChatWebSocket, type WSChatMessage } from '../../composables/useChatWebSocket'
+import { dialogService } from '../../composables/useDialog'
 
 interface Props {
   visible: boolean
@@ -772,10 +773,10 @@ function confirmEdit() {
   }
 }
 
-function startDelete(msg: ChatMessage | null) {
+async function startDelete(msg: ChatMessage | null) {
   showActionSheet.value = false
   if (!msg || !msg.id) return
-  if (!confirm(t('chat.confirmDelete'))) return
+  if (!(await dialogService.confirm(t('chat.confirmDelete')))) return
   ws.deleteMessage(msg.id)
 }
 

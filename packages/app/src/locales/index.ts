@@ -473,6 +473,8 @@ export const en = {
   'fm.columnView': 'Column',
   'fm.detailView': 'Detail',
   'fm.upload': 'Upload',
+  'fm.create': 'Create',
+  'fm.syncCloud': 'Sync from Cloud',
 
   // ── Performance Dashboard ───────────────────────────────────────────
   'perf.realtimeMetrics': 'Real-time Metrics',
@@ -1082,6 +1084,8 @@ export const zhCN: Record<string, string> = {
   'fm.columnView': '分栏',
   'fm.detailView': '详细',
   'fm.upload': '上传',
+  'fm.create': '创建',
+  'fm.syncCloud': '从云端同步',
 
   // ── Performance Dashboard ───────────────────────────────────────────
   'perf.realtimeMetrics': '实时指标',

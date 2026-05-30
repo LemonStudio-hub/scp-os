@@ -45,140 +45,79 @@
             class="mobile-file-manager__file-input"
             @change="onFileUpload"
           />
-          <button
-            class="mobile-file-manager__action-btn"
-            :title="t('fm.dropFiles')"
-            @click="triggerUpload"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M9 12V3M9 3L6 6M9 3l3 3" />
-              <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
+          <!-- Upload -->
+          <button class="mobile-file-manager__action-btn" :title="t('fm.dropFiles')" @click="triggerUpload">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 15V4"/>
+              <path d="M8 8l4-4 4 4"/>
+              <path d="M4 18h16"/>
             </svg>
           </button>
-          <button
-            class="mobile-file-manager__action-btn"
-            :title="t('fm.syncCloud') || 'Sync from cloud'"
-            :disabled="cloudSyncing"
-            @click="syncFromCloud"
-          >
-            <svg
-              v-if="!cloudSyncing"
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M1 4h16M1 4l3-3M1 4l3 3M17 14H1M17 14l-3 3M17 14l-3-3" />
+          <!-- Sync from cloud -->
+          <button class="mobile-file-manager__action-btn" :title="t('fm.syncCloud')" :disabled="cloudSyncing" @click="syncFromCloud">
+            <svg v-if="!cloudSyncing" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.5 8.5A5.5 5.5 0 008.2 7.2 4 4 0 108.5 15H17a3.5 3.5 0 00.5-7z"/>
+              <path d="M12 21v-7"/>
+              <path d="M9 17l3 4 3-4"/>
             </svg>
             <div v-else class="mobile-file-manager__spinner" />
           </button>
-          <button
-            class="mobile-file-manager__action-btn"
-            :title="t('fm.newFile')"
-            @click="createNewFile"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M10 1H4a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V5z" />
-              <path d="M10 1v4h4" />
-              <path d="M9 9v6M6 12h6" />
+          <!-- New File -->
+          <button class="mobile-file-manager__action-btn" :title="t('fm.newFile')" @click="createNewFile">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="12" x2="12" y2="18"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
           </button>
-          <button
-            class="mobile-file-manager__action-btn"
-            :title="t('fm.newFolder')"
-            @click="createNewFolder"
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M1 5V15h16V5H1z" />
-              <path d="M1 5l3-3h6l2 2" />
-              <path d="M9 9v6M6 12h6" />
+          <!-- New Folder -->
+          <button class="mobile-file-manager__action-btn" :title="t('fm.newFolder')" @click="createNewFolder">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 8a2 2 0 012-2h4.17a2 2 0 011.42.59L12 8h7a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              <line x1="12" y1="12" x2="12" y2="18"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
           </button>
+          <!-- Show / hide hidden files -->
           <button
             class="mobile-file-manager__action-btn"
             :class="{ 'mobile-file-manager__action-btn--active': fmStore.showHidden }"
-            :title="fmStore.showHidden ? 'Hide hidden files' : 'Show hidden files'"
+            :title="fmStore.showHidden ? '隐藏隐藏文件' : '显示隐藏文件'"
             @click="fmStore.toggleShowHidden"
           >
-            <svg
-              v-if="!fmStore.showHidden"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-              <circle cx="12" cy="12" r="3" />
+            <svg v-if="!fmStore.showHidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
+              <circle cx="12" cy="12" r="3"/>
             </svg>
-            <svg
-              v-else
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path
-                d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
-              />
-              <line x1="1" y1="1" x2="23" y2="23" />
+            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="3" x2="21" y2="21"/>
+              <path d="M10.6 5.6A9.7 9.7 0 0122 12s-1.7 3.8-4.7 5.8"/>
+              <path d="M6.1 6.1A10.5 10.5 0 002 12s4 7 10 7a9.7 9.7 0 005.9-2"/>
+              <path d="M9.2 9.2a3 3 0 004.6 4.6"/>
             </svg>
           </button>
+          <!-- Grid / List toggle -->
           <button
             class="mobile-file-manager__action-btn"
-            :title="mobileViewMode === 'grid' ? 'List view' : 'Grid view'"
+            :title="mobileViewMode === 'grid' ? t('fm.listView') : t('fm.gridView')"
             @click="mobileViewMode = mobileViewMode === 'grid' ? 'list' : 'grid'"
           >
-            <svg
-              v-if="mobileViewMode === 'grid'"
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <path d="M2 4h14M2 9h14M2 14h14" />
+            <!-- List icon (shown when in grid mode) -->
+            <svg v-if="mobileViewMode === 'grid'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+              <line x1="9" y1="6" x2="20" y2="6"/>
+              <line x1="9" y1="12" x2="20" y2="12"/>
+              <line x1="9" y1="18" x2="20" y2="18"/>
+              <circle cx="4.5" cy="6" r="1.5" fill="currentColor" stroke="none"/>
+              <circle cx="4.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+              <circle cx="4.5" cy="18" r="1.5" fill="currentColor" stroke="none"/>
             </svg>
-            <svg
-              v-else
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            >
-              <rect x="2" y="2" width="5" height="5" rx="1" />
-              <rect x="11" y="2" width="5" height="5" rx="1" />
-              <rect x="2" y="11" width="5" height="5" rx="1" />
-              <rect x="11" y="11" width="5" height="5" rx="1" />
+            <!-- Grid icon (shown when in list mode) -->
+            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
             </svg>
           </button>
         </div>
@@ -1184,6 +1123,8 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .mobile-file-manager__item:active {

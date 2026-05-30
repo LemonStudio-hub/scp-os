@@ -1198,6 +1198,8 @@ function openAudio(file: FileItem): void {
   cursor: pointer;
   transition: all var(--gui-transition-fast, 120ms cubic-bezier(0.4, 0, 0.2, 1));
   text-align: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .file-grid-item:hover {

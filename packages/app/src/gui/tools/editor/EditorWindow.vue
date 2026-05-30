@@ -347,6 +347,7 @@ import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useTextEditorStore } from '../../stores/textEditor'
 import { registerShortcut, setContext } from '../../composables/useKeyboardShortcuts'
 import { useI18n } from '../../composables/useI18n'
+import { dialogService } from '../../composables/useDialog'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -689,10 +690,10 @@ async function saveAll(): Promise<void> {
   await editorStore.saveAll()
 }
 
-function onCloseFile(fileId: string): void {
+async function onCloseFile(fileId: string): Promise<void> {
   const file = editorStore.openFiles.find((f) => f.id === fileId)
   if (file?.dirty) {
-    if (!confirm(t('editor.unsavedChanges', { name: file.name }))) {
+    if (!(await dialogService.confirm(t('editor.unsavedChanges', { name: file.name })))) {
       return
     }
   }

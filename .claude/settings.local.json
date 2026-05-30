@@ -130,7 +130,8 @@
       "Bash(taskkill /F /PID 34296)",
       "Bash(findstr \":5173\\\\|:5174\\\\|:5175\")",
       "Bash(findstr \"LISTENING\")",
-      "Bash(python -c \"import sys,json; runs=json.load\\(sys.stdin\\)['workflow_runs']; [print\\(f\\\\\"{r['id']} | {r['head_sha'][:7]} | {r['status']} | {r['conclusion'] or 'pending'} | {r['display_title'][:50]}\\\\\"\\) for r in runs]\")"
+      "Bash(python -c \"import sys,json; runs=json.load\\(sys.stdin\\)['workflow_runs']; [print\\(f\\\\\"{r['id']} | {r['head_sha'][:7]} | {r['status']} | {r['conclusion'] or 'pending'} | {r['display_title'][:50]}\\\\\"\\) for r in runs]\")",
+      "mcp__Claude_Preview__preview_start"
     ]
   }
 }

@@ -111,6 +111,7 @@ export default defineConfig({
   server: {
     port: 37291,
     strictPort: true,
+    host: true,
     headers: {
       'Cache-Control': 'public, max-age=31536000',
       'X-Content-Type-Options': 'nosniff',

@@ -522,6 +522,7 @@ import { useChatWebSocket, type WSChatMessage } from '../../composables/useChatW
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
 import indexedDBService from '../../../utils/indexedDB'
+import { dialogService } from '../../composables/useDialog'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -960,10 +961,10 @@ function confirmEdit() {
   }
 }
 
-function startDelete(msg: ChatMessage | null) {
+async function startDelete(msg: ChatMessage | null) {
   showContextMenu.value = false
   if (!msg || !msg.id) return
-  if (!confirm(t('chat.confirmDelete'))) return
+  if (!(await dialogService.confirm(t('chat.confirmDelete')))) return
   ws.deleteMessage(msg.id)
 }
 
@@ -1077,7 +1078,7 @@ async function saveRoomSettings() {
 
 async function deleteRoom() {
   if (!currentRoom.value) return
-  if (!confirm('Are you sure you want to delete this room?')) return
+  if (!(await dialogService.confirm('Are you sure you want to delete this room?'))) return
   deletingRoom.value = true
   const roomIndex = rooms.findIndex((r) => r.id === currentRoom.value?.id)
   const deletedRoom = roomIndex !== -1 ? rooms[roomIndex] : null

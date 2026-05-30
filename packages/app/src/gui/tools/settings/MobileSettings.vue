@@ -467,6 +467,13 @@
       <!-- Font Size Slider Sheet -->
       <Sheet v-model:visible="sliderSheets.fontSize">
         <div class="settings-slider-sheet">
+          <div class="settings-slider-sheet__header">
+            <span class="settings-slider-sheet__spacer" />
+            <span class="settings-slider-sheet__title">{{ t('settings.fontSize') }}</span>
+            <button class="settings-slider-sheet__close" @click="onFontSizeChange(); sliderSheets.fontSize = false">
+              完成
+            </button>
+          </div>
           <div
             class="settings-slider-sheet__preview"
             :style="{ fontSize: `${sliderValues.fontSize}px` }"
@@ -689,8 +696,18 @@ function getActiveTerminal() {
 }
 
 function applySettings(): void {
-  const terminal = getActiveTerminal()
+  // Apply font size scaling to global CSS variables
+  const scale = settings.fontSize / 14
+  const root = document.documentElement
+  root.style.setProperty('--gui-font-xs',   `${Math.round(11 * scale)}px`)
+  root.style.setProperty('--gui-font-sm',   `${Math.round(12 * scale)}px`)
+  root.style.setProperty('--gui-font-base', `${Math.round(13 * scale)}px`)
+  root.style.setProperty('--gui-font-md',   `${Math.round(14 * scale)}px`)
+  root.style.setProperty('--gui-font-lg',   `${Math.round(15 * scale)}px`)
+  root.style.setProperty('--gui-font-xl',   `${Math.round(17 * scale)}px`)
 
+  // Apply terminal font size
+  const terminal = getActiveTerminal()
   if (settings.fontSize !== prevFontSize && terminal) {
     terminalStore.fontSize = settings.fontSize
     try {
@@ -975,6 +992,44 @@ function formatBytes(bytes: number): string {
   flex-direction: column;
   align-items: center;
   gap: var(--gui-spacing-md, 12px);
+}
+
+.settings-slider-sheet__header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: var(--gui-spacing-lg, 20px);
+}
+
+.settings-slider-sheet__spacer {
+  flex: 1;
+}
+
+.settings-slider-sheet__title {
+  flex: 0;
+  font-size: var(--gui-font-base, 13px);
+  font-weight: 600;
+  color: var(--gui-text-primary, #ffffff);
+  white-space: nowrap;
+}
+
+.settings-slider-sheet__close {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--gui-font-base, 13px);
+  font-weight: 500;
+  color: var(--gui-accent, #0a84ff);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 100ms ease;
+}
+
+.settings-slider-sheet__close:active {
+  opacity: 0.5;
 }
 
 .settings-slider-sheet__preview {

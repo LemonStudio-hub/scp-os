@@ -94,12 +94,19 @@ function onLeave() {
   y.value = -200
 }
 
+// pointer:fine = mouse/trackpad (PC), pointer:coarse = touch-only (phone/tablet)
+const isTouch = typeof window !== 'undefined'
+  ? !window.matchMedia('(pointer: fine)').matches
+  : false
+
 onMounted(() => {
+  if (isTouch) return
   document.addEventListener('mousemove', onMouseMove)
   document.documentElement.addEventListener('mouseleave', onLeave)
 })
 
 onUnmounted(() => {
+  if (isTouch) return
   document.removeEventListener('mousemove', onMouseMove)
   document.documentElement.removeEventListener('mouseleave', onLeave)
 })

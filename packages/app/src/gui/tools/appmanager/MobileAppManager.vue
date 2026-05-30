@@ -41,6 +41,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useI18n } from '../../composables/useI18n'
+import { dialogService } from '../../composables/useDialog'
 import { useWindowManagerStore } from '../../stores/windowManager'
 import type { ToolType } from '../../types'
 import {
@@ -83,12 +84,12 @@ function install(app: AppCatalogItem): void {
   refreshInstalled()
 }
 
-function requestUninstall(app: AppCatalogItem): void {
+async function requestUninstall(app: AppCatalogItem): Promise<void> {
   if (app.protected) return
   const name = t(app.labelKey)
-  const first = window.confirm(t('appManager.uninstallMsg', { app: name }))
+  const first = await dialogService.confirm(t('appManager.uninstallMsg', { app: name }))
   if (!first) return
-  const second = window.confirm(t('appManager.finalUninstallMsg', { app: name }))
+  const second = await dialogService.confirm(t('appManager.finalUninstallMsg', { app: name }))
   if (!second) return
 
   uninstallApp(app.tool)

@@ -301,6 +301,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useTextEditorStore } from '../../stores/textEditor'
 import { useI18n } from '../../composables/useI18n'
+import { dialogService } from '../../composables/useDialog'
 
 interface Props {
   visible: boolean
@@ -469,10 +470,10 @@ function saveFile(): void {
   }
 }
 
-function closeFile(fileId: string): void {
+async function closeFile(fileId: string): Promise<void> {
   const file = editorStore.openFiles.find((f) => f.id === fileId)
   if (file?.dirty) {
-    if (!confirm(t('editor.unsavedChanges', { name: file.name }))) {
+    if (!(await dialogService.confirm(t('editor.unsavedChanges', { name: file.name })))) {
       return
     }
   }
@@ -482,9 +483,9 @@ function closeFile(fileId: string): void {
   }
 }
 
-function onClose(): void {
+async function onClose(): Promise<void> {
   if (editorStore.hasUnsavedChanges) {
-    if (!confirm(t('editor.unsavedChanges', { name: '' }))) {
+    if (!(await dialogService.confirm(t('editor.unsavedChanges', { name: '' })))) {
       return
     }
   }

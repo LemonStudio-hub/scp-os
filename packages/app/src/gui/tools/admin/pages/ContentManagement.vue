@@ -200,6 +200,7 @@ import type { TableColumn, BatchAction } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
 import { useI18n } from '../../../composables/useI18n'
+import { dialogService } from '../../../composables/useDialog'
 import * as adminApi from '../services/adminApi'
 
 const toast = useToast()
@@ -450,11 +451,11 @@ async function handleBatchAction(key: string) {
 
   const extra: Record<string, string> = {}
   if (key === 'update_status') {
-    const status = window.prompt(t('admin.content.promptStatus') || 'Enter new status:')
+    const status = await dialogService.prompt(t('admin.content.promptStatus') || 'Enter new status:')
     if (!status) return
     extra.status = status
   } else if (key === 'move_category') {
-    const category = window.prompt(t('admin.content.promptCategory') || 'Enter new category:')
+    const category = await dialogService.prompt(t('admin.content.promptCategory') || 'Enter new category:')
     if (!category) return
     extra.category = category
   }
