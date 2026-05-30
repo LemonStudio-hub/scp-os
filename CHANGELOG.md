@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.5.0](https://github.com/LemonStudio-hub/scp-os/compare/v0.4.0...v0.5.0) (2026-05-14)
+
+
+### Features
+
+* add download proxy, penetration simulation and notification features ([6f0b137](https://github.com/LemonStudio-hub/scp-os/commit/6f0b137d1b246998b4507f0f12a3dbf3bc3fa5da))
+* **admin:** 新增管理后台功能模块 ([bbad6b4](https://github.com/LemonStudio-hub/scp-os/commit/bbad6b4382de5ee407c7c1cbcd270e187275d7e1))
+* R2 cloud file storage, quota system, file manager fixes, chat WS improvements ([1523801](https://github.com/LemonStudio-hub/scp-os/commit/1523801a2bbb29c9d619e125b58e34813af6a201))
+* remove download proxy, refactor UI components and worker routes ([55c6122](https://github.com/LemonStudio-hub/scp-os/commit/55c6122369497ebcd80cb455e360dfa22174e7c9))
+* 添加SEO优化和可访问性改进 ([abbd7ae](https://github.com/LemonStudio-hub/scp-os/commit/abbd7aed52ad233629c3f8c24743313efc66aa93))
+* 添加管理员后台独立部署配置 ([ed9c387](https://github.com/LemonStudio-hub/scp-os/commit/ed9c387a8c16492b2b2a213914106a9b85ed87ff))
+
+
+### Bug Fixes
+
+* add prettier-ignore for multi-statement Vue click handlers ([9564343](https://github.com/LemonStudio-hub/scp-os/commit/9564343f6d7b5c7eb1660447d463743fa8087cb2))
+* add semicolons in Vue template multi-statement click handlers ([7f37744](https://github.com/LemonStudio-hub/scp-os/commit/7f3774472befd90ad8a480105b77dc575bdfdba5))
+* **chat:** WebSocket connection fails in dev mode due to Cloudflare ([ecb158e](https://github.com/LemonStudio-hub/scp-os/commit/ecb158e2ea273bbb30681c3acc438708c1103f71))
+* handle unknown catch variables and type casts in worker admin API ([103c1d3](https://github.com/LemonStudio-hub/scp-os/commit/103c1d33c177e0440e85b3e0082b3fba2449064d))
+* regenerate corrupted icon files for Windows and macOS builds ([267ebcf](https://github.com/LemonStudio-hub/scp-os/commit/267ebcfe492e25124992819509aea8757836ce9e))
+* remove large worker-meta file from tracking ([13ccc5d](https://github.com/LemonStudio-hub/scp-os/commit/13ccc5d6dc2d9b7fc50e348fab6a27e357d89d6b))
+* resolve chat messaging issues - WebSocket path mismatch, message duplication, and room routing bugs ([b9ef309](https://github.com/LemonStudio-hub/scp-os/commit/b9ef3090fb2bb0b981aa170bbc9a26fa64269220))
+* resolve CI errors, fix service worker, clean up removed features ([a33f8d1](https://github.com/LemonStudio-hub/scp-os/commit/a33f8d12dc04420200a7df7749674918cba67176))
+* resolve CI type errors in frontend composables and worker types ([604a927](https://github.com/LemonStudio-hub/scp-os/commit/604a927cf3e95173770b7f3141eee8c0082b664d))
+* update trivy-action to v0.36.0 ([0edb27f](https://github.com/LemonStudio-hub/scp-os/commit/0edb27f1b9f2583413087fbbad988d691f4b260c))
+* use BMP-encoded ICO and add LFS checkout for CI builds ([9f9225f](https://github.com/LemonStudio-hub/scp-os/commit/9f9225fd09c66393944a8b410fcf1028295a7146))
+* 修复 admin-auth.ts 类型错误 ([1d203ea](https://github.com/LemonStudio-hub/scp-os/commit/1d203ea1d98d4009aa56540d24960bfc80366568))
+* 修复 HTTP 503、TypeScript 编译错误、数据库绑定缺失及反馈列表路由 ([19c06d7](https://github.com/LemonStudio-hub/scp-os/commit/19c06d7e52c1ac67413ada823efab402d72e6aea))
+
 ## [0.4.0](https://github.com/LemonStudio-hub/scp-os/compare/v0.3.0...v0.4.0) (2026-05-03)
 
 

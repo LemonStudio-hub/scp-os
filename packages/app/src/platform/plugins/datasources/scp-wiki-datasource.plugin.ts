@@ -4,18 +4,18 @@
  */
 
 import type {
-  IDataSourcePlugin,
+  DataSourcePlugin,
   DataSourceMetadata,
   DataSourceDefinition,
   DataSourceQueryOptions,
   DataSourceQueryResult,
-} from '../datasource-plugin.interface'
+} from '../../plugins/types'
 import logger from '../../../utils/logger'
 
 /**
  * SCP Wiki Data Source Plugin
  */
-export class ScpWikiDataSourcePlugin implements IDataSourcePlugin {
+export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
   readonly type: 'datasource' = 'datasource'
   readonly name: string = 'scp-wiki-datasource'
   readonly version: string = '1.0.0'

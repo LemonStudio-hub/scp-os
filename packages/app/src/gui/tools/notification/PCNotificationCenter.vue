@@ -172,13 +172,9 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ref, computed, onMounted, onUnmounted } from 'vue'
 import SCPWindow from '../../components/SCPWindow.vue'
-import { useNotificationStore } from '../../../stores/notificationStore'
-import { useI18n } from '../../composables/useI18n'
+import { useNotificationCenter } from '../../composables/useNotificationCenter'
 import type { WindowInstance } from '../../types'
-import type { NotificationType } from '../../../stores/notificationStore'
 
 interface Props {
   windowInstance: WindowInstance
@@ -187,65 +183,26 @@ interface Props {
 defineProps<Props>()
 const emit = defineEmits<{ close: [] }>()
 
-const store = useNotificationStore()
-const { t } = useI18n()
-const showPrefs = ref(false)
-
-const prefItems = computed(() => [
-  { key: 'feedback_comment' as const, label: t('notif.prefComment') },
-  { key: 'feedback_upvote' as const, label: t('notif.prefUpvote') },
-  { key: 'feedback_downvote' as const, label: t('notif.prefDownvote') },
-  { key: 'chat_message' as const, label: t('notif.prefChat') },
-])
-
-function typeLabel(type: NotificationType): string {
-  switch (type) {
-    case 'feedback_comment':
-      return t('notif.typeComment')
-    case 'feedback_upvote':
-      return t('notif.typeUpvote')
-    case 'feedback_downvote':
-      return t('notif.typeDownvote')
-    case 'chat_message':
-      return t('notif.typeChat')
-    default:
-      return type
-  }
-}
-
-function formatTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  if (diff < 60000) return t('notif.timeJustNow')
-  if (diff < 3600000) return t('notif.timeMinAgo', { n: Math.floor(diff / 60000) })
-  if (diff < 86400000) return t('notif.timeHourAgo', { n: Math.floor(diff / 3600000) })
-  return t('notif.timeDayAgo', { n: Math.floor(diff / 86400000) })
-}
+const {
+  t,
+  store,
+  showPrefs,
+  prefItems,
+  typeLabel,
+  formatTimeAgo,
+  handleClick: baseHandleClick,
+  markAllRead,
+  togglePref,
+} = useNotificationCenter()
 
 async function handleClick(item: any): Promise<void> {
-  if (!item.is_read) await store.markAsRead(item.id)
+  await baseHandleClick(item)
   emit('close')
-}
-
-async function markAllRead(): Promise<void> {
-  await store.markAsRead()
-}
-
-async function togglePref(key: keyof typeof store.preferences): Promise<void> {
-  await store.updatePreferences({ [key]: store.preferences[key] ? 0 : 1 })
 }
 
 function onClose() {
   emit('close')
 }
-
-onMounted(() => {
-  store.fetchNotifications()
-  store.fetchPreferences()
-})
-
-onUnmounted(() => {
-  // keep polling alive
-})
 </script>
 
 <style scoped>

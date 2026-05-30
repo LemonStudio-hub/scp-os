@@ -3,9 +3,7 @@
  * Interface for UI component plugins in the SCP-OS platform
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import type { Plugin } from './plugin.interface'
+import type { Plugin } from './types'
 import type { Component } from 'vue'
 
 /**

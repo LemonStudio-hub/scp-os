@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <MobileWindow
     :visible="visible"
     :title="view === 'rooms' ? t('chat.title') : currentRoom?.name || ''"
@@ -380,48 +380,20 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '../../../stores/authStore'
-import { config } from '../../../config'
-import indexedDBService from '../../../utils/indexedDB'
-import { useChatWebSocket, type WSChatMessage } from '../../composables/useChatWebSocket'
+import { useChat } from '../../composables/useChat'
 import { dialogService } from '../../composables/useDialog'
 
 interface Props {
   visible: boolean
 }
 
-interface ChatMessage {
-  id?: number
-  tempId?: string
-  user_id: string
-  username: string
-  content: string
-  created_at: string
-  isSelf: boolean
-  sending?: boolean
-  error?: string
-  room_id?: number
-  retryCount?: number
-  edited?: boolean
-}
+import type { ChatMessage } from '../../types/chat'
 
-interface ChatRoom {
-  id: number
-  name: string
-  description: string
-  message_count: number
-  created_by: string
-  is_public: number
-  member_count?: number
-  last_message?: string
-  last_message_sender?: string
-  last_message_time?: string
-}
 
 defineProps<Props>()
 defineEmits<{ close: [] }>()
@@ -432,140 +404,44 @@ themeStore.init()
 const authStore = useAuthStore()
 const { t } = useI18n()
 
-const API_BASE = config.api.workerUrl
-const MAX_RETRY = 3
-
 const view = ref<'rooms' | 'chat'>('rooms')
-const messagesRef = ref<HTMLElement>()
-const inputRef = ref<HTMLTextAreaElement>()
-const inputContent = ref('')
-const messages = reactive<ChatMessage[]>([])
-const rooms = reactive<ChatRoom[]>([])
-const currentRoomId = ref(1)
-const loading = ref(false)
-const sending = ref(false)
-const rateLimitWarning = ref('')
-const rateLimited = ref(false)
-const loadingRooms = ref(false)
-const creatingRoom = ref(false)
-const editingMessageId = ref<number | null>(null)
-const showActionSheet = ref(false)
-const actionSheetMsg = ref<ChatMessage | null>(null)
-let longPressTimer: number | null = null
-const showNicknameDialog = ref(false)
-const newNickname = ref('')
-const savingNickname = ref(false)
-const nicknameCheckStatus = ref<'idle' | 'checking' | 'available' | 'taken'>('idle')
-const nicknameSaveError = ref('')
-let nicknameCheckTimer: number | null = null
-let userId = ''
-const roomSearchQuery = ref('')
 
-const showCreateRoom = ref(false)
-const newRoomName = ref('')
-const newRoomDescription = ref('')
-
-const unreadCounts = ref<Record<number, number>>({})
-
-const ws = useChatWebSocket({
-  apiUrl: API_BASE,
-  userId: '',
-  username: '',
-  roomId: 1,
-  onMessage: (msg: WSChatMessage) => {
-    const chatMsg: ChatMessage = {
-      ...msg,
-      isSelf: msg.user_id === userId,
-    }
-    // 优先使用 tempId 匹配，避免内容编码导致匹配失败
-    const existingIdx = msg.tempId
-      ? messages.findIndex((m) => m.sending && m.tempId === msg.tempId)
-      : messages.findIndex(
-          (m) => m.sending && m.content === msg.content && m.user_id === msg.user_id
-        )
-    if (existingIdx !== -1) {
-      // 保留 tempId 避免 Vue key 变化导致 DOM 闪烁，使用 splice 确保响应式追踪
-      messages.splice(existingIdx, 1, {
-        ...chatMsg,
-        tempId: messages[existingIdx].tempId,
-      })
-    } else {
-      const alreadyExists = messages.some((m) => m.id === msg.id && !m.tempId)
-      if (!alreadyExists) {
-        messages.push(chatMsg)
-      }
-    }
-    nextTick(() => scrollToBottom())
-  },
-  onHistory: (msgs: WSChatMessage[]) => {
-    messages.splice(0, messages.length)
-    for (const msg of msgs) {
-      messages.push({
-        ...msg,
-        isSelf: msg.user_id === userId,
-      })
-    }
-    loading.value = false
-    nextTick(() => scrollToBottom())
-  },
-  onUsersUpdate: (_users: any, count: any) => {
-    if (currentRoom.value) {
-      currentRoom.value.member_count = count
-    }
-  },
-  onUserJoined: (data: any) => {
-    if (currentRoom.value) {
-      currentRoom.value.member_count = data.count
-    }
-  },
-  onUserLeft: (data: any) => {
-    if (currentRoom.value) {
-      currentRoom.value.member_count = data.count
-    }
-  },
-  onMessageEdited: (data: any) => {
-    const idx = messages.findIndex((m) => m.id === data.id)
-    if (idx !== -1) {
-      messages.splice(idx, 1, { ...messages[idx], content: data.content, edited: true })
-    }
-  },
-  onMessageDeleted: (data: any) => {
-    const idx = messages.findIndex((m) => m.id === data.id)
-    if (idx !== -1) messages.splice(idx, 1)
-  },
-  onError: (error: any) => {
-    if (error === 'RATE_LIMIT') {
-      rateLimitWarning.value = 'Rate limit exceeded. Please wait.'
-      rateLimited.value = true
-      setTimeout(() => {
-        rateLimited.value = false
-        rateLimitWarning.value = ''
-      }, 60000)
-    }
-  },
-})
-
-const filteredRooms = computed(() => {
-  const query = roomSearchQuery.value.trim().toLowerCase()
-  return rooms.filter((r) => !query || r.name.toLowerCase().includes(query))
-})
-
-const currentRoom = computed(() => rooms.find((r) => r.id === currentRoomId.value) || null)
-
-function getUnreadCount(roomId: number): number {
-  return unreadCounts.value[roomId] || 0
-}
-
-function setUnreadCount(roomId: number, count: number) {
-  unreadCounts.value[roomId] = count
-}
-
-function markRoomAsRead(roomId: number) {
-  setUnreadCount(roomId, 0)
-  indexedDBService.saveSetting('chat_unread_counts', unreadCounts.value).catch(() => {
-    void 0
-  })
-}
+const {
+  inputContent,
+  messages,
+  rooms,
+  currentRoomId,
+  loading,
+  sending,
+  rateLimitWarning,
+  rateLimited,
+  loadingRooms,
+  creatingRoom,
+  showNicknameDialog,
+  newNickname,
+  savingNickname,
+  nicknameCheckStatus,
+  nicknameSaveError,
+  roomSearchQuery,
+  showCreateRoom,
+  newRoomName,
+  newRoomDescription,
+  filteredRooms,
+  currentRoom,
+  ws,
+  getUnreadCount,
+  createRoom,
+  enterRoom: baseEnterRoom,
+  autoResizeInput,
+  sendMessage,
+  retryMessage,
+  formatTime,
+  formatRoomTime,
+  truncateMessage,
+  openNicknameDialog,
+  onNicknameInput,
+  saveNickname,
+} = useChat()
 
 const chatThemeStyles = computed(() => ({
   '--chat-bg': themeStore.currentTheme.colors.bgBase || '#1C1C1E',
@@ -579,150 +455,16 @@ const chatThemeStyles = computed(() => ({
   '--chat-error': '#FF3B30',
 }))
 
-onMounted(async () => {
-  userId = authStore.userId || (await indexedDBService.getUserId())
-  await loadRooms()
-  await loadUnreadCounts()
-})
-
-onUnmounted(() => {
-  if (longPressTimer) {
-    clearTimeout(longPressTimer)
-    longPressTimer = null
-  }
-})
-
-watch(
-  () => authStore.userId,
-  (newUserId) => {
-    if (newUserId) userId = newUserId
-  }
-)
-
-async function loadUnreadCounts() {
-  try {
-    const stored = await indexedDBService.loadSetting('chat_unread_counts')
-    if (stored) unreadCounts.value = stored as Record<number, number>
-  } catch {}
-}
-
-async function loadRooms() {
-  loadingRooms.value = true
-  try {
-    const url = `${API_BASE}/chat/rooms?t=${Date.now()}`
-    // eslint-disable-next-line no-console
-    console.log('[Chat] Loading rooms from:', url)
-    const response = await fetch(url, {
-      cache: 'no-cache',
-    })
-    const data = await response.json()
-    // eslint-disable-next-line no-console
-    console.log('[Chat] Rooms response:', JSON.stringify(data).slice(0, 500))
-    if (data.success && data.data) {
-      const oldRooms = new Map(rooms.map((r) => [r.id, r]))
-      rooms.splice(0, rooms.length)
-      for (const room of data.data) {
-        const oldRoom = oldRooms.get(room.id)
-        if (
-          oldRoom &&
-          room.message_count > oldRoom.message_count &&
-          room.id !== currentRoomId.value
-        ) {
-          const delta = room.message_count - oldRoom.message_count
-          setUnreadCount(room.id, getUnreadCount(room.id) + delta)
-        }
-        rooms.push(room)
-      }
-      rooms.sort((a, b) => {
-        const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0
-        const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0
-        return timeB - timeA
-      })
-      // eslint-disable-next-line no-console
-      console.log('[Chat] Rooms loaded:', rooms.length)
-    } else {
-      console.warn('[Chat] Rooms load failed or empty:', data)
-    }
-  } catch (error) {
-    console.error('[Chat] Failed to load rooms:', error)
-  } finally {
-    loadingRooms.value = false
-  }
-}
-
-async function createRoom() {
-  if (!newRoomName.value.trim()) return
-  creatingRoom.value = true
-  try {
-    const effectiveUserId = authStore.userId || userId || (await indexedDBService.getUserId())
-    const response = await authStore.authFetch(`${API_BASE}/chat/rooms`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: newRoomName.value.trim(),
-        description: newRoomDescription.value.trim(),
-        created_by: effectiveUserId,
-        is_public: 1,
-      }),
-    })
-    const data = await response.json()
-    if (data.success) {
-      await loadRooms()
-      newRoomName.value = ''
-      newRoomDescription.value = ''
-      showCreateRoom.value = false
-    } else {
-      alert(data.error || 'Failed to create room')
-    }
-  } catch (error) {
-    console.error('[Chat Mobile] Failed to create room:', error)
-    alert('Failed to create room. Please try again.')
-  } finally {
-    creatingRoom.value = false
-  }
-}
-
 async function enterRoom(roomId: number) {
-  if (!userId) {
-    userId = authStore.userId || (await indexedDBService.getUserId())
-  }
-  currentRoomId.value = roomId
-  messages.splice(0, messages.length)
-  markRoomAsRead(roomId)
+  await baseEnterRoom(roomId)
   view.value = 'chat'
-  ws.setCredentials(userId, authStore.nickname || 'Anonymous')
-  ws.switchRoom(roomId)
-  loadHistoryFromAPI(roomId)
 }
 
-async function loadHistoryFromAPI(roomId: number) {
-  if (messages.length > 0) return
-  loading.value = true
-  try {
-    const response = await fetch(`${API_BASE}/chat/messages?limit=50&room_id=${roomId}`)
-    const data = await response.json()
-    if (data.success && data.data && data.data.length > 0 && messages.length === 0) {
-      for (const msg of data.data) {
-        messages.push({
-          ...msg,
-          isSelf: msg.user_id === userId,
-        })
-      }
-      nextTick(() => scrollToBottom())
-    }
-  } catch {
-    // silently fail, WebSocket history will be the fallback
-  } finally {
-    loading.value = false
-  }
-}
-
-function autoResizeInput() {
-  if (inputRef.value) {
-    inputRef.value.style.height = 'auto'
-    inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 100) + 'px'
-  }
-}
+// ── Message editing/deletion (local state, not in composable) ─────────
+const editingMessageId = ref<number | null>(null)
+const showActionSheet = ref(false)
+const actionSheetMsg = ref<ChatMessage | null>(null)
+let longPressTimer: number | null = null
 
 function sendOrEditMessage() {
   if (editingMessageId.value) {
@@ -778,151 +520,6 @@ async function startDelete(msg: ChatMessage | null) {
   if (!msg || !msg.id) return
   if (!(await dialogService.confirm(t('chat.confirmDelete')))) return
   ws.deleteMessage(msg.id)
-}
-
-async function sendMessage() {
-  const content = inputContent.value.trim()
-  if (!content || sending.value || rateLimited.value) return
-
-  const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`
-  const now = new Date().toISOString()
-
-  const optimisticMessage: ChatMessage = {
-    tempId,
-    user_id: userId,
-    username: authStore.nickname || t('chat.you'),
-    content,
-    created_at: now,
-    isSelf: true,
-    sending: true,
-    room_id: currentRoomId.value,
-    retryCount: 0,
-  }
-
-  messages.push(optimisticMessage)
-  inputContent.value = ''
-  sending.value = true
-  rateLimitWarning.value = ''
-
-  await nextTick()
-  scrollToBottom()
-  autoResizeInput()
-
-  const sent = ws.sendMessage(content, tempId)
-  if (!sent) {
-    const idx = messages.findIndex((m) => m.tempId === tempId)
-    if (idx !== -1) {
-      messages.splice(idx, 1, {
-        ...messages[idx],
-        sending: false,
-        error: 'Failed to send (not connected)',
-      })
-    }
-  }
-  sending.value = false
-}
-
-async function retryMessage(msg: ChatMessage) {
-  if (!msg.tempId || !msg.error) return
-  if ((msg.retryCount || 0) >= MAX_RETRY) return
-
-  const idx = messages.findIndex((m) => m.tempId === msg.tempId)
-  if (idx === -1) return
-
-  const updated = {
-    ...messages[idx],
-    sending: true,
-    error: undefined,
-    retryCount: (msg.retryCount || 0) + 1,
-  }
-  messages.splice(idx, 1, updated)
-
-  const sent = ws.sendMessage(msg.content, msg.tempId)
-  if (!sent) {
-    messages.splice(idx, 1, { ...updated, sending: false, error: t('chat.networkError') })
-  } else {
-    messages.splice(idx, 1, { ...updated, sending: false })
-  }
-}
-
-function scrollToBottom() {
-  if (messagesRef.value) {
-    messagesRef.value.scrollTo({
-      top: messagesRef.value.scrollHeight,
-      behavior: 'smooth',
-    })
-  }
-}
-
-function formatTime(dateStr: string): string {
-  const date = new Date(dateStr)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-}
-
-function formatRoomTime(dateStr?: string): string {
-  if (!dateStr) return ''
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  if (diff < 86400000) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  if (diff < 604800000) return date.toLocaleDateString([], { weekday: 'short' })
-  return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-}
-
-function truncateMessage(message: string, maxLength: number = 20): string {
-  if (message.length <= maxLength) return message
-  return message.substring(0, maxLength) + '...'
-}
-
-function openNicknameDialog() {
-  newNickname.value = authStore.nickname || ''
-  nicknameCheckStatus.value = 'idle'
-  nicknameSaveError.value = ''
-  showNicknameDialog.value = true
-}
-
-async function checkNicknameAvailability() {
-  const trimmed = newNickname.value.trim()
-  if (!trimmed || trimmed === authStore.nickname) {
-    nicknameCheckStatus.value = 'idle'
-    return
-  }
-  nicknameCheckStatus.value = 'checking'
-  try {
-    const result = await authStore.checkNicknameAvailability(trimmed)
-    nicknameCheckStatus.value = result.available ? 'available' : 'taken'
-  } catch {
-    nicknameCheckStatus.value = 'idle'
-  }
-}
-
-function onNicknameInput() {
-  if (nicknameCheckTimer) clearTimeout(nicknameCheckTimer)
-  nicknameCheckStatus.value = 'idle'
-  nicknameSaveError.value = ''
-  nicknameCheckTimer = window.setTimeout(() => {
-    checkNicknameAvailability()
-  }, 500)
-}
-
-async function saveNickname() {
-  const trimmed = newNickname.value.trim()
-  if (!trimmed) return
-  savingNickname.value = true
-  nicknameSaveError.value = ''
-  try {
-    const result = await authStore.updateNickname(trimmed)
-    if (result.success) {
-      showNicknameDialog.value = false
-    } else {
-      nicknameSaveError.value = result.error || 'Failed to save nickname'
-      if (result.error === 'Nickname already taken') nicknameCheckStatus.value = 'taken'
-    }
-  } catch {
-    nicknameSaveError.value = 'Failed to save nickname'
-  } finally {
-    savingNickname.value = false
-  }
 }
 </script>
 

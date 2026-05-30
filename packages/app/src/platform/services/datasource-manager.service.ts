@@ -3,14 +3,12 @@
  * Manages data source plugins and data access
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import type { IDataSourcePlugin } from '../plugins/datasource-plugin.interface'
 import type {
+  DataSourcePlugin,
   DataSourceDefinition,
   DataSourceQueryOptions,
   DataSourceQueryResult,
-} from '../plugins/datasource-plugin.interface'
+} from '../plugins/types'
 import type { IEventBus } from '../events/event-bus'
 
 /**
@@ -19,7 +17,7 @@ import type { IEventBus } from '../events/event-bus'
  */
 export class DataSourceManagerService {
   private dataSources: Map<string, DataSourceDefinition> = new Map()
-  private plugins: Map<string, IDataSourcePlugin> = new Map()
+  private plugins: Map<string, DataSourcePlugin> = new Map()
   private eventBus: IEventBus | null = null
 
   constructor(eventBus?: IEventBus) {
@@ -29,7 +27,7 @@ export class DataSourceManagerService {
   /**
    * Register a data source plugin
    */
-  async registerPlugin(plugin: IDataSourcePlugin): Promise<void> {
+  async registerPlugin(plugin: DataSourcePlugin): Promise<void> {
     // Load plugin
     if (plugin.onLoad) {
       await plugin.onLoad()
@@ -171,7 +169,7 @@ export class DataSourceManagerService {
   /**
    * Get plugin by data source ID
    */
-  getPluginByDataSourceId(dataSourceId: string): IDataSourcePlugin | undefined {
+  getPluginByDataSourceId(dataSourceId: string): DataSourcePlugin | undefined {
     for (const plugin of this.plugins.values()) {
       if (plugin.hasDataSource(dataSourceId)) {
         return plugin
@@ -183,7 +181,7 @@ export class DataSourceManagerService {
   /**
    * Get all plugins
    */
-  getAllPlugins(): IDataSourcePlugin[] {
+  getAllPlugins(): DataSourcePlugin[] {
     return Array.from(this.plugins.values())
   }
 

@@ -444,7 +444,6 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { useI18n } from '../../composables/useI18n'
 import SCPWindow from '../../components/SCPWindow.vue'
 import SCPButton from '../../components/ui/SCPButton.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
@@ -454,7 +453,7 @@ import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
 import SCPContextMenu from '../../components/ui/SCPContextMenu.vue'
 import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import DialogModal from './DialogModal.vue'
-import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
+import { setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { useWindowManagerStore } from '../../stores/windowManager'
 import { ToolRegistry } from '../../registry/ToolRegistry'
 import type { WindowInstance, FileItem, ContextMenuItem } from '../../types'
@@ -464,6 +463,14 @@ import { filesystem } from '../../../utils/filesystem'
 import { parseDesktopFile } from '../../../utils/desktopShortcut'
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
+import {
+  useFileManagerOps,
+  IMAGE_EXTS,
+  AUDIO_EXTS,
+  VIDEO_EXTS,
+  formatDate,
+  getFileExtension,
+} from '../../composables/useFileManagerOps'
 
 interface Props {
   windowInstance: WindowInstance
@@ -471,13 +478,26 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { t } = useI18n()
+const {
+  t,
+  fmStore,
+  fileInputRef,
+  formatSize,
+  onFileUpload: baseOnFileUpload,
+  createFile,
+  createFolder,
+  renameFile,
+  deleteFile,
+} = useFileManagerOps()
+
 setFileManagerI18n({ t })
-const fmStore = useFileManagerStore()
+
+// Suppress TypeScript warning - fileInputRef is used in template
+void fileInputRef
+
 const wmStore = useWindowManagerStore()
 const authStore = useAuthStore()
 const searchText = ref('')
-const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // Navigate to initial path if provided
 const initialPath = props.windowInstance?.config?.data?.initialPath
@@ -506,11 +526,6 @@ const dialogDanger = ref(false)
 let dialogResolve: Function | null = null
 const contextTargetFile = ref<string>('')
 
-// File type helpers
-const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
-const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
-const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
-
 // Root directories for tree
 const rootDirs = computed(() => {
   return fmStore.files.filter((f) => f.isDirectory && !f.isHidden)
@@ -520,7 +535,7 @@ const rootDirs = computed(() => {
 const detailPreview = computed(() => {
   const file = fmStore.detailFile
   if (!file || file.isDirectory) return null
-  const ext = file.name.split('.').pop()?.toLowerCase() || ''
+  const ext = getFileExtension(file.name)
   const textExts = [
     'txt',
     'md',
@@ -550,22 +565,6 @@ const detailPreview = computed(() => {
 watch(searchText, (val) => {
   fmStore.setSearch(val)
 })
-
-function formatSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`
-}
-
-function formatDate(ts: number): string {
-  return new Date(ts).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 function onFileClick(file: FileItem, event: MouseEvent): void {
   if (event.ctrlKey || event.metaKey) {
@@ -724,9 +723,7 @@ async function promptNewFile(): Promise<void> {
     confirmText: t('fm.create'),
   })
   if (name) {
-    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
-    filesystem.createFile(path, '')
-    fmStore.loadDirectory()
+    createFile(name)
   }
 }
 
@@ -738,9 +735,7 @@ async function promptNewFolder(): Promise<void> {
     confirmText: t('fm.create'),
   })
   if (name) {
-    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
-    filesystem.createDirectory(path)
-    fmStore.loadDirectory()
+    createFolder(name)
   }
 }
 
@@ -752,7 +747,7 @@ async function promptRename(fileName: string): Promise<void> {
     confirmText: t('fm.rename'),
   })
   if (newName && newName !== fileName) {
-    fmStore.renameFile(fileName, newName)
+    renameFile(fileName, newName)
   }
 }
 
@@ -764,7 +759,7 @@ async function promptDelete(fileName: string): Promise<void> {
     danger: true,
   })
   if (confirmed) {
-    fmStore.deleteFile(fileName)
+    deleteFile(fileName)
   }
 }
 
@@ -903,6 +898,7 @@ function readFileAsLocal(file: File): Promise<string> {
       reader.readAsDataURL(file)
     }
   })
+
 }
 
 // ── File open with type detection ───────────────────────────────────
@@ -913,7 +909,7 @@ function openFile(file: FileItem): void {
     return
   }
 
-  const ext = file.name.split('.').pop()?.toLowerCase() || ''
+  const ext = getFileExtension(file.name)
 
   if (ext === 'desktop') {
     const content = filesystem.readFile(file.path)
