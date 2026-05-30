@@ -49,9 +49,17 @@ const loadingStep = ref('loading.steps.initializing')
 
 onMounted(() => {
   // Override native browser dialogs globally
-  window.alert = (msg) => { dialogService.alert(String(msg ?? '')) }
-  window.confirm = (msg) => { dialogService.confirm(String(msg ?? '')); return false }
-  window.prompt = (msg, def) => { dialogService.prompt(String(msg ?? ''), String(def ?? '')); return null }
+  window.alert = (msg) => {
+    dialogService.alert(String(msg ?? ''))
+  }
+  window.confirm = (msg) => {
+    dialogService.confirm(String(msg ?? ''))
+    return false
+  }
+  window.prompt = (msg, def) => {
+    dialogService.prompt(String(msg ?? ''), String(def ?? ''))
+    return null
+  }
 
   // Safety timeout: force show app after 3s even if init hangs
   const forceReady = setTimeout(() => {

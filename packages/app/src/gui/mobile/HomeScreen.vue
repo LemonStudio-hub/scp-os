@@ -123,12 +123,37 @@
         @click.stop
       >
         <button class="home-screen__ctx-item" @click="onCtxOpen">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
           打开
         </button>
         <div class="home-screen__ctx-divider" />
         <button class="home-screen__ctx-item home-screen__ctx-item--danger" @click="onCtxRemove">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+            <path d="M10 11v6M14 11v6" />
+            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+          </svg>
           从主屏幕移除
         </button>
       </div>
@@ -162,11 +187,30 @@
       >
         <!-- Delete badge in jiggle mode (hidden for protected apps) -->
         <div
-          v-if="isJiggling && !APP_CATALOG.find(c => c.id === app.id)?.protected"
+          v-if="isJiggling && !APP_CATALOG.find((c) => c.id === app.id)?.protected"
           class="home-screen__app-delete"
           @click.stop="void onDeleteApp(app)"
         >
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="2" y1="2" x2="8" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="2" x2="2" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <line
+              x1="2"
+              y1="2"
+              x2="8"
+              y2="8"
+              stroke="white"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <line
+              x1="8"
+              y1="2"
+              x2="2"
+              y2="8"
+              stroke="white"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
         </div>
         <div
           class="home-screen__app-icon"
@@ -311,7 +355,6 @@
         <span class="home-screen__app-label">{{ app.label }}</span>
       </button>
     </TransitionGroup>
-
   </div>
 </template>
 
@@ -351,7 +394,11 @@ const homeAppLabelKeys: Partial<Record<ToolType, string>> = {
 const ORDER_KEY = 'scp-os-home-order'
 
 function loadOrder(): string[] {
-  try { return JSON.parse(localStorage.getItem(ORDER_KEY) || '[]') } catch { return [] }
+  try {
+    return JSON.parse(localStorage.getItem(ORDER_KEY) || '[]')
+  } catch {
+    return []
+  }
 }
 
 const customOrder = ref<string[]>(loadOrder())
@@ -376,8 +423,8 @@ const apps = computed<HomeApp[]>(() => {
   const base = baseApps.value
   const order = dragOrder.value.length > 0 ? dragOrder.value : customOrder.value
   if (order.length === 0) return base
-  const ordered = order.map(id => base.find(a => a.id === id)).filter(Boolean) as HomeApp[]
-  const rest = base.filter(a => !order.includes(a.id))
+  const ordered = order.map((id) => base.find((a) => a.id === id)).filter(Boolean) as HomeApp[]
+  const rest = base.filter((a) => !order.includes(a.id))
   return [...ordered, ...rest]
 })
 
@@ -435,14 +482,21 @@ const latencyLabel = computed(() => {
 
 async function measureBackendLatency(): Promise<void> {
   isOnline.value = navigator.onLine
-  if (!isOnline.value) { backendLatency.value = 0; return }
+  if (!isOnline.value) {
+    backendLatency.value = 0
+    return
+  }
   if (isMeasuring.value) return
   isMeasuring.value = true
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
     const start = performance.now()
-    await fetch(config.api.workerUrl + '/', { method: 'GET', cache: 'no-store', signal: controller.signal })
+    await fetch(config.api.workerUrl + '/', {
+      method: 'GET',
+      cache: 'no-store',
+      signal: controller.signal,
+    })
     clearTimeout(timeout)
     backendLatency.value = Math.round(performance.now() - start)
   } catch {
@@ -457,7 +511,9 @@ function onLatencyTap(): void {
   measureBackendLatency()
   showLatencyPopup.value = true
   clearTimeout(latencyPopupTimer)
-  latencyPopupTimer = window.setTimeout(() => { showLatencyPopup.value = false }, 3000)
+  latencyPopupTimer = window.setTimeout(() => {
+    showLatencyPopup.value = false
+  }, 3000)
 }
 
 function closeLatencyPopup(): void {
@@ -548,8 +604,12 @@ function onGridLongPressStart(e: TouchEvent): void {
   if ((e.target as HTMLElement).closest('.home-screen__app')) return
   longPressTimer = window.setTimeout(enterJiggleMode, LONG_PRESS_MS)
 }
-function onGridLongPressEnd(): void { clearTimeout(longPressTimer) }
-function onGridLongPressCancel(): void { clearTimeout(longPressTimer) }
+function onGridLongPressEnd(): void {
+  clearTimeout(longPressTimer)
+}
+function onGridLongPressCancel(): void {
+  clearTimeout(longPressTimer)
+}
 
 function updateDragStyle(): void {
   const dx = currentTouchX - dragLayoutCenterX
@@ -577,7 +637,7 @@ function activateDrag(app: HomeApp, touchX: number, touchY: number): void {
   draggingId.value = app.id
   didDrag = true
   updateDragStyle()
-  dragOrder.value = apps.value.map(a => a.id)
+  dragOrder.value = apps.value.map((a) => a.id)
 }
 
 // App icon: unified touch start — merges long-press + drag
@@ -620,7 +680,10 @@ async function setDragOverAndReorder(targetId: string): Promise<void> {
 
   const cur = [...dragOrder.value]
   const fromIdx = cur.indexOf(draggingId.value!)
-  if (fromIdx === -1) { isReordering = false; return }
+  if (fromIdx === -1) {
+    isReordering = false
+    return
+  }
 
   cur.splice(fromIdx, 1)
   // Find target in the ALREADY-modified array so insert position is exact
@@ -636,7 +699,7 @@ async function setDragOverAndReorder(targetId: string): Promise<void> {
     if (btn) {
       const saved = btn.style.transform
       btn.style.transform = 'none'
-      const rect = btn.getBoundingClientRect()   // reads pure layout position
+      const rect = btn.getBoundingClientRect() // reads pure layout position
       btn.style.transform = saved
       dragLayoutCenterX = rect.left + rect.width / 2
       dragLayoutCenterY = rect.top + rect.height / 2
@@ -714,16 +777,13 @@ function onCtxRemove(): void {
 }
 
 async function onDeleteApp(app: HomeApp): Promise<void> {
-  const catalogItem = APP_CATALOG.find(c => c.id === app.id)
+  const catalogItem = APP_CATALOG.find((c) => c.id === app.id)
   if (catalogItem?.protected) {
     await dialogService.alert(`"${app.label}" 是系统应用，无法删除。`, '无法删除')
     return
   }
 
-  const first = await dialogService.confirm(
-    `确定要删除 "${app.label}" 吗？`,
-    '删除应用'
-  )
+  const first = await dialogService.confirm(`确定要删除 "${app.label}" 吗？`, '删除应用')
   if (!first) return
 
   const second = await dialogService.confirm(
@@ -732,7 +792,7 @@ async function onDeleteApp(app: HomeApp): Promise<void> {
   )
   if (!second) return
 
-  customOrder.value = customOrder.value.filter(id => id !== app.id)
+  customOrder.value = customOrder.value.filter((id) => id !== app.id)
   saveOrder()
   uninstallApp(app.tool)
   refreshInstalledApps()
@@ -740,8 +800,14 @@ async function onDeleteApp(app: HomeApp): Promise<void> {
 }
 
 function onAppTap(app: HomeApp): void {
-  if (didDrag) { didDrag = false; return }
-  if (isJiggling.value) { exitJiggleMode(); return }
+  if (didDrag) {
+    didDrag = false
+    return
+  }
+  if (isJiggling.value) {
+    exitJiggleMode()
+    return
+  }
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(15)
   emit('launch', app)
 }
@@ -875,13 +941,15 @@ onUnmounted(() => {
 .home-screen__latency-popup__label {
   font-size: 10px;
   font-weight: 500;
-  color: var(--gui-text-tertiary, rgba(255,255,255,0.4));
+  color: var(--gui-text-tertiary, rgba(255, 255, 255, 0.4));
   letter-spacing: 0.02em;
 }
 
 .latency-fade-enter-active,
 .latency-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .latency-fade-enter-from,
@@ -1079,11 +1147,21 @@ onUnmounted(() => {
 }
 
 @keyframes ios-jiggle {
-  0%   { transform: rotate(-2.5deg) scale(1); }
-  25%  { transform: rotate(2.5deg)  scale(1); }
-  50%  { transform: rotate(-2deg)   scale(1); }
-  75%  { transform: rotate(2deg)    scale(1); }
-  100% { transform: rotate(-2.5deg) scale(1); }
+  0% {
+    transform: rotate(-2.5deg) scale(1);
+  }
+  25% {
+    transform: rotate(2.5deg) scale(1);
+  }
+  50% {
+    transform: rotate(-2deg) scale(1);
+  }
+  75% {
+    transform: rotate(2deg) scale(1);
+  }
+  100% {
+    transform: rotate(-2.5deg) scale(1);
+  }
 }
 
 .home-screen__app--jiggling {
@@ -1108,7 +1186,9 @@ onUnmounted(() => {
 .home-screen__app--drag-over {
   transform: scale(0.9);
   opacity: 0.6;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .home-screen__app-delete {
@@ -1118,7 +1198,7 @@ onUnmounted(() => {
   width: 20px;
   height: 20px;
   background: #1c1c1e;
-  border: 1.5px solid rgba(255,255,255,0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1135,7 +1215,7 @@ onUnmounted(() => {
   background: var(--gui-glass-bg-strong, rgba(30, 30, 32, 0.95));
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 0.5px solid var(--gui-border-subtle, rgba(255,255,255,0.1));
+  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
   border-radius: 14px;
   overflow: hidden;
   z-index: 20;
@@ -1158,7 +1238,7 @@ onUnmounted(() => {
 }
 
 .home-screen__ctx-item:active {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .home-screen__ctx-item--danger {
@@ -1167,15 +1247,19 @@ onUnmounted(() => {
 
 .home-screen__ctx-divider {
   height: 0.5px;
-  background: var(--gui-border-subtle, rgba(255,255,255,0.08));
+  background: var(--gui-border-subtle, rgba(255, 255, 255, 0.08));
   margin: 0 12px;
 }
 
 .ctx-menu-fade-enter-active {
-  transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .ctx-menu-fade-leave-active {
-  transition: opacity 0.1s ease, transform 0.1s ease;
+  transition:
+    opacity 0.1s ease,
+    transform 0.1s ease;
 }
 .ctx-menu-fade-enter-from,
 .ctx-menu-fade-leave-to {

@@ -17,7 +17,7 @@ export function registerFiles(app: Hono<AppEnv>): void {
     const key = `users/${userId}/files/${safePath}`
     const prefix = `users/${userId}/files/`
     const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
-    const usedSize = listResult.objects.reduce((sum, obj) => sum + obj.size, 0)
+    const usedSize = listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0)
     const maxSize = 100 * 1024 * 1024
     if (usedSize + file.size > maxSize) {
       return json({ success: false, error: 'Storage quota exceeded (max 100MB)' }, 413)
@@ -34,7 +34,7 @@ export function registerFiles(app: Hono<AppEnv>): void {
     if (userId instanceof Response) return userId
     const prefix = `users/${userId}/files/`
     const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
-    const files = listResult.objects.map((obj) => ({
+    const files = listResult.objects.map((obj: R2Object) => ({
       key: obj.key.replace(prefix, ''),
       size: obj.size,
       uploadedAt: obj.customMetadata?.uploadedAt || obj.uploaded?.toISOString(),
@@ -48,7 +48,7 @@ export function registerFiles(app: Hono<AppEnv>): void {
     if (userId instanceof Response) return userId
     const prefix = `users/${userId}/files/`
     const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
-    const used = listResult.objects.reduce((sum, obj) => sum + obj.size, 0)
+    const used = listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0)
     const max = 100 * 1024 * 1024
     return json({ success: true, data: { used, max, percent: Math.round((used / max) * 100), count: listResult.objects.length } })
   })

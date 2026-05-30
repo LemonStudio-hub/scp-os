@@ -168,7 +168,9 @@ export function useChat() {
   async function loadUnreadCounts() {
     try {
       const stored = await indexedDBService.loadSetting('chat_unread_counts')
-      if (stored) unreadCounts.value = stored
+      if (stored && typeof stored === 'object') {
+        unreadCounts.value = stored as Record<number, number>
+      }
     } catch {}
   }
 

@@ -451,11 +451,15 @@ async function handleBatchAction(key: string) {
 
   const extra: Record<string, string> = {}
   if (key === 'update_status') {
-    const status = await dialogService.prompt(t('admin.content.promptStatus') || 'Enter new status:')
+    const status = await dialogService.prompt(
+      t('admin.content.promptStatus') || 'Enter new status:'
+    )
     if (!status) return
     extra.status = status
   } else if (key === 'move_category') {
-    const category = await dialogService.prompt(t('admin.content.promptCategory') || 'Enter new category:')
+    const category = await dialogService.prompt(
+      t('admin.content.promptCategory') || 'Enter new category:'
+    )
     if (!category) return
     extra.category = category
   }

@@ -2,9 +2,18 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 type CursorState =
-  | 'default' | 'pointer' | 'text' | 'not-allowed'
-  | 'grab' | 'grabbing' | 'move' | 'crosshair'
-  | 'resize-ns' | 'resize-ew' | 'resize-nesw' | 'resize-nwse'
+  | 'default'
+  | 'pointer'
+  | 'text'
+  | 'not-allowed'
+  | 'grab'
+  | 'grabbing'
+  | 'move'
+  | 'crosshair'
+  | 'resize-ns'
+  | 'resize-ew'
+  | 'resize-nesw'
+  | 'resize-nwse'
 
 const x = ref(-200)
 const y = ref(-200)
@@ -21,17 +30,33 @@ function resolveState(el: Element): CursorState {
     const h = cur as HTMLElement
 
     // Resize handles
-    if (cl.contains('pc-window__resize--n') || cl.contains('scp-window__resize--n') ||
-        cl.contains('pc-window__resize--s') || cl.contains('scp-window__resize--s'))
+    if (
+      cl.contains('pc-window__resize--n') ||
+      cl.contains('scp-window__resize--n') ||
+      cl.contains('pc-window__resize--s') ||
+      cl.contains('scp-window__resize--s')
+    )
       return 'resize-ns'
-    if (cl.contains('pc-window__resize--e') || cl.contains('scp-window__resize--e') ||
-        cl.contains('pc-window__resize--w') || cl.contains('scp-window__resize--w'))
+    if (
+      cl.contains('pc-window__resize--e') ||
+      cl.contains('scp-window__resize--e') ||
+      cl.contains('pc-window__resize--w') ||
+      cl.contains('scp-window__resize--w')
+    )
       return 'resize-ew'
-    if (cl.contains('pc-window__resize--ne') || cl.contains('scp-window__resize--ne') ||
-        cl.contains('pc-window__resize--sw') || cl.contains('scp-window__resize--sw'))
+    if (
+      cl.contains('pc-window__resize--ne') ||
+      cl.contains('scp-window__resize--ne') ||
+      cl.contains('pc-window__resize--sw') ||
+      cl.contains('scp-window__resize--sw')
+    )
       return 'resize-nesw'
-    if (cl.contains('pc-window__resize--nw') || cl.contains('scp-window__resize--nw') ||
-        cl.contains('pc-window__resize--se') || cl.contains('scp-window__resize--se'))
+    if (
+      cl.contains('pc-window__resize--nw') ||
+      cl.contains('scp-window__resize--nw') ||
+      cl.contains('pc-window__resize--se') ||
+      cl.contains('scp-window__resize--se')
+    )
       return 'resize-nwse'
 
     // Dragging state
@@ -39,8 +64,7 @@ function resolveState(el: Element): CursorState {
       return 'grabbing'
 
     // Title bar (grab)
-    if (cl.contains('pc-window__header') || cl.contains('scp-window__header'))
-      return 'grab'
+    if (cl.contains('pc-window__header') || cl.contains('scp-window__header')) return 'grab'
 
     // Desktop icon drag
     if (cl.contains('desktop-screen__icon')) {
@@ -50,8 +74,8 @@ function resolveState(el: Element): CursorState {
     // Inline cursor hints (desktop drag, color picker, etc.)
     const ic = h.style?.cursor
     if (ic === 'grabbing') return 'grabbing'
-    if (ic === 'grab')     return 'grab'
-    if (ic === 'move')     return 'move'
+    if (ic === 'grab') return 'grab'
+    if (ic === 'move') return 'move'
     if (ic === 'crosshair') return 'crosshair'
 
     // Disabled
@@ -59,11 +83,19 @@ function resolveState(el: Element): CursorState {
       return 'not-allowed'
 
     // Text
-    if (h.matches?.('input[type="text"],input[type="search"],input[type="email"],input[type="password"],input[type="url"],input[type="number"],textarea,[contenteditable="true"]'))
+    if (
+      h.matches?.(
+        'input[type="text"],input[type="search"],input[type="email"],input[type="password"],input[type="url"],input[type="number"],textarea,[contenteditable="true"]'
+      )
+    )
       return 'text'
 
     // Pointer
-    if (h.matches?.('a[href],button:not(:disabled),[role="button"],[role="link"],label,summary,select,[tabindex]:not([tabindex="-1"])'))
+    if (
+      h.matches?.(
+        'a[href],button:not(:disabled),[role="button"],[role="link"],label,summary,select,[tabindex]:not([tabindex="-1"])'
+      )
+    )
       return 'pointer'
 
     cur = cur.parentElement
@@ -95,9 +127,8 @@ function onLeave() {
 }
 
 // pointer:fine = mouse/trackpad (PC), pointer:coarse = touch-only (phone/tablet)
-const isTouch = typeof window !== 'undefined'
-  ? !window.matchMedia('(pointer: fine)').matches
-  : false
+const isTouch =
+  typeof window !== 'undefined' ? !window.matchMedia('(pointer: fine)').matches : false
 
 onMounted(() => {
   if (isTouch) return
@@ -154,7 +185,9 @@ onUnmounted(() => {
   background: var(--gui-accent, #e94560);
   border-radius: 1px;
   opacity: 0;
-  transition: opacity 0.12s ease, background 0.3s ease;
+  transition:
+    opacity 0.12s ease,
+    background 0.3s ease;
 }
 
 /* ── pointer ──────────────────────────────────────────── */

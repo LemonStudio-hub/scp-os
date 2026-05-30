@@ -470,9 +470,7 @@
           <div class="settings-slider-sheet__header">
             <span class="settings-slider-sheet__spacer" />
             <span class="settings-slider-sheet__title">{{ t('settings.fontSize') }}</span>
-            <button class="settings-slider-sheet__close" @click="onFontSizeChange(); sliderSheets.fontSize = false">
-              完成
-            </button>
+            <button class="settings-slider-sheet__close" @click="closeFontSizeSheet">完成</button>
           </div>
           <div
             class="settings-slider-sheet__preview"
@@ -578,8 +576,14 @@ const {
 } = useSettings()
 
 const presetAccents = [
-  '#0063D1', '#30D158', '#FF453A', '#FF9F0A',
-  '#BF5AF2', '#64D2FF', '#FF375F', '#FFD60A',
+  '#0063D1',
+  '#30D158',
+  '#FF453A',
+  '#FF9F0A',
+  '#BF5AF2',
+  '#64D2FF',
+  '#FF375F',
+  '#FFD60A',
 ]
 
 function toggleCustomAccent() {
@@ -588,6 +592,11 @@ function toggleCustomAccent() {
   } else {
     themeStore.setCustomAccentColor('#0063D1')
   }
+}
+
+function closeFontSizeSheet() {
+  onFontSizeChange()
+  sliderSheets.fontSize = false
 }
 
 const { quota: cloudQuota, refresh: refreshCloudQuota } = useCloudQuota()

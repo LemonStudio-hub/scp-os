@@ -478,17 +478,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const {
-  t,
-  fmStore,
-  fileInputRef,
-  formatSize,
-  onFileUpload: baseOnFileUpload,
-  createFile,
-  createFolder,
-  renameFile,
-  deleteFile,
-} = useFileManagerOps()
+const { t, fmStore, fileInputRef, formatSize, createFile, createFolder, renameFile, deleteFile } =
+  useFileManagerOps()
 
 setFileManagerI18n({ t })
 
@@ -898,7 +889,6 @@ function readFileAsLocal(file: File): Promise<string> {
       reader.readAsDataURL(file)
     }
   })
-
 }
 
 // ── File open with type detection ───────────────────────────────────

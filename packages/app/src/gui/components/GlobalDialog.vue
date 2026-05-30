@@ -1,7 +1,11 @@
 <template>
   <Teleport to="body">
     <Transition name="dialog-fade">
-      <div v-if="dialogService.current.value" class="g-dialog__overlay" @click.self="onOverlayClick">
+      <div
+        v-if="dialogService.current.value"
+        class="g-dialog__overlay"
+        @click.self="onOverlayClick"
+      >
         <div class="g-dialog__panel" role="dialog" :aria-modal="true">
           <div v-if="dialogService.current.value.title" class="g-dialog__title">
             {{ dialogService.current.value.title }}
@@ -26,9 +30,7 @@
             >
               取消
             </button>
-            <button class="g-dialog__btn g-dialog__btn--confirm" @click="onConfirm">
-              确定
-            </button>
+            <button class="g-dialog__btn g-dialog__btn--confirm" @click="onConfirm">确定</button>
           </div>
         </div>
       </div>
@@ -51,7 +53,7 @@ watch(
     if (state.type === 'prompt') {
       nextTick(() => promptInput.value?.focus())
     }
-  },
+  }
 )
 
 function onConfirm() {
@@ -181,10 +183,14 @@ function onOverlayClick() {
 }
 
 .dialog-fade-enter-active {
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .dialog-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 .dialog-fade-enter-from,
 .dialog-fade-leave-to {

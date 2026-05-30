@@ -50,8 +50,8 @@ const authStore = useAuthStore()
 const mobileAppRef = ref<HTMLDivElement | null>(null)
 
 // Left-edge swipe-right to go back
-const EDGE_THRESHOLD = 30  // px from left edge to start gesture
-const SWIPE_MIN_X = 60     // minimum horizontal distance
+const EDGE_THRESHOLD = 30 // px from left edge to start gesture
+const SWIPE_MIN_X = 60 // minimum horizontal distance
 const SWIPE_MAX_RATIO = 1.5 // horizontal must dominate vertical
 
 let touchStartX = 0

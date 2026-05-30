@@ -45,12 +45,7 @@
 
   <Teleport to="body">
     <Transition name="accent-picker-panel">
-      <div
-        v-if="isOpen"
-        class="accent-picker-panel"
-        :style="panelStyle"
-        @mousedown.stop
-      >
+      <div v-if="isOpen" class="accent-picker-panel" :style="panelStyle" @mousedown.stop>
         <div class="accent-picker-panel__preview" :style="{ '--accent-color': normalizedColor }">
           <span class="accent-picker-panel__swatch" />
           <span class="accent-picker-panel__hex-label">{{ normalizedColor.toUpperCase() }}</span>
@@ -81,11 +76,7 @@
 
         <div class="accent-picker-panel__hue">
           <span>Hue</span>
-          <div
-            ref="hueTrack"
-            class="accent-picker-panel__hue-track"
-            @pointerdown="startHueDrag"
-          >
+          <div ref="hueTrack" class="accent-picker-panel__hue-track" @pointerdown="startHueDrag">
             <div
               class="accent-picker-panel__hue-thumb"
               :style="{ left: `${(internalHsv.h / 360) * 100}%`, background: hueColor }"
@@ -94,7 +85,11 @@
         </div>
 
         <div class="accent-picker-panel__rgb-grid">
-          <label v-for="channel in rgbChannels" :key="channel.key" class="accent-picker-panel__field">
+          <label
+            v-for="channel in rgbChannels"
+            :key="channel.key"
+            class="accent-picker-panel__field"
+          >
             <span>{{ channel.label }}</span>
             <input
               type="number"
@@ -147,10 +142,14 @@ function syncHsvFromColor(color: string) {
 }
 
 // 只有外部 modelValue 变化（非拖拽触发）时才同步
-watch(normalizedColor, (color) => {
-  if (!isDragging) syncHsvFromColor(color)
-  hexInput.value = color.toUpperCase()
-}, { immediate: true })
+watch(
+  normalizedColor,
+  (color) => {
+    if (!isDragging) syncHsvFromColor(color)
+    hexInput.value = color.toUpperCase()
+  },
+  { immediate: true }
+)
 
 const hueColor = computed(() => rgbToHex(hsvToRgb(internalHsv.value.h, 1, 1)))
 
@@ -300,7 +299,11 @@ function normalizeHex(value: string | null | undefined): string | null {
   if (!value) return null
   const trimmed = value.trim()
   const expanded = /^#?[0-9a-fA-F]{3}$/.test(trimmed)
-    ? trimmed.replace('#', '').split('').map((c) => c + c).join('')
+    ? trimmed
+        .replace('#', '')
+        .split('')
+        .map((c) => c + c)
+        .join('')
     : trimmed.replace('#', '')
   return /^[0-9a-fA-F]{6}$/.test(expanded) ? `#${expanded.toLowerCase()}` : null
 }
@@ -321,8 +324,11 @@ function rgbToHex(color: { r: number; g: number; b: number }) {
 }
 
 function rgbToHsv(r: number, g: number, b: number) {
-  const rd = r / 255, gd = g / 255, bd = b / 255
-  const max = Math.max(rd, gd, bd), min = Math.min(rd, gd, bd)
+  const rd = r / 255,
+    gd = g / 255,
+    bd = b / 255
+  const max = Math.max(rd, gd, bd),
+    min = Math.min(rd, gd, bd)
   const delta = max - min
   let h = 0
   if (delta !== 0) {
@@ -339,14 +345,20 @@ function hsvToRgb(h: number, s: number, v: number) {
   const c = v * s
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
   const m = v - c
-  let r = 0, g = 0, b = 0
+  let r = 0,
+    g = 0,
+    b = 0
   if (h < 60) [r, g, b] = [c, x, 0]
   else if (h < 120) [r, g, b] = [x, c, 0]
   else if (h < 180) [r, g, b] = [0, c, x]
   else if (h < 240) [r, g, b] = [0, x, c]
   else if (h < 300) [r, g, b] = [x, 0, c]
   else [r, g, b] = [c, 0, x]
-  return { r: Math.round((r + m) * 255), g: Math.round((g + m) * 255), b: Math.round((b + m) * 255) }
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+  }
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -377,7 +389,10 @@ function clamp(value: number, min: number, max: number) {
   background: var(--preset-color);
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
-  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
 }
 
 .accent-picker__preset:hover {
@@ -409,7 +424,10 @@ function clamp(value: number, min: number, max: number) {
   color: var(--gui-text-primary, #ffffff);
   cursor: pointer;
   overflow: hidden;
-  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
 }
 
 .accent-picker__trigger:hover,
@@ -445,8 +463,7 @@ function clamp(value: number, min: number, max: number) {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
-    #2c2c2e;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)), #2c2c2e;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
@@ -480,8 +497,7 @@ function clamp(value: number, min: number, max: number) {
   margin-bottom: 12px;
   border-radius: 10px;
   background:
-    linear-gradient(180deg, transparent, #000),
-    linear-gradient(90deg, #fff, var(--hue-color));
+    linear-gradient(180deg, transparent, #000), linear-gradient(90deg, #fff, var(--hue-color));
   cursor: crosshair;
   touch-action: none;
   user-select: none;
@@ -493,7 +509,9 @@ function clamp(value: number, min: number, max: number) {
   height: 18px;
   border: 2px solid #ffffff;
   border-radius: 999px;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.35);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -517,7 +535,12 @@ function clamp(value: number, min: number, max: number) {
   border-radius: 8px;
   background: #1c1c1e;
   color: #ffffff;
-  font: 600 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font:
+    600 13px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
   text-align: center;
   outline: none;
   box-sizing: border-box;
@@ -553,7 +576,9 @@ function clamp(value: number, min: number, max: number) {
   height: 18px;
   border-radius: 50%;
   border: 2px solid #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.4);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -567,7 +592,9 @@ function clamp(value: number, min: number, max: number) {
 /* 进入/离开动画 */
 .accent-picker-panel-enter-active,
 .accent-picker-panel-leave-active {
-  transition: opacity 120ms ease, transform 120ms ease;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
 }
 
 .accent-picker-panel-enter-from,

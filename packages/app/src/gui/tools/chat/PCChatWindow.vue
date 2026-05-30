@@ -537,6 +537,7 @@ const authStore = useAuthStore()
 const { t } = useI18n()
 
 const {
+  inputRef,
   inputContent,
   messages,
   rooms,
@@ -612,6 +613,8 @@ onMounted(() => {
 const editingMessageId = ref<number | null>(null)
 const showContextMenu = ref(false)
 const contextMenuMsg = ref<ChatMessage | null>(null)
+const contextMenuX = ref(0)
+const contextMenuY = ref(0)
 
 function sendOrEditMessage() {
   if (editingMessageId.value) {
@@ -625,6 +628,8 @@ function onMessageRightClick(event: MouseEvent, msg: ChatMessage) {
   if (!msg.isSelf || msg.sending || !msg.id) return
   event.preventDefault()
   contextMenuMsg.value = msg
+  contextMenuX.value = event.clientX
+  contextMenuY.value = event.clientY
   showContextMenu.value = true
 }
 

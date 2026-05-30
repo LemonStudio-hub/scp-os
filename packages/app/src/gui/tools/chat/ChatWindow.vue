@@ -394,7 +394,6 @@ interface Props {
 
 import type { ChatMessage } from '../../types/chat'
 
-
 defineProps<Props>()
 defineEmits<{ close: [] }>()
 
@@ -407,6 +406,7 @@ const { t } = useI18n()
 const view = ref<'rooms' | 'chat'>('rooms')
 
 const {
+  inputRef,
   inputContent,
   messages,
   rooms,

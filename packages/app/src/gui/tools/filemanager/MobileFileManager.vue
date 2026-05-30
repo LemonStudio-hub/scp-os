@@ -46,37 +46,93 @@
             @change="onFileUpload"
           />
           <!-- Upload -->
-          <button class="mobile-file-manager__action-btn" :title="t('fm.dropFiles')" @click="triggerUpload">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 15V4"/>
-              <path d="M8 8l4-4 4 4"/>
-              <path d="M4 18h16"/>
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.dropFiles')"
+            @click="triggerUpload"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 15V4" />
+              <path d="M8 8l4-4 4 4" />
+              <path d="M4 18h16" />
             </svg>
           </button>
           <!-- Sync from cloud -->
-          <button class="mobile-file-manager__action-btn" :title="t('fm.syncCloud')" :disabled="cloudSyncing" @click="syncFromCloud">
-            <svg v-if="!cloudSyncing" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17.5 8.5A5.5 5.5 0 008.2 7.2 4 4 0 108.5 15H17a3.5 3.5 0 00.5-7z"/>
-              <path d="M12 21v-7"/>
-              <path d="M9 17l3 4 3-4"/>
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.syncCloud')"
+            :disabled="cloudSyncing"
+            @click="syncFromCloud"
+          >
+            <svg
+              v-if="!cloudSyncing"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M17.5 8.5A5.5 5.5 0 008.2 7.2 4 4 0 108.5 15H17a3.5 3.5 0 00.5-7z" />
+              <path d="M12 21v-7" />
+              <path d="M9 17l3 4 3-4" />
             </svg>
             <div v-else class="mobile-file-manager__spinner" />
           </button>
           <!-- New File -->
-          <button class="mobile-file-manager__action-btn" :title="t('fm.newFile')" @click="createNewFile">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="12" y1="12" x2="12" y2="18"/>
-              <line x1="9" y1="15" x2="15" y2="15"/>
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.newFile')"
+            @click="createNewFile"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="12" y1="12" x2="12" y2="18" />
+              <line x1="9" y1="15" x2="15" y2="15" />
             </svg>
           </button>
           <!-- New Folder -->
-          <button class="mobile-file-manager__action-btn" :title="t('fm.newFolder')" @click="createNewFolder">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 8a2 2 0 012-2h4.17a2 2 0 011.42.59L12 8h7a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-              <line x1="12" y1="12" x2="12" y2="18"/>
-              <line x1="9" y1="15" x2="15" y2="15"/>
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.newFolder')"
+            @click="createNewFolder"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M3 8a2 2 0 012-2h4.17a2 2 0 011.42.59L12 8h7a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+              />
+              <line x1="12" y1="12" x2="12" y2="18" />
+              <line x1="9" y1="15" x2="15" y2="15" />
             </svg>
           </button>
           <!-- Show / hide hidden files -->
@@ -86,15 +142,35 @@
             :title="fmStore.showHidden ? '隐藏隐藏文件' : '显示隐藏文件'"
             @click="fmStore.toggleShowHidden"
           >
-            <svg v-if="!fmStore.showHidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/>
-              <circle cx="12" cy="12" r="3"/>
+            <svg
+              v-if="!fmStore.showHidden"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" />
+              <circle cx="12" cy="12" r="3" />
             </svg>
-            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="3" y1="3" x2="21" y2="21"/>
-              <path d="M10.6 5.6A9.7 9.7 0 0122 12s-1.7 3.8-4.7 5.8"/>
-              <path d="M6.1 6.1A10.5 10.5 0 002 12s4 7 10 7a9.7 9.7 0 005.9-2"/>
-              <path d="M9.2 9.2a3 3 0 004.6 4.6"/>
+            <svg
+              v-else
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="3" y1="3" x2="21" y2="21" />
+              <path d="M10.6 5.6A9.7 9.7 0 0122 12s-1.7 3.8-4.7 5.8" />
+              <path d="M6.1 6.1A10.5 10.5 0 002 12s4 7 10 7a9.7 9.7 0 005.9-2" />
+              <path d="M9.2 9.2a3 3 0 004.6 4.6" />
             </svg>
           </button>
           <!-- Grid / List toggle -->
@@ -104,20 +180,39 @@
             @click="mobileViewMode = mobileViewMode === 'grid' ? 'list' : 'grid'"
           >
             <!-- List icon (shown when in grid mode) -->
-            <svg v-if="mobileViewMode === 'grid'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-              <line x1="9" y1="6" x2="20" y2="6"/>
-              <line x1="9" y1="12" x2="20" y2="12"/>
-              <line x1="9" y1="18" x2="20" y2="18"/>
-              <circle cx="4.5" cy="6" r="1.5" fill="currentColor" stroke="none"/>
-              <circle cx="4.5" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-              <circle cx="4.5" cy="18" r="1.5" fill="currentColor" stroke="none"/>
+            <svg
+              v-if="mobileViewMode === 'grid'"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            >
+              <line x1="9" y1="6" x2="20" y2="6" />
+              <line x1="9" y1="12" x2="20" y2="12" />
+              <line x1="9" y1="18" x2="20" y2="18" />
+              <circle cx="4.5" cy="6" r="1.5" fill="currentColor" stroke="none" />
+              <circle cx="4.5" cy="12" r="1.5" fill="currentColor" stroke="none" />
+              <circle cx="4.5" cy="18" r="1.5" fill="currentColor" stroke="none" />
             </svg>
             <!-- Grid icon (shown when in list mode) -->
-            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            <svg
+              v-else
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
             </svg>
           </button>
         </div>
@@ -296,6 +391,7 @@ import {
   isAudioFile,
   isVideoFile,
   isTextFile,
+  readFileAsLocal,
 } from '../../composables/useFileManagerOps'
 
 interface Props {
@@ -335,6 +431,10 @@ setFileManagerI18n({ t })
 const authStore = useAuthStore()
 const mobileViewMode = ref<'grid' | 'list'>('grid')
 const cloudSyncing = ref(false)
+
+function sanitizeFileName(name: string): string {
+  return name.replace(/[\\/:*?"<>|]/g, '_')
+}
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
@@ -630,7 +730,6 @@ async function onDrop(event: DragEvent) {
     const path = fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
 
     try {
-      const { readFileAsLocal } = await import('../../composables/useFileManagerOps')
       const content = await readFileAsLocal(file)
       const existingNode = filesystem.getNodeByPath(path)
       if (existingNode && existingNode.type === 'file') {
@@ -676,6 +775,55 @@ async function onDrop(event: DragEvent) {
   if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
   if (messages.length > 0) {
     alert(messages.join('，'))
+  }
+}
+
+async function syncFromCloud(): Promise<void> {
+  if (!authStore.userId || cloudSyncing.value) return
+  cloudSyncing.value = true
+  try {
+    const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
+    if (!response.ok) {
+      alert(t('fm.syncFailed') || 'Cloud sync failed')
+      return
+    }
+
+    const result = await response.json()
+    const cloudFiles = result.data || []
+    let success = 0
+    let fail = 0
+
+    for (const file of cloudFiles) {
+      try {
+        const key = String(file.key || '')
+        if (!key) {
+          fail++
+          continue
+        }
+
+        const downloadRes = await authStore.authFetch(
+          `${config.api.workerUrl}/files/${encodeURIComponent(key)}`
+        )
+        if (!downloadRes.ok) {
+          fail++
+          continue
+        }
+
+        const content = await downloadRes.text()
+        filesystem.createFile(`/home/scp/downloads/${key}`, content)
+        success++
+      } catch {
+        fail++
+      }
+    }
+
+    fmStore.loadDirectory()
+    const messages: string[] = []
+    if (success > 0) messages.push(`Synced ${success} file(s)`)
+    if (fail > 0) messages.push(`Failed ${fail} file(s)`)
+    if (messages.length > 0) alert(messages.join(', '))
+  } finally {
+    cloudSyncing.value = false
   }
 }
 
