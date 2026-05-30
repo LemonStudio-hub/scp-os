@@ -109,6 +109,8 @@ export default defineConfig({
     chunkSizeWarningLimit: 500,
   },
   server: {
+    port: 37291,
+    strictPort: true,
     headers: {
       'Cache-Control': 'public, max-age=31536000',
       'X-Content-Type-Options': 'nosniff',

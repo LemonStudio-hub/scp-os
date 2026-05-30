@@ -216,7 +216,7 @@
           </div>
 
           <!-- Custom Accent Color Selection -->
-          <div class="pc-settings__card">
+          <div class="pc-settings__card" style="overflow: visible">
             <div
               class="pc-settings__row"
               style="

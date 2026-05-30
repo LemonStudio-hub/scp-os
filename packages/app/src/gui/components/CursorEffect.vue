@@ -42,6 +42,11 @@ function resolveState(el: Element): CursorState {
     if (cl.contains('pc-window__header') || cl.contains('scp-window__header'))
       return 'grab'
 
+    // Desktop icon drag
+    if (cl.contains('desktop-screen__icon')) {
+      return cl.contains('is-dragging') ? 'grabbing' : 'grab'
+    }
+
     // Inline cursor hints (desktop drag, color picker, etc.)
     const ic = h.style?.cursor
     if (ic === 'grabbing') return 'grabbing'
@@ -66,10 +71,22 @@ function resolveState(el: Element): CursorState {
   return 'default'
 }
 
+// 拖拽时锁定 cursor，防止快速移动移出元素后状态重置
+// 不用 mousedown 监听（resize handle 有 .stop 阻止冒泡），直接在 mousemove 里用 e.buttons 判断
+let lockedState: CursorState | null = null
+
 function onMouseMove(e: MouseEvent) {
   x.value = e.clientX
   y.value = e.clientY
-  if (e.target instanceof Element) state.value = resolveState(e.target)
+
+  if (e.buttons !== 0) {
+    // 第一帧按下时锁定当前状态
+    if (lockedState === null) lockedState = state.value
+    state.value = lockedState
+  } else {
+    lockedState = null
+    if (e.target instanceof Element) state.value = resolveState(e.target)
+  }
 }
 
 function onLeave() {
@@ -101,7 +118,7 @@ onUnmounted(() => {
   left: 0;
   margin: -3.5px 0 0 -3.5px;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 2147483647;
   will-change: transform;
 }
 
@@ -111,13 +128,13 @@ onUnmounted(() => {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #fff;
-  mix-blend-mode: difference;
+  background: var(--gui-accent, #e94560);
   transform-origin: center;
   transform: scale(1);
   transition:
     transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    border-radius 0.18s ease;
+    border-radius 0.18s ease,
+    background 0.3s ease;
 }
 
 /* 伪元素公共：以父中心为原点居中 */
@@ -127,10 +144,10 @@ onUnmounted(() => {
   position: absolute;
   top: 50%;
   left: 50%;
-  background: #fff;
+  background: var(--gui-accent, #e94560);
   border-radius: 1px;
   opacity: 0;
-  transition: opacity 0.12s ease;
+  transition: opacity 0.12s ease, background 0.3s ease;
 }
 
 /* ── pointer ──────────────────────────────────────────── */
@@ -152,14 +169,15 @@ onUnmounted(() => {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-/* ── grab：横向扁椭圆（实心，无空心环） ────────────────── */
+/* ── grab：略微放大的圆 ─────────────────────────────────── */
 .cur-dot--grab {
-  transform: scaleX(2.1) scaleY(0.55);
+  transform: scale(1.6);
+  opacity: 0.7;
 }
 
-/* ── grabbing：小圆 ────────────────────────────────────── */
+/* ── grabbing：缩小实心圆 ──────────────────────────────── */
 .cur-dot--grabbing {
-  transform: scale(0.65);
+  transform: scale(0.8);
 }
 
 /* ── move：圆 + 粗十字 ─────────────────────────────────── */

@@ -1227,7 +1227,7 @@ onUnmounted(() => {
       transparent 1px
     );
   background-size: var(--desktop-grid-pitch) var(--desktop-grid-pitch);
-  background-position: 50px 50px;
+  background-position: 100px 98px;
   opacity: 0.85;
   animation: desktopGridFadeIn 160ms ease-out;
 }
@@ -1275,6 +1275,7 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   opacity: 0.3;
+  pointer-events: none;
 }
 
 /* Desktop Icons */
