@@ -636,7 +636,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
   }
 
-  const executeCommand = () => {
+  const executeCommand = async () => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
 
@@ -654,7 +654,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     autocompleteSuggestions.value = []
     autocompleteIndex.value = 0
 
-    processCommand(command)
+    await processCommand(command)
     writePrompt()
   }
 
@@ -679,13 +679,13 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
   }
 
-  // 辅助函数：执行命令处理器（带错误处理）
-  const executeCommandHandler = (handler: any, args: string[], cmd: string) => {
+  // 辅助函数：执行命令处理器（带错误处理，正确处理 async handler）
+  const executeCommandHandler = async (handler: any, args: string[], cmd: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
 
     try {
-      handler(
+      await handler(
         args,
         (data: string) => safeTerminalWrite(data, false),
         (data: string) => safeTerminalWrite(data, true)
@@ -705,7 +705,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
   }
 
-  const processCommand = (command: string) => {
+  const processCommand = async (command: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) {
       errorHandler.handleError({
@@ -718,7 +718,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
 
     try {
-      const [cmd, ...args] = command.toLowerCase().split(' ')
+      const [cmd, ...args] = command.toLowerCase().trim().split(/\s+/)
 
       // If system is not running, only allow 'start' command
       if (!systemStore.isRunning && cmd !== 'start') {
@@ -737,7 +737,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       const handler = getCommandHandler(cmd as CommandType)
 
       if (handler) {
-        executeCommandHandler(handler, args, cmd)
+        await executeCommandHandler(handler, args, cmd)
       } else {
         terminal.writeln(
           `${ANSICode.red}Unknown command: ${cmd}. Type "help" to see available commands.${ANSICode.reset}`

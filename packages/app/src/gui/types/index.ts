@@ -2,6 +2,10 @@
  * GUI Window Management Types
  */
 
+export * from './chat'
+export * from './feedback'
+export * from './settings'
+
 export type ToolType =
   | 'filemanager'
   | 'editor'

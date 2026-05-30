@@ -3,8 +3,7 @@
  * Plugin system for the SCP-OS platform
  */
 
-export * from './plugin.interface'
-export * from './datasource-plugin.interface'
+export * from './types'
 export * from './ui-component-plugin.interface'
 
 // Export data source plugins

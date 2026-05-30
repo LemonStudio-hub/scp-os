@@ -473,8 +473,11 @@ export class PluginManager {
       }
     } else if (pluginType === 'datasource') {
       const dsPlugin = plugin as DataSourcePlugin
-      if (!dsPlugin.source) {
-        errors.push('DataSource plugin must have source definition')
+      if (!dsPlugin.dataSources || !Array.isArray(dsPlugin.dataSources)) {
+        errors.push('DataSource plugin must have dataSources array')
+      }
+      if (!dsPlugin.metadata) {
+        errors.push('DataSource plugin must have metadata')
       }
     } else if (pluginType === 'ui') {
       const uiPlugin = plugin as UIPlugin
@@ -520,7 +523,9 @@ export class PluginManager {
       this.extensionRegistry.registerTheme(themePlugin.theme)
     } else if (pluginType === 'datasource') {
       const dsPlugin = plugin as DataSourcePlugin
-      this.extensionRegistry.registerDataSource(dsPlugin.source)
+      for (const dataSource of dsPlugin.dataSources) {
+        this.extensionRegistry.registerDataSource(dataSource)
+      }
     } else if (pluginType === 'ui') {
       const uiPlugin = plugin as UIPlugin
       for (const component of uiPlugin.components) {
@@ -546,7 +551,9 @@ export class PluginManager {
       this.extensionRegistry.unregisterTheme(themePlugin.theme)
     } else if (pluginType === 'datasource') {
       const dsPlugin = plugin as DataSourcePlugin
-      this.extensionRegistry.unregisterDataSource(dsPlugin.source)
+      for (const dataSource of dsPlugin.dataSources) {
+        this.extensionRegistry.unregisterDataSource(dataSource)
+      }
     } else if (pluginType === 'ui') {
       const uiPlugin = plugin as UIPlugin
       for (const component of uiPlugin.components) {

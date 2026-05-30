@@ -316,7 +316,11 @@ export const commandHandlers: CommandMap = {
 
         const cnResult = await scraper.scrapeSCP(scpNumber, 'cn')
 
-        if (cnResult.success && cnResult.data) {
+        // 检查中文分部结果是否有效（非空内容）
+        const cnData = cnResult.data
+        const cnIsEmpty = cnData && cnData.objectClass === 'UNKNOWN' && cnData.containment.length === 0 && cnData.description.length === 0
+
+        if (cnResult.success && cnData && !cnIsEmpty) {
           if (cnResult.cached) {
             writeln(`${ANSICode.yellow}[From Cache - Chinese Branch]${ANSICode.reset}`)
             writeln('')
@@ -325,10 +329,10 @@ export const commandHandlers: CommandMap = {
             writeln('')
           }
 
-          const formattedLines = scraper.formatForTerminal(cnResult.data)
+          const formattedLines = scraper.formatForTerminal(cnData)
           formattedLines.forEach((line) => writeln(line))
         } else {
-          // 中文分部找不到，尝试英文主站点
+          // 中文分部找不到或内容为空，尝试英文主站点
           writeln(
             `${ANSICode.yellow}Not found on Chinese Branch, trying English Main Site...${ANSICode.reset}`
           )

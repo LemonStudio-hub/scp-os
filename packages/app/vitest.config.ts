@@ -15,10 +15,10 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       enabled: true,
       thresholds: {
-        lines: 30,
-        branches: 20,
-        functions: 25,
-        statements: 29,
+        lines: 31,
+        branches: 25,
+        functions: 30,
+        statements: 31,
       },
       exclude: [
         'node_modules/',

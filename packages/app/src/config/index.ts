@@ -25,7 +25,6 @@ export const config = {
     name: import.meta.env.VITE_APP_NAME || 'SCP-OS',
     fastBoot: import.meta.env.VITE_FAST_BOOT === 'true' || false,
   },
-  jwtSecret: import.meta.env.VITE_JWT_SECRET || 'scp-os-default-secret-change-in-production',
 } as const
 
 export type Config = typeof config

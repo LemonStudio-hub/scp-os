@@ -226,18 +226,6 @@ export interface ANSIColors {
 }
 
 /**
- * Terminal configuration
- */
-export interface TerminalConfig {
-  /** ANSI colors */
-  ansiColors: ANSIColors
-  /** Font family */
-  fontFamily: string
-  /** Font size */
-  fontSize: number
-}
-
-/**
  * Color palette
  */
 export interface ColorPalette {
@@ -260,7 +248,11 @@ export interface ThemeDefinition {
   /** Colors */
   colors: ColorPalette
   /** Terminal configuration */
-  terminal: TerminalConfig
+  terminal: {
+    ansiColors: ANSIColors
+    fontFamily: string
+    fontSize: number
+  }
 }
 
 /**
@@ -288,15 +280,69 @@ export interface DataSourceClient {
 }
 
 /**
+ * Data source query options
+ */
+export interface DataSourceQueryOptions {
+  /** Limit number of results */
+  limit?: number
+  /** Offset for pagination */
+  offset?: number
+  /** Search keyword */
+  keyword?: string
+  /** Filter by object class */
+  objectClass?: string
+  /** Sort field */
+  sort?: string
+  /** Sort direction */
+  sortDirection?: 'asc' | 'desc'
+}
+
+/**
+ * Data source query result
+ */
+export interface DataSourceQueryResult<T = any> {
+  /** Query results */
+  data: T[]
+  /** Total number of results */
+  total: number
+  /** Whether there are more results */
+  hasMore: boolean
+}
+
+/**
+ * Data source metadata
+ */
+export interface DataSourceMetadata {
+  /** Data source name */
+  name: string
+  /** Data source description */
+  description: string
+  /** Data source author */
+  author: string
+  /** Data source version */
+  version: string
+  /** Data source URL (if remote) */
+  url?: string
+  /** Data source type (e.g., 'api', 'database', 'file') */
+  type: 'api' | 'database' | 'file' | 'memory'
+  /** Data source capabilities */
+  capabilities: string[]
+  /** Whether data source is readonly */
+  readonly?: boolean
+  /** Authentication required */
+  requiresAuth?: boolean
+}
+
+/**
  * Data source definition
  */
 export interface DataSourceDefinition {
+  /** Data source ID */
+  id: string
   /** Data source name */
   name: string
-  /** Data source type */
-  type: 'api' | 'local' | 'custom'
-  /** Data source client */
-  client: DataSourceClient
+  /** Data source metadata */
+  metadata: DataSourceMetadata
 }
 
 /**
@@ -305,22 +351,61 @@ export interface DataSourceDefinition {
 export interface DataSourcePlugin extends Plugin {
   /** Plugin type */
   type: 'datasource'
-  /** Data source configuration */
-  source: DataSourceDefinition
-}
+  /** Data source metadata */
+  metadata: DataSourceMetadata
+  /** Data source definitions provided by this plugin */
+  dataSources: DataSourceDefinition[]
 
-/**
- * UI component definition
- */
-export interface UIComponentDefinition {
-  /** Component name */
-  name: string
-  /** Vue component */
-  component: Component
-  /** Component position */
-  position?: 'sidebar' | 'toolbar' | 'statusbar'
-  /** Component priority (higher = more important) */
-  priority?: number
+  /**
+   * Query data from the data source
+   */
+  query<T = any>(
+    dataSourceId: string,
+    options: DataSourceQueryOptions
+  ): Promise<DataSourceQueryResult<T>>
+
+  /**
+   * Get a single item by ID
+   */
+  get<T = any>(dataSourceId: string, id: string): Promise<T | null>
+
+  /**
+   * Search for items
+   */
+  search<T = any>(
+    dataSourceId: string,
+    keyword: string,
+    options?: DataSourceQueryOptions
+  ): Promise<DataSourceQueryResult<T>>
+
+  /**
+   * Get data source by ID
+   */
+  getDataSource(dataSourceId: string): DataSourceDefinition | null
+
+  /**
+   * Get all data source IDs
+   */
+  getDataSourceIds(): string[]
+
+  /**
+   * Check if plugin provides a specific data source
+   */
+  hasDataSource(dataSourceId: string): boolean
+
+  /**
+   * Test connection to data source
+   */
+  testConnection(dataSourceId: string): Promise<boolean>
+
+  /**
+   * Get data source statistics
+   */
+  getStatistics(dataSourceId: string): Promise<{
+    totalItems: number
+    lastUpdated?: string
+    [key: string]: any
+  }>
 }
 
 /**
@@ -330,7 +415,16 @@ export interface UIPlugin extends Plugin {
   /** Plugin type */
   type: 'ui'
   /** UI components */
-  components: UIComponentDefinition[]
+  components: Array<{
+    /** Component name */
+    name: string
+    /** Vue component */
+    component: Component
+    /** Component position */
+    position?: 'sidebar' | 'toolbar' | 'statusbar'
+    /** Component priority (higher = more important) */
+    priority?: number
+  }>
 }
 
 export type TypedPlugin = CommandPlugin | ThemePlugin | DataSourcePlugin | UIPlugin

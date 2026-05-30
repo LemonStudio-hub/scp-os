@@ -318,7 +318,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useI18n } from '../../composables/useI18n'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
 import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
@@ -327,9 +326,15 @@ import AudioPlayerModal from './AudioPlayerModal.vue'
 import VideoPlayerModal from './VideoPlayerModal.vue'
 import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
-import { useFileManagerStore, setI18n as setFileManagerI18n } from '../../stores/fileManager'
+import { setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { filesystem } from '../../../utils/filesystem'
-// R2 upload disabled — files stored locally in IndexedDB
+import {
+  useFileManagerOps,
+  isImageFile,
+  isAudioFile,
+  isVideoFile,
+  isTextFile,
+} from '../../composables/useFileManagerOps'
 
 interface Props {
   visible: boolean
@@ -346,20 +351,19 @@ interface ContextAction {
 defineProps<Props>()
 defineEmits<{ close: [] }>()
 
-const i18n = useI18n()
-const { t } = i18n
+const { t, fmStore, fileInputRef, formatSize, triggerUpload, onFileUpload: baseOnFileUpload, createFile, createFolder, renameFile, deleteFile } = useFileManagerOps()
 
-// Wire i18n to file manager store
-setFileManagerI18n({ t: i18n.t })
+// Suppress TypeScript warning - fileInputRef is used in template
+void fileInputRef
 
-const fmStore = useFileManagerStore()
+setFileManagerI18n({ t })
+
 const mobileViewMode = ref<'grid' | 'list'>('grid')
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
 })
 
-// Breadcrumbs
 const breadcrumbSegments = computed(() => {
   const segments = fmStore.currentPath.split('/').filter(Boolean)
   return [
@@ -383,7 +387,6 @@ function onBreadcrumbClick(event: MouseEvent) {
   }
 }
 
-// Dialog state
 const dialogVisible = ref(false)
 const dialogType = ref<'input' | 'confirm'>('input')
 const dialogTitle = ref('')
@@ -423,57 +426,20 @@ function onDialogConfirm(value: string | true) {
   }
 }
 
-// Text Editor
 const textEditorVisible = ref(false)
 const editingFile = ref<any>(null)
-
-// Image Viewer
 const imageViewerVisible = ref(false)
 const viewingImageFile = ref<any>(null)
-
-// Audio Player
 const audioPlayerVisible = ref(false)
 const playingAudioFile = ref<any>(null)
-
-// Video Player
 const videoPlayerVisible = ref(false)
 const playingVideoFile = ref<any>(null)
 
-// Context Menu State
 const contextSheetVisible = ref(false)
 const contextSheetTitle = ref('')
 const contextActions = ref<ContextAction[]>([])
 const contextTargetFile = ref<any>(null)
-// const listRef = ref<HTMLElement | null>(null)
-const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragOver = ref(false)
-
-// File type detection helpers
-const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
-const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
-const VIDEO_EXTS = ['mp4', 'webm', 'avi', 'mov', 'mkv']
-const TEXT_EXTS = [
-  'txt',
-  'md',
-  'log',
-  'json',
-  'xml',
-  'yml',
-  'yaml',
-  'js',
-  'ts',
-  'css',
-  'html',
-  'vue',
-]
-
-function formatSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-}
 
 function onFileTap(file: any) {
   if (file.isDirectory) {
@@ -481,88 +447,29 @@ function onFileTap(file: any) {
       fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
     )
   } else {
-    const ext = file.name.split('.').pop()?.toLowerCase() || ''
-    const textExts = ['txt', 'md', 'log', 'json', 'xml', 'yml', 'yaml']
-    const codeExts = ['js', 'ts', 'css', 'html', 'vue']
-    const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
-    const audioExts = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
-    const videoExts = ['mp4', 'webm', 'avi', 'mov', 'mkv']
-
-    if (imageExts.includes(ext)) {
+    if (isImageFile(file.name)) {
       viewingImageFile.value = file
       imageViewerVisible.value = true
-    } else if (audioExts.includes(ext)) {
+    } else if (isAudioFile(file.name)) {
       playingAudioFile.value = file
       audioPlayerVisible.value = true
-    } else if (videoExts.includes(ext)) {
+    } else if (isVideoFile(file.name)) {
       playingVideoFile.value = file
       videoPlayerVisible.value = true
-    } else if (textExts.includes(ext) || codeExts.includes(ext)) {
+    } else if (isTextFile(file.name)) {
       editingFile.value = file
       textEditorVisible.value = true
     } else {
-      // Try to open as text anyway
       editingFile.value = file
       textEditorVisible.value = true
     }
   }
-}
-
-function triggerUpload() {
-  fileInputRef.value?.click()
-}
-
-function readFileAsLocal(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (
-      file.type.startsWith('text/') ||
-      /\.(txt|md|json|js|ts|css|html|vue|py|sh|xml|yaml|yml|sql|log|csv|tsv)$/i.test(file.name)
-    ) {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsText(file)
-    } else {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    }
-  })
 }
 
 async function onFileUpload(event: Event) {
-  const input = event.target as HTMLInputElement
-  const files = input.files
-  if (!files || files.length === 0) return
-
-  let successCount = 0
-  let failCount = 0
-
-  for (const file of files) {
-    const path =
-      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
-
-    try {
-      const content = await readFileAsLocal(file)
-      const existingNode = filesystem.getNodeByPath(path)
-      if (existingNode && existingNode.type === 'file') {
-        filesystem.writeFile(path, content)
-      } else {
-        filesystem.createFile(path, content)
-      }
-      successCount++
-    } catch (error) {
-      console.error('[FileManager] Failed to store file locally:', error)
-      failCount++
-    }
-  }
-
-  fmStore.loadDirectory(fmStore.currentPath)
-  input.value = ''
-
-  if (failCount > 0) {
-    alert(`Stored ${successCount} file(s) locally, ${failCount} failed.`)
+  const result = await baseOnFileUpload(event)
+  if (result.fail > 0) {
+    alert(`Stored ${result.success} file(s) locally, ${result.fail} failed.`)
   }
 }
 
@@ -576,13 +483,7 @@ async function createNewFile() {
   })
 
   if (name && typeof name === 'string' && name.trim()) {
-    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
-    try {
-      filesystem.writeFile(path, '')
-      fmStore.loadDirectory(fmStore.currentPath)
-    } catch (error) {
-      console.error('[FileManager] Failed to create file:', error)
-    }
+    createFile(name.trim())
   }
 }
 
@@ -596,13 +497,7 @@ async function createNewFolder() {
   })
 
   if (name && typeof name === 'string' && name.trim()) {
-    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
-    try {
-      filesystem.createDirectory(path)
-      fmStore.loadDirectory(fmStore.currentPath)
-    } catch (error) {
-      console.error('[FileManager] Failed to create folder:', error)
-    }
+    createFolder(name.trim())
   }
 }
 
@@ -610,19 +505,12 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
   contextTargetFile.value = file
   contextSheetTitle.value = file.name
 
-  const ext = file.name.split('.').pop()?.toLowerCase() || ''
-  const isImage = IMAGE_EXTS.includes(ext)
-  const isAudio = AUDIO_EXTS.includes(ext)
-  const isVideo = VIDEO_EXTS.includes(ext)
-  const isText = TEXT_EXTS.includes(ext)
-
   contextActions.value = []
 
-  if (isText) {
+  if (isTextFile(file.name)) {
     contextActions.value.push({
       id: 'edit',
       label: t('common.edit'),
-
       fn: () => {
         editingFile.value = file
         textEditorVisible.value = true
@@ -631,11 +519,10 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     })
   }
 
-  if (isImage) {
+  if (isImageFile(file.name)) {
     contextActions.value.push({
       id: 'view',
       label: t('fm.viewImage'),
-
       fn: () => {
         viewingImageFile.value = file
         imageViewerVisible.value = true
@@ -644,11 +531,10 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     })
   }
 
-  if (isAudio) {
+  if (isAudioFile(file.name)) {
     contextActions.value.push({
       id: 'play-audio',
       label: 'Play Audio',
-
       fn: () => {
         playingAudioFile.value = file
         audioPlayerVisible.value = true
@@ -657,11 +543,10 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     })
   }
 
-  if (isVideo) {
+  if (isVideoFile(file.name)) {
     contextActions.value.push({
       id: 'play-video',
       label: 'Play Video',
-
       fn: () => {
         playingVideoFile.value = file
         videoPlayerVisible.value = true
@@ -674,7 +559,6 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     {
       id: 'rename',
       label: t('common.rename'),
-
       fn: async () => {
         const newName = await showDialog({
           type: 'input',
@@ -685,16 +569,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
         })
 
         if (newName && typeof newName === 'string' && newName !== file.name) {
-          const oldPath =
-            fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
-          const newPath =
-            fmStore.currentPath === '/' ? '/' + newName : fmStore.currentPath + '/' + newName
-          try {
-            filesystem.moveNode(oldPath, newPath)
-            fmStore.loadDirectory(fmStore.currentPath)
-          } catch (error) {
-            console.error('[FileManager] Failed to rename:', error)
-          }
+          renameFile(file.name, newName)
         }
         contextSheetVisible.value = false
       },
@@ -702,7 +577,6 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     {
       id: 'delete',
       label: t('common.delete'),
-
       danger: true,
       fn: async () => {
         const confirmed = await showDialog({
@@ -714,14 +588,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
         })
 
         if (confirmed) {
-          const path =
-            fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
-          try {
-            filesystem.deleteNode(path)
-            fmStore.loadDirectory(fmStore.currentPath)
-          } catch (error) {
-            console.error('[FileManager] Failed to delete:', error)
-          }
+          deleteFile(file.name)
         }
         contextSheetVisible.value = false
       },
@@ -737,7 +604,6 @@ function onListContextMenu(_event: MouseEvent) {
     {
       id: 'new-file',
       label: t('fm.newFile'),
-
       fn: () => {
         createNewFile()
         contextSheetVisible.value = false
@@ -746,7 +612,6 @@ function onListContextMenu(_event: MouseEvent) {
     {
       id: 'new-folder',
       label: t('fm.newFolder'),
-
       fn: () => {
         createNewFolder()
         contextSheetVisible.value = false
@@ -766,7 +631,6 @@ function onSaveTextFile(data: { name: string; content: string }) {
   }
 }
 
-// Drag & Drop
 function onDragOver() {
   isDragOver.value = true
 }
@@ -788,6 +652,7 @@ async function onDrop(event: DragEvent) {
       fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
 
     try {
+      const { readFileAsLocal } = await import('../../composables/useFileManagerOps')
       const content = await readFileAsLocal(file)
       const existingNode = filesystem.getNodeByPath(path)
       if (existingNode && existingNode.type === 'file') {
