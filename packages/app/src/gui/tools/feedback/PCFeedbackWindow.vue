@@ -228,6 +228,7 @@
 
 <script setup lang="ts">
 import PCWindow from '../../components/PCWindow.vue'
+import { useI18n } from '../../composables/useI18n'
 import { useFeedback } from '../../composables/useFeedback'
 import type { WindowInstance } from '../../types'
 
@@ -241,8 +242,8 @@ defineEmits<{
   close: []
 }>()
 
+const { t } = useI18n()
 const {
-  t,
   tabs,
   activeTab,
   form,

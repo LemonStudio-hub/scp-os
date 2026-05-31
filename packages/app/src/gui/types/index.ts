@@ -2,10 +2,7 @@
  * GUI Window Management Types
  */
 
-export * from './chat'
-export * from './feedback'
-export * from './settings'
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type ToolType =
   | 'filemanager'
   | 'editor'
@@ -233,3 +230,7 @@ export interface ToolbarItem {
   badge?: number
   disabled?: boolean
 }
+
+export * from './feedback'
+export * from './settings'
+export * from './chat'

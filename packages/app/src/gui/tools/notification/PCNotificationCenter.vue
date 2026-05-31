@@ -148,10 +148,7 @@
               <p class="notif-center__item-title">{{ item.title }}</p>
               <p class="notif-center__item-body">{{ item.actor_nickname }}: {{ item.body }}</p>
             </div>
-            <button
-              class="notif-center__item-delete"
-              @click.stop="store.deleteNotification(item.id)"
-            >
+            <button class="notif-center__item-delete" @click.stop="deleteNotification(item.id)">
               <svg
                 width="12"
                 height="12"
@@ -173,8 +170,10 @@
 
 <script setup lang="ts">
 import SCPWindow from '../../components/SCPWindow.vue'
+import { useI18n } from '../../composables/useI18n'
 import { useNotificationCenter } from '../../composables/useNotificationCenter'
 import type { WindowInstance } from '../../types'
+import type { AppNotification } from '../../../stores/notificationStore'
 
 interface Props {
   windowInstance: WindowInstance
@@ -183,20 +182,21 @@ interface Props {
 defineProps<Props>()
 const emit = defineEmits<{ close: [] }>()
 
+const { t } = useI18n()
 const {
-  t,
   store,
   showPrefs,
   prefItems,
   typeLabel,
   formatTimeAgo,
-  handleClick: baseHandleClick,
   markAllRead,
+  deleteNotification,
   togglePref,
+  handleNotificationClick,
 } = useNotificationCenter()
 
-async function handleClick(item: any): Promise<void> {
-  await baseHandleClick(item)
+async function handleClick(item: AppNotification): Promise<void> {
+  await handleNotificationClick(item)
   emit('close')
 }
 

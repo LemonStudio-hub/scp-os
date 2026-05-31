@@ -1,3 +1,15 @@
+export type FeedbackVote = 'up' | 'down'
+
+export interface Comment {
+  id: number
+  feedback_id: number
+  user_id: string
+  nickname: string
+  content: string
+  created_at: string
+  updated_at: string
+}
+
 export interface FeedbackItem {
   id: number
   user_id: string
@@ -11,34 +23,13 @@ export interface FeedbackItem {
   upvotes: number
   downvotes: number
   commentsCount: number
-  userVote?: 'up' | 'down' | null
+  userVote?: FeedbackVote | null
   showComments: boolean
-  comments: CommentItem[]
-}
-
-export interface CommentItem {
-  id: number
-  feedback_id: number
-  user_id: string
-  nickname: string
-  content: string
-  created_at: string
-  updated_at: string
+  comments: Comment[]
 }
 
 export interface FeedbackForm {
   title: string
   content: string
   category: string
-}
-
-export interface FeedbackCategory {
-  id: string
-  label: string
-  icon: string
-}
-
-export interface FeedbackTab {
-  id: string
-  label: string
 }

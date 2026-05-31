@@ -143,7 +143,9 @@
 
 <script setup lang="ts">
 import MobileWindow from '../../components/MobileWindow.vue'
+import { useI18n } from '../../composables/useI18n'
 import { useNotificationCenter } from '../../composables/useNotificationCenter'
+import type { AppNotification } from '../../../stores/notificationStore'
 
 interface Props {
   visible: boolean
@@ -151,17 +153,21 @@ interface Props {
 defineProps<Props>()
 defineEmits<{ close: [] }>()
 
+const { t } = useI18n()
 const {
-  t,
   store,
   showPrefs,
   prefItems,
   typeLabel,
   formatTimeAgo,
-  handleClick,
   markAllRead,
   togglePref,
+  handleNotificationClick,
 } = useNotificationCenter()
+
+async function handleClick(item: AppNotification): Promise<void> {
+  await handleNotificationClick(item)
+}
 </script>
 
 <style scoped>
