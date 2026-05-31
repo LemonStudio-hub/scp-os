@@ -1,3 +1,7 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <SCPWindow :window-instance="windowInstance" @close="onClose">
     <div class="text-editor">
@@ -302,6 +306,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import {
   EditorView,
@@ -342,6 +347,7 @@ import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useTextEditorStore } from '../../stores/textEditor'
 import { registerShortcut, setContext } from '../../composables/useKeyboardShortcuts'
 import { useI18n } from '../../composables/useI18n'
+import { dialogService } from '../../composables/useDialog'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -684,10 +690,10 @@ async function saveAll(): Promise<void> {
   await editorStore.saveAll()
 }
 
-function onCloseFile(fileId: string): void {
+async function onCloseFile(fileId: string): Promise<void> {
   const file = editorStore.openFiles.find((f) => f.id === fileId)
   if (file?.dirty) {
-    if (!confirm(t('editor.unsavedChanges', { name: file.name }))) {
+    if (!(await dialogService.confirm(t('editor.unsavedChanges', { name: file.name })))) {
       return
     }
   }

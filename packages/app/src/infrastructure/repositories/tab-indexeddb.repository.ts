@@ -9,6 +9,8 @@ import type { TabType, TabStatus } from '../../domain/entities'
 import { IndexedDBBaseRepository } from './indexeddb-base.repository'
 import logger from '../../utils/logger'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Tab IndexedDB Repository
  */
@@ -39,6 +41,7 @@ export class TabIndexedDBRepository
   /**
    * Convert entity to DB format
    */
+
   protected toDB(entity: TabEntity): any {
     return entity.toJSON()
   }
@@ -46,6 +49,7 @@ export class TabIndexedDBRepository
   /**
    * Convert DB format to entity
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected fromDB(data: any): TabEntity {
     return TabEntity.fromJSON(data)
   }
@@ -262,7 +266,7 @@ export class TabIndexedDBRepository
   /**
    * Update tab data
    */
-  async updateData(tabId: string, key: string, value: any): Promise<void> {
+  async updateData(tabId: string, key: string, value: unknown): Promise<void> {
     const tab = await this.findById(tabId)
     if (!tab) {
       throw new Error(`Tab ${tabId} not found`)

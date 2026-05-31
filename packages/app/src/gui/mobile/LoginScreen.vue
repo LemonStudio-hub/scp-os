@@ -53,7 +53,7 @@
       <p class="login-screen__subtitle">输入您的工作代号以开始</p>
 
       <!-- Login Form -->
-      <form class="login-screen__form" @submit.prevent="handleLogin" aria-label="登录表单">
+      <form class="login-screen__form" aria-label="登录表单" @submit.prevent="handleLogin">
         <!-- Input Field -->
         <div class="login-screen__input-wrapper">
           <label for="mobile-nickname-input" class="sr-only">工作代号</label>

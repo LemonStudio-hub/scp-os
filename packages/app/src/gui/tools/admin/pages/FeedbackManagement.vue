@@ -84,7 +84,7 @@
       width="520px"
       @close="detailVisible = false"
     >
-      <div class="feedback-mgmt__detail" v-if="detailTarget">
+      <div v-if="detailTarget" class="feedback-mgmt__detail">
         <div class="feedback-mgmt__detail-row">
           <span class="feedback-mgmt__detail-label">{{ t('admin.feedback.colTitle') }}</span>
           <span class="feedback-mgmt__detail-value">{{ detailTarget.title }}</span>
@@ -128,6 +128,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, onMounted } from 'vue'
 import { DataTable, Pagination, ConfirmDialog, Modal } from '../components'
 import type { TableColumn } from '../components'

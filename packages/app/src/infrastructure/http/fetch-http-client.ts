@@ -3,6 +3,8 @@
  * HTTP client implementation using Fetch API
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { IHttpClient, HttpRequestOptions, HttpResponse } from './http-client.interface'
 import { HttpError } from './http-client.interface'
 

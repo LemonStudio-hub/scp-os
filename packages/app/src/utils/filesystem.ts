@@ -134,7 +134,7 @@ export class FileSystem {
                       size: 70,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Terminal\nType=Application\nTool=terminal\nIcon=terminal\nX=50\nY=50',
+                        '[Desktop Entry]\nName=终端\nType=Application\nTool=terminal\nIcon=terminal\nX=50\nY=50',
                     },
                     'files.desktop': {
                       name: 'files.desktop',
@@ -149,7 +149,7 @@ export class FileSystem {
                       size: 62,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Files\nType=Application\nTool=filemanager\nIcon=folder\nX=180\nY=50',
+                        '[Desktop Entry]\nName=文件\nType=Application\nTool=filemanager\nIcon=folder\nX=180\nY=50',
                     },
                     'chat.desktop': {
                       name: 'chat.desktop',
@@ -164,7 +164,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Chat\nType=Application\nTool=chat\nIcon=chat\nX=310\nY=50',
+                        '[Desktop Entry]\nName=聊天\nType=Application\nTool=chat\nIcon=chat\nX=310\nY=50',
                     },
                     'dash.desktop': {
                       name: 'dash.desktop',
@@ -179,7 +179,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Dash\nType=Application\nTool=dash\nIcon=grid\nX=50\nY=180',
+                        '[Desktop Entry]\nName=仪表盘\nType=Application\nTool=dash\nIcon=grid\nX=50\nY=180',
                     },
                     'feedback.desktop': {
                       name: 'feedback.desktop',
@@ -194,7 +194,7 @@ export class FileSystem {
                       size: 70,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Feedback\nType=Application\nTool=feedback\nIcon=feedback\nX=180\nY=180',
+                        '[Desktop Entry]\nName=反馈\nType=Application\nTool=feedback\nIcon=feedback\nX=180\nY=180',
                     },
                     'docs.desktop': {
                       name: 'docs.desktop',
@@ -209,7 +209,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Docs\nType=Application\nTool=docs\nIcon=document\nX=310\nY=180',
+                        '[Desktop Entry]\nName=文档\nType=Application\nTool=docs\nIcon=document\nX=310\nY=180',
                     },
                     'settings.desktop': {
                       name: 'settings.desktop',
@@ -224,7 +224,22 @@ export class FileSystem {
                       size: 72,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Settings\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
+                        '[Desktop Entry]\nName=设置\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
+                    },
+                    'appmanager.desktop': {
+                      name: 'appmanager.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 78,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=App Manager\nType=Application\nTool=appmanager\nIcon=grid\nX=180\nY=310',
                     },
                     'editor.desktop': {
                       name: 'editor.desktop',
@@ -239,7 +254,7 @@ export class FileSystem {
                       size: 62,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Editor\nType=Application\nTool=editor\nIcon=edit\nX=310\nY=310',
+                        '[Desktop Entry]\nName=编辑器\nType=Application\nTool=editor\nIcon=edit\nX=310\nY=310',
                     },
                   },
                 },
@@ -420,6 +435,13 @@ export class FileSystem {
       if (!(name in parent.children)) {
         parent.children[name] = JSON.parse(JSON.stringify(template))
       } else if (template.type === 'directory' && template.children) {
+        if (path.join('/') === '/home/scp/desktop') {
+          const appManagerShortcut = template.children['appmanager.desktop']
+          if (appManagerShortcut) {
+            ensureNode([...path, 'appmanager.desktop'], appManagerShortcut)
+          }
+          return
+        }
         for (const [childName, childTemplate] of Object.entries(template.children)) {
           ensureNode([...path, childName], childTemplate)
         }
@@ -601,6 +623,9 @@ export class FileSystem {
 
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
@@ -637,6 +662,9 @@ export class FileSystem {
 
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
@@ -663,6 +691,9 @@ export class FileSystem {
     delete parentNode.children[nodeName]
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
@@ -725,6 +756,9 @@ export class FileSystem {
     }
 
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 

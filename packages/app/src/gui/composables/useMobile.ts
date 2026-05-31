@@ -8,8 +8,6 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 const screenWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 const screenHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 768)
-const isMobileUA =
-  typeof navigator !== 'undefined' ? /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) : false
 
 // Safe area insets (populated from CSS env() values)
 const safeArea = ref({
@@ -38,7 +36,7 @@ function onResize(): void {
 
 export function useMobile() {
   // Mobile: phone-sized screens OR mobile user agent on small screens
-  const isMobile = computed(() => screenWidth.value <= 768 && isMobileUA)
+  const isMobile = computed(() => screenWidth.value <= 768)
   // Tablet: medium screens (769-1024px)
   const isTablet = computed(() => screenWidth.value > 768 && screenWidth.value <= 1024)
   // Desktop: large screens OR non-mobile devices on medium+ screens

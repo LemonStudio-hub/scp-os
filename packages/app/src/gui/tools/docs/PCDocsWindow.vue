@@ -1,4 +1,7 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <SCPWindow :window-instance="windowInstance" @close="onClose">
     <div class="pc-docs" :class="`pc-docs--${reader.readerTheme.value}`">
       <!-- Left Sidebar -->
@@ -23,8 +26,21 @@
           />
         </div>
 
+        <!-- Doc Type Tabs -->
+        <div class="pc-docs__doc-type-tabs">
+          <button
+            v-for="dt in reader.DOC_TYPE_OPTIONS"
+            :key="dt.value"
+            class="pc-docs__doc-type-tab"
+            :class="{ 'pc-docs__doc-type-tab--active': reader.docType.value === dt.value }"
+            @click="reader.setDocType(dt.value)"
+          >
+            {{ dt.label }}
+          </button>
+        </div>
+
         <!-- Filters -->
-        <div class="pc-docs__filters">
+        <div v-if="reader.docType.value === 'scp'" class="pc-docs__filters">
           <div class="pc-docs__filter-group">
             <select
               :value="reader.selectedSeries.value ?? ''"
@@ -125,12 +141,13 @@
                 'pc-docs__item--active':
                   reader.currentArticle.value?.scpNumber === article.scpNumber,
               }"
-              @click="reader.selectArticle(article.scpNumber)"
+              @click="reader.selectArticle(article.scpNumber, article.url)"
             >
               <div class="pc-docs__item-number">{{ article.scpNumber }}</div>
               <div class="pc-docs__item-body">
                 <span class="pc-docs__item-title">{{ article.title }}</span>
                 <span
+                  v-if="reader.docType.value === 'scp'"
                   class="pc-docs__item-class"
                   :style="{ color: reader.OBJECT_CLASS_COLORS[article.objectClass] }"
                   >{{ article.objectClass }}</span
@@ -216,39 +233,6 @@
                 @click="reader.increaseFontSize()"
               >
                 <span class="pc-docs__font-label pc-docs__font-label--large">A+</span>
-              </button>
-              <!-- Theme Toggle -->
-              <button
-                class="pc-docs__toolbar-btn"
-                :title="
-                  reader.readerTheme.value === 'dark' ? t('docs.lightMode') : t('docs.darkMode')
-                "
-                @click="reader.toggleTheme()"
-              >
-                <svg
-                  v-if="reader.readerTheme.value === 'dark'"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                >
-                  <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.5" />
-                  <path
-                    d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"
-                    stroke="currentColor"
-                    stroke-width="1.3"
-                    stroke-linecap="round"
-                  />
-                </svg>
-                <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
               </button>
               <!-- Favorite -->
               <button
@@ -367,6 +351,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, onMounted, onBeforeUnmount, nextTick, watch, computed } from 'vue'
 import DOMPurify from 'dompurify'
 import SCPWindow from '../../components/SCPWindow.vue'
@@ -507,13 +492,16 @@ onBeforeUnmount(() => {
   --docs-bg: #0e0e0e;
   --docs-surface: #1a1a1c;
   --docs-surface-hover: #2c2c2e;
+  --docs-bg-hover: #2c2c2e;
   --docs-border: rgba(255, 255, 255, 0.06);
   --docs-text-primary: #f0f0f0;
   --docs-text-secondary: #a8a8a8;
   --docs-text-tertiary: #6a6a6a;
   --docs-accent: #8e8e93;
+  --docs-accent-soft: rgba(142, 142, 147, 0.12);
   --docs-content-bg: #111113;
   --docs-content-text: #e0e0e0;
+  --docs-popover-shadow: rgba(0, 0, 0, 0.2);
 
   display: flex;
   height: 100%;
@@ -524,16 +512,19 @@ onBeforeUnmount(() => {
 
 /* Light theme overrides */
 .pc-docs--light {
-  --docs-bg: #f5f5f7;
+  --docs-bg: #f2f2f7;
   --docs-surface: #ffffff;
-  --docs-surface-hover: #e8e8ed;
-  --docs-border: rgba(0, 0, 0, 0.08);
-  --docs-text-primary: #1d1d1f;
-  --docs-text-secondary: #6e6e73;
-  --docs-text-tertiary: #86868b;
-  --docs-accent: #007aff;
+  --docs-surface-hover: #e8e8ee;
+  --docs-bg-hover: #e8e8ee;
+  --docs-border: rgba(0, 0, 0, 0.12);
+  --docs-text-primary: #000000;
+  --docs-text-secondary: #48484a;
+  --docs-text-tertiary: #6c6c70;
+  --docs-accent: #0063d1;
+  --docs-accent-soft: rgba(0, 99, 209, 0.1);
   --docs-content-bg: #ffffff;
-  --docs-content-text: #1d1d1f;
+  --docs-content-text: #000000;
+  --docs-popover-shadow: rgba(0, 0, 0, 0.12);
 }
 
 /* ── Sidebar ────────────────────────────────────────────────────────── */
@@ -582,6 +573,43 @@ onBeforeUnmount(() => {
 
 .pc-docs__search-input::placeholder {
   color: var(--docs-text-tertiary);
+}
+
+/* ── Doc Type Tabs ──────────────────────────────────────────────────── */
+.pc-docs__doc-type-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--docs-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pc-docs__doc-type-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.pc-docs__doc-type-tab {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--docs-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.pc-docs__doc-type-tab:hover {
+  background: var(--docs-bg-hover);
+  color: var(--docs-text-primary);
+}
+
+.pc-docs__doc-type-tab--active {
+  background: var(--docs-accent-soft);
+  color: var(--docs-accent);
 }
 
 /* ── Filters ────────────────────────────────────────────────────────── */
@@ -881,13 +909,13 @@ onBeforeUnmount(() => {
 }
 
 .pc-docs__cache-status--loading .pc-docs__cache-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: cache-pulse 1s ease-in-out infinite;
 }
 
 .pc-docs__cache-status--cached .pc-docs__cache-dot {
-  background: #34c759;
-  box-shadow: 0 0 4px rgba(52, 199, 89, 0.5);
+  background: var(--gui-success, #34c759);
+  box-shadow: 0 0 4px var(--gui-success-bg, rgba(52, 199, 89, 0.5));
 }
 
 @keyframes cache-pulse {
@@ -913,7 +941,7 @@ onBeforeUnmount(() => {
   z-index: 50;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: -4px 4px 16px var(--docs-popover-shadow);
 }
 
 .pc-docs__toc-header {
@@ -990,7 +1018,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.15s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px var(--docs-popover-shadow);
   z-index: 10;
 }
 
@@ -1071,6 +1099,62 @@ onBeforeUnmount(() => {
   max-width: 780px;
   margin: 0 auto;
   word-wrap: break-word;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-wrap) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-hero),
+.pc-docs--light .pc-docs__article :deep(.guide-intro-card),
+.pc-docs--light .pc-docs__article :deep(.guide-cmd-block) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-toc),
+.pc-docs--light .pc-docs__article :deep(.guide-app-card),
+.pc-docs--light .pc-docs__article :deep(.guide-step),
+.pc-docs--light .pc-docs__article :deep(.guide-faq-item),
+.pc-docs--light .pc-docs__article :deep(.guide-shortcut) {
+  background: #ffffff !important;
+  border-color: var(--docs-border) !important;
+  box-shadow: none !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-hero h1),
+.pc-docs--light .pc-docs__article :deep(.guide-section-title h2),
+.pc-docs--light .pc-docs__article :deep(.guide-app-card h4),
+.pc-docs--light .pc-docs__article :deep(.guide-step-content h4),
+.pc-docs--light .pc-docs__article :deep(.guide-faq-item h4),
+.pc-docs--light .pc-docs__article :deep(.guide-section li strong) {
+  color: var(--docs-text-primary) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-hero p),
+.pc-docs--light .pc-docs__article :deep(.guide-section p),
+.pc-docs--light .pc-docs__article :deep(.guide-section li),
+.pc-docs--light .pc-docs__article :deep(.guide-app-card p),
+.pc-docs--light .pc-docs__article :deep(.guide-step-content p),
+.pc-docs--light .pc-docs__article :deep(.guide-faq-item p),
+.pc-docs--light .pc-docs__article :deep(.guide-shortcut-desc) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-section code),
+.pc-docs--light .pc-docs__article :deep(.guide-shortcut-key),
+.pc-docs--light .pc-docs__article :deep(.guide-step-tools code) {
+  background: #eef1f5 !important;
+  border-color: var(--docs-border) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-section pre) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.pc-docs--light .pc-docs__article :deep(.guide-section pre code) {
+  color: var(--docs-text-primary) !important;
 }
 
 .pc-docs__article :deep(h1) {

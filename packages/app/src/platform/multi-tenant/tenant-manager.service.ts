@@ -5,6 +5,8 @@
 
 import type { IEventBus } from '../events/event-bus'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Tenant Metadata
  */

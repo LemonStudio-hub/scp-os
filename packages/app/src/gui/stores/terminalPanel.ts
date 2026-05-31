@@ -3,6 +3,8 @@
  * Per-panel terminal instances and history.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 

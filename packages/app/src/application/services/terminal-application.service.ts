@@ -87,7 +87,7 @@ export class TerminalApplicationService implements IApplicationService {
    */
   async getTabContent(tabId: string): Promise<string> {
     const tab = await this.tabRepository.findById(tabId)
-    return tab?.getData('content') || ''
+    return (tab?.getData('content') as string) || ''
   }
 
   /**

@@ -200,6 +200,7 @@ import type { TableColumn, BatchAction } from '../components'
 import { useToast } from '../composables/useToast'
 import { useAdminStore } from '../stores/adminStore'
 import { useI18n } from '../../../composables/useI18n'
+import { dialogService } from '../../../composables/useDialog'
 import * as adminApi from '../services/adminApi'
 
 const toast = useToast()
@@ -252,14 +253,15 @@ const tabs = computed<ContentTab[]>(() => [
     label: t('admin.content.tabGoi'),
     columns: [
       { key: 'id', label: 'ID', width: '70px' },
-      { key: 'name', label: t('admin.content.colName') },
-      { key: 'acronym', label: t('admin.content.colAcronym') },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'link', label: t('admin.content.colLink') },
+      { key: 'rating', label: t('admin.content.colRating') },
       { key: 'created_at', label: t('admin.content.colCreated') },
       { key: 'actions', label: t('admin.content.colActions'), width: '140px' },
     ],
     editFields: [
-      { key: 'name', label: t('admin.content.colName') },
-      { key: 'acronym', label: t('admin.content.colAcronym') },
+      { key: 'title', label: t('admin.content.colTitle') },
+      { key: 'link', label: t('admin.content.colLink') },
     ],
   },
   {
@@ -284,27 +286,50 @@ const searchQuery = ref('')
 const currentPage = ref(1)
 const totalItems = ref(0)
 const pageSize = 20
-const contentList = ref<Record<string, any>[]>([])
+const contentList = ref<Record<string, unknown>[]>([])
 const loading = ref(false)
 const selectedIds = ref<number[]>([])
 const showExportMenu = ref(false)
 
 const editModalVisible = ref(false)
-const editTarget = ref<Record<string, any> | null>(null)
+const editTarget = ref<Record<string, unknown> | null>(null)
 const editForm = ref<Record<string, string>>({})
 const importModalVisible = ref(false)
 const importData = ref('')
 const deleteConfirmVisible = ref(false)
-const deleteTarget = ref<Record<string, any> | null>(null)
+const deleteTarget = ref<Record<string, unknown> | null>(null)
 
-const activeTabConfig = computed(() => tabs.value.find((t) => t.key === activeTab.value)!)
+const activeTabConfig = computed(
+  () =>
+    tabs.value.find((t) => t.key === activeTab.value) ||
+    ({ key: '', label: '', columns: [], editFields: [] } as (typeof tabs.value)[0])
+)
 const activeColumns = computed(() => activeTabConfig.value.columns)
 const editableFields = computed(() => activeTabConfig.value.editFields)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize)))
 
-const batchActions = computed<BatchAction[]>(() => [
-  { key: 'delete', label: t('admin.content.batchDelete'), icon: 'delete', type: 'danger' },
-])
+const batchActions = computed<BatchAction[]>(() => {
+  const actions: BatchAction[] = [
+    { key: 'delete', label: t('admin.content.batchDelete'), icon: 'delete', type: 'danger' },
+  ]
+  if (activeTab.value === 'feedbacks') {
+    actions.push(
+      {
+        key: 'update_status',
+        label: t('admin.content.batchUpdateStatus'),
+        icon: 'archive',
+        type: 'warning',
+      },
+      {
+        key: 'move_category',
+        label: t('admin.content.batchMoveCategory'),
+        icon: 'download',
+        type: 'default',
+      }
+    )
+  }
+  return actions
+})
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -329,7 +354,7 @@ async function fetchContent() {
   if (!token) return
   loading.value = true
   try {
-    const params: Record<string, any> = {
+    const params: Record<string, unknown> = {
       limit: pageSize,
       offset: (currentPage.value - 1) * pageSize,
     }
@@ -362,7 +387,7 @@ function formatDate(val: string | number) {
   })
 }
 
-function openEditModal(row: Record<string, any>) {
+function openEditModal(row: Record<string, unknown>) {
   editTarget.value = row
   const form: Record<string, string> = {}
   for (const field of editableFields.value) {
@@ -379,7 +404,7 @@ async function handleSave() {
     const res = await adminApi.updateAdminContent(
       token,
       activeTab.value,
-      editTarget.value.id,
+      (editTarget.value as any).id,
       editForm.value
     )
     if (res.success) {
@@ -394,7 +419,7 @@ async function handleSave() {
   }
 }
 
-function openDeleteConfirm(row: Record<string, any>) {
+function openDeleteConfirm(row: Record<string, unknown>) {
   deleteTarget.value = row
   deleteConfirmVisible.value = true
 }
@@ -403,7 +428,11 @@ async function handleDelete() {
   const token = adminStore.token
   if (!token || !deleteTarget.value) return
   try {
-    const res = await adminApi.deleteAdminContent(token, activeTab.value, deleteTarget.value.id)
+    const res = await adminApi.deleteAdminContent(
+      token,
+      activeTab.value,
+      (deleteTarget.value as any).id
+    )
     if (res.success) {
       toast.success(t('admin.content.deleteSuccess'))
       deleteConfirmVisible.value = false
@@ -417,26 +446,41 @@ async function handleDelete() {
 }
 
 async function handleBatchAction(key: string) {
-  if (key === 'delete') {
-    const token = adminStore.token
-    if (!token) return
-    try {
-      const res = await adminApi.batchContentOperation(
-        token,
-        activeTab.value,
-        'delete',
-        selectedIds.value
-      )
-      if (res.success) {
-        toast.success(t('admin.content.batchDeleteSuccess'))
-        selectedIds.value = []
-        fetchContent()
-      } else {
-        toast.error(res.error || t('admin.content.batchDeleteError'))
-      }
-    } catch {
-      toast.error(t('admin.content.batchDeleteError'))
+  const token = adminStore.token
+  if (!token) return
+
+  const extra: Record<string, string> = {}
+  if (key === 'update_status') {
+    const status = await dialogService.prompt(
+      t('admin.content.promptStatus') || 'Enter new status:'
+    )
+    if (!status) return
+    extra.status = status
+  } else if (key === 'move_category') {
+    const category = await dialogService.prompt(
+      t('admin.content.promptCategory') || 'Enter new category:'
+    )
+    if (!category) return
+    extra.category = category
+  }
+
+  try {
+    const res = await adminApi.batchContentOperation(
+      token,
+      activeTab.value,
+      key,
+      selectedIds.value,
+      extra
+    )
+    if (res.success) {
+      toast.success(t('admin.content.batchSuccess'))
+      selectedIds.value = []
+      fetchContent()
+    } else {
+      toast.error(res.error || t('admin.content.batchError'))
     }
+  } catch {
+    toast.error(t('admin.content.batchError'))
   }
 }
 
@@ -482,11 +526,17 @@ async function handleImport() {
     }
     const res = await adminApi.importContent(token, activeTab.value, parsed)
     if (res.success) {
-      toast.success(t('admin.content.importSuccess'))
+      toast.success(t('admin.content.importSuccess', { count: res.imported }))
+      importModalVisible.value = false
+      fetchContent()
+    } else if (res.imported > 0) {
+      toast.warning(
+        t('admin.content.importPartial', { imported: res.imported, failed: res.failed })
+      )
       importModalVisible.value = false
       fetchContent()
     } else {
-      toast.error(res.error || t('admin.content.importError'))
+      toast.error(res.error || res.details?.[0]?.error || t('admin.content.importError'))
     }
   } catch {
     toast.error(t('admin.content.importJsonError'))

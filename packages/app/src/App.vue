@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import PCNotification from './gui/components/PCNotification.vue'
+import ErrorBoundary from './gui/components/ErrorBoundary.vue'
 import MobileApp from './gui/mobile/MobileApp.vue'
 import LoginScreen from './gui/mobile/LoginScreen.vue'
 import PCLoginScreen from './gui/desktop/PCLoginScreen.vue'
@@ -21,6 +22,9 @@ import { filesystem } from './utils/filesystem'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
+import CursorEffect from './gui/components/CursorEffect.vue'
+import GlobalDialog from './gui/components/GlobalDialog.vue'
+import { dialogService } from './gui/composables/useDialog'
 import logger from './utils/logger'
 import indexedDBService from './utils/indexedDB'
 
@@ -44,6 +48,19 @@ const loadingProgress = ref(0)
 const loadingStep = ref('loading.steps.initializing')
 
 onMounted(() => {
+  // Override native browser dialogs globally
+  window.alert = (msg) => {
+    dialogService.alert(String(msg ?? ''))
+  }
+  window.confirm = (msg) => {
+    dialogService.confirm(String(msg ?? ''))
+    return false
+  }
+  window.prompt = (msg, def) => {
+    dialogService.prompt(String(msg ?? ''), String(def ?? ''))
+    return null
+  }
+
   // Safety timeout: force show app after 3s even if init hangs
   const forceReady = setTimeout(() => {
     if (!isAppReady.value) {
@@ -54,15 +71,15 @@ onMounted(() => {
 
   ;(async () => {
     try {
-      // Step 1: Initialize theme store
-      loadingStep.value = 'loading.steps.themes'
-      loadingProgress.value = 10
-      themeStore.init()
-
-      // Step 2: Inject GUI design tokens
+      // Step 1: Inject GUI design tokens (inject baseline design system variables first)
       loadingStep.value = 'loading.steps.ui'
-      loadingProgress.value = 20
+      loadingProgress.value = 10
       injectGUITokens()
+
+      // Step 2: Initialize theme store (so active theme colors correctly override baseline variables)
+      loadingStep.value = 'loading.steps.themes'
+      loadingProgress.value = 20
+      themeStore.init()
 
       // Step 3: Register all GUI tools
       loadingStep.value = 'loading.steps.components'
@@ -110,16 +127,30 @@ onMounted(() => {
       if (terminal) {
         import('./gui/registry/ToolRegistry')
           .then(({ openTool }) => {
-            openTool('terminal', (config) => {
-              wmStore.openWindow({
-                id: config.id,
-                tool: config.tool,
-                title: config.title,
-                iconName: config.iconName,
-                width: config.width,
-                height: config.height,
-              })
-            })
+            openTool(
+              'terminal',
+              (config) => {
+                wmStore.openWindow({
+                  id: config.id,
+                  tool: config.tool,
+                  title: config.title,
+                  iconName: config.iconName,
+                  width: config.width,
+                  height: config.height,
+                  minWidth: config.minWidth,
+                  minHeight: config.minHeight,
+                  resizable: config.resizable,
+                  draggable: config.draggable,
+                  closable: config.closable,
+                  minimizable: config.minimizable,
+                  maximizable: config.maximizable,
+                  isFullscreen: config.isFullscreen,
+                  data: config.data,
+                })
+              },
+              undefined,
+              wmStore.openWindows.map((win) => win.config.id)
+            )
           })
           .catch((err) => {
             logger.warn('[App] Failed to import ToolRegistry:', err)
@@ -194,6 +225,9 @@ function handleLoginSuccess(): void {
 </script>
 
 <template>
+  <CursorEffect />
+  <GlobalDialog />
+
   <!-- App Loading Overlay -->
   <div
     v-show="!isAppReady"
@@ -260,11 +294,13 @@ function handleLoginSuccess(): void {
           />
 
           <template v-for="win in wmStore.openWindows" :key="win.config.id">
-            <component
-              :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
-              :window-instance="win"
-              :window-id="win.config.id"
-            />
+            <ErrorBoundary :label="win.config.tool">
+              <component
+                :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
+                :window-instance="win"
+                :window-id="win.config.id"
+              />
+            </ErrorBoundary>
           </template>
         </template>
 
@@ -279,6 +315,7 @@ function handleLoginSuccess(): void {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  cursor: none !important;
 }
 
 html,
@@ -302,7 +339,6 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
-  padding-bottom: 48px;
 }
 
 .app-content {

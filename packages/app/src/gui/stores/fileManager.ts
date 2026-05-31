@@ -45,6 +45,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
   })
   const loading = ref(false)
   const showHidden = ref(false)
+  const cloudSyncing = ref(false)
 
   // Sidebar state
   const sidebarCollapsed = ref(false)
@@ -476,6 +477,7 @@ export const useFileManagerStore = defineStore('fileManager', () => {
     contextMenu,
     loading,
     showHidden,
+    cloudSyncing,
     sidebarCollapsed,
     sidebarWidth,
     columns,

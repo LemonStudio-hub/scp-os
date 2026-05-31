@@ -81,7 +81,7 @@ export function useTerminalRefactored(containerRef: Ref<HTMLElement | null>) {
         currentTabId.value = activeTab.id
         const content = activeTab.getData('content')
         if (content) {
-          terminal.value.write(content)
+          terminal.value.write(content as string)
         }
       }
 
@@ -186,10 +186,12 @@ export function useTerminalRefactored(containerRef: Ref<HTMLElement | null>) {
   }
 
   // Listen to events
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCommandExecuted = (event: any) => {
     writeln(`> ${event.command}`)
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleTabChanged = (event: any) => {
     currentTabId.value = event.tabId
     clear()
@@ -198,7 +200,7 @@ export function useTerminalRefactored(containerRef: Ref<HTMLElement | null>) {
       if (tab) {
         const content = tab.getData('content')
         if (content) {
-          write(content)
+          write(content as string)
         }
       }
     })

@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "dev": "wrangler dev",
+    "build": "wrangler deploy --env production --dry-run --outdir ../../dist/worker --metafile ../../dist/worker/bundle-meta.json",
     "deploy": "wrangler deploy --env production",
     "deploy:dev": "wrangler deploy --env development",
     "tail": "wrangler tail",

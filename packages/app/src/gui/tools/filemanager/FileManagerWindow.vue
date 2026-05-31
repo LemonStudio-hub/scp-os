@@ -51,6 +51,14 @@
             :title="t('fm.upload')"
             @click="fileInputRef?.click()"
           />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="refresh"
+            :title="t('fm.syncCloud') || 'Sync from cloud'"
+            :loading="fmStore.cloudSyncing"
+            @click="syncFromCloud"
+          />
           <div class="file-manager__toolbar-divider" />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
@@ -436,6 +444,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useFileManagerOps } from '../../composables/useFileManagerOps'
 import SCPWindow from '../../components/SCPWindow.vue'
 import SCPButton from '../../components/ui/SCPButton.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
@@ -447,19 +457,14 @@ import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import DialogModal from './DialogModal.vue'
 import { setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { useWindowManagerStore } from '../../stores/windowManager'
+import { ToolRegistry } from '../../registry/ToolRegistry'
 import type { WindowInstance, FileItem, ContextMenuItem } from '../../types'
 import type { IconName } from '../../icons'
 import type { ToolType } from '../../types'
 import { filesystem } from '../../../utils/filesystem'
 import { parseDesktopFile } from '../../../utils/desktopShortcut'
-import {
-  useFileManagerOps,
-  IMAGE_EXTS,
-  AUDIO_EXTS,
-  VIDEO_EXTS,
-  formatDate,
-  getFileExtension,
-} from '../../composables/useFileManagerOps'
+import { useAuthStore } from '../../../stores/authStore'
+import { config } from '../../../config'
 
 interface Props {
   windowInstance: WindowInstance
@@ -467,31 +472,40 @@ interface Props {
 
 const props = defineProps<Props>()
 
+const { t } = useI18n()
+setFileManagerI18n({ t })
 const {
-  t,
   fmStore,
-  fileInputRef,
-  formatSize,
-  onFileUpload: baseOnFileUpload,
+  searchText,
   createFile,
   createFolder,
-  renameFile,
   deleteFile,
+  renameFile,
+  uploadLocalFiles,
+  formatSize,
+  formatDate,
+  IMAGE_EXTS,
+  AUDIO_EXTS,
+  VIDEO_EXTS,
 } = useFileManagerOps()
-
-setFileManagerI18n({ t })
-
-// Suppress TypeScript warning - fileInputRef is used in template
-void fileInputRef
-
 const wmStore = useWindowManagerStore()
-const searchText = ref('')
+const authStore = useAuthStore()
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // Navigate to initial path if provided
 const initialPath = props.windowInstance?.config?.data?.initialPath
 if (initialPath) {
   fmStore.navigateTo(initialPath)
 }
+
+watch(
+  () => props.windowInstance?.config?.data?.initialPath,
+  (newPath) => {
+    if (newPath) {
+      fmStore.navigateTo(newPath)
+    }
+  }
+)
 
 // Dialog state
 const dialogVisible = ref(false)
@@ -505,6 +519,7 @@ const dialogDanger = ref(false)
 let dialogResolve: Function | null = null
 const contextTargetFile = ref<string>('')
 
+// File type helpers
 // Root directories for tree
 const rootDirs = computed(() => {
   return fmStore.files.filter((f) => f.isDirectory && !f.isHidden)
@@ -514,7 +529,7 @@ const rootDirs = computed(() => {
 const detailPreview = computed(() => {
   const file = fmStore.detailFile
   if (!file || file.isDirectory) return null
-  const ext = getFileExtension(file.name)
+  const ext = file.name.split('.').pop()?.toLowerCase() || ''
   const textExts = [
     'txt',
     'md',
@@ -539,10 +554,6 @@ const detailPreview = computed(() => {
     }
   }
   return null
-})
-
-watch(searchText, (val) => {
-  fmStore.setSearch(val)
 })
 
 function onFileClick(file: FileItem, event: MouseEvent): void {
@@ -581,14 +592,24 @@ function openInEditor(file: FileItem): void {
     wmStore.focusWindow(existingEditor.config.id)
     return
   }
+  const editorTool = ToolRegistry.get('editor')
+  const editorConfig = editorTool?.windowConfig
 
   wmStore.openWindow({
     id: `editor-${Date.now()}`,
     tool: 'editor',
     title: file.name,
     iconName: 'edit',
-    width: 700,
-    height: 450,
+    width: editorConfig?.width ?? 700,
+    height: editorConfig?.height ?? 450,
+    minWidth: editorConfig?.minWidth,
+    minHeight: editorConfig?.minHeight,
+    resizable: editorConfig?.resizable,
+    draggable: editorConfig?.draggable,
+    closable: editorConfig?.closable,
+    minimizable: editorConfig?.minimizable,
+    maximizable: editorConfig?.maximizable,
+    isFullscreen: editorConfig?.isFullscreen ?? false,
     data: { filePath: file.path },
   })
 }
@@ -692,7 +713,7 @@ async function promptNewFile(): Promise<void> {
     confirmText: t('fm.create'),
   })
   if (name) {
-    createFile(name)
+    createFile(name, '')
   }
 }
 
@@ -733,15 +754,106 @@ async function promptDelete(fileName: string): Promise<void> {
 }
 
 // Use these functions to silence TS6133 warnings
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 promptRename
+// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 promptDelete
 
 // ── File upload ─────────────────────────────────────────────────────
 
 async function onFileUpload(event: Event): Promise<void> {
-  const result = await baseOnFileUpload(event)
-  if (result.fail > 0) {
-    alert(`Stored ${result.success} file(s) locally, ${result.fail} failed.`)
+  const input = event.target as HTMLInputElement
+  const files = input.files
+  if (!files || files.length === 0) return
+
+  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files)
+  let cloudSuccess = 0
+  let cloudFail = 0
+
+  for (const { file, path } of localFiles) {
+    try {
+      if (authStore.userId) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('path', path)
+          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            cloudSuccess++
+          } else {
+            const data = await response.json().catch(() => ({}))
+            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
+            cloudFail++
+          }
+        } catch (err) {
+          console.error('[FileManager] Cloud upload error:', err)
+          cloudFail++
+        }
+      }
+    } catch (error) {
+      console.error('[FileManager] Cloud upload wrapper failed:', error)
+    }
+  }
+
+  input.value = ''
+
+  const messages: string[] = []
+  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
+  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
+  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (messages.length > 0) {
+    alert(messages.join('，'))
+  }
+}
+
+async function syncFromCloud(): Promise<void> {
+  if (!authStore.userId || fmStore.cloudSyncing) return
+  fmStore.cloudSyncing = true
+  try {
+    const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
+    if (!response.ok) {
+      alert(t('fm.syncFailed') || 'Cloud sync failed')
+      return
+    }
+    const result = await response.json()
+    const cloudFiles = result.data || []
+    let success = 0
+    let fail = 0
+    for (const file of cloudFiles) {
+      try {
+        const downloadRes = await authStore.authFetch(
+          `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`
+        )
+        if (!downloadRes.ok) {
+          fail++
+          continue
+        }
+        const content = await downloadRes.text()
+        const path = `/home/scp/downloads/${file.key}`
+        filesystem.createFile(path, content)
+        success++
+      } catch {
+        fail++
+      }
+    }
+    fmStore.loadDirectory()
+    const messages: string[] = []
+    if (success > 0) messages.push(`同步成功 ${success} 个文件`)
+    if (fail > 0) messages.push(`同步失败 ${fail} 个`)
+    if (messages.length > 0) {
+      alert(messages.join('，'))
+    } else {
+      alert(t('fm.syncNoFiles') || 'No cloud files to sync')
+    }
+  } catch (err) {
+    console.error('[FileManager] Cloud sync error:', err)
+    alert(t('fm.syncFailed') || 'Cloud sync failed')
+  } finally {
+    fmStore.cloudSyncing = false
   }
 }
 
@@ -753,7 +865,7 @@ function openFile(file: FileItem): void {
     return
   }
 
-  const ext = getFileExtension(file.name)
+  const ext = file.name.split('.').pop()?.toLowerCase() || ''
 
   if (ext === 'desktop') {
     const content = filesystem.readFile(file.path)
@@ -761,10 +873,23 @@ function openFile(file: FileItem): void {
       const shortcut = parseDesktopFile(content)
       if (shortcut) {
         const wmStore = useWindowManagerStore()
+        const shortcutTool = ToolRegistry.get(shortcut.tool as ToolType)
+        const shortcutConfig = shortcutTool?.windowConfig
         wmStore.openWindow({
           id: `${shortcut.tool}-${Date.now()}`,
           tool: shortcut.tool as ToolType,
           title: shortcut.name,
+          iconName: shortcutTool?.icon,
+          width: shortcutConfig?.width,
+          height: shortcutConfig?.height,
+          minWidth: shortcutConfig?.minWidth,
+          minHeight: shortcutConfig?.minHeight,
+          resizable: shortcutConfig?.resizable,
+          draggable: shortcutConfig?.draggable,
+          closable: shortcutConfig?.closable,
+          minimizable: shortcutConfig?.minimizable,
+          maximizable: shortcutConfig?.maximizable,
+          isFullscreen: shortcutConfig?.isFullscreen ?? false,
         })
         return
       }
@@ -1025,6 +1150,8 @@ function openAudio(file: FileItem): void {
   cursor: pointer;
   transition: all var(--gui-transition-fast, 120ms cubic-bezier(0.4, 0, 0.2, 1));
   text-align: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .file-grid-item:hover {

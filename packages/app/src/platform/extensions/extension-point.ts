@@ -6,6 +6,8 @@
 import type { Extension, ExtensionPoint, ExtensionMetadata } from '../plugins/types'
 import logger from '../../utils/logger'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Generic extension point
  */

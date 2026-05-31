@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <MobileWindow
     :visible="visible"
@@ -43,121 +45,174 @@
             class="mobile-file-manager__file-input"
             @change="onFileUpload"
           />
+          <!-- Upload -->
           <button
             class="mobile-file-manager__action-btn"
             :title="t('fm.dropFiles')"
             @click="triggerUpload"
           >
             <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <path d="M9 12V3M9 3L6 6M9 3l3 3" />
-              <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
+              <path d="M12 15V4" />
+              <path d="M8 8l4-4 4 4" />
+              <path d="M4 18h16" />
             </svg>
           </button>
+          <!-- Sync from cloud -->
+          <button
+            class="mobile-file-manager__action-btn"
+            :title="t('fm.syncCloud')"
+            :disabled="cloudSyncing"
+            @click="syncFromCloud"
+          >
+            <svg
+              v-if="!cloudSyncing"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M17.5 8.5A5.5 5.5 0 008.2 7.2 4 4 0 108.5 15H17a3.5 3.5 0 00.5-7z" />
+              <path d="M12 21v-7" />
+              <path d="M9 17l3 4 3-4" />
+            </svg>
+            <div v-else class="mobile-file-manager__spinner" />
+          </button>
+          <!-- New File -->
           <button
             class="mobile-file-manager__action-btn"
             :title="t('fm.newFile')"
             @click="createNewFile"
           >
             <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <path d="M10 1H4a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V5z" />
-              <path d="M10 1v4h4" />
-              <path d="M9 9v6M6 12h6" />
+              <path d="M14 2H7a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="12" y1="12" x2="12" y2="18" />
+              <line x1="9" y1="15" x2="15" y2="15" />
             </svg>
           </button>
+          <!-- New Folder -->
           <button
             class="mobile-file-manager__action-btn"
             :title="t('fm.newFolder')"
             @click="createNewFolder"
           >
             <svg
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <path d="M1 5V15h16V5H1z" />
-              <path d="M1 5l3-3h6l2 2" />
-              <path d="M9 9v6M6 12h6" />
+              <path
+                d="M3 8a2 2 0 012-2h4.17a2 2 0 011.42.59L12 8h7a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+              />
+              <line x1="12" y1="12" x2="12" y2="18" />
+              <line x1="9" y1="15" x2="15" y2="15" />
             </svg>
           </button>
+          <!-- Show / hide hidden files -->
           <button
             class="mobile-file-manager__action-btn"
             :class="{ 'mobile-file-manager__action-btn--active': fmStore.showHidden }"
-            :title="fmStore.showHidden ? 'Hide hidden files' : 'Show hidden files'"
+            :title="fmStore.showHidden ? '隐藏隐藏文件' : '显示隐藏文件'"
             @click="fmStore.toggleShowHidden"
           >
             <svg
               v-if="!fmStore.showHidden"
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
             <svg
               v-else
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <path
-                d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
-              />
-              <line x1="1" y1="1" x2="23" y2="23" />
+              <line x1="3" y1="3" x2="21" y2="21" />
+              <path d="M10.6 5.6A9.7 9.7 0 0122 12s-1.7 3.8-4.7 5.8" />
+              <path d="M6.1 6.1A10.5 10.5 0 002 12s4 7 10 7a9.7 9.7 0 005.9-2" />
+              <path d="M9.2 9.2a3 3 0 004.6 4.6" />
             </svg>
           </button>
+          <!-- Grid / List toggle -->
           <button
             class="mobile-file-manager__action-btn"
-            :title="mobileViewMode === 'grid' ? 'List view' : 'Grid view'"
+            :title="mobileViewMode === 'grid' ? t('fm.listView') : t('fm.gridView')"
             @click="mobileViewMode = mobileViewMode === 'grid' ? 'list' : 'grid'"
           >
+            <!-- List icon (shown when in grid mode) -->
             <svg
               v-if="mobileViewMode === 'grid'"
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
+              stroke-linecap="round"
             >
-              <path d="M2 4h14M2 9h14M2 14h14" />
+              <line x1="9" y1="6" x2="20" y2="6" />
+              <line x1="9" y1="12" x2="20" y2="12" />
+              <line x1="9" y1="18" x2="20" y2="18" />
+              <circle cx="4.5" cy="6" r="1.5" fill="currentColor" stroke="none" />
+              <circle cx="4.5" cy="12" r="1.5" fill="currentColor" stroke="none" />
+              <circle cx="4.5" cy="18" r="1.5" fill="currentColor" stroke="none" />
             </svg>
+            <!-- Grid icon (shown when in list mode) -->
             <svg
               v-else
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.5"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
             >
-              <rect x="2" y="2" width="5" height="5" rx="1" />
-              <rect x="11" y="2" width="5" height="5" rx="1" />
-              <rect x="2" y="11" width="5" height="5" rx="1" />
-              <rect x="11" y="11" width="5" height="5" rx="1" />
+              <rect x="3" y="3" width="7" height="7" rx="1.5" />
+              <rect x="14" y="3" width="7" height="7" rx="1.5" />
+              <rect x="3" y="14" width="7" height="7" rx="1.5" />
+              <rect x="14" y="14" width="7" height="7" rx="1.5" />
             </svg>
           </button>
         </div>
@@ -317,7 +372,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ref, computed, watch } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useFileManagerOps } from '../../composables/useFileManagerOps'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
 import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
@@ -328,17 +386,13 @@ import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
 import { setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { filesystem } from '../../../utils/filesystem'
-import {
-  useFileManagerOps,
-  isImageFile,
-  isAudioFile,
-  isVideoFile,
-  isTextFile,
-} from '../../composables/useFileManagerOps'
+import { useAuthStore } from '../../../stores/authStore'
+import { config } from '../../../config'
 
 interface Props {
   visible: boolean
-  windowInstance: any
+  windowInstance?: any
+  data?: any
 }
 
 interface ContextAction {
@@ -348,33 +402,54 @@ interface ContextAction {
   fn: () => void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 defineEmits<{ close: [] }>()
 
+const i18n = useI18n()
+const { t } = i18n
+
+// Wire i18n to file manager store
+setFileManagerI18n({ t: i18n.t })
+
 const {
-  t,
   fmStore,
-  fileInputRef,
-  formatSize,
-  triggerUpload,
-  onFileUpload: baseOnFileUpload,
   createFile,
   createFolder,
-  renameFile,
   deleteFile,
+  renameFile,
+  writeFile,
+  uploadLocalFiles,
+  formatSize,
+  ensureDirectory,
+  isImageFile,
+  isAudioFile,
+  isVideoFile,
+  isTextFile,
 } = useFileManagerOps()
+const authStore = useAuthStore()
 
-// Suppress TypeScript warning - fileInputRef is used in template
-void fileInputRef
+// Navigate to initial path if provided
+const initialPath = props.data?.initialPath || props.windowInstance?.config?.data?.initialPath
+if (initialPath) {
+  fmStore.navigateTo(initialPath)
+}
 
-setFileManagerI18n({ t })
-
+watch(
+  () => props.data?.initialPath || props.windowInstance?.config?.data?.initialPath,
+  (newPath) => {
+    if (newPath) {
+      fmStore.navigateTo(newPath)
+    }
+  }
+)
 const mobileViewMode = ref<'grid' | 'list'>('grid')
+const cloudSyncing = ref(false)
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
 })
 
+// Breadcrumbs
 const breadcrumbSegments = computed(() => {
   const segments = fmStore.currentPath.split('/').filter(Boolean)
   return [
@@ -398,6 +473,7 @@ function onBreadcrumbClick(event: MouseEvent) {
   }
 }
 
+// Dialog state
 const dialogVisible = ref(false)
 const dialogType = ref<'input' | 'confirm'>('input')
 const dialogTitle = ref('')
@@ -437,19 +513,29 @@ function onDialogConfirm(value: string | true) {
   }
 }
 
+// Text Editor
 const textEditorVisible = ref(false)
 const editingFile = ref<any>(null)
+
+// Image Viewer
 const imageViewerVisible = ref(false)
 const viewingImageFile = ref<any>(null)
+
+// Audio Player
 const audioPlayerVisible = ref(false)
 const playingAudioFile = ref<any>(null)
+
+// Video Player
 const videoPlayerVisible = ref(false)
 const playingVideoFile = ref<any>(null)
 
+// Context Menu State
 const contextSheetVisible = ref(false)
 const contextSheetTitle = ref('')
 const contextActions = ref<ContextAction[]>([])
 const contextTargetFile = ref<any>(null)
+// const listRef = ref<HTMLElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragOver = ref(false)
 
 function onFileTap(file: any) {
@@ -471,16 +557,137 @@ function onFileTap(file: any) {
       editingFile.value = file
       textEditorVisible.value = true
     } else {
+      // Try to open as text anyway
       editingFile.value = file
       textEditorVisible.value = true
     }
   }
 }
 
+function triggerUpload() {
+  fileInputRef.value?.click()
+}
+
 async function onFileUpload(event: Event) {
-  const result = await baseOnFileUpload(event)
-  if (result.fail > 0) {
-    alert(`Stored ${result.success} file(s) locally, ${result.fail} failed.`)
+  const input = event.target as HTMLInputElement
+  const files = input.files
+  if (!files || files.length === 0) return
+
+  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
+  let cloudSuccess = 0
+  let cloudFail = 0
+
+  for (const { file, path } of localFiles) {
+    try {
+      if (authStore.userId) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('path', path)
+          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            cloudSuccess++
+          } else {
+            const data = await response.json().catch(() => ({}))
+            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
+            cloudFail++
+          }
+        } catch (err) {
+          console.error('[FileManager] Cloud upload error:', err)
+          cloudFail++
+        }
+      }
+    } catch (error) {
+      console.error('[FileManager] Cloud upload wrapper failed:', error)
+    }
+  }
+
+  input.value = ''
+
+  const messages: string[] = []
+  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
+  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
+  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (messages.length > 0) {
+    alert(messages.join('，'))
+  }
+}
+
+async function syncFromCloud(): Promise<void> {
+  if (!authStore.userId || cloudSyncing.value) return
+  cloudSyncing.value = true
+  try {
+    const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
+    if (!response.ok) {
+      alert(t('fm.syncFailed') || 'Cloud sync failed')
+      return
+    }
+    const result = await response.json()
+    const cloudFiles = result.data || []
+    let success = 0
+    let fail = 0
+    for (const file of cloudFiles) {
+      try {
+        const downloadRes = await authStore.authFetch(
+          `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`
+        )
+        if (!downloadRes.ok) {
+          fail++
+          continue
+        }
+        const blob = await downloadRes.blob()
+        const contentType = file.contentType || ''
+        const isText =
+          contentType.startsWith('text/') ||
+          /\.(txt|md|json|js|ts|css|html|vue|xml|yaml|csv)$/i.test(file.key)
+        const content = isText
+          ? await blob.text()
+          : await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.onerror = reject
+              reader.readAsDataURL(blob)
+            })
+        const path = `/home/scp/downloads/${file.key}`
+        const dirPath = path.substring(0, path.lastIndexOf('/'))
+        if (dirPath && !ensureDirectory(dirPath)) {
+          fail++
+          continue
+        }
+        const existingNode = filesystem.getNodeByPath(path)
+        let ok = false
+        if (existingNode && existingNode.type === 'file') {
+          ok = filesystem.writeFile(path, content)
+        } else {
+          ok = filesystem.createFile(path, content)
+        }
+        if (ok) {
+          success++
+        } else {
+          fail++
+        }
+      } catch {
+        fail++
+      }
+    }
+    fmStore.loadDirectory(fmStore.currentPath)
+    const messages: string[] = []
+    if (success > 0) messages.push(`同步成功 ${success} 个文件`)
+    if (fail > 0) messages.push(`同步失败 ${fail} 个`)
+    if (messages.length > 0) {
+      alert(messages.join('，'))
+    } else {
+      alert(t('fm.syncNoFiles') || 'No cloud files to sync')
+    }
+  } catch (err) {
+    console.error('[FileManager] Cloud sync error:', err)
+    alert(t('fm.syncFailed') || 'Cloud sync failed')
+  } finally {
+    cloudSyncing.value = false
   }
 }
 
@@ -494,7 +701,11 @@ async function createNewFile() {
   })
 
   if (name && typeof name === 'string' && name.trim()) {
-    createFile(name.trim())
+    try {
+      createFile(name, '')
+    } catch (error) {
+      console.error('[FileManager] Failed to create file:', error)
+    }
   }
 }
 
@@ -508,7 +719,11 @@ async function createNewFolder() {
   })
 
   if (name && typeof name === 'string' && name.trim()) {
-    createFolder(name.trim())
+    try {
+      createFolder(name)
+    } catch (error) {
+      console.error('[FileManager] Failed to create folder:', error)
+    }
   }
 }
 
@@ -516,12 +731,18 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
   contextTargetFile.value = file
   contextSheetTitle.value = file.name
 
+  const isImage = isImageFile(file.name)
+  const isAudio = isAudioFile(file.name)
+  const isVideo = isVideoFile(file.name)
+  const isText = isTextFile(file.name)
+
   contextActions.value = []
 
-  if (isTextFile(file.name)) {
+  if (isText) {
     contextActions.value.push({
       id: 'edit',
       label: t('common.edit'),
+
       fn: () => {
         editingFile.value = file
         textEditorVisible.value = true
@@ -530,10 +751,11 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     })
   }
 
-  if (isImageFile(file.name)) {
+  if (isImage) {
     contextActions.value.push({
       id: 'view',
       label: t('fm.viewImage'),
+
       fn: () => {
         viewingImageFile.value = file
         imageViewerVisible.value = true
@@ -542,10 +764,11 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     })
   }
 
-  if (isAudioFile(file.name)) {
+  if (isAudio) {
     contextActions.value.push({
       id: 'play-audio',
       label: 'Play Audio',
+
       fn: () => {
         playingAudioFile.value = file
         audioPlayerVisible.value = true
@@ -554,10 +777,11 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     })
   }
 
-  if (isVideoFile(file.name)) {
+  if (isVideo) {
     contextActions.value.push({
       id: 'play-video',
       label: 'Play Video',
+
       fn: () => {
         playingVideoFile.value = file
         videoPlayerVisible.value = true
@@ -570,6 +794,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     {
       id: 'rename',
       label: t('common.rename'),
+
       fn: async () => {
         const newName = await showDialog({
           type: 'input',
@@ -580,7 +805,11 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
         })
 
         if (newName && typeof newName === 'string' && newName !== file.name) {
-          renameFile(file.name, newName)
+          try {
+            renameFile(file.name, newName)
+          } catch (error) {
+            console.error('[FileManager] Failed to rename:', error)
+          }
         }
         contextSheetVisible.value = false
       },
@@ -588,6 +817,7 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
     {
       id: 'delete',
       label: t('common.delete'),
+
       danger: true,
       fn: async () => {
         const confirmed = await showDialog({
@@ -599,7 +829,11 @@ function onFileContextMenu(_event: MouseEvent, file: any) {
         })
 
         if (confirmed) {
-          deleteFile(file.name)
+          try {
+            deleteFile(file.name)
+          } catch (error) {
+            console.error('[FileManager] Failed to delete:', error)
+          }
         }
         contextSheetVisible.value = false
       },
@@ -615,6 +849,7 @@ function onListContextMenu(_event: MouseEvent) {
     {
       id: 'new-file',
       label: t('fm.newFile'),
+
       fn: () => {
         createNewFile()
         contextSheetVisible.value = false
@@ -623,6 +858,7 @@ function onListContextMenu(_event: MouseEvent) {
     {
       id: 'new-folder',
       label: t('fm.newFolder'),
+
       fn: () => {
         createNewFolder()
         contextSheetVisible.value = false
@@ -635,13 +871,13 @@ function onListContextMenu(_event: MouseEvent) {
 function onSaveTextFile(data: { name: string; content: string }) {
   const path = fmStore.currentPath === '/' ? '/' + data.name : fmStore.currentPath + '/' + data.name
   try {
-    filesystem.writeFile(path, data.content)
-    fmStore.loadDirectory(fmStore.currentPath)
+    writeFile(path, data.content)
   } catch (error) {
     console.error('[FileManager] Failed to save file:', error)
   }
 }
 
+// Drag & Drop
 function onDragOver() {
   isDragOver.value = true
 }
@@ -655,42 +891,65 @@ async function onDrop(event: DragEvent) {
   const files = event.dataTransfer?.files
   if (!files || files.length === 0) return
 
-  let successCount = 0
-  let failCount = 0
+  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
+  let cloudSuccess = 0
+  let cloudFail = 0
 
-  for (const file of files) {
-    const path =
-      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
-
+  for (const { file, path } of localFiles) {
     try {
-      const { readFileAsLocal } = await import('../../composables/useFileManagerOps')
-      const content = await readFileAsLocal(file)
-      const existingNode = filesystem.getNodeByPath(path)
-      if (existingNode && existingNode.type === 'file') {
-        filesystem.writeFile(path, content)
-      } else {
-        filesystem.createFile(path, content)
+      if (authStore.userId) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('path', path)
+          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            cloudSuccess++
+          } else {
+            const data = await response.json().catch(() => ({}))
+            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
+            cloudFail++
+          }
+        } catch (err) {
+          console.error('[FileManager] Cloud upload error:', err)
+          cloudFail++
+        }
       }
-      successCount++
     } catch (error) {
-      console.error('[FileManager] Failed to store dropped file locally:', error)
-      failCount++
+      console.error('[FileManager] Cloud upload wrapper failed:', error)
     }
   }
 
-  fmStore.loadDirectory(fmStore.currentPath)
-
-  if (failCount > 0) {
-    alert(`Stored ${successCount} file(s) locally, ${failCount} failed.`)
+  const messages: string[] = []
+  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
+  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
+  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (messages.length > 0) {
+    alert(messages.join('，'))
   }
 }
-
-onMounted(() => {
-  fmStore.loadDirectory(fmStore.currentPath)
-})
 </script>
 
 <style scoped>
+/* ── Spinner ────────────────────────────────────────────────────────── */
+.mobile-file-manager__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--gui-border-default, #2a2a2a);
+  border-top-color: var(--gui-text-primary, #ffffff);
+  border-radius: 50%;
+  animation: mobile-fm-spin 0.8s linear infinite;
+}
+@keyframes mobile-fm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ── Layout ─────────────────────────────────────────────────────────── */
 .mobile-file-manager {
   display: flex;
@@ -852,6 +1111,8 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .mobile-file-manager__item:active {

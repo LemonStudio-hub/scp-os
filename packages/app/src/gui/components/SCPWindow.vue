@@ -21,74 +21,19 @@
       <div class="scp-window__header-title">
         <span class="scp-window__title">{{ windowInstance.config.title }}</span>
       </div>
-      <div class="scp-window__header-actions">
-        <button
-          v-if="windowInstance.config.minimizable"
-          class="scp-window__btn scp-window__btn--icon scp-window__btn--minimize"
-          :title="t('window.minimize')"
-          @click.stop="onMinimize"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect x="2" y="6" width="8" height="1.5" rx="0.75" />
-          </svg>
-        </button>
-        <button
-          v-if="windowInstance.config.maximizable"
-          class="scp-window__btn scp-window__btn--icon scp-window__btn--maximize"
-          :title="windowInstance.maximized ? t('window.restore') : t('window.maximize')"
-          @click.stop="onMaximize"
-        >
-          <svg
-            v-if="!windowInstance.maximized"
-            width="12"
-            height="12"
-            viewBox="0 0 12 12"
-            fill="none"
-          >
-            <rect
-              x="2"
-              y="2"
-              width="8"
-              height="8"
-              rx="1.5"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-          </svg>
-          <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <rect
-              x="1"
-              y="3"
-              width="8"
-              height="8"
-              rx="1.5"
-              stroke="currentColor"
-              stroke-width="1.2"
-            />
-            <path
-              d="M3 3V2C3 1.45 3.45 1 4 1H11V4L10 3"
-              stroke="currentColor"
-              stroke-width="1.2"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
-        <button
-          v-if="windowInstance.config.closable !== false"
-          class="scp-window__btn scp-window__btn--icon scp-window__btn--close"
-          :title="t('window.close')"
-          @click.stop="onClose"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M3 3L9 9M9 3L3 9"
-              stroke="currentColor"
-              stroke-width="1.4"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
-      </div>
+      <WindowCaptionControls
+        :minimizable="windowInstance.config.minimizable !== false"
+        :maximizable="windowInstance.config.maximizable !== false"
+        :closable="windowInstance.config.closable !== false"
+        :maximized="windowInstance.maximized"
+        :minimize-title="t('window.minimize')"
+        :maximize-title="t('window.maximize')"
+        :restore-title="t('window.restore')"
+        :close-title="t('window.close')"
+        @minimize="onMinimize"
+        @maximize="onMaximize"
+        @close="onClose"
+      />
     </div>
 
     <!-- Content Area -->
@@ -141,6 +86,7 @@ import { useResizable } from '../composables/useResizable'
 import { useI18n } from '../composables/useI18n'
 import type { WindowInstance } from '../types'
 import { useWindowManagerStore } from '../stores/windowManager'
+import WindowCaptionControls from './WindowCaptionControls.vue'
 
 interface Props {
   windowInstance: WindowInstance
@@ -158,21 +104,48 @@ const { t } = useI18n()
 const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
+const TASKBAR_HEIGHT = 48
+const EDGE_SLOP = 96
+const MIN_VISIBLE = 80
 
-const { dragState, handleMouseDown: onTitleBarMouseDown } = useDraggable(windowRef, {
-  boundary: { minX: 0, minY: 0 },
+const {
+  dragState,
+  handleMouseDown: startTitleBarDrag,
+  stop: stopDrag,
+  setInitialPosition,
+  setCurrentPosition,
+} = useDraggable(windowRef, {
+  boundary: getScreenBounds,
   onMove: (x: number, y: number) => {
     windowManager.updateWindowPosition(props.windowInstance.config.id, x, y)
+    syncCurrentDragPosition()
+    syncCurrentResizeState()
   },
 })
 
-const { handleMouseDown: onResizeStart } = useResizable(windowRef, {
+const {
+  handleMouseDown: onResizeStart,
+  stop: stopResize,
+  setInitialSize,
+} = useResizable(windowRef, {
   minWidth: props.windowInstance.config.minWidth ?? 320,
   minHeight: props.windowInstance.config.minHeight ?? 240,
+  maxWidth: Math.max(320, window.innerWidth + EDGE_SLOP),
+  maxHeight: Math.max(240, window.innerHeight + EDGE_SLOP),
   onResize: (width: number, height: number, x: number, y: number) => {
     windowManager.updateWindowDimensions(props.windowInstance.config.id, { x, y, width, height })
+    syncCurrentResizeState()
   },
 })
+
+function getScreenBounds() {
+  return {
+    minX: -EDGE_SLOP,
+    minY: -EDGE_SLOP,
+    maxX: Math.max(-EDGE_SLOP, window.innerWidth - MIN_VISIBLE),
+    maxY: Math.max(-EDGE_SLOP, window.innerHeight - MIN_VISIBLE),
+  }
+}
 
 const windowStyle = computed(() => {
   const { position, size, zIndex, minimized, maximized } = props.windowInstance
@@ -186,7 +159,7 @@ const windowStyle = computed(() => {
       left: '0',
       top: '0',
       width: '100vw',
-      height: '100vh',
+      height: `calc(100vh - ${TASKBAR_HEIGHT}px)`,
       zIndex,
     }
   }
@@ -196,6 +169,8 @@ const windowStyle = computed(() => {
     top: `${position.y}px`,
     width: `${size.width}px`,
     height: `${size.height}px`,
+    maxWidth: `calc(100vw + ${EDGE_SLOP}px)`,
+    maxHeight: `calc(100vh + ${EDGE_SLOP}px)`,
     zIndex,
   }
 })
@@ -205,6 +180,33 @@ function onWindowClick() {
     windowManager.focusWindow(props.windowInstance.config.id)
     emit('focus')
   }
+}
+
+function onTitleBarMouseDown(event: MouseEvent) {
+  const { position, size } = props.windowInstance
+  setInitialPosition(position.x, position.y)
+  setInitialSize(size.width, size.height, position.x, position.y)
+  startTitleBarDrag(event)
+}
+
+function getManagedWindow() {
+  return windowManager.getWindow(props.windowInstance.config.id) ?? props.windowInstance
+}
+
+function syncCurrentDragPosition() {
+  const current = getManagedWindow()
+  setCurrentPosition(current.position.x, current.position.y)
+}
+
+function syncCurrentResizeState() {
+  const current = getManagedWindow()
+  setInitialSize(current.size.width, current.size.height, current.position.x, current.position.y)
+}
+
+function syncInteractionState() {
+  const current = getManagedWindow()
+  setInitialPosition(current.position.x, current.position.y)
+  setInitialSize(current.size.width, current.size.height, current.position.x, current.position.y)
 }
 
 function onClose() {
@@ -223,17 +225,28 @@ function onMaximize() {
 }
 
 onMounted(() => {
-  if (windowRef.value && !props.windowInstance.maximized) {
-    windowRef.value.style.left = `${props.windowInstance.position.x}px`
-    windowRef.value.style.top = `${props.windowInstance.position.y}px`
-    windowRef.value.style.width = `${props.windowInstance.size.width}px`
-    windowRef.value.style.height = `${props.windowInstance.size.height}px`
-  }
+  handleWindowResize()
+  syncInteractionState()
+  window.addEventListener('resize', handleWindowResize)
 })
 
 onBeforeUnmount(() => {
-  dragState.value.isDragging = false
+  stopDrag()
+  stopResize()
+  window.removeEventListener('resize', handleWindowResize)
 })
+
+function handleWindowResize() {
+  if (props.windowInstance.minimized || props.windowInstance.maximized) return
+
+  windowManager.updateWindowDimensions(props.windowInstance.config.id, {
+    x: props.windowInstance.position.x,
+    y: props.windowInstance.position.y,
+    width: props.windowInstance.size.width,
+    height: props.windowInstance.size.height,
+  })
+  syncInteractionState()
+}
 </script>
 
 <style scoped>
@@ -283,6 +296,11 @@ onBeforeUnmount(() => {
   display: none !important;
 }
 
+.scp-window--maximized {
+  border-radius: 0;
+  border: none;
+}
+
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
 .light .scp-window {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -302,7 +320,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   height: 40px;
-  padding: 0 14px;
+  padding: 0 0 0 14px;
   background: var(--gui-glass-bg);
   backdrop-filter: blur(12px) saturate(150%);
   -webkit-backdrop-filter: blur(12px) saturate(150%);
@@ -326,6 +344,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex: 1;
 }
 
 .scp-window__title {
@@ -336,51 +355,7 @@ onBeforeUnmount(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  letter-spacing: -0.01em;
-}
-
-/* ── Header Actions ────────────────────────────────────────────────── */
-.scp-window__header-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.scp-window__btn--icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: none;
-  border-radius: var(--gui-radius-full, 999px);
-  color: var(--gui-text-secondary, #8e8e93);
-  cursor: pointer;
-  transition:
-    transform 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1),
-    background 120ms ease,
-    color 120ms ease;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.scp-window__btn--icon:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
-  color: var(--gui-text-primary, #ffffff);
-}
-
-.scp-window__btn--icon:active {
-  transform: scale(0.88);
-}
-
-.scp-window__btn--close:hover {
-  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
-  color: var(--gui-error, #ff3b30);
-}
-
-.scp-window__btn--minimize:hover {
-  background: var(--gui-warning-bg, rgba(255, 204, 0, 0.12));
-  color: var(--gui-warning, #ffcc00);
+  letter-spacing: 0;
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */
@@ -461,7 +436,7 @@ onBeforeUnmount(() => {
     left: 0 !important;
     top: 0 !important;
     width: 100vw !important;
-    height: 100vh !important;
+    height: calc(100vh - 48px) !important;
     border-radius: 0;
   }
 
@@ -471,7 +446,7 @@ onBeforeUnmount(() => {
 
   .scp-window__header {
     height: 44px;
-    padding: 0 12px;
+    padding: 0 0 0 12px;
   }
 }
 </style>

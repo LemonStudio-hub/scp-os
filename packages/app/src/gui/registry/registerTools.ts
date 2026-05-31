@@ -20,6 +20,12 @@ const AsyncSettingsWindow = defineAsyncComponent(
 const AsyncMobileSettings = defineAsyncComponent(
   () => import('../tools/settings/MobileSettings.vue')
 )
+const AsyncAppManagerWindow = defineAsyncComponent(
+  () => import('../tools/appmanager/AppManagerWindow.vue')
+)
+const AsyncMobileAppManager = defineAsyncComponent(
+  () => import('../tools/appmanager/MobileAppManager.vue')
+)
 const AsyncChatWindow = defineAsyncComponent(() => import('../tools/chat/ChatWindow.vue'))
 const AsyncPCChatWindow = defineAsyncComponent(() => import('../tools/chat/PCChatWindow.vue'))
 const AsyncMobileDash = defineAsyncComponent(() => import('../tools/dash/MobileDash.vue'))
@@ -79,16 +85,32 @@ export function registerAllTools(): void {
     id: 'settings',
     label: lbl('app.settings'),
     icon: 'settings',
-    windowConfig: { width: 800, height: 550, minWidth: 600, minHeight: 400, resizable: true },
+    windowConfig: {
+      width: 800,
+      height: 550,
+      minWidth: 600,
+      minHeight: 400,
+      resizable: true,
+      isFullscreen: false,
+    },
     desktopComponent: AsyncSettingsWindow,
     mobileComponent: AsyncMobileSettings,
+  })
+
+  ToolRegistry.register({
+    id: 'appmanager',
+    label: lbl('app.appManager'),
+    icon: 'grid',
+    windowConfig: { width: 720, height: 560, minWidth: 520, minHeight: 380, resizable: true },
+    desktopComponent: AsyncAppManagerWindow,
+    mobileComponent: AsyncMobileAppManager,
   })
 
   ToolRegistry.register({
     id: 'chat',
     label: lbl('app.chat'),
     icon: 'chat',
-    windowConfig: { width: 400, height: 600, minWidth: 300, minHeight: 400, resizable: true },
+    windowConfig: { width: 920, height: 620, minWidth: 760, minHeight: 480, resizable: true },
     desktopComponent: AsyncPCChatWindow,
     mobileComponent: AsyncChatWindow,
   })
@@ -128,6 +150,7 @@ export function registerAllTools(): void {
     desktopComponent: AsyncPCNotificationCenter,
     mobileComponent: {
       render() {
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
         return h(AsyncMobileNotificationCenter, { visible: true, onClose: () => {} })
       },
     },

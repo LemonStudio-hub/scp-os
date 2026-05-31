@@ -1,4 +1,7 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
+  <!-- eslint-disable vue/no-v-html -->
   <MobileWindow
     :visible="visible"
     :title="view === 'list' ? t('docs.scpDocs') : reader.currentArticle.value?.scpNumber || ''"
@@ -37,8 +40,21 @@
           />
         </div>
 
+        <!-- Doc Type Tabs -->
+        <div class="mobile-docs__doc-type-tabs">
+          <button
+            v-for="dt in reader.DOC_TYPE_OPTIONS"
+            :key="dt.value"
+            class="mobile-docs__doc-type-tab"
+            :class="{ 'mobile-docs__doc-type-tab--active': reader.docType.value === dt.value }"
+            @click="reader.setDocType(dt.value)"
+          >
+            {{ dt.label }}
+          </button>
+        </div>
+
         <!-- Filter Tags (horizontal scroll) -->
-        <div class="mobile-docs__filter-scroll">
+        <div v-if="reader.docType.value === 'scp'" class="mobile-docs__filter-scroll">
           <div class="mobile-docs__filter-tags">
             <button
               class="mobile-docs__filter-tag"
@@ -195,11 +211,12 @@
               v-for="article in reader.filteredArticles.value"
               :key="article.scpNumber"
               class="mobile-docs__card"
-              @click="openArticle(article.scpNumber)"
+              @click="openArticle(article.scpNumber, article.url)"
             >
               <div class="mobile-docs__card-header">
                 <span class="mobile-docs__card-number">{{ article.scpNumber }}</span>
                 <span
+                  v-if="reader.docType.value === 'scp'"
                   class="mobile-docs__card-class"
                   :style="{
                     background: reader.OBJECT_CLASS_COLORS[article.objectClass] + '20',
@@ -372,47 +389,6 @@
                   </button>
                 </div>
               </div>
-              <div class="mobile-docs__font-row">
-                <span class="mobile-docs__font-label">{{ t('docs.theme') }}</span>
-                <div class="mobile-docs__theme-toggle">
-                  <!-- prettier-ignore -->
-                  <button
-                    class="mobile-docs__theme-btn"
-                    :class="{
-                      'mobile-docs__theme-btn--active': reader.readerTheme.value === 'dark',
-                    }"
-                    @click="reader.readerTheme.value = 'dark'; reader.toggleTheme()"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path
-                        d="M14 9.3A6.5 6.5 0 016.7 2 6.5 6.5 0 108 14.5a6.47 6.47 0 006-5.2z"
-                        stroke="currentColor"
-                        stroke-width="1.3"
-                      />
-                    </svg>
-                    {{ t('docs.dark') }}
-                  </button>
-                  <!-- prettier-ignore -->
-                  <button
-                    class="mobile-docs__theme-btn"
-                    :class="{
-                      'mobile-docs__theme-btn--active': reader.readerTheme.value === 'light',
-                    }"
-                    @click="reader.readerTheme.value = 'light'; reader.toggleTheme()"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3" />
-                      <path
-                        d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7"
-                        stroke="currentColor"
-                        stroke-width="1.1"
-                        stroke-linecap="round"
-                      />
-                    </svg>
-                    {{ t('docs.light') }}
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </Transition>
@@ -455,6 +431,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import DOMPurify from 'dompurify'
 import MobileWindow from '../../components/MobileWindow.vue'
@@ -588,9 +565,11 @@ function onDetailTouchEnd(e: TouchEvent): void {
 
 // ── Navigation ───────────────────────────────────────────────────────
 
-async function openArticle(scpNumber: string): Promise<void> {
-  await reader.selectArticle(scpNumber)
-  view.value = 'detail'
+async function openArticle(scpNumber: string, url?: string): Promise<void> {
+  await reader.selectArticle(scpNumber, url)
+  if (reader.docType.value === 'scp') {
+    view.value = 'detail'
+  }
 }
 
 async function openGuide(): Promise<void> {
@@ -660,15 +639,18 @@ onBeforeUnmount(() => {
   --docs-bg: #0e0e0e;
   --docs-surface: #1a1a1c;
   --docs-surface-hover: #2c2c2e;
+  --docs-bg-hover: #2c2c2e;
   --docs-border: rgba(255, 255, 255, 0.06);
   --docs-text-primary: #f0f0f0;
   --docs-text-secondary: #a8a8a8;
   --docs-text-tertiary: #6a6a6a;
   --docs-accent: #8e8e93;
+  --docs-accent-soft: rgba(142, 142, 147, 0.12);
   --docs-content-bg: #111113;
   --docs-content-text: #e0e0e0;
   --docs-card-bg: #1c1c1e;
   --docs-card-shadow: rgba(0, 0, 0, 0.3);
+  --docs-panel-shadow: rgba(0, 0, 0, 0.3);
 
   display: flex;
   flex-direction: column;
@@ -680,18 +662,21 @@ onBeforeUnmount(() => {
 
 /* Light theme overrides */
 .mobile-docs--light {
-  --docs-bg: #f5f5f7;
+  --docs-bg: #f2f2f7;
   --docs-surface: #ffffff;
-  --docs-surface-hover: #e8e8ed;
-  --docs-border: rgba(0, 0, 0, 0.08);
-  --docs-text-primary: #1d1d1f;
-  --docs-text-secondary: #6e6e73;
-  --docs-text-tertiary: #86868b;
-  --docs-accent: #007aff;
+  --docs-surface-hover: #e8e8ee;
+  --docs-bg-hover: #e8e8ee;
+  --docs-border: rgba(0, 0, 0, 0.12);
+  --docs-text-primary: #000000;
+  --docs-text-secondary: #48484a;
+  --docs-text-tertiary: #6c6c70;
+  --docs-accent: #0063d1;
+  --docs-accent-soft: rgba(0, 99, 209, 0.1);
   --docs-content-bg: #ffffff;
-  --docs-content-text: #1d1d1f;
+  --docs-content-text: #000000;
   --docs-card-bg: #ffffff;
-  --docs-card-shadow: rgba(0, 0, 0, 0.08);
+  --docs-card-shadow: rgba(0, 0, 0, 0.06);
+  --docs-panel-shadow: rgba(0, 0, 0, 0.14);
 }
 
 /* ══════════════════════════════════════════════════════════════════════ */
@@ -736,6 +721,44 @@ onBeforeUnmount(() => {
 
 .mobile-docs__search-input::placeholder {
   color: var(--docs-text-tertiary);
+}
+
+/* ── Doc Type Tabs ──────────────────────────────────────────────────── */
+.mobile-docs__doc-type-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: var(--docs-surface);
+  border-bottom: 0.5px solid var(--docs-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mobile-docs__doc-type-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-docs__doc-type-tab {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--docs-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.mobile-docs__doc-type-tab:hover {
+  background: var(--docs-bg-hover);
+  color: var(--docs-text-primary);
+}
+
+.mobile-docs__doc-type-tab--active {
+  background: var(--docs-accent-soft);
+  color: var(--docs-accent);
 }
 
 /* ── Filter Tags ────────────────────────────────────────────────────── */
@@ -792,8 +815,8 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(255, 149, 0, 0.15);
-  color: #ff9500;
+  background: var(--gui-warning-bg, rgba(255, 149, 0, 0.15));
+  color: var(--gui-warning, #ff9500);
   font-size: 12px;
   font-weight: 500;
 }
@@ -961,8 +984,8 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 4px;
   padding: 4px 10px;
-  background: rgba(255, 149, 0, 0.12);
-  color: #ff9500;
+  background: var(--gui-warning-bg, rgba(255, 149, 0, 0.12));
+  color: var(--gui-warning, #ff9500);
   font-size: 11px;
   font-weight: 500;
 }
@@ -1016,6 +1039,62 @@ onBeforeUnmount(() => {
 /* ── Article Content Styles ─────────────────────────────────────────── */
 .mobile-docs__article {
   word-wrap: break-word;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-wrap) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-hero),
+.mobile-docs--light .mobile-docs__article :deep(.guide-intro-card),
+.mobile-docs--light .mobile-docs__article :deep(.guide-cmd-block) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-toc),
+.mobile-docs--light .mobile-docs__article :deep(.guide-app-card),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step),
+.mobile-docs--light .mobile-docs__article :deep(.guide-faq-item),
+.mobile-docs--light .mobile-docs__article :deep(.guide-shortcut) {
+  background: #ffffff !important;
+  border-color: var(--docs-border) !important;
+  box-shadow: none !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-hero h1),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section-title h2),
+.mobile-docs--light .mobile-docs__article :deep(.guide-app-card h4),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step-content h4),
+.mobile-docs--light .mobile-docs__article :deep(.guide-faq-item h4),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section li strong) {
+  color: var(--docs-text-primary) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-hero p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-section li),
+.mobile-docs--light .mobile-docs__article :deep(.guide-app-card p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step-content p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-faq-item p),
+.mobile-docs--light .mobile-docs__article :deep(.guide-shortcut-desc) {
+  color: var(--docs-text-secondary) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-section code),
+.mobile-docs--light .mobile-docs__article :deep(.guide-shortcut-key),
+.mobile-docs--light .mobile-docs__article :deep(.guide-step-tools code) {
+  background: #eef1f5 !important;
+  border-color: var(--docs-border) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-section pre) {
+  background: #f7f8fa !important;
+  border-color: var(--docs-border) !important;
+}
+
+.mobile-docs--light .mobile-docs__article :deep(.guide-section pre code) {
+  color: var(--docs-text-primary) !important;
 }
 
 .mobile-docs__article :deep(h1) {
@@ -1161,7 +1240,7 @@ onBeforeUnmount(() => {
   background: var(--docs-surface);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -4px 20px var(--docs-panel-shadow);
   z-index: 100;
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
@@ -1241,32 +1320,6 @@ onBeforeUnmount(() => {
   font-family: var(--gui-font-mono, monospace);
 }
 
-.mobile-docs__theme-toggle {
-  display: flex;
-  gap: 8px;
-}
-
-.mobile-docs__theme-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--docs-border);
-  background: transparent;
-  color: var(--docs-text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  min-height: 44px;
-  transition: all 0.15s;
-}
-
-.mobile-docs__theme-btn--active {
-  background: var(--docs-accent);
-  color: var(--gui-text-primary, #ffffff);
-  border-color: var(--docs-accent);
-}
-
 /* ── TOC Panel ──────────────────────────────────────────────────────── */
 .mobile-docs__toc-panel {
   position: absolute;
@@ -1277,7 +1330,7 @@ onBeforeUnmount(() => {
   background: var(--docs-surface);
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -4px 20px var(--docs-panel-shadow);
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -1369,16 +1422,17 @@ onBeforeUnmount(() => {
 }
 
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
-.light .mobile-docs__card {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+.mobile-docs--light .mobile-docs__card {
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
 }
-.light .mobile-docs__card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.mobile-docs--light .mobile-docs__card:hover {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
-.light .mobile-docs__search-bar {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+.mobile-docs--light .mobile-docs__search-bar {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.035);
 }
-.light .mobile-docs__filter-chips {
+.mobile-docs--light .mobile-docs__filter-scroll {
   box-shadow: none;
 }
 </style>

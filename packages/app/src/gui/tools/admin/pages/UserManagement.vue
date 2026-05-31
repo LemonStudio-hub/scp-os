@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <div class="user-mgmt">
     <div class="user-mgmt__toolbar">
@@ -176,6 +178,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, onMounted } from 'vue'
 import { DataTable, BatchActionBar, Pagination, ConfirmDialog, Modal } from '../components'
 import type { BatchAction } from '../components'
@@ -389,7 +392,7 @@ async function handleExport(format: 'csv' | 'json') {
   if (!token) return
   try {
     const res = await adminApi.exportUsers(token, format)
-    if (res.success && res.data) {
+    if (res.success && (format === 'csv' || res.data)) {
       const content = format === 'json' ? JSON.stringify(res.data, null, 2) : res.data
       const blob = new Blob([content], {
         type: format === 'json' ? 'application/json' : 'text/csv',

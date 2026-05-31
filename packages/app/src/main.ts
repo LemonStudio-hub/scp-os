@@ -13,6 +13,7 @@ if ('serviceWorker' in navigator) {
       await registration.unregister()
     }
     if (registrations.length > 0) {
+      // eslint-disable-next-line no-console
       console.log('[Main] Unregistered', registrations.length, 'service worker(s)')
     }
   })
@@ -23,6 +24,7 @@ if ('serviceWorker' in navigator) {
         await caches.delete(cacheName)
       }
       if (cacheNames.length > 0) {
+        // eslint-disable-next-line no-console
         console.log('[Main] Cleared', cacheNames.length, 'cache(s)')
       }
     })
@@ -71,7 +73,7 @@ const app = createApp(App)
 app.use(pinia)
 
 // Initialize terminal store
-const terminalStore = useTerminalStore()
+const terminalStore = useTerminalStore(pinia)
 terminalStore.checkMobile()
 terminalStore.updateFontSize()
 

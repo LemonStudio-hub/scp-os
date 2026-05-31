@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <div class="audit-log">
     <div class="audit-log__toolbar">
@@ -55,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch, onMounted } from 'vue'
 import { DataTable, Pagination } from '../components'
 import type { TableColumn } from '../components'

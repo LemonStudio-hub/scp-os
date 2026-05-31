@@ -226,7 +226,7 @@ export class TabMemoryRepository extends MemoryBaseRepository<TabEntity> impleme
   /**
    * Update tab data
    */
-  async updateData(tabId: string, key: string, value: any): Promise<void> {
+  async updateData(tabId: string, key: string, value: unknown): Promise<void> {
     const tab = await this.findById(tabId)
     if (!tab) {
       throw new Error(`Tab ${tabId} not found`)

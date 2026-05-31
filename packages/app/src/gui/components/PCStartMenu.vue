@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <template>
   <div v-if="isOpen" class="pc-start-menu">
     <div class="pc-start-menu__container">
@@ -106,10 +107,13 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import GUIIcon from './ui/GUIIcon.vue'
 import type { IconName } from '../icons'
+import type { ToolType } from '../types'
+import { getInstalledAppTools } from '../utils/appCatalog'
 
 const { t } = useI18n()
 
@@ -148,22 +152,35 @@ const emit = defineEmits<{
 
 const searchQuery = ref('')
 const showSearchResults = ref(false)
+const installedTools = ref<Set<ToolType>>(new Set())
 
 // Pinned apps
-const apps: StartMenuApp[] = [
+const pinnedAppDefinitions: StartMenuApp[] = [
   { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', iconName: 'terminal' },
   { id: 'files', label: t('home.apps.files'), tool: 'filemanager', iconName: 'folder' },
   { id: 'editor', label: t('app.editor'), tool: 'editor', iconName: 'edit' },
   { id: 'chat', label: t('home.apps.chat'), tool: 'chat', iconName: 'message-square' },
   { id: 'dash', label: t('home.apps.dash'), tool: 'dash', iconName: 'bar-chart-2' },
   { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', iconName: 'message-circle' },
+  { id: 'appmanager', label: t('home.apps.appManager'), tool: 'appmanager', iconName: 'grid' },
 ]
 
 // All apps (including pinned)
-const allApps: StartMenuApp[] = [
-  ...apps,
+const allAppDefinitions: StartMenuApp[] = [
+  ...pinnedAppDefinitions,
   { id: 'settings', label: t('home.apps.settings'), tool: 'settings', iconName: 'settings' },
 ]
+
+function refreshInstalledApps(): void {
+  installedTools.value = getInstalledAppTools()
+}
+
+function isStartAppInstalled(app: StartMenuApp): boolean {
+  return installedTools.value.has(app.tool as ToolType)
+}
+
+const apps = computed(() => pinnedAppDefinitions.filter(isStartAppInstalled))
+const allApps = computed(() => allAppDefinitions.filter(isStartAppInstalled))
 
 // System options
 const systemOptions: SystemOption[] = [
@@ -181,7 +198,7 @@ const powerOptions: PowerOption[] = [
 ]
 
 // Combined items for search
-const allItems = computed(() => [...apps, ...systemOptions, ...powerOptions])
+const allItems = computed(() => [...allApps.value, ...systemOptions, ...powerOptions])
 
 // Filtered items based on search query
 const filteredItems = computed(() => {
@@ -232,10 +249,13 @@ function handleClickOutside(event: MouseEvent) {
 }
 
 onMounted(() => {
+  refreshInstalledApps()
+  window.addEventListener('app-catalog-changed', refreshInstalledApps)
   document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('app-catalog-changed', refreshInstalledApps)
   document.removeEventListener('click', handleClickOutside)
 })
 </script>
@@ -461,24 +481,58 @@ onUnmounted(() => {
 }
 
 /* ── Light Mode Overrides ─────────────────────────────────────────── */
-.light .pc-start-menu {
+.light .pc-start-menu,
+.claude .pc-start-menu {
   box-shadow: var(--gui-shadow-ios-sheet, 0 -10px 40px rgba(0, 0, 0, 0.12));
 }
 
-.light .pc-start-menu:hover {
+.light .pc-start-menu:hover,
+.claude .pc-start-menu:hover {
   box-shadow: var(--gui-shadow-ios-modal, 0 20px 60px rgba(0, 0, 0, 0.15));
 }
 
-.light .pc-start-menu__search-results {
+.light .pc-start-menu__search-results,
+.claude .pc-start-menu__search-results {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
-.light .pc-start-menu__app:hover .pc-start-menu__app-icon {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.light .pc-start-menu__search-field,
+.claude .pc-start-menu__search-field {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #000000 !important;
 }
 
-.light .pc-start-menu__app-icon {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+.light .pc-start-menu__search-field:focus {
+  border-color: #007aff !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15) !important;
+}
+
+.claude .pc-start-menu__search-field:focus {
+  border-color: #d97757 !important;
+  box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.15) !important;
+}
+
+.claude .pc-start-menu__app-icon,
+.claude .pc-start-menu__system-item-icon,
+.claude .pc-start-menu__power-item-icon {
+  background: #faf9f5 !important;
+  border: 1.5px solid #d97757 !important;
+  color: #d97757 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+.claude .pc-start-menu__app-icon :deep(svg),
+.claude .pc-start-menu__system-item-icon :deep(svg),
+.claude .pc-start-menu__power-item-icon :deep(svg) {
+  stroke: #d97757 !important;
+}
+
+.claude .pc-start-menu__app:hover .pc-start-menu__app-icon,
+.claude .pc-start-menu__system-item:hover .pc-start-menu__system-item-icon,
+.claude .pc-start-menu__power-item:hover .pc-start-menu__power-item-icon {
+  background: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
 }
 
 .pc-start-menu__app-label {

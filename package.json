@@ -16,6 +16,7 @@
                     "test:ui": "pnpm --filter @scp-os/app test:ui",
                     "test:coverage": "pnpm --filter @scp-os/app test:coverage && pnpm --filter scp-os-worker test:coverage",
                     "worker:dev": "pnpm --filter scp-os-worker dev",
+                    "worker:build": "pnpm --filter scp-os-worker build",
                     "worker:deploy": "pnpm --filter scp-os-worker deploy",
                     "worker:tail": "pnpm --filter scp-os-worker tail",
                     "desktop:dev": "pnpm --filter @scp-os/desktop tauri:dev",
@@ -39,6 +40,13 @@
                               "esbuild",
                               "sharp",
                               "workerd"
-                    ]
+                    ],
+                    "overrides": {
+                              "@xmldom/xmldom": "0.8.13",
+                              "postcss": "8.5.10",
+                              "js-cookie": "3.0.7",
+                              "brace-expansion@>=5.0.0 <5.0.6": "5.0.6",
+                              "ws@>=8.0.0 <8.20.1": "8.20.1"
+                    }
           }
 }

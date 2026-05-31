@@ -89,7 +89,7 @@ export class PerformanceApiService {
     }
   }
 
-  async getRecentMetrics(limit: number = 10): Promise<any[]> {
+  async getRecentMetrics(limit: number = 10): Promise<unknown[]> {
     try {
       const response = await fetch(`${this.apiUrl}?limit=${limit}`, {
         method: 'GET',

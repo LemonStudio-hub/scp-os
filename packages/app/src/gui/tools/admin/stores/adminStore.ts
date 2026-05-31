@@ -7,7 +7,7 @@ const STORAGE_KEY = 'admin_token'
 export const useAdminStore = defineStore('admin', () => {
   const token = ref<string | null>(null)
   const admin = ref<{ adminId: number; username: string; role: string } | null>(null)
-  const isAuthenticated = computed(() => !!token.value)
+  const isAuthenticated = computed(() => Boolean(token.value))
   const isSuperAdmin = computed(() => admin.value?.role === 'super_admin')
 
   async function login(

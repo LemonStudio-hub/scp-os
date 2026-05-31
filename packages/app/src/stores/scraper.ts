@@ -30,6 +30,13 @@ export const useScraperStore = defineStore('scraper', () => {
    * Save to cache
    */
   function saveToCache(key: string, data: SCPWikiData): void {
+    // Enforce cache max size
+    if (cache.value.size >= config.cache.maxSize) {
+      const oldestKey = cache.value.keys().next().value
+      if (oldestKey !== undefined) {
+        cache.value.delete(oldestKey)
+      }
+    }
     cache.value.set(key, {
       data,
       timestamp: Date.now(),

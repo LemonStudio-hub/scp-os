@@ -20,9 +20,19 @@ function db(): D1Database {
   } as unknown as D1Database
 }
 
+function r2(): R2Bucket {
+  return {
+    list: async () => ({ objects: [], delimitedPrefixes: [], truncated: false }),
+    get: async () => null,
+    put: async () => null,
+    delete: async () => undefined,
+  } as unknown as R2Bucket
+}
+
 const env = {
   SCP_DB: db(),
   SCP_READER_DB: db(),
+  SCP_FILES: r2(),
   CHAT_ROOM_DO: {} as DurableObjectNamespace,
   JWT_SECRET: 'test-secret',
   ADMIN_JWT_SECRET: 'admin-secret',

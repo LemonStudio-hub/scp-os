@@ -1,3 +1,5 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+
 <template>
   <Transition name="fm-image-modal">
     <div v-if="visible" class="fm-image-viewer-overlay" @click.self="close">
@@ -66,18 +68,11 @@
                 <path d="M15 3L9 9M3 15l6-6" />
               </svg>
             </button>
-            <button class="fm-image-viewer__close-btn" @click="close">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M5 5l10 10M15 5L5 15" />
-              </svg>
-            </button>
+            <WindowCloseButton
+              class="fm-image-viewer__close-btn"
+              aria-label="Close"
+              @click="close"
+            />
           </div>
         </div>
 
@@ -117,9 +112,11 @@
 </template>
 
 <script setup lang="ts">
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, watch } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import { filesystem } from '../../../utils/filesystem'
+import WindowCloseButton from '../../components/WindowCloseButton.vue'
 
 interface Props {
   visible: boolean
@@ -312,8 +309,7 @@ function close() {
   gap: 8px;
 }
 
-.fm-image-viewer__action-btn,
-.fm-image-viewer__close-btn {
+.fm-image-viewer__action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -328,14 +324,8 @@ function close() {
   -webkit-tap-highlight-color: transparent;
 }
 
-.fm-image-viewer__action-btn:active,
-.fm-image-viewer__close-btn:active {
+.fm-image-viewer__action-btn:active {
   background: rgba(255, 255, 255, 0.3);
-}
-
-.fm-image-viewer__close-btn {
-  width: 38px;
-  height: 38px;
 }
 
 /* ── Image Container ────────────────────────────────────────────────── */

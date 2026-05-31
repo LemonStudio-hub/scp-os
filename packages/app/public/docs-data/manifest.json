@@ -1,0 +1,361 @@
+{
+  "generatedAt": "2026-05-18T14:08:53.440Z",
+  "source": "https://os1api.daum.pw",
+  "scp": [
+    {
+      "scpNumber": "002",
+      "title": "SCP-002",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-002",
+      "contentPath": "scp/002.json"
+    },
+    {
+      "scpNumber": "003",
+      "title": "SCP-003",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-003",
+      "contentPath": "scp/003.json"
+    },
+    {
+      "scpNumber": "004",
+      "title": "SCP-004",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-004",
+      "contentPath": "scp/004.json"
+    },
+    {
+      "scpNumber": "005",
+      "title": "SCP-005",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-005",
+      "contentPath": "scp/005.json"
+    },
+    {
+      "scpNumber": "006",
+      "title": "SCP-006",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-006",
+      "contentPath": "scp/006.json"
+    },
+    {
+      "scpNumber": "007",
+      "title": "SCP-007",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-007",
+      "contentPath": "scp/007.json"
+    },
+    {
+      "scpNumber": "008",
+      "title": "SCP-008",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-008",
+      "contentPath": "scp/008.json"
+    },
+    {
+      "scpNumber": "009",
+      "title": "SCP-009",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-009",
+      "contentPath": "scp/009.json"
+    },
+    {
+      "scpNumber": "010",
+      "title": "SCP-010",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-010",
+      "contentPath": "scp/010.json"
+    },
+    {
+      "scpNumber": "011",
+      "title": "SCP-011",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-011",
+      "contentPath": "scp/011.json"
+    },
+    {
+      "scpNumber": "012",
+      "title": "SCP-012",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-012",
+      "contentPath": "scp/012.json"
+    },
+    {
+      "scpNumber": "013",
+      "title": "SCP-013",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-013",
+      "contentPath": "scp/013.json"
+    },
+    {
+      "scpNumber": "014",
+      "title": "SCP-014",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-014",
+      "contentPath": "scp/014.json"
+    },
+    {
+      "scpNumber": "015",
+      "title": "SCP-015",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-015",
+      "contentPath": "scp/015.json"
+    },
+    {
+      "scpNumber": "016",
+      "title": "SCP-016",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-016",
+      "contentPath": "scp/016.json"
+    },
+    {
+      "scpNumber": "017",
+      "title": "SCP-017",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-017",
+      "contentPath": "scp/017.json"
+    },
+    {
+      "scpNumber": "018",
+      "title": "SCP-018",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-018",
+      "contentPath": "scp/018.json"
+    },
+    {
+      "scpNumber": "019",
+      "title": "SCP-019",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-019",
+      "contentPath": "scp/019.json"
+    },
+    {
+      "scpNumber": "020",
+      "title": "SCP-020",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-020",
+      "contentPath": "scp/020.json"
+    },
+    {
+      "scpNumber": "035",
+      "title": "SCP-035",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-035",
+      "contentPath": "scp/035.json"
+    },
+    {
+      "scpNumber": "049",
+      "title": "SCP-049",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-049",
+      "contentPath": "scp/049.json"
+    },
+    {
+      "scpNumber": "055",
+      "title": "SCP-055",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-055",
+      "contentPath": "scp/055.json"
+    },
+    {
+      "scpNumber": "079",
+      "title": "SCP-079",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-079",
+      "contentPath": "scp/079.json"
+    },
+    {
+      "scpNumber": "087",
+      "title": "SCP-087",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-087",
+      "contentPath": "scp/087.json"
+    },
+    {
+      "scpNumber": "096",
+      "title": "SCP-096",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-096",
+      "contentPath": "scp/096.json"
+    },
+    {
+      "scpNumber": "106",
+      "title": "SCP-106",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-106",
+      "contentPath": "scp/106.json"
+    },
+    {
+      "scpNumber": "173",
+      "title": "SCP-173",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-173",
+      "contentPath": "scp/173.json"
+    },
+    {
+      "scpNumber": "294",
+      "title": "SCP-294",
+      "objectClass": "Euclid",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-294",
+      "contentPath": "scp/294.json"
+    },
+    {
+      "scpNumber": "500",
+      "title": "SCP-500",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-500",
+      "contentPath": "scp/500.json"
+    },
+    {
+      "scpNumber": "682",
+      "title": "SCP-682",
+      "objectClass": "Keter",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-682",
+      "contentPath": "scp/682.json"
+    },
+    {
+      "scpNumber": "914",
+      "title": "SCP-914",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-914",
+      "contentPath": "scp/914.json"
+    },
+    {
+      "scpNumber": "999",
+      "title": "SCP-999",
+      "objectClass": "Safe",
+      "series": 1,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-999",
+      "contentPath": "scp/999.json"
+    },
+    {
+      "scpNumber": "2000",
+      "title": "SCP-2000",
+      "objectClass": "Thaumiel",
+      "series": 3,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-2000",
+      "contentPath": "scp/2000.json"
+    },
+    {
+      "scpNumber": "2316",
+      "title": "SCP-2316",
+      "objectClass": "Unknown",
+      "series": 3,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-2316",
+      "contentPath": "scp/2316.json"
+    },
+    {
+      "scpNumber": "3000",
+      "title": "SCP-3000",
+      "objectClass": "Thaumiel",
+      "series": 4,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-3000",
+      "contentPath": "scp/3000.json"
+    },
+    {
+      "scpNumber": "3008",
+      "title": "SCP-3008",
+      "objectClass": "Euclid",
+      "series": 4,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-3008",
+      "contentPath": "scp/3008.json"
+    },
+    {
+      "scpNumber": "4000",
+      "title": "[REDACTED PER PROTOCOL 4000-ESHU]",
+      "objectClass": "Keter",
+      "series": 5,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-4000",
+      "contentPath": "scp/4000.json"
+    },
+    {
+      "scpNumber": "5000",
+      "title": "SCP-5000",
+      "objectClass": "Safe",
+      "series": 6,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-5000",
+      "contentPath": "scp/5000.json"
+    },
+    {
+      "scpNumber": "6000",
+      "title": "SCP-6000",
+      "objectClass": "Unknown",
+      "series": 7,
+      "rating": 0,
+      "url": "https://scp-wiki.wikidot.com/scp-6000",
+      "contentPath": "scp/6000.json"
+    }
+  ],
+  "goi": [],
+  "tales": [],
+  "hubs": [],
+  "failures": []
+}

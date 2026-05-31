@@ -80,7 +80,7 @@ SCP-OS 采用 **Monorepo** 架构，包含三个核心包：
 
 ### 💬 社交功能
 
-- **实时聊天**：多房间聊天系统，支持昵称显示与频率限制
+- **实时聊天**：多房间聊天系统，支持昵称显示、消息编辑/删除与频率限制
 - **反馈系统**：支持提交反馈、点赞/踩、评论与分类筛选
 
 ### 📱 双端适配
@@ -392,7 +392,7 @@ scp-os/
 
 ## 🎯 GUI 工具
 
-系统内置 7 个工具模块，每个工具均提供桌面端和移动端双版本：
+系统内置 10 个工具模块，每个工具均提供桌面端和移动端双版本：
 
 | 工具 | 桌面组件 | 移动组件 | 说明 |
 |------|---------|---------|------|
@@ -400,9 +400,12 @@ scp-os/
 | 📁 FileManager | FileManagerWindow | MobileFileManager | 文件管理器（含图片/音频/视频/文本预览） |
 | 📝 Editor | EditorWindow | MobileEditor | 代码编辑器（CodeMirror，多语言高亮） |
 | ⚙️ Settings | SettingsWindow | MobileSettings | 系统设置 |
-| 💬 Chat | PCChatWindow | ChatWindow | 实时聊天 |
+| 💬 Chat | PCChatWindow | ChatWindow | 实时聊天（支持消息编辑/删除） |
 | 📊 Dashboard | PCDashboard | MobileDash | 性能仪表盘 |
 | 📮 Feedback | PCFeedbackWindow | MobileFeedback | 反馈系统 |
+| 📖 Docs | PCDocsWindow | MobileDocs | SCP 离线阅读器 |
+| 🔔 Notification | PCNotificationCenter | MobileNotificationCenter | 通知中心 |
+| 🛡️ Admin | AdminLayout | AdminLayout | 管理后台 |
 
 ---
 

@@ -66,6 +66,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     ]
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async query<T = any>(
     dataSourceId: string,
     options: DataSourceQueryOptions
@@ -90,6 +91,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async get<T = any>(dataSourceId: string, id: string): Promise<T | null> {
     const cacheKey = `${dataSourceId}:${id}`
 
@@ -122,6 +124,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async search<T = any>(
     dataSourceId: string,
     keyword: string,
@@ -171,7 +174,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
   async getStatistics(_dataSourceId: string): Promise<{
     totalItems: number
     lastUpdated?: string
-    [key: string]: any
+    [key: string]: unknown
   }> {
     const url = new URL(`${this.apiUrl}/stats`)
     const response = await fetch(url.toString())
@@ -194,5 +197,5 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
   }
 
   dependencies?: string[]
-  config?: Record<string, any>
+  config?: Record<string, unknown>
 }

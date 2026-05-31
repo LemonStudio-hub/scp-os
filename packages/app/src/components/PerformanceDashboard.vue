@@ -62,6 +62,7 @@ const latestReport = ref<any>(null)
 const issues = ref<PerformanceIssue[]>([])
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const recommendations = ref<any[]>([])
+const completedSteps = ref<Record<string, number[]>>({})
 const lastUpdated = ref<string>('--:--:--')
 const apiStatus = ref<string>(t('common.unknown'))
 const statusMessage = ref<string>('')
@@ -218,9 +219,14 @@ const generateReport = () => {
   if (!monitorService.value || !optimizerService.value) return
 
   const report = monitorService.value.generateReport()
+
+  // Use createOptimizationPlan to compute the dynamic currentScore and strategies
+  const plan = optimizerService.value.createOptimizationPlan(report.issues || [])
+  report.score = plan.currentScore
+
   latestReport.value = report
   issues.value = report.issues || []
-  recommendations.value = optimizerService.value.recommendOptimizations(issues.value)
+  recommendations.value = plan.strategies
 }
 
 const handleClear = () => {
@@ -285,10 +291,44 @@ const checkApiStatus = async () => {
   apiStatus.value = isOnline ? t('dash.online') : t('dash.offline')
 }
 
+const initCompletedSteps = () => {
+  if (!optimizerService.value) return
+  const strategies = optimizerService.value.getAllStrategies()
+  const stepsMap: Record<string, number[]> = {}
+  strategies.forEach((s) => {
+    const service = optimizerService.value
+    if (!service) return
+    const validation = service.validateImplementation(s.id)
+    const completed: number[] = []
+    s.steps.forEach((_, idx) => {
+      if (validation.checks[`step-${idx}`]) {
+        completed.push(idx)
+      }
+    })
+    stepsMap[s.id] = completed
+  })
+  completedSteps.value = stepsMap
+}
+
+const handleToggleStep = (strategyId: string, stepIndex: number) => {
+  if (!optimizerService.value) return
+
+  const currentCompleted = completedSteps.value[strategyId] || []
+  if (currentCompleted.includes(stepIndex)) {
+    optimizerService.value.markStepNotImplemented(strategyId, stepIndex)
+  } else {
+    optimizerService.value.markStepImplemented(strategyId, stepIndex)
+  }
+
+  initCompletedSteps()
+  refreshData()
+}
+
 watch(
   () => props.isVisible,
   (newValue) => {
     if (newValue) {
+      initCompletedSteps()
       refreshData()
       checkApiStatus()
     }
@@ -299,12 +339,22 @@ onMounted(() => {
   try {
     monitorService.value = new PerformanceMonitorService()
     optimizerService.value = new PerformanceOptimizerService()
+    initCompletedSteps()
     apiService.value = new PerformanceApiService()
 
     const authStore = useAuthStore()
     if (authStore.userId) {
       apiService.value.setUserId(authStore.userId)
     }
+
+    watch(
+      () => authStore.userId,
+      (newUserId) => {
+        if (apiService.value && newUserId) {
+          apiService.value.setUserId(newUserId)
+        }
+      }
+    )
 
     monitorService.value.startMonitoring(5000)
     isMonitoring.value = true
@@ -365,295 +415,309 @@ onUnmounted(() => {
           <!-- Performance Score -->
           <PerformanceScore :score="latestReport?.score ?? 0" :issue-count="issues.length" />
 
-          <!-- Real-time Metrics Grid -->
-          <div class="metrics-section">
-            <h3 class="section-title">
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <span class="title-icon" v-html="ICON_VITAL" />
-              {{ t('perf.realtimeMetrics') }}
-            </h3>
-            <TransitionGroup name="metric-stagger" appear tag="div" class="metrics-grid">
-              <!-- Memory -->
-              <MetricCard
-                key="memory"
-                :icon="ICON_MEMORY"
-                :name="t('perf.memory')"
-                :value="memoryPercentage"
-                unit="%"
-                type="memory"
-                :progress="memoryPercentage"
-                :meta-label="t('perf.used')"
-                :meta-value="formatBytes(memoryUsage)"
-                :footer="`${t('perf.of')} ${formatBytes(memoryLimit)}`"
-                :status="getMemoryStatus(memoryPercentage)"
-              />
+          <!-- Scrollable Dashboard Body -->
+          <div class="dashboard-body">
+            <!-- Real-time Metrics Grid -->
+            <div class="metrics-section">
+              <h3 class="section-title">
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <span class="title-icon" v-html="ICON_VITAL" />
+                {{ t('perf.realtimeMetrics') }}
+              </h3>
+              <TransitionGroup name="metric-stagger" appear tag="div" class="metrics-grid">
+                <!-- Memory -->
+                <MetricCard
+                  key="memory"
+                  :icon="ICON_MEMORY"
+                  :name="t('perf.memory')"
+                  :value="memoryPercentage"
+                  unit="%"
+                  type="memory"
+                  :progress="memoryPercentage"
+                  :meta-label="t('perf.used')"
+                  :meta-value="formatBytes(memoryUsage)"
+                  :footer="`${t('perf.of')} ${formatBytes(memoryLimit)}`"
+                  :status="getMemoryStatus(memoryPercentage)"
+                />
 
-              <!-- FPS -->
-              <MetricCard
-                key="fps"
-                :icon="ICON_FPS"
-                :name="t('perf.frameRate')"
-                :value="fpsInfo.current"
-                unit="FPS"
-                type="fps"
-                :progress="(fpsInfo.current / 60) * 100"
-                :meta-label="t('perf.minAvgMax')"
-                :meta-value="`${fpsInfo.min} / ${fpsInfo.avg} / ${fpsInfo.max}`"
-                :footer="t('perf.target60Fps')"
-                :status="getFPSStatus(fpsInfo.current)"
-              />
+                <!-- FPS -->
+                <MetricCard
+                  key="fps"
+                  :icon="ICON_FPS"
+                  :name="t('perf.frameRate')"
+                  :value="fpsInfo.current"
+                  unit="FPS"
+                  type="fps"
+                  :progress="(fpsInfo.current / 60) * 100"
+                  :meta-label="t('perf.minAvgMax')"
+                  :meta-value="`${fpsInfo.min} / ${fpsInfo.avg} / ${fpsInfo.max}`"
+                  :footer="t('perf.target60Fps')"
+                  :status="getFPSStatus(fpsInfo.current)"
+                />
 
-              <!-- Page Load -->
-              <MetricCard
-                key="pageLoad"
-                :icon="ICON_TIME"
-                :name="t('perf.pageLoad')"
-                :value="pageLoadTime"
-                unit="ms"
-                type="time"
-                :footer="t('perf.totalLoadTime')"
-                :status="pageLoadTime < 1500 ? 'good' : pageLoadTime < 3000 ? 'medium' : 'poor'"
-              />
+                <!-- Page Load -->
+                <MetricCard
+                  key="pageLoad"
+                  :icon="ICON_TIME"
+                  :name="t('perf.pageLoad')"
+                  :value="pageLoadTime"
+                  unit="ms"
+                  type="time"
+                  :footer="t('perf.totalLoadTime')"
+                  :status="pageLoadTime < 1500 ? 'good' : pageLoadTime < 3000 ? 'medium' : 'poor'"
+                />
 
-              <!-- DOM Nodes -->
-              <MetricCard
-                key="domNodes"
-                :icon="ICON_DOM"
-                :name="t('perf.domNodes')"
-                :value="domNodes"
-                type="count"
-                :footer="domNodes > 3000 ? t('perf.reduceDomSize') : t('perf.healthyDomSize')"
-                :status="domNodes < 1500 ? 'good' : domNodes < 3000 ? 'medium' : 'poor'"
-              />
-            </TransitionGroup>
-          </div>
-
-          <!-- Web Vitals Section -->
-          <div class="metrics-section vitals-section">
-            <h3 class="section-title">
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <span class="title-icon" v-html="ICON_VITAL" />
-              {{ t('perf.webVitals') }}
-            </h3>
-            <div class="vitals-grid">
-              <!-- LCP -->
-              <div class="vital-card">
-                <div class="vital-header">
-                  <span class="vital-name">LCP</span>
-                  <span
-                    class="vital-badge"
-                    :class="`vital-${getVitalStatus('lcp', webVitals.lcp)}`"
-                  >
-                    {{
-                      getVitalStatus('lcp', webVitals.lcp) === 'unknown'
-                        ? '-'
-                        : getVitalStatus('lcp', webVitals.lcp).toUpperCase()
-                    }}
-                  </span>
-                </div>
-                <div class="vital-value">
-                  {{ webVitals.lcp !== null ? formatMs(webVitals.lcp) : t('perf.collecting') }}
-                </div>
-                <div class="vital-desc">{{ t('perf.lcpDesc') }}</div>
-                <div class="vital-bar">
-                  <div
-                    class="vital-bar-fill"
-                    :style="{ width: `${Math.min(100, ((webVitals.lcp || 0) / 4000) * 100)}%` }"
-                    :class="`vital-${getVitalStatus('lcp', webVitals.lcp)}`"
-                  />
-                </div>
-                <div class="vital-thresholds"><span>0</span><span>2.5s</span><span>4s+</span></div>
-              </div>
-
-              <!-- CLS -->
-              <div class="vital-card">
-                <div class="vital-header">
-                  <span class="vital-name">CLS</span>
-                  <span
-                    class="vital-badge"
-                    :class="`vital-${getVitalStatus('cls', webVitals.cls)}`"
-                  >
-                    {{
-                      getVitalStatus('cls', webVitals.cls) === 'unknown'
-                        ? '-'
-                        : getVitalStatus('cls', webVitals.cls).toUpperCase()
-                    }}
-                  </span>
-                </div>
-                <div class="vital-value">
-                  {{ webVitals.cls !== null ? webVitals.cls.toFixed(3) : t('perf.collecting') }}
-                </div>
-                <div class="vital-desc">{{ t('perf.clsDesc') }}</div>
-                <div class="vital-bar">
-                  <div
-                    class="vital-bar-fill"
-                    :style="{ width: `${Math.min(100, ((webVitals.cls || 0) / 0.25) * 100)}%` }"
-                    :class="`vital-${getVitalStatus('cls', webVitals.cls)}`"
-                  />
-                </div>
-                <div class="vital-thresholds"><span>0</span><span>0.1</span><span>0.25+</span></div>
-              </div>
-
-              <!-- INP -->
-              <div class="vital-card">
-                <div class="vital-header">
-                  <span class="vital-name">INP</span>
-                  <span
-                    class="vital-badge"
-                    :class="`vital-${getVitalStatus('inp', webVitals.inp)}`"
-                  >
-                    {{
-                      getVitalStatus('inp', webVitals.inp) === 'unknown'
-                        ? '-'
-                        : getVitalStatus('inp', webVitals.inp).toUpperCase()
-                    }}
-                  </span>
-                </div>
-                <div class="vital-value">
-                  {{ webVitals.inp !== null ? formatMs(webVitals.inp) : t('perf.collecting') }}
-                </div>
-                <div class="vital-desc">{{ t('perf.inpDesc') }}</div>
-                <div class="vital-bar">
-                  <div
-                    class="vital-bar-fill"
-                    :style="{ width: `${Math.min(100, ((webVitals.inp || 0) / 500) * 100)}%` }"
-                    :class="`vital-${getVitalStatus('inp', webVitals.inp)}`"
-                  />
-                </div>
-                <div class="vital-thresholds">
-                  <span>0</span><span>200ms</span><span>500ms+</span>
-                </div>
-              </div>
-
-              <!-- TTFB -->
-              <div class="vital-card">
-                <div class="vital-header">
-                  <span class="vital-name">TTFB</span>
-                  <span
-                    class="vital-badge"
-                    :class="`vital-${getVitalStatus('ttfb', webVitals.ttfb)}`"
-                  >
-                    {{
-                      getVitalStatus('ttfb', webVitals.ttfb) === 'unknown'
-                        ? '-'
-                        : getVitalStatus('ttfb', webVitals.ttfb).toUpperCase()
-                    }}
-                  </span>
-                </div>
-                <div class="vital-value">
-                  {{ webVitals.ttfb !== null ? formatMs(webVitals.ttfb) : t('perf.collecting') }}
-                </div>
-                <div class="vital-desc">{{ t('perf.ttfbDesc') }}</div>
-                <div class="vital-bar">
-                  <div
-                    class="vital-bar-fill"
-                    :style="{ width: `${Math.min(100, ((webVitals.ttfb || 0) / 1800) * 100)}%` }"
-                    :class="`vital-${getVitalStatus('ttfb', webVitals.ttfb)}`"
-                  />
-                </div>
-                <div class="vital-thresholds">
-                  <span>0</span><span>800ms</span><span>1.8s+</span>
-                </div>
-              </div>
+                <!-- DOM Nodes -->
+                <MetricCard
+                  key="domNodes"
+                  :icon="ICON_DOM"
+                  :name="t('perf.domNodes')"
+                  :value="domNodes"
+                  type="count"
+                  :footer="domNodes > 3000 ? t('perf.reduceDomSize') : t('perf.healthyDomSize')"
+                  :status="domNodes < 1500 ? 'good' : domNodes < 3000 ? 'medium' : 'poor'"
+                />
+              </TransitionGroup>
             </div>
-          </div>
 
-          <!-- Network & Storage Section -->
-          <div class="metrics-section info-section">
-            <h3 class="section-title">
-              <!-- eslint-disable-next-line vue/no-v-html -->
-              <span class="title-icon" v-html="ICON_NET" />
-              {{ t('perf.systemInfo') }}
-            </h3>
-            <div class="info-grid">
-              <!-- Network -->
-              <div class="info-card">
-                <div class="info-card-title">
-                  <!-- eslint-disable-next-line vue/no-v-html -->
-                  <span class="info-icon" v-html="ICON_NET" />
-                  {{ t('perf.network') }}
-                </div>
-                <div v-if="networkInfo" class="info-card-body">
-                  <div class="info-row">
-                    <span>{{ t('perf.type') }}</span
-                    ><span class="info-val"
-                      >{{ networkInfo.effectiveType.toUpperCase() }} ({{ networkInfo.type }})</span
+            <!-- Web Vitals Section -->
+            <div class="metrics-section vitals-section">
+              <h3 class="section-title">
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <span class="title-icon" v-html="ICON_VITAL" />
+                {{ t('perf.webVitals') }}
+              </h3>
+              <div class="vitals-grid">
+                <!-- LCP -->
+                <div class="vital-card">
+                  <div class="vital-header">
+                    <span class="vital-name">LCP</span>
+                    <span
+                      class="vital-badge"
+                      :class="`vital-${getVitalStatus('lcp', webVitals.lcp)}`"
                     >
+                      {{
+                        getVitalStatus('lcp', webVitals.lcp) === 'unknown'
+                          ? '-'
+                          : getVitalStatus('lcp', webVitals.lcp).toUpperCase()
+                      }}
+                    </span>
                   </div>
-                  <div class="info-row">
-                    <span>{{ t('perf.downlink') }}</span
-                    ><span class="info-val">{{ networkInfo.downlink }} Mbps</span>
+                  <div class="vital-value">
+                    {{ webVitals.lcp !== null ? formatMs(webVitals.lcp) : t('perf.collecting') }}
                   </div>
-                  <div class="info-row">
-                    <span>RTT</span><span class="info-val">{{ networkInfo.rtt }} ms</span>
-                  </div>
-                  <div class="info-row">
-                    <span>{{ t('perf.saveData') }}</span
-                    ><span class="info-val">{{
-                      networkInfo.saveData ? t('perf.yes') : t('perf.no')
-                    }}</span>
-                  </div>
-                </div>
-                <div v-else class="info-card-body">
-                  <p class="info-placeholder">{{ t('perf.networkApiUnavailable') }}</p>
-                </div>
-              </div>
-
-              <!-- Storage -->
-              <div class="info-card">
-                <div class="info-card-title">
-                  <!-- eslint-disable-next-line vue/no-v-html -->
-                  <span class="info-icon" v-html="ICON_STORAGE" />
-                  {{ t('perf.storage') }}
-                </div>
-                <div class="info-card-body">
-                  <div class="info-row">
-                    <span>{{ t('perf.used') }}</span
-                    ><span class="info-val">{{ formatBytes(storageUsage) }}</span>
-                  </div>
-                  <div class="info-row">
-                    <span>{{ t('perf.quota') }}</span
-                    ><span class="info-val">{{ formatBytes(storageQuota) }}</span>
-                  </div>
-                  <div class="info-row">
-                    <span>{{ t('perf.usage') }}</span>
-                    <span class="info-val">{{ storagePercentage.toFixed(1) }}%</span>
-                  </div>
-                  <div class="storage-bar">
+                  <div class="vital-desc">{{ t('perf.lcpDesc') }}</div>
+                  <div class="vital-bar">
                     <div
-                      class="storage-bar-fill"
-                      :style="{ width: `${Math.min(100, storagePercentage)}%` }"
+                      class="vital-bar-fill"
+                      :style="{ width: `${Math.min(100, ((webVitals.lcp || 0) / 4000) * 100)}%` }"
+                      :class="`vital-${getVitalStatus('lcp', webVitals.lcp)}`"
                     />
                   </div>
-                </div>
-              </div>
-
-              <!-- Resources -->
-              <div class="info-card">
-                <div class="info-card-title">
-                  <!-- eslint-disable-next-line vue/no-v-html -->
-                  <span class="info-icon" v-html="ICON_DOM" />
-                  {{ t('perf.resources') }}
-                </div>
-                <div class="info-card-body">
-                  <div class="info-row">
-                    <span>{{ t('perf.loaded') }}</span
-                    ><span class="info-val">{{ resourceCount }}</span>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>2.5s</span><span>4s+</span>
                   </div>
-                  <div class="info-row">
-                    <span>{{ t('perf.domNodes') }}</span
-                    ><span class="info-val">{{ domNodes }}</span>
+                </div>
+
+                <!-- CLS -->
+                <div class="vital-card">
+                  <div class="vital-header">
+                    <span class="vital-name">CLS</span>
+                    <span
+                      class="vital-badge"
+                      :class="`vital-${getVitalStatus('cls', webVitals.cls)}`"
+                    >
+                      {{
+                        getVitalStatus('cls', webVitals.cls) === 'unknown'
+                          ? '-'
+                          : getVitalStatus('cls', webVitals.cls).toUpperCase()
+                      }}
+                    </span>
+                  </div>
+                  <div class="vital-value">
+                    {{ webVitals.cls !== null ? webVitals.cls.toFixed(3) : t('perf.collecting') }}
+                  </div>
+                  <div class="vital-desc">{{ t('perf.clsDesc') }}</div>
+                  <div class="vital-bar">
+                    <div
+                      class="vital-bar-fill"
+                      :style="{ width: `${Math.min(100, ((webVitals.cls || 0) / 0.25) * 100)}%` }"
+                      :class="`vital-${getVitalStatus('cls', webVitals.cls)}`"
+                    />
+                  </div>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>0.1</span><span>0.25+</span>
+                  </div>
+                </div>
+
+                <!-- INP -->
+                <div class="vital-card">
+                  <div class="vital-header">
+                    <span class="vital-name">INP</span>
+                    <span
+                      class="vital-badge"
+                      :class="`vital-${getVitalStatus('inp', webVitals.inp)}`"
+                    >
+                      {{
+                        getVitalStatus('inp', webVitals.inp) === 'unknown'
+                          ? '-'
+                          : getVitalStatus('inp', webVitals.inp).toUpperCase()
+                      }}
+                    </span>
+                  </div>
+                  <div class="vital-value">
+                    {{ webVitals.inp !== null ? formatMs(webVitals.inp) : t('perf.collecting') }}
+                  </div>
+                  <div class="vital-desc">{{ t('perf.inpDesc') }}</div>
+                  <div class="vital-bar">
+                    <div
+                      class="vital-bar-fill"
+                      :style="{ width: `${Math.min(100, ((webVitals.inp || 0) / 500) * 100)}%` }"
+                      :class="`vital-${getVitalStatus('inp', webVitals.inp)}`"
+                    />
+                  </div>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>200ms</span><span>500ms+</span>
+                  </div>
+                </div>
+
+                <!-- TTFB -->
+                <div class="vital-card">
+                  <div class="vital-header">
+                    <span class="vital-name">TTFB</span>
+                    <span
+                      class="vital-badge"
+                      :class="`vital-${getVitalStatus('ttfb', webVitals.ttfb)}`"
+                    >
+                      {{
+                        getVitalStatus('ttfb', webVitals.ttfb) === 'unknown'
+                          ? '-'
+                          : getVitalStatus('ttfb', webVitals.ttfb).toUpperCase()
+                      }}
+                    </span>
+                  </div>
+                  <div class="vital-value">
+                    {{ webVitals.ttfb !== null ? formatMs(webVitals.ttfb) : t('perf.collecting') }}
+                  </div>
+                  <div class="vital-desc">{{ t('perf.ttfbDesc') }}</div>
+                  <div class="vital-bar">
+                    <div
+                      class="vital-bar-fill"
+                      :style="{ width: `${Math.min(100, ((webVitals.ttfb || 0) / 1800) * 100)}%` }"
+                      :class="`vital-${getVitalStatus('ttfb', webVitals.ttfb)}`"
+                    />
+                  </div>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>800ms</span><span>1.8s+</span>
                   </div>
                 </div>
               </div>
             </div>
+
+            <!-- Network & Storage Section -->
+            <div class="metrics-section info-section">
+              <h3 class="section-title">
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <span class="title-icon" v-html="ICON_NET" />
+                {{ t('perf.systemInfo') }}
+              </h3>
+              <div class="info-grid">
+                <!-- Network -->
+                <div class="info-card">
+                  <div class="info-card-title">
+                    <!-- eslint-disable-next-line vue/no-v-html -->
+                    <span class="info-icon" v-html="ICON_NET" />
+                    {{ t('perf.network') }}
+                  </div>
+                  <div v-if="networkInfo" class="info-card-body">
+                    <div class="info-row">
+                      <span>{{ t('perf.type') }}</span
+                      ><span class="info-val"
+                        >{{ networkInfo.effectiveType.toUpperCase() }} ({{
+                          networkInfo.type
+                        }})</span
+                      >
+                    </div>
+                    <div class="info-row">
+                      <span>{{ t('perf.downlink') }}</span
+                      ><span class="info-val">{{ networkInfo.downlink }} Mbps</span>
+                    </div>
+                    <div class="info-row">
+                      <span>RTT</span><span class="info-val">{{ networkInfo.rtt }} ms</span>
+                    </div>
+                    <div class="info-row">
+                      <span>{{ t('perf.saveData') }}</span
+                      ><span class="info-val">{{
+                        networkInfo.saveData ? t('perf.yes') : t('perf.no')
+                      }}</span>
+                    </div>
+                  </div>
+                  <div v-else class="info-card-body">
+                    <p class="info-placeholder">{{ t('perf.networkApiUnavailable') }}</p>
+                  </div>
+                </div>
+
+                <!-- Storage -->
+                <div class="info-card">
+                  <div class="info-card-title">
+                    <!-- eslint-disable-next-line vue/no-v-html -->
+                    <span class="info-icon" v-html="ICON_STORAGE" />
+                    {{ t('perf.storage') }}
+                  </div>
+                  <div class="info-card-body">
+                    <div class="info-row">
+                      <span>{{ t('perf.used') }}</span
+                      ><span class="info-val">{{ formatBytes(storageUsage) }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span>{{ t('perf.quota') }}</span
+                      ><span class="info-val">{{ formatBytes(storageQuota) }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span>{{ t('perf.usage') }}</span>
+                      <span class="info-val">{{ storagePercentage.toFixed(1) }}%</span>
+                    </div>
+                    <div class="storage-bar">
+                      <div
+                        class="storage-bar-fill"
+                        :style="{ width: `${Math.min(100, storagePercentage)}%` }"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Resources -->
+                <div class="info-card">
+                  <div class="info-card-title">
+                    <!-- eslint-disable-next-line vue/no-v-html -->
+                    <span class="info-icon" v-html="ICON_DOM" />
+                    {{ t('perf.resources') }}
+                  </div>
+                  <div class="info-card-body">
+                    <div class="info-row">
+                      <span>{{ t('perf.loaded') }}</span
+                      ><span class="info-val">{{ resourceCount }}</span>
+                    </div>
+                    <div class="info-row">
+                      <span>{{ t('perf.domNodes') }}</span
+                      ><span class="info-val">{{ domNodes }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Issues Section -->
+            <IssueList :issues="issues" />
+
+            <!-- Recommendations Section -->
+            <RecommendationList
+              :recommendations="recommendations"
+              :show-steps="true"
+              :completed-steps="completedSteps"
+              @toggle-step="handleToggleStep"
+            />
           </div>
-
-          <!-- Issues Section -->
-          <IssueList :issues="issues" />
-
-          <!-- Recommendations Section -->
-          <RecommendationList :recommendations="recommendations" :show-steps="true" />
 
           <!-- Footer -->
           <DashboardFooter
@@ -817,10 +881,18 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-.metrics-section {
-  padding: 20px 24px;
-  overflow-y: auto;
+.dashboard-body {
   flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+
+.metrics-section {
+  padding: 16px 24px;
+  flex-shrink: 0;
 }
 
 .vitals-section {
@@ -890,20 +962,20 @@ onUnmounted(() => {
 }
 
 .vital-badge.vital-good {
-  background: rgba(52, 199, 89, 0.15);
-  color: #34c759;
+  background: var(--gui-success-bg, rgba(52, 199, 89, 0.15));
+  color: var(--gui-success, #34c759);
 }
 .vital-badge.vital-medium {
-  background: rgba(255, 149, 0, 0.15);
-  color: #ff9500;
+  background: var(--gui-warning-bg, rgba(255, 149, 0, 0.15));
+  color: var(--gui-warning, #ff9500);
 }
 .vital-badge.vital-poor {
-  background: rgba(255, 59, 48, 0.15);
-  color: #ff3b30;
+  background: var(--gui-error-bg, rgba(255, 59, 48, 0.15));
+  color: var(--gui-error, #ff3b30);
 }
 .vital-badge.vital-unknown {
-  background: rgba(142, 142, 147, 0.15);
-  color: #8e8e93;
+  background: var(--gui-bg-surface-hover, rgba(142, 142, 147, 0.15));
+  color: var(--gui-text-tertiary, #8e8e93);
 }
 
 .vital-value {
@@ -934,13 +1006,13 @@ onUnmounted(() => {
     background 0.3s ease;
 }
 .vital-bar-fill.vital-good {
-  background: #34c759;
+  background: var(--gui-success, #34c759);
 }
 .vital-bar-fill.vital-medium {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
 }
 .vital-bar-fill.vital-poor {
-  background: #ff3b30;
+  background: var(--gui-error, #ff3b30);
 }
 
 .vital-thresholds {
@@ -1025,17 +1097,17 @@ onUnmounted(() => {
 }
 
 /* ── Scrollbar ────────────────────────────────────────────────────── */
-.metrics-section::-webkit-scrollbar {
+.dashboard-body::-webkit-scrollbar {
   width: 6px;
 }
-.metrics-section::-webkit-scrollbar-track {
+.dashboard-body::-webkit-scrollbar-track {
   background: transparent;
 }
-.metrics-section::-webkit-scrollbar-thumb {
+.dashboard-body::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
 }
-.metrics-section::-webkit-scrollbar-thumb:hover {
+.dashboard-body::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 

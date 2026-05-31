@@ -18,7 +18,7 @@ import { ServiceLifetime as Lifetime } from './types'
  */
 export class DIContainer {
   private registrations = new Map<string, ServiceRegistration>()
-  private instances = new Map<string, any>()
+  private instances = new Map<string, unknown>()
   private scopes = new Map<string, ContainerScope>()
   private currentScope: ContainerScope | null = null
   private resolutionStack: string[] = []
@@ -36,6 +36,7 @@ export class DIContainer {
     this.register('DIContainer', () => this)
 
     if (this.config.debug) {
+      // eslint-disable-next-line no-console
       console.log('[DIContainer] Container initialized', this.config)
     }
   }
@@ -46,6 +47,7 @@ export class DIContainer {
    * @param factory - Factory function to create the service
    * @param options - Registration options
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register<T = any>(
     token: string,
     factory: ServiceFactory<T>,
@@ -67,6 +69,7 @@ export class DIContainer {
     this.registrations.set(token, registration)
 
     if (this.config.debug) {
+      // eslint-disable-next-line no-console
       console.log(`[DIContainer] Registered service: ${token}`, {
         lifetime: registration.lifetime,
         dependencies: registration.dependencies,
@@ -79,12 +82,16 @@ export class DIContainer {
    * @param token - Service token
    * @returns Service instance
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolve<T = any>(token: string): T {
     if (!this.registrations.has(token)) {
       throw new Error(`Service not found: ${token}`)
     }
 
-    const registration = this.registrations.get(token)!
+    const registration = this.registrations.get(token)
+    if (!registration) {
+      throw new Error(`Service not found: ${token}`)
+    }
 
     // Check for circular dependencies
     if (this.config.detectCircularDependencies) {
@@ -132,7 +139,7 @@ export class DIContainer {
    * Create a service instance
    * @private
    */
-  private createInstance(registration: ServiceRegistration): any {
+  private createInstance(registration: ServiceRegistration): unknown {
     try {
       return registration.factory(this)
     } catch (error) {
@@ -158,6 +165,7 @@ export class DIContainer {
     this.registrations.delete(token)
     this.instances.delete(token)
     if (this.config.debug) {
+      // eslint-disable-next-line no-console
       console.log(`[DIContainer] Unregistered service: ${token}`)
     }
   }
@@ -170,6 +178,7 @@ export class DIContainer {
     this.instances.clear()
     this.scopes.clear()
     if (this.config.debug) {
+      // eslint-disable-next-line no-console
       console.log('[DIContainer] Container cleared')
     }
   }
@@ -188,6 +197,7 @@ export class DIContainer {
     this.scopes.set(scopeId, scope)
     this.currentScope = scope
     if (this.config.debug) {
+      // eslint-disable-next-line no-console
       console.log(`[DIContainer] Created scope: ${scopeId}`)
     }
     return scopeId
@@ -214,6 +224,7 @@ export class DIContainer {
     }
 
     if (this.config.debug) {
+      // eslint-disable-next-line no-console
       console.log(`[DIContainer] Destroyed scope: ${scopeId}`)
     }
   }
@@ -272,6 +283,7 @@ export function resetGlobalContainer(): void {
  * @param factory - Factory function
  * @param options - Registration options
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function registerGlobal<T = any>(
   token: string,
   factory: ServiceFactory<T>,
@@ -285,6 +297,7 @@ export function registerGlobal<T = any>(
  * @param token - Service token
  * @returns Service instance
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function resolveGlobal<T = any>(token: string): T {
   return getGlobalContainer().resolve<T>(token)
 }

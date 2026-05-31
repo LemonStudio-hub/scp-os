@@ -12,6 +12,20 @@
       >
         <template v-for="(item, index) in items" :key="item.id || index">
           <div v-if="item.divider" class="pcc-context-menu__divider" />
+          <div v-else-if="item.header" class="pcc-context-menu__header">
+            <GUIIcon
+              v-if="item.icon"
+              :name="item.icon"
+              :size="20"
+              class="pcc-context-menu__header-icon"
+            />
+            <div class="pcc-context-menu__header-text">
+              <span class="pcc-context-menu__header-label">{{ item.label }}</span>
+              <span v-if="item.sublabel" class="pcc-context-menu__header-sublabel">{{
+                item.sublabel
+              }}</span>
+            </div>
+          </div>
           <div
             v-else
             :ref="(el) => setItemRef(item.id, el as HTMLElement)"
@@ -20,6 +34,7 @@
               {
                 'pcc-context-menu__item--disabled': item.disabled,
                 'pcc-context-menu__item--has-children': item.children && item.children.length > 0,
+                'pcc-context-menu__item--checked': item.checked,
               },
             ]"
             :disabled="item.disabled"
@@ -27,7 +42,29 @@
             @mouseenter="openSubmenu(item)"
             @mouseleave="closeSubmenu"
           >
-            <GUIIcon v-if="item.icon" :name="item.icon" :size="16" class="pcc-context-menu__icon" />
+            <span class="pcc-context-menu__leading">
+              <svg
+                v-if="item.checked"
+                class="pcc-context-menu__check"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <GUIIcon
+                v-else-if="item.icon"
+                :name="item.icon"
+                :size="16"
+                class="pcc-context-menu__icon"
+              />
+            </span>
             <span class="pcc-context-menu__label">{{ item.label }}</span>
             <span v-if="item.children && item.children.length > 0" class="pcc-context-menu__arrow"
               >▸</span
@@ -111,7 +148,7 @@ const submenuItem = computed(() => {
 })
 
 function onItemClick(item: ContextMenuItem) {
-  if (item.disabled) return
+  if (item.disabled || item.header || item.divider) return
   emit('select', item)
   item.action?.()
   emit('update:visible', false)
@@ -263,7 +300,7 @@ watch(
 .pcc-context-menu {
   position: fixed;
   min-width: 220px;
-  padding: var(--gui-spacing-xxs, 2px);
+  padding: 4px;
   background: var(--gui-glass-bg-strong, rgba(44, 44, 46, 0.95));
   backdrop-filter: blur(30px) saturate(200%);
   -webkit-backdrop-filter: blur(30px) saturate(200%);
@@ -274,7 +311,7 @@ watch(
     0 8px 32px rgba(0, 0, 0, 0.6),
     0 0 1px rgba(255, 255, 255, 0.08)
   );
-  z-index: var(--gui-z-context-menu, 500);
+  z-index: var(--gui-z-context-menu, 900);
   max-height: 80vh;
   overflow-y: auto;
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
@@ -297,19 +334,20 @@ watch(
   align-items: center;
   gap: var(--gui-spacing-sm, 8px);
   width: 100%;
-  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px);
+  padding: 10px var(--gui-spacing-base, 16px);
   background: none;
   border: none;
   border-radius: var(--gui-radius-sm, 6px);
   color: var(--gui-text-primary, #ffffff);
-  font-size: var(--gui-font-sm, 12px);
+  font-size: var(--gui-font-base, 13px);
   font-weight: var(--gui-font-weight-medium, 500);
   cursor: pointer;
   transition: all var(--gui-transition-fast, 120ms ease);
   text-align: left;
   position: relative;
-  margin: 1px 2px;
+  margin: 2px 2px;
   -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
 }
 
 .pcc-context-menu__item:hover:not(.pcc-context-menu__item--disabled) {
@@ -332,14 +370,87 @@ watch(
   margin: 4px 8px;
 }
 
+.pcc-context-menu__leading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--gui-text-secondary, #8e8e93);
+}
+
 .pcc-context-menu__icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 16px;
   height: 16px;
-  color: var(--gui-text-secondary, #8e8e93);
+  color: inherit;
+}
+
+.pcc-context-menu__check {
+  color: var(--gui-accent, #8e8e93);
+}
+
+.pcc-context-menu__item--checked .pcc-context-menu__label {
+  font-weight: var(--gui-font-weight-semibold, 600);
+}
+
+/* ── Header row (non-interactive, identifies the target) ───────────── */
+.pcc-context-menu__header {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  padding: 10px var(--gui-spacing-base, 12px);
+  margin: 2px 2px 4px;
+  border-radius: var(--gui-radius-sm, 6px);
+  background: linear-gradient(
+    180deg,
+    var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06)) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  user-select: none;
+}
+
+.pcc-context-menu__header + .pcc-context-menu__item,
+.pcc-context-menu__header + .pcc-context-menu__divider {
+  margin-top: 0;
+}
+
+.pcc-context-menu__header-icon {
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
+  color: var(--gui-accent, #8e8e93);
+}
+
+.pcc-context-menu__header-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pcc-context-menu__header-label {
+  font-size: var(--gui-font-base, 13px);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  color: var(--gui-text-primary, #ffffff);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pcc-context-menu__header-sublabel {
+  margin-top: 2px;
+  font-size: var(--gui-font-xs, 11px);
+  font-weight: var(--gui-font-weight-medium, 500);
+  color: var(--gui-text-tertiary, #636366);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pcc-context-menu__label {
@@ -359,7 +470,7 @@ watch(
 /* ── Submenu ─────────────────────────────────────────────────────── */
 .pcc-context-menu__submenu {
   min-width: 200px;
-  z-index: calc(var(--gui-z-context-menu, 500) + 1);
+  z-index: calc(var(--gui-z-context-menu, 900) + 1);
 }
 
 /* ── Animations ───────────────────────────────────────────────────── */

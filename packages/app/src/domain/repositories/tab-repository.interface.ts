@@ -91,5 +91,5 @@ export interface ITabRepository extends IRepository<TabEntity> {
   /**
    * Update tab data
    */
-  updateData(tabId: string, key: string, value: any): Promise<void>
+  updateData(tabId: string, key: string, value: unknown): Promise<void>
 }

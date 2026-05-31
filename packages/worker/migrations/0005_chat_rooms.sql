@@ -9,10 +9,10 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
   message_count INTEGER DEFAULT 0
 );
 
--- 为 chat_messages 表添加 room_id 列
-ALTER TABLE chat_messages ADD COLUMN room_id INTEGER DEFAULT 1;
+-- room_id 列已在 0004_chat_messages.sql 中添加
+-- ALTER TABLE chat_messages ADD COLUMN room_id INTEGER DEFAULT 1;
 
--- 创建外键索引
+-- 创建外键索引（如果尚未存在）
 CREATE INDEX IF NOT EXISTS idx_chat_room_id ON chat_messages(room_id);
 
 -- 创建聊天室名称索引

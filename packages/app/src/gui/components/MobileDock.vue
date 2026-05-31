@@ -27,6 +27,63 @@
   </div>
 </template>
 
+<script setup lang="ts">
+import { useI18n } from '../composables/useI18n'
+import type { ToolType } from '../types'
+import type { IconName } from '../icons'
+import GUIIcon from './ui/GUIIcon.vue'
+
+const { t } = useI18n()
+
+export interface MobileDockItem {
+  id: string
+  tool: ToolType
+  label: string
+  iconName: IconName
+  badge?: number
+  disabled?: boolean
+}
+
+interface Props {
+  items?: MobileDockItem[]
+  activeTools?: ToolType[]
+}
+
+// Default values are defined INLINE inside the factory function to avoid
+// TDZ errors. defineProps() is a compile-time macro that gets hoisted,
+// so referencing any <script setup> variable in default factories causes
+// a Temporal Dead Zone error at runtime.
+withDefaults(defineProps<Props>(), {
+  items: () => [
+    {
+      id: 'terminal',
+      tool: 'terminal' as ToolType,
+      label: 'app.terminal',
+      iconName: 'terminal' as IconName,
+    },
+    {
+      id: 'files',
+      tool: 'filemanager' as ToolType,
+      label: 'app.files',
+      iconName: 'folder' as IconName,
+    },
+    { id: 'editor', tool: 'editor' as ToolType, label: 'app.editor', iconName: 'edit' as IconName },
+  ],
+  activeTools: () => [],
+})
+
+const emit = defineEmits<{
+  launch: [item: MobileDockItem]
+}>()
+
+function onTap(item: MobileDockItem) {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    navigator.vibrate(10)
+  }
+  emit('launch', item)
+}
+</script>
+
 <style scoped>
 .mobile-dock {
   position: fixed;
@@ -139,60 +196,3 @@
   }
 }
 </style>
-
-<script setup lang="ts">
-import { useI18n } from '../composables/useI18n'
-import type { ToolType } from '../types'
-import type { IconName } from '../icons'
-import GUIIcon from './ui/GUIIcon.vue'
-
-const { t } = useI18n()
-
-export interface MobileDockItem {
-  id: string
-  tool: ToolType
-  label: string
-  iconName: IconName
-  badge?: number
-  disabled?: boolean
-}
-
-interface Props {
-  items?: MobileDockItem[]
-  activeTools?: ToolType[]
-}
-
-// Default values are defined INLINE inside the factory function to avoid
-// TDZ errors. defineProps() is a compile-time macro that gets hoisted,
-// so referencing any <script setup> variable in default factories causes
-// a Temporal Dead Zone error at runtime.
-withDefaults(defineProps<Props>(), {
-  items: () => [
-    {
-      id: 'terminal',
-      tool: 'terminal' as ToolType,
-      label: 'app.terminal',
-      iconName: 'terminal' as IconName,
-    },
-    {
-      id: 'files',
-      tool: 'filemanager' as ToolType,
-      label: 'app.files',
-      iconName: 'folder' as IconName,
-    },
-    { id: 'editor', tool: 'editor' as ToolType, label: 'app.editor', iconName: 'edit' as IconName },
-  ],
-  activeTools: () => [],
-})
-
-const emit = defineEmits<{
-  launch: [item: MobileDockItem]
-}>()
-
-function onTap(item: MobileDockItem) {
-  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-    navigator.vibrate(10)
-  }
-  emit('launch', item)
-}
-</script>

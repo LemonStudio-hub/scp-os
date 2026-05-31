@@ -91,6 +91,9 @@ export async function batchUserOperation(token: string, action: string, ids: num
 
 export async function exportUsers(token: string, format: 'csv' | 'json') {
   const response = await adminFetch(`/api/admin/users/export?format=${format}`, token)
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`)
+  }
   return response.json()
 }
 
@@ -132,11 +135,12 @@ export async function batchContentOperation(
   token: string,
   type: string,
   action: string,
-  ids: number[]
+  ids: number[],
+  extra: Record<string, string> = {}
 ) {
   const response = await adminFetch(`/api/admin/content/${type}/batch`, token, {
     method: 'POST',
-    body: JSON.stringify({ action, ids }),
+    body: JSON.stringify({ action, ids, ...extra }),
   })
   return response.json()
 }

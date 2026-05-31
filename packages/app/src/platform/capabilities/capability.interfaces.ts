@@ -3,6 +3,8 @@
  * Defines capabilities for different aspects of the SCP-OS platform
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { TerminalTheme } from '../../types/terminal'
 
 /**
