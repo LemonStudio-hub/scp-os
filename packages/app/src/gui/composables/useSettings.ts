@@ -1,29 +1,20 @@
-import { ref, reactive, computed, watch } from 'vue'
-import { useI18n } from './useI18n'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useTerminalStore } from '../../stores/terminal'
-import { useThemeStore } from '../stores/themeStore'
 import indexedDBService from '../../utils/indexedDB'
-import { localeNames } from '../../locales'
+import { useCloudQuota, type CloudQuota } from './useCloudQuota'
+import { useI18n } from './useI18n'
+import type { AppSettings } from '../types/settings'
 
-export interface AppSettings {
-  fontSize: number
-  cursorBlink: boolean
-  bootAnimation: boolean
-  haptic: boolean
-  animations: boolean
-  accent: string
-}
-
-export interface ConfirmDialog {
+interface ConfirmDialog {
   title: string
   text: string
   confirmText: string
   action: () => void
 }
 
-const STORAGE_KEY = 'scp-os-app-settings'
+export const SETTINGS_STORAGE_KEY = 'scp-os-app-settings'
 
-const defaultSettings: AppSettings = {
+export const defaultSettings: AppSettings = {
   fontSize: 14,
   cursorBlink: true,
   bootAnimation: true,
@@ -32,119 +23,116 @@ const defaultSettings: AppSettings = {
   accent: '#8e8e93',
 }
 
+export function loadSettings(): AppSettings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY)
+    if (raw) return { ...defaultSettings, ...JSON.parse(raw) }
+  } catch {
+    // ignore
+  }
+  return { ...defaultSettings }
+}
+
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
 export function useSettings() {
-  const { t, locale, availableLocales } = useI18n()
+  const { t } = useI18n()
   const terminalStore = useTerminalStore()
-  const themeStore = useThemeStore()
-
-  themeStore.init()
-
-  const userId = ref<string>('Loading...')
-  indexedDBService
-    .getUserId()
-    .then((id) => {
-      userId.value = id
-    })
-    .catch(() => {
-      userId.value = 'Unknown'
-    })
-
-  const wallpaperPickerVisible = ref(false)
-  const currentWallpaperName = ref<string>('None')
-
-  async function loadWallpaperName() {
-    try {
-      const { wallpaperService } = await import('../../utils/wallpaperService')
-      await wallpaperService.init()
-      const id = wallpaperService.getCurrentWallpaperId()
-      if (id) {
-        const wp = await wallpaperService.getWallpaper(id)
-        currentWallpaperName.value = wp?.name || t('common.none')
-      } else {
-        currentWallpaperName.value = t('common.none')
-      }
-    } catch {
-      // Silently fail
-    }
-  }
-
-  loadWallpaperName()
-
-  const currentLanguageName = computed(() => localeNames[locale.value] || 'English')
-
-  function openLanguagePicker() {
-    triggerHaptic()
-    sliderSheets.language = true
-  }
-
-  function selectLanguage(loc: 'en' | 'zh-CN') {
-    locale.value = loc
-    triggerHaptic()
-    sliderSheets.language = false
-    setTimeout(() => {
-      loadWallpaperName()
-    }, 100)
-  }
-
-  function onWallpaperChange(wallpaperId: string | null) {
-    window.dispatchEvent(new CustomEvent('wallpaper-changed', { detail: { wallpaperId } }))
-    loadWallpaperName()
-  }
-
-  function loadSettings(): AppSettings {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) return { ...defaultSettings, ...JSON.parse(raw) }
-    } catch {
-      /* ignore */
-    }
-    return { ...defaultSettings }
-  }
-
   const settings = reactive<AppSettings>(loadSettings())
+  const confirmDialog = ref<ConfirmDialog | null>(null)
+  const storageUsed = ref('--')
+  const userId = ref<string>(t('common.loading'))
+  const { quota: cloudQuota, refresh: refreshCloudQuota } = useCloudQuota()
 
   let prevFontSize = settings.fontSize
 
   watch(
     settings,
     () => {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
       applySettings()
     },
     { deep: true }
   )
+
+  onMounted(() => {
+    void loadUserId()
+    void calculateStorageUsed()
+    void refreshCloudQuota()
+  })
+
+  async function loadUserId(): Promise<void> {
+    try {
+      userId.value = await indexedDBService.getUserId()
+    } catch {
+      userId.value = t('common.unknown')
+    }
+  }
 
   function getActiveTerminal() {
     return window.__terminalInstance?.terminal || null
   }
 
   function applySettings(): void {
-    const terminal = getActiveTerminal()
+    const scale = settings.fontSize / defaultSettings.fontSize
+    const root = document.documentElement
+    root.style.setProperty('--gui-font-xs', `${Math.round(11 * scale)}px`)
+    root.style.setProperty('--gui-font-sm', `${Math.round(12 * scale)}px`)
+    root.style.setProperty('--gui-font-base', `${Math.round(13 * scale)}px`)
+    root.style.setProperty('--gui-font-md', `${Math.round(14 * scale)}px`)
+    root.style.setProperty('--gui-font-lg', `${Math.round(15 * scale)}px`)
+    root.style.setProperty('--gui-font-xl', `${Math.round(17 * scale)}px`)
 
+    const terminal = getActiveTerminal()
     if (settings.fontSize !== prevFontSize && terminal) {
       terminalStore.fontSize = settings.fontSize
       try {
         terminal.options.fontSize = settings.fontSize
         terminal.refresh(0, terminal.rows - 1)
       } catch {
-        /* ignore */
+        // ignore
       }
       prevFontSize = settings.fontSize
     }
   }
 
-  const sliderSheets = reactive({ fontSize: false, language: false })
-  const sliderValues = reactive({ fontSize: settings.fontSize })
-
-  function openSlider(type: 'fontSize'): void {
-    if (type === 'fontSize') {
-      sliderValues.fontSize = settings.fontSize
-      sliderSheets.fontSize = true
+  async function calculateStorageUsed(): Promise<void> {
+    let total = 0
+    for (const key in localStorage) {
+      if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+        total += (localStorage[key].length + key.length) * 2
+      }
     }
+    try {
+      await indexedDBService.init()
+      total += await indexedDBService.getStorageSize()
+    } catch {
+      // ignore
+    }
+    storageUsed.value = formatBytes(total)
   }
 
-  function onFontSizeChange(): void {
-    settings.fontSize = sliderValues.fontSize
+  const terminalStateCount = computed(() => {
+    let count = 0
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i) || ''
+      if (key.startsWith('scp-terminal-state-')) count++
+    }
+    return count
+  })
+
+  function formatCloudQuota(q: CloudQuota | null): string {
+    if (!q) return '-'
+    return `${formatBytes(q.used)} / ${formatBytes(q.max)} (${q.percent}%)`
+  }
+
+  function formatCloudFiles(q: CloudQuota | null): string {
+    if (!q) return '-'
+    return `${q.count} files`
   }
 
   function toggleSetting(key: keyof AppSettings): void {
@@ -159,8 +147,6 @@ export function useSettings() {
       navigator.vibrate(10)
     }
   }
-
-  const confirmDialog = ref<ConfirmDialog | null>(null)
 
   function confirmClearData(): void {
     triggerHaptic()
@@ -194,6 +180,7 @@ export function useSettings() {
   }
 
   function confirmResetSettingsFinal(): void {
+    triggerHaptic()
     confirmDialog.value = {
       title: t('settings.resetFinalTitle'),
       text: t('settings.resetFinalMsg'),
@@ -208,65 +195,20 @@ export function useSettings() {
     triggerHaptic()
   }
 
-  const storageUsed = ref('--')
-
-  async function calculateStorageUsed(): Promise<void> {
-    let total = 0
-    for (const key in localStorage) {
-      if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
-        total += (localStorage[key].length + key.length) * 2
-      }
-    }
-    try {
-      await indexedDBService.init()
-      total += await indexedDBService.getStorageSize()
-    } catch {
-      // ignore
-    }
-    storageUsed.value = formatBytes(total)
-  }
-
-  calculateStorageUsed()
-
-  const terminalStateCount = computed(() => {
-    let count = 0
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i) || ''
-      if (key.startsWith('scp-terminal-state-')) count++
-    }
-    return count
-  })
-
-  const buildDate = computed(() => '2026-04-04')
-
-  function formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  }
-
   return {
-    t,
-    locale,
-    availableLocales,
-    themeStore,
     settings,
-    userId,
-    wallpaperPickerVisible,
-    currentWallpaperName,
-    currentLanguageName,
-    sliderSheets,
-    sliderValues,
+    defaultSettings,
     confirmDialog,
     storageUsed,
+    cloudQuota,
+    userId,
     terminalStateCount,
-    buildDate,
-    loadWallpaperName,
-    openLanguagePicker,
-    selectLanguage,
-    onWallpaperChange,
-    openSlider,
-    onFontSizeChange,
+    refreshCloudQuota,
+    loadUserId,
+    applySettings,
+    calculateStorageUsed,
+    formatCloudQuota,
+    formatCloudFiles,
     toggleSetting,
     triggerHaptic,
     confirmClearData,

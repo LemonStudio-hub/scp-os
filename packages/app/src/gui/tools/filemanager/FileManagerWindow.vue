@@ -444,6 +444,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useFileManagerOps } from '../../composables/useFileManagerOps'
 import SCPWindow from '../../components/SCPWindow.vue'
 import SCPButton from '../../components/ui/SCPButton.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
@@ -463,14 +465,6 @@ import { filesystem } from '../../../utils/filesystem'
 import { parseDesktopFile } from '../../../utils/desktopShortcut'
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
-import {
-  useFileManagerOps,
-  IMAGE_EXTS,
-  AUDIO_EXTS,
-  VIDEO_EXTS,
-  formatDate,
-  getFileExtension,
-} from '../../composables/useFileManagerOps'
 
 interface Props {
   windowInstance: WindowInstance
@@ -478,17 +472,25 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const { t, fmStore, fileInputRef, formatSize, createFile, createFolder, renameFile, deleteFile } =
-  useFileManagerOps()
-
+const { t } = useI18n()
 setFileManagerI18n({ t })
-
-// Suppress TypeScript warning - fileInputRef is used in template
-void fileInputRef
-
+const {
+  fmStore,
+  searchText,
+  createFile,
+  createFolder,
+  deleteFile,
+  renameFile,
+  uploadLocalFiles,
+  formatSize,
+  formatDate,
+  IMAGE_EXTS,
+  AUDIO_EXTS,
+  VIDEO_EXTS,
+} = useFileManagerOps()
 const wmStore = useWindowManagerStore()
 const authStore = useAuthStore()
-const searchText = ref('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // Navigate to initial path if provided
 const initialPath = props.windowInstance?.config?.data?.initialPath
@@ -517,6 +519,7 @@ const dialogDanger = ref(false)
 let dialogResolve: Function | null = null
 const contextTargetFile = ref<string>('')
 
+// File type helpers
 // Root directories for tree
 const rootDirs = computed(() => {
   return fmStore.files.filter((f) => f.isDirectory && !f.isHidden)
@@ -526,7 +529,7 @@ const rootDirs = computed(() => {
 const detailPreview = computed(() => {
   const file = fmStore.detailFile
   if (!file || file.isDirectory) return null
-  const ext = getFileExtension(file.name)
+  const ext = file.name.split('.').pop()?.toLowerCase() || ''
   const textExts = [
     'txt',
     'md',
@@ -551,10 +554,6 @@ const detailPreview = computed(() => {
     }
   }
   return null
-})
-
-watch(searchText, (val) => {
-  fmStore.setSearch(val)
 })
 
 function onFileClick(file: FileItem, event: MouseEvent): void {
@@ -714,7 +713,7 @@ async function promptNewFile(): Promise<void> {
     confirmText: t('fm.create'),
   })
   if (name) {
-    createFile(name)
+    createFile(name, '')
   }
 }
 
@@ -767,24 +766,12 @@ async function onFileUpload(event: Event): Promise<void> {
   const files = input.files
   if (!files || files.length === 0) return
 
-  let localSuccess = 0
-  let localFail = 0
+  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files)
   let cloudSuccess = 0
   let cloudFail = 0
 
-  for (const file of files) {
-    const path =
-      fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+  for (const { file, path } of localFiles) {
     try {
-      const content = await readFileAsLocal(file)
-      const existingNode = filesystem.getNodeByPath(path)
-      if (existingNode && existingNode.type === 'file') {
-        filesystem.writeFile(path, content)
-      } else {
-        filesystem.createFile(path, content)
-      }
-      localSuccess++
-
       if (authStore.userId) {
         try {
           const formData = new FormData()
@@ -807,12 +794,10 @@ async function onFileUpload(event: Event): Promise<void> {
         }
       }
     } catch (error) {
-      console.error('[FileManager] Failed to store file locally:', error)
-      localFail++
+      console.error('[FileManager] Cloud upload wrapper failed:', error)
     }
   }
 
-  fmStore.loadDirectory()
   input.value = ''
 
   const messages: string[] = []
@@ -872,25 +857,6 @@ async function syncFromCloud(): Promise<void> {
   }
 }
 
-function readFileAsLocal(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    if (
-      file.type.startsWith('text/') ||
-      /\.(txt|md|json|js|ts|css|html|vue|py|sh|xml|yaml|yml|sql|log|csv|tsv)$/i.test(file.name)
-    ) {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsText(file)
-    } else {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    }
-  })
-}
-
 // ── File open with type detection ───────────────────────────────────
 
 function openFile(file: FileItem): void {
@@ -899,7 +865,7 @@ function openFile(file: FileItem): void {
     return
   }
 
-  const ext = getFileExtension(file.name)
+  const ext = file.name.split('.').pop()?.toLowerCase() || ''
 
   if (ext === 'desktop') {
     const content = filesystem.readFile(file.path)

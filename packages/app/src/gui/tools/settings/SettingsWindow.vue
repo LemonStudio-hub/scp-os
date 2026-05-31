@@ -220,6 +220,8 @@
             <div
               class="pc-settings__row"
               style="
+                cursor: default;
+                background: transparent;
                 border-bottom: 0.5px solid var(--gui-border-subtle);
                 padding-bottom: 4px;
                 padding-top: 8px;
@@ -237,6 +239,8 @@
                 {{ t('settings.customAccentColor') || 'Custom Accent Color' }}
               </span>
             </div>
+
+            <!-- Use Custom Accent Toggle -->
             <div class="pc-settings__row" @click="toggleCustomAccent">
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">
@@ -254,10 +258,12 @@
                 :class="{ 'pc-settings__toggle--on': !!themeStore.customAccentColor }"
               />
             </div>
+
+            <!-- Custom Accent Color Picker Row -->
             <div
               v-if="!!themeStore.customAccentColor"
               class="pc-settings__row"
-              style="cursor: default"
+              style="cursor: default; hover: none"
             >
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">
@@ -437,12 +443,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useSettings } from '../../composables/useSettings'
 import { localeNames } from '../../../locales'
 import PCWindow from '../../components/PCWindow.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import CustomAccentPicker from './CustomAccentPicker.vue'
-import { useSettings } from '../../composables/useSettings'
-import { useCloudQuota } from '../../composables/useCloudQuota'
+import { useThemeStore } from '../../stores/themeStore'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -454,35 +461,29 @@ defineEmits<{
   (e: 'close'): void
 }>()
 
+const { t, locale, availableLocales } = useI18n()
 const {
-  t,
-  locale,
-  availableLocales,
-  themeStore,
   settings,
-  userId,
-  wallpaperPickerVisible,
-  currentWallpaperName,
-  currentLanguageName,
   confirmDialog,
   storageUsed,
+  cloudQuota,
+  userId,
   terminalStateCount,
-  buildDate,
-  selectLanguage,
-  onWallpaperChange,
   confirmClearData,
   confirmResetSettings,
+  formatCloudQuota,
+  formatCloudFiles,
 } = useSettings()
+const themeStore = useThemeStore()
+themeStore.init()
 
 const presetAccents = [
-  '#0063D1',
-  '#30D158',
-  '#FF453A',
-  '#FF9F0A',
-  '#BF5AF2',
-  '#64D2FF',
-  '#FF375F',
-  '#FFD60A',
+  '#0063D1', // Premium Blue
+  '#E94560', // SCP Red
+  '#34C759', // iOS Green
+  '#AF52DE', // iOS Purple
+  '#FF9500', // iOS Orange
+  '#00FF00', // Hacker Green
 ]
 
 function toggleCustomAccent() {
@@ -493,26 +494,7 @@ function toggleCustomAccent() {
   }
 }
 
-const { quota: cloudQuota, refresh: refreshCloudQuota } = useCloudQuota()
-
-function formatCloudQuota(q: typeof cloudQuota.value): string {
-  if (!q) return '—'
-  return `${formatBytes(q.used)} / ${formatBytes(q.max)} (${q.percent}%)`
-}
-
-function formatCloudFiles(q: typeof cloudQuota.value): string {
-  if (!q) return '—'
-  return `${q.count} files`
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-refreshCloudQuota()
-
+// Navigation sections
 const sections = computed(() => [
   {
     id: 'terminal',
@@ -537,8 +519,49 @@ const sections = computed(() => [
 ])
 
 const activeSection = ref('terminal')
+
+// Language
 const showLanguageDropdown = ref(false)
+const currentLanguageName = computed(() => localeNames[locale.value] || t('common.english'))
+
+function selectLanguage(loc: 'en' | 'zh-CN') {
+  locale.value = loc
+  showLanguageDropdown.value = false
+  loadWallpaperName()
+}
+
+// Wallpaper
+const wallpaperPickerVisible = ref(false)
+const currentWallpaperName = ref<string>('None')
+
+async function loadWallpaperName() {
+  try {
+    const { wallpaperService } = await import('../../../utils/wallpaperService')
+    await wallpaperService.init()
+    const id = wallpaperService.getCurrentWallpaperId()
+    if (id) {
+      const wp = await wallpaperService.getWallpaper(id)
+      currentWallpaperName.value = wp?.name || t('common.none')
+    } else {
+      currentWallpaperName.value = t('common.none')
+    }
+  } catch {
+    /* silently fail */
+  }
+}
+loadWallpaperName()
+
+function onWallpaperChange(_wallpaperId: string | null) {
+  window.dispatchEvent(
+    new CustomEvent('wallpaper-changed', { detail: { wallpaperId: _wallpaperId } })
+  )
+  loadWallpaperName()
+}
+
+// UI state
 const showFontSizeSlider = ref(false)
+
+const buildDate = computed(() => '2026-04-06')
 </script>
 
 <style scoped>

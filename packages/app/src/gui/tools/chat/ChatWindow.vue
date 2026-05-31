@@ -120,7 +120,7 @@
               border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
             "
           >
-            DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
+            DEBUG: 鎴块棿={{ currentRoomId }} 娑堟伅鏁?{{ messages.length }} 鏈€鍚嶪D={{
               messages[messages.length - 1]?.id || '?'
             }}
           </div>
@@ -169,7 +169,7 @@
               class="chat-bubble__status chat-bubble__status--error"
               @click="retryMessage(msg)"
             >
-              {{ msg.error }} ·
+              {{ msg.error }} 路
               <span class="chat-bubble__retry">{{ t('chat.retry') }}</span>
             </div>
           </div>
@@ -190,15 +190,7 @@
           :class="`mobile-chat__ws-status--${ws.connectionState.value}`"
         >
           <span class="mobile-chat__ws-dot" />
-          <span class="mobile-chat__ws-text">{{
-            ws.connectionState.value === 'connected'
-              ? '已连接'
-              : ws.connectionState.value === 'connecting'
-                ? '连接中...'
-                : ws.connectionState.value === 'reconnecting'
-                  ? '重连中...'
-                  : ws.lastError.value || '已断开'
-          }}</span>
+          <span class="mobile-chat__ws-text">{{ wsStatusLabel }}</span>
         </div>
 
         <div class="mobile-chat__input-bar">
@@ -380,19 +372,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { computed, nextTick, onUnmounted, ref } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
-import { useI18n } from '../../composables/useI18n'
-import { useAuthStore } from '../../../stores/authStore'
 import { useChat } from '../../composables/useChat'
-import { dialogService } from '../../composables/useDialog'
+import { useI18n } from '../../composables/useI18n'
+import type { ChatMessage } from '../../types/chat'
 
 interface Props {
   visible: boolean
 }
-
-import type { ChatMessage } from '../../types/chat'
 
 defineProps<Props>()
 defineEmits<{ close: [] }>()
@@ -400,17 +389,22 @@ defineEmits<{ close: [] }>()
 const themeStore = useThemeStore()
 themeStore.init()
 
-const authStore = useAuthStore()
 const { t } = useI18n()
-
-const view = ref<'rooms' | 'chat'>('rooms')
+const messagesRef = ref<HTMLElement>()
+const inputRef = ref<HTMLTextAreaElement>()
+const editingMessageId = ref<number | null>(null)
+const showActionSheet = ref(false)
+const actionSheetMsg = ref<ChatMessage | null>(null)
+let longPressTimer: number | null = null
 
 const {
-  inputRef,
+  authStore,
+  view,
   inputContent,
   messages,
   rooms,
   currentRoomId,
+  currentRoom,
   loading,
   sending,
   rateLimitWarning,
@@ -423,25 +417,26 @@ const {
   nicknameCheckStatus,
   nicknameSaveError,
   roomSearchQuery,
+  filteredRooms,
   showCreateRoom,
   newRoomName,
   newRoomDescription,
-  filteredRooms,
-  currentRoom,
   ws,
+  wsStatusLabel,
   getUnreadCount,
   createRoom,
-  enterRoom: baseEnterRoom,
-  autoResizeInput,
+  enterRoom,
   sendMessage,
+  editMessage,
+  deleteMessage,
   retryMessage,
-  formatTime,
-  formatRoomTime,
-  truncateMessage,
   openNicknameDialog,
   onNicknameInput,
   saveNickname,
-} = useChat()
+  formatTime,
+  formatRoomTime,
+  truncateMessage,
+} = useChat({ scrollToBottom, connectOnMount: false })
 
 const chatThemeStyles = computed(() => ({
   '--chat-bg': themeStore.currentTheme.colors.bgBase || '#1C1C1E',
@@ -455,22 +450,25 @@ const chatThemeStyles = computed(() => ({
   '--chat-error': '#FF3B30',
 }))
 
-async function enterRoom(roomId: number) {
-  await baseEnterRoom(roomId)
-  view.value = 'chat'
-}
+onUnmounted(() => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+})
 
-// ── Message editing/deletion (local state, not in composable) ─────────
-const editingMessageId = ref<number | null>(null)
-const showActionSheet = ref(false)
-const actionSheetMsg = ref<ChatMessage | null>(null)
-let longPressTimer: number | null = null
+function autoResizeInput() {
+  if (inputRef.value) {
+    inputRef.value.style.height = 'auto'
+    inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 100) + 'px'
+  }
+}
 
 function sendOrEditMessage() {
   if (editingMessageId.value) {
     confirmEdit()
   } else {
-    sendMessage()
+    void sendMessage().then(autoResizeInput)
   }
 }
 
@@ -496,30 +494,36 @@ function startEdit(msg: ChatMessage | null) {
   if (!msg || !msg.id) return
   editingMessageId.value = msg.id
   inputContent.value = msg.content
-  nextTick(() => inputRef.value?.focus())
+  void nextTick(() => inputRef.value?.focus())
 }
 
 function cancelEdit() {
   editingMessageId.value = null
   inputContent.value = ''
+  void nextTick(autoResizeInput)
 }
 
 function confirmEdit() {
   if (!editingMessageId.value) return
   const content = inputContent.value.trim()
   if (!content) return
-  const sent = ws.editMessage(editingMessageId.value, content)
-  if (sent) {
-    editingMessageId.value = null
-    inputContent.value = ''
-  }
+  const sent = editMessage(editingMessageId.value, content)
+  if (sent) cancelEdit()
 }
 
 async function startDelete(msg: ChatMessage | null) {
   showActionSheet.value = false
   if (!msg || !msg.id) return
-  if (!(await dialogService.confirm(t('chat.confirmDelete')))) return
-  ws.deleteMessage(msg.id)
+  await deleteMessage(msg.id)
+}
+
+function scrollToBottom() {
+  if (messagesRef.value) {
+    messagesRef.value.scrollTo({
+      top: messagesRef.value.scrollHeight,
+      behavior: 'smooth',
+    })
+  }
 }
 </script>
 
@@ -532,7 +536,7 @@ async function startDelete(msg: ChatMessage | null) {
   position: relative;
 }
 
-/* ── Rooms View ────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Rooms View 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__rooms-view {
   display: flex;
   flex-direction: column;
@@ -572,7 +576,7 @@ async function startDelete(msg: ChatMessage | null) {
   color: var(--chat-text-tertiary, #636366);
 }
 
-/* ── Room List ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Room List 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__room-list {
   flex: 1;
   overflow-y: auto;
@@ -716,7 +720,7 @@ async function startDelete(msg: ChatMessage | null) {
   background: var(--chat-surface-hover, #3a3a3c);
 }
 
-/* ── Chat View ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Chat View 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__chat-view {
   display: flex;
   flex-direction: column;
@@ -747,7 +751,7 @@ async function startDelete(msg: ChatMessage | null) {
   margin: 0;
 }
 
-/* ── Chat Bubbles ──────────────────────────────────────────────────── */
+/* 鈹€鈹€ Chat Bubbles 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .chat-bubble {
   margin-bottom: 10px;
   animation: chat-fade-in 200ms ease;
@@ -856,7 +860,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── Rate Warning ──────────────────────────────────────────────────── */
+/* 鈹€鈹€ Rate Warning 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__rate-warning {
   padding: 8px 12px;
   background: var(--chat-error, #ff3b30);
@@ -921,7 +925,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── Loading ───────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Loading 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__loading {
   display: flex;
   justify-content: center;
@@ -955,7 +959,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── Input Bar ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Input Bar 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__input-bar {
   display: flex;
   align-items: flex-end;
@@ -1112,7 +1116,7 @@ async function startDelete(msg: ChatMessage | null) {
   background: var(--chat-border, #38383a);
 }
 
-/* ── Dialogs ───────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Dialogs 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__dialog-overlay {
   position: absolute;
   inset: 0;
@@ -1224,7 +1228,7 @@ async function startDelete(msg: ChatMessage | null) {
   margin: 0 auto;
 }
 
-/* ── Transitions ───────────────────────────────────────────────────── */
+/* 鈹€鈹€ Transitions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-fade-enter-active,
 .mobile-fade-leave-active {
   transition: opacity 0.2s ease;
@@ -1235,7 +1239,7 @@ async function startDelete(msg: ChatMessage | null) {
   opacity: 0;
 }
 
-/* ── Light Mode Overrides ─────────────────────────────────────────── */
+/* 鈹€鈹€ Light Mode Overrides 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .light .mobile-chat__emoji-picker {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }

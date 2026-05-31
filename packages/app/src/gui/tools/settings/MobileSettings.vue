@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <MobileWindow
     :visible="visible"
     :title="t('settings.title')"
@@ -470,7 +470,12 @@
           <div class="settings-slider-sheet__header">
             <span class="settings-slider-sheet__spacer" />
             <span class="settings-slider-sheet__title">{{ t('settings.fontSize') }}</span>
-            <button class="settings-slider-sheet__close" @click="closeFontSizeSheet">完成</button>
+            <button
+              class="settings-slider-sheet__close"
+              @click="onFontSizeChange(); sliderSheets.fontSize = false"
+            >
+              完成
+            </button>
           </div>
           <div
             class="settings-slider-sheet__preview"
@@ -530,14 +535,18 @@
 </template>
 
 <script setup lang="ts">
+import { ref, reactive, computed } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useSettings } from '../../composables/useSettings'
+import { localeNames } from '../../../locales'
 import MobileWindow from '../../components/MobileWindow.vue'
 import Sheet from '../../konsta/Sheet.vue'
 import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import CustomAccentPicker from './CustomAccentPicker.vue'
-import { useSettings } from '../../composables/useSettings'
-import { useCloudQuota } from '../../composables/useCloudQuota'
-import { localeNames } from '../../../locales'
+import { useThemeStore } from '../../stores/themeStore'
+
+const { t, locale, availableLocales } = useI18n()
 
 interface Props {
   visible: boolean
@@ -549,41 +558,31 @@ defineEmits<{
 }>()
 
 const {
-  t,
-  locale,
-  availableLocales,
-  themeStore,
   settings,
-  userId,
-  wallpaperPickerVisible,
-  currentWallpaperName,
-  currentLanguageName,
-  sliderSheets,
-  sliderValues,
   confirmDialog,
   storageUsed,
+  cloudQuota,
+  userId,
   terminalStateCount,
-  buildDate,
-  openLanguagePicker,
-  selectLanguage,
-  onWallpaperChange,
-  openSlider,
-  onFontSizeChange,
+  formatCloudQuota,
+  formatCloudFiles,
   toggleSetting,
+  triggerHaptic,
   confirmClearData,
   confirmResetSettings,
-  formatBytes,
 } = useSettings()
+const themeStore = useThemeStore()
+
+// Initialize theme store
+themeStore.init()
 
 const presetAccents = [
-  '#0063D1',
-  '#30D158',
-  '#FF453A',
-  '#FF9F0A',
-  '#BF5AF2',
-  '#64D2FF',
-  '#FF375F',
-  '#FFD60A',
+  '#0063D1', // Premium Blue
+  '#E94560', // SCP Red
+  '#34C759', // iOS Green
+  '#AF52DE', // iOS Purple
+  '#FF9500', // iOS Orange
+  '#00FF00', // Hacker Green
 ]
 
 function toggleCustomAccent() {
@@ -594,24 +593,70 @@ function toggleCustomAccent() {
   }
 }
 
-function closeFontSizeSheet() {
-  onFontSizeChange()
-  sliderSheets.fontSize = false
+// Wallpaper picker
+const wallpaperPickerVisible = ref(false)
+const currentWallpaperName = ref<string>('None')
+
+// Load current wallpaper name
+async function loadWallpaperName() {
+  try {
+    const { wallpaperService } = await import('../../../utils/wallpaperService')
+    await wallpaperService.init()
+    const id = wallpaperService.getCurrentWallpaperId()
+    if (id) {
+      const wp = await wallpaperService.getWallpaper(id)
+      currentWallpaperName.value = wp?.name || t('common.none')
+    } else {
+      currentWallpaperName.value = t('common.none')
+    }
+  } catch {
+    // Silently fail
+  }
 }
 
-const { quota: cloudQuota, refresh: refreshCloudQuota } = useCloudQuota()
+// Load on mount
+loadWallpaperName()
 
-function formatCloudQuota(q: typeof cloudQuota.value): string {
-  if (!q) return '—'
-  return `${formatBytes(q.used)} / ${formatBytes(q.max)} (${q.percent}%)`
+// Current language display name
+const currentLanguageName = computed(() => localeNames[locale.value] || 'English')
+
+function openLanguagePicker() {
+  triggerHaptic()
+  sliderSheets.language = true
 }
 
-function formatCloudFiles(q: typeof cloudQuota.value): string {
-  if (!q) return '—'
-  return `${q.count} files`
+function selectLanguage(loc: 'en' | 'zh-CN') {
+  locale.value = loc
+  triggerHaptic()
+  sliderSheets.language = false
+  // Reload to apply language
+  setTimeout(() => {
+    loadWallpaperName()
+  }, 100)
 }
 
-refreshCloudQuota()
+function onWallpaperChange(wallpaperId: string | null) {
+  // Reload home screen wallpaper by dispatching event
+  window.dispatchEvent(new CustomEvent('wallpaper-changed', { detail: { wallpaperId } }))
+  // Update the displayed name
+  loadWallpaperName()
+}
+
+const sliderSheets = reactive({ fontSize: false, language: false })
+const sliderValues = reactive({ fontSize: settings.fontSize })
+
+function openSlider(type: 'fontSize'): void {
+  if (type === 'fontSize') {
+    sliderValues.fontSize = settings.fontSize
+    sliderSheets.fontSize = true
+  }
+}
+
+function onFontSizeChange(): void {
+  settings.fontSize = sliderValues.fontSize
+}
+
+const buildDate = computed(() => '2026-04-04')
 </script>
 
 <style scoped>

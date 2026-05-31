@@ -151,7 +151,7 @@
                 border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
               "
             >
-              DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
+              DEBUG: 鎴块棿={{ currentRoomId }} 娑堟伅鏁?{{ messages.length }} 鏈€鍚嶪D={{
                 messages[messages.length - 1]?.id || '?'
               }}
             </div>
@@ -197,7 +197,7 @@
                 class="chat-bubble__status chat-bubble__status--error"
                 @click="retryMessage(msg)"
               >
-                {{ msg.error }} ·
+                {{ msg.error }} 路
                 <span class="chat-bubble__retry">{{ t('chat.retry') }}</span>
               </div>
             </div>
@@ -513,14 +513,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import PCWindow from '../../components/PCWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
-import { useI18n } from '../../composables/useI18n'
-import { useAuthStore } from '../../../stores/authStore'
 import { useChat } from '../../composables/useChat'
-import { dialogService } from '../../composables/useDialog'
-import type { WindowInstance, ChatMessage } from '../../types'
+import { useI18n } from '../../composables/useI18n'
+import type { ChatMessage } from '../../types/chat'
+import type { WindowInstance } from '../../types'
 
 interface Props {
   visible?: boolean
@@ -533,15 +532,23 @@ defineEmits<{ close: [] }>()
 const themeStore = useThemeStore()
 themeStore.init()
 
-const authStore = useAuthStore()
 const { t } = useI18n()
+const messagesRef = ref<HTMLElement>()
+const inputRef = ref<HTMLTextAreaElement>()
+const editingMessageId = ref<number | null>(null)
+const showContextMenu = ref(false)
+const contextMenuX = ref(0)
+const contextMenuY = ref(0)
+const contextMenuMsg = ref<ChatMessage | null>(null)
 
 const {
-  inputRef,
+  authStore,
   inputContent,
   messages,
+  displayMessages,
   rooms,
   currentRoomId,
+  currentRoom,
   loading,
   sending,
   rateLimitWarning,
@@ -556,6 +563,7 @@ const {
   nicknameCheckStatus,
   nicknameSaveError,
   roomSearchQuery,
+  filteredRooms,
   showCreateRoom,
   newRoomName,
   newRoomDescription,
@@ -564,31 +572,26 @@ const {
   editRoomName,
   editRoomDescription,
   editRoomPublic,
-  filteredRooms,
-  currentRoom,
   ws,
   wsStatusLabel,
+  userId,
   getUnreadCount,
   createRoom,
   switchRoom,
   sendMessage,
+  editMessage,
+  deleteMessage,
   retryMessage,
-  autoResizeInput,
-  formatTime,
-  formatRoomTime,
-  truncateMessage,
   openRoomSettings,
   saveRoomSettings,
   deleteRoom,
   openNicknameDialog,
   onNicknameInput,
   saveNickname,
-  loadHistoryFromAPI,
-} = useChat()
-
-const userId = computed(() => authStore.userId)
-
-const displayMessages = computed(() => messages)
+  formatTime,
+  formatRoomTime,
+  truncateMessage,
+} = useChat({ scrollToBottom, selectFirstRoomOnLoad: true })
 
 const chatThemeStyles = computed(() => ({
   '--chat-bg': themeStore.currentTheme.colors.bgBase || '#1C1C1E',
@@ -602,31 +605,16 @@ const chatThemeStyles = computed(() => ({
   '--chat-error': '#FF3B30',
 }))
 
-onMounted(() => {
-  if (rooms.length > 0 && currentRoomId.value) {
-    ws.switchRoom(currentRoomId.value)
-    loadHistoryFromAPI(currentRoomId.value)
-  }
-})
-
-// ── Message editing/deletion ──────────────────────────────────────────
-const editingMessageId = ref<number | null>(null)
-const showContextMenu = ref(false)
-const contextMenuMsg = ref<ChatMessage | null>(null)
-const contextMenuX = ref(0)
-const contextMenuY = ref(0)
-
 function sendOrEditMessage() {
   if (editingMessageId.value) {
     confirmEdit()
   } else {
-    sendMessage()
+    void sendMessage().then(autoResizeInput)
   }
 }
 
 function onMessageRightClick(event: MouseEvent, msg: ChatMessage) {
   if (!msg.isSelf || msg.sending || !msg.id) return
-  event.preventDefault()
   contextMenuMsg.value = msg
   contextMenuX.value = event.clientX
   contextMenuY.value = event.clientY
@@ -638,30 +626,43 @@ function startEdit(msg: ChatMessage | null) {
   if (!msg || !msg.id) return
   editingMessageId.value = msg.id
   inputContent.value = msg.content
-  nextTick(() => inputRef.value?.focus())
+  void nextTick(() => inputRef.value?.focus())
 }
 
 function cancelEdit() {
   editingMessageId.value = null
   inputContent.value = ''
+  void nextTick(autoResizeInput)
 }
 
 function confirmEdit() {
   if (!editingMessageId.value) return
   const content = inputContent.value.trim()
   if (!content) return
-  const sent = ws.editMessage(editingMessageId.value, content)
-  if (sent) {
-    editingMessageId.value = null
-    inputContent.value = ''
-  }
+  const sent = editMessage(editingMessageId.value, content)
+  if (sent) cancelEdit()
 }
 
 async function startDelete(msg: ChatMessage | null) {
   showContextMenu.value = false
   if (!msg || !msg.id) return
-  if (!(await dialogService.confirm(t('chat.confirmDelete')))) return
-  ws.deleteMessage(msg.id)
+  await deleteMessage(msg.id)
+}
+
+function autoResizeInput() {
+  if (inputRef.value) {
+    inputRef.value.style.height = 'auto'
+    inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 120) + 'px'
+  }
+}
+
+function scrollToBottom() {
+  if (messagesRef.value) {
+    messagesRef.value.scrollTo({
+      top: messagesRef.value.scrollHeight,
+      behavior: 'smooth',
+    })
+  }
 }
 </script>
 
@@ -673,7 +674,7 @@ async function startDelete(msg: ChatMessage | null) {
   position: relative;
 }
 
-/* ── Sidebar ──────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Sidebar 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__sidebar {
   width: 280px;
   min-width: 280px;
@@ -716,7 +717,7 @@ async function startDelete(msg: ChatMessage | null) {
   opacity: 0.85;
 }
 
-/* ── Search ───────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Search 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__search {
   position: relative;
   padding: 8px 12px;
@@ -748,7 +749,7 @@ async function startDelete(msg: ChatMessage | null) {
   color: var(--chat-text-tertiary, #636366);
 }
 
-/* ── Room List ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Room List 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__room-list {
   flex: 1;
   overflow-y: auto;
@@ -923,7 +924,7 @@ async function startDelete(msg: ChatMessage | null) {
   padding: 40px 0;
 }
 
-/* ── Nickname Button ──────────────────────────────────────────────── */
+/* 鈹€鈹€ Nickname Button 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__nickname-btn {
   display: flex;
   align-items: center;
@@ -950,7 +951,7 @@ async function startDelete(msg: ChatMessage | null) {
   white-space: nowrap;
 }
 
-/* ── Main Chat Area ───────────────────────────────────────────────── */
+/* 鈹€鈹€ Main Chat Area 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__main {
   flex: 1;
   display: flex;
@@ -983,7 +984,7 @@ async function startDelete(msg: ChatMessage | null) {
   color: var(--chat-text-tertiary, #636366);
 }
 
-/* ── Messages ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Messages 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__messages {
   flex: 1;
   padding: 16px;
@@ -1126,7 +1127,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── Rate Warning ─────────────────────────────────────────────────── */
+/* 鈹€鈹€ Rate Warning 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__rate-warning {
   padding: 8px 12px;
   background: var(--chat-error, #ff3b30);
@@ -1191,7 +1192,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── Loading ──────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Loading 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__loading {
   display: flex;
   justify-content: center;
@@ -1225,7 +1226,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── No Room Selected ─────────────────────────────────────────────── */
+/* 鈹€鈹€ No Room Selected 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__no-room {
   display: flex;
   flex-direction: column;
@@ -1241,7 +1242,7 @@ async function startDelete(msg: ChatMessage | null) {
   margin: 0;
 }
 
-/* ── Input Bar ────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Input Bar 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__input-bar {
   display: flex;
   align-items: flex-end;
@@ -1315,7 +1316,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── Dialogs ──────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Dialogs 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .pc-chat__dialog-overlay {
   position: absolute;
   inset: 0;
@@ -1555,7 +1556,7 @@ async function startDelete(msg: ChatMessage | null) {
   background: var(--gui-error-bg, rgba(255, 59, 48, 0.1));
 }
 
-/* ── Transitions ──────────────────────────────────────────────────── */
+/* 鈹€鈹€ Transitions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .gui-ios-fade-enter-active,
 .gui-ios-fade-leave-active {
   transition: opacity 0.2s ease;
@@ -1566,7 +1567,7 @@ async function startDelete(msg: ChatMessage | null) {
   opacity: 0;
 }
 
-/* ── Responsive ───────────────────────────────────────────────────── */
+/* 鈹€鈹€ Responsive 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 @media (max-width: 768px) {
   .pc-chat__sidebar {
     width: 240px;
@@ -1574,7 +1575,7 @@ async function startDelete(msg: ChatMessage | null) {
   }
 }
 
-/* ── Light Mode Overrides ─────────────────────────────────────────── */
+/* 鈹€鈹€ Light Mode Overrides 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .light .pc-chat__container {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }

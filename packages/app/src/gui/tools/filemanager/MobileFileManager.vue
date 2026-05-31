@@ -1,4 +1,4 @@
-﻿<!-- eslint-disable @typescript-eslint/no-explicit-any -->
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 
 <template>
   <MobileWindow
@@ -372,7 +372,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ref, computed, watch } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useFileManagerOps } from '../../composables/useFileManagerOps'
 import MobileWindow from '../../components/MobileWindow.vue'
 import MobileBottomSheet from '../../components/MobileBottomSheet.vue'
 import SCPFileIcon from '../../components/ui/SCPFileIcon.vue'
@@ -385,14 +388,6 @@ import { setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { filesystem } from '../../../utils/filesystem'
 import { useAuthStore } from '../../../stores/authStore'
 import { config } from '../../../config'
-import {
-  useFileManagerOps,
-  isImageFile,
-  isAudioFile,
-  isVideoFile,
-  isTextFile,
-  readFileAsLocal,
-} from '../../composables/useFileManagerOps'
 
 interface Props {
   visible: boolean
@@ -410,36 +405,51 @@ interface ContextAction {
 const props = defineProps<Props>()
 defineEmits<{ close: [] }>()
 
+const i18n = useI18n()
+const { t } = i18n
+
+// Wire i18n to file manager store
+setFileManagerI18n({ t: i18n.t })
+
 const {
-  t,
   fmStore,
-  fileInputRef,
-  formatSize,
-  triggerUpload,
-  onFileUpload: baseOnFileUpload,
   createFile,
   createFolder,
-  renameFile,
   deleteFile,
+  renameFile,
+  writeFile,
+  uploadLocalFiles,
+  formatSize,
+  ensureDirectory,
+  isImageFile,
+  isAudioFile,
+  isVideoFile,
+  isTextFile,
 } = useFileManagerOps()
-
-// Suppress TypeScript warning - fileInputRef is used in template
-void fileInputRef
-
-setFileManagerI18n({ t })
-
 const authStore = useAuthStore()
+
+// Navigate to initial path if provided
+const initialPath = props.data?.initialPath || props.windowInstance?.config?.data?.initialPath
+if (initialPath) {
+  fmStore.navigateTo(initialPath)
+}
+
+watch(
+  () => props.data?.initialPath || props.windowInstance?.config?.data?.initialPath,
+  (newPath) => {
+    if (newPath) {
+      fmStore.navigateTo(newPath)
+    }
+  }
+)
 const mobileViewMode = ref<'grid' | 'list'>('grid')
 const cloudSyncing = ref(false)
-
-function sanitizeFileName(name: string): string {
-  return name.replace(/[\\/:*?"<>|]/g, '_')
-}
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
 })
 
+// Breadcrumbs
 const breadcrumbSegments = computed(() => {
   const segments = fmStore.currentPath.split('/').filter(Boolean)
   return [
@@ -463,6 +473,7 @@ function onBreadcrumbClick(event: MouseEvent) {
   }
 }
 
+// Dialog state
 const dialogVisible = ref(false)
 const dialogType = ref<'input' | 'confirm'>('input')
 const dialogTitle = ref('')
@@ -502,19 +513,29 @@ function onDialogConfirm(value: string | true) {
   }
 }
 
+// Text Editor
 const textEditorVisible = ref(false)
 const editingFile = ref<any>(null)
+
+// Image Viewer
 const imageViewerVisible = ref(false)
 const viewingImageFile = ref<any>(null)
+
+// Audio Player
 const audioPlayerVisible = ref(false)
 const playingAudioFile = ref<any>(null)
+
+// Video Player
 const videoPlayerVisible = ref(false)
 const playingVideoFile = ref<any>(null)
 
+// Context Menu State
 const contextSheetVisible = ref(false)
 const contextSheetTitle = ref('')
 const contextActions = ref<ContextAction[]>([])
 const contextTargetFile = ref<any>(null)
+// const listRef = ref<HTMLElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragOver = ref(false)
 
 function onFileTap(file: any) {
@@ -536,209 +557,28 @@ function onFileTap(file: any) {
       editingFile.value = file
       textEditorVisible.value = true
     } else {
+      // Try to open as text anyway
       editingFile.value = file
       textEditorVisible.value = true
     }
   }
 }
 
+function triggerUpload() {
+  fileInputRef.value?.click()
+}
+
 async function onFileUpload(event: Event) {
-  const result = await baseOnFileUpload(event)
-  if (result.fail > 0) {
-    alert(`Stored ${result.success} file(s) locally, ${result.fail} failed.`)
-  }
-}
-
-async function createNewFile() {
-  const name = await showDialog({
-    type: 'input',
-    title: t('fm.newFile'),
-    placeholder: t('fm.enterFileName'),
-    defaultValue: t('fm.untitled'),
-    confirmText: t('fm.create'),
-  })
-
-  if (name && typeof name === 'string' && name.trim()) {
-    createFile(name.trim())
-  }
-}
-
-async function createNewFolder() {
-  const name = await showDialog({
-    type: 'input',
-    title: t('fm.newFolder'),
-    placeholder: t('fm.enterFolderName'),
-    defaultValue: t('fm.newFolderDefault'),
-    confirmText: t('fm.create'),
-  })
-
-  if (name && typeof name === 'string' && name.trim()) {
-    createFolder(name.trim())
-  }
-}
-
-function onFileContextMenu(_event: MouseEvent, file: any) {
-  contextTargetFile.value = file
-  contextSheetTitle.value = file.name
-
-  contextActions.value = []
-
-  if (isTextFile(file.name)) {
-    contextActions.value.push({
-      id: 'edit',
-      label: t('common.edit'),
-      fn: () => {
-        editingFile.value = file
-        textEditorVisible.value = true
-        contextSheetVisible.value = false
-      },
-    })
-  }
-
-  if (isImageFile(file.name)) {
-    contextActions.value.push({
-      id: 'view',
-      label: t('fm.viewImage'),
-      fn: () => {
-        viewingImageFile.value = file
-        imageViewerVisible.value = true
-        contextSheetVisible.value = false
-      },
-    })
-  }
-
-  if (isAudioFile(file.name)) {
-    contextActions.value.push({
-      id: 'play-audio',
-      label: 'Play Audio',
-      fn: () => {
-        playingAudioFile.value = file
-        audioPlayerVisible.value = true
-        contextSheetVisible.value = false
-      },
-    })
-  }
-
-  if (isVideoFile(file.name)) {
-    contextActions.value.push({
-      id: 'play-video',
-      label: 'Play Video',
-      fn: () => {
-        playingVideoFile.value = file
-        videoPlayerVisible.value = true
-        contextSheetVisible.value = false
-      },
-    })
-  }
-
-  contextActions.value.push(
-    {
-      id: 'rename',
-      label: t('common.rename'),
-      fn: async () => {
-        const newName = await showDialog({
-          type: 'input',
-          title: t('common.rename'),
-          placeholder: t('fm.enterNewName'),
-          defaultValue: file.name,
-          confirmText: t('common.rename'),
-        })
-
-        if (newName && typeof newName === 'string' && newName !== file.name) {
-          renameFile(file.name, newName)
-        }
-        contextSheetVisible.value = false
-      },
-    },
-    {
-      id: 'delete',
-      label: t('common.delete'),
-      danger: true,
-      fn: async () => {
-        const confirmed = await showDialog({
-          type: 'confirm',
-          title: t('common.delete'),
-          message: t('fm.deleteConfirm', { name: file.name }),
-          confirmText: t('common.delete'),
-          danger: true,
-        })
-
-        if (confirmed) {
-          deleteFile(file.name)
-        }
-        contextSheetVisible.value = false
-      },
-    }
-  )
-
-  contextSheetVisible.value = true
-}
-
-function onListContextMenu(_event: MouseEvent) {
-  contextSheetTitle.value = t('fm.folderActions')
-  contextActions.value = [
-    {
-      id: 'new-file',
-      label: t('fm.newFile'),
-      fn: () => {
-        createNewFile()
-        contextSheetVisible.value = false
-      },
-    },
-    {
-      id: 'new-folder',
-      label: t('fm.newFolder'),
-      fn: () => {
-        createNewFolder()
-        contextSheetVisible.value = false
-      },
-    },
-  ]
-  contextSheetVisible.value = true
-}
-
-function onSaveTextFile(data: { name: string; content: string }) {
-  const path = fmStore.currentPath === '/' ? '/' + data.name : fmStore.currentPath + '/' + data.name
-  try {
-    filesystem.writeFile(path, data.content)
-    fmStore.loadDirectory(fmStore.currentPath)
-  } catch (error) {
-    console.error('[FileManager] Failed to save file:', error)
-  }
-}
-
-function onDragOver() {
-  isDragOver.value = true
-}
-
-function onDragLeave() {
-  isDragOver.value = false
-}
-
-async function onDrop(event: DragEvent) {
-  isDragOver.value = false
-  const files = event.dataTransfer?.files
+  const input = event.target as HTMLInputElement
+  const files = input.files
   if (!files || files.length === 0) return
 
-  let localSuccess = 0
-  let localFail = 0
+  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
   let cloudSuccess = 0
   let cloudFail = 0
 
-  for (const file of files) {
-    const safeName = sanitizeFileName(file.name)
-    const path = fmStore.currentPath === '/' ? '/' + safeName : fmStore.currentPath + '/' + safeName
-
+  for (const { file, path } of localFiles) {
     try {
-      const content = await readFileAsLocal(file)
-      const existingNode = filesystem.getNodeByPath(path)
-      if (existingNode && existingNode.type === 'file') {
-        filesystem.writeFile(path, content)
-      } else {
-        filesystem.createFile(path, content)
-      }
-      localSuccess++
-
       if (authStore.userId) {
         try {
           const formData = new FormData()
@@ -761,12 +601,11 @@ async function onDrop(event: DragEvent) {
         }
       }
     } catch (error) {
-      console.error('[FileManager] Failed to store dropped file locally:', error)
-      localFail++
+      console.error('[FileManager] Cloud upload wrapper failed:', error)
     }
   }
 
-  fmStore.loadDirectory(fmStore.currentPath)
+  input.value = ''
 
   const messages: string[] = []
   if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
@@ -787,49 +626,312 @@ async function syncFromCloud(): Promise<void> {
       alert(t('fm.syncFailed') || 'Cloud sync failed')
       return
     }
-
     const result = await response.json()
     const cloudFiles = result.data || []
     let success = 0
     let fail = 0
-
     for (const file of cloudFiles) {
       try {
-        const key = String(file.key || '')
-        if (!key) {
-          fail++
-          continue
-        }
-
         const downloadRes = await authStore.authFetch(
-          `${config.api.workerUrl}/files/${encodeURIComponent(key)}`
+          `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`
         )
         if (!downloadRes.ok) {
           fail++
           continue
         }
-
-        const content = await downloadRes.text()
-        filesystem.createFile(`/home/scp/downloads/${key}`, content)
-        success++
+        const blob = await downloadRes.blob()
+        const contentType = file.contentType || ''
+        const isText =
+          contentType.startsWith('text/') ||
+          /\.(txt|md|json|js|ts|css|html|vue|xml|yaml|csv)$/i.test(file.key)
+        const content = isText
+          ? await blob.text()
+          : await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.onerror = reject
+              reader.readAsDataURL(blob)
+            })
+        const path = `/home/scp/downloads/${file.key}`
+        const dirPath = path.substring(0, path.lastIndexOf('/'))
+        if (dirPath && !ensureDirectory(dirPath)) {
+          fail++
+          continue
+        }
+        const existingNode = filesystem.getNodeByPath(path)
+        let ok = false
+        if (existingNode && existingNode.type === 'file') {
+          ok = filesystem.writeFile(path, content)
+        } else {
+          ok = filesystem.createFile(path, content)
+        }
+        if (ok) {
+          success++
+        } else {
+          fail++
+        }
       } catch {
         fail++
       }
     }
-
-    fmStore.loadDirectory()
+    fmStore.loadDirectory(fmStore.currentPath)
     const messages: string[] = []
-    if (success > 0) messages.push(`Synced ${success} file(s)`)
-    if (fail > 0) messages.push(`Failed ${fail} file(s)`)
-    if (messages.length > 0) alert(messages.join(', '))
+    if (success > 0) messages.push(`同步成功 ${success} 个文件`)
+    if (fail > 0) messages.push(`同步失败 ${fail} 个`)
+    if (messages.length > 0) {
+      alert(messages.join('，'))
+    } else {
+      alert(t('fm.syncNoFiles') || 'No cloud files to sync')
+    }
+  } catch (err) {
+    console.error('[FileManager] Cloud sync error:', err)
+    alert(t('fm.syncFailed') || 'Cloud sync failed')
   } finally {
     cloudSyncing.value = false
   }
 }
 
-onMounted(() => {
-  fmStore.loadDirectory(fmStore.currentPath)
-})
+async function createNewFile() {
+  const name = await showDialog({
+    type: 'input',
+    title: t('fm.newFile'),
+    placeholder: t('fm.enterFileName'),
+    defaultValue: t('fm.untitled'),
+    confirmText: t('fm.create'),
+  })
+
+  if (name && typeof name === 'string' && name.trim()) {
+    try {
+      createFile(name, '')
+    } catch (error) {
+      console.error('[FileManager] Failed to create file:', error)
+    }
+  }
+}
+
+async function createNewFolder() {
+  const name = await showDialog({
+    type: 'input',
+    title: t('fm.newFolder'),
+    placeholder: t('fm.enterFolderName'),
+    defaultValue: t('fm.newFolderDefault'),
+    confirmText: t('fm.create'),
+  })
+
+  if (name && typeof name === 'string' && name.trim()) {
+    try {
+      createFolder(name)
+    } catch (error) {
+      console.error('[FileManager] Failed to create folder:', error)
+    }
+  }
+}
+
+function onFileContextMenu(_event: MouseEvent, file: any) {
+  contextTargetFile.value = file
+  contextSheetTitle.value = file.name
+
+  const isImage = isImageFile(file.name)
+  const isAudio = isAudioFile(file.name)
+  const isVideo = isVideoFile(file.name)
+  const isText = isTextFile(file.name)
+
+  contextActions.value = []
+
+  if (isText) {
+    contextActions.value.push({
+      id: 'edit',
+      label: t('common.edit'),
+
+      fn: () => {
+        editingFile.value = file
+        textEditorVisible.value = true
+        contextSheetVisible.value = false
+      },
+    })
+  }
+
+  if (isImage) {
+    contextActions.value.push({
+      id: 'view',
+      label: t('fm.viewImage'),
+
+      fn: () => {
+        viewingImageFile.value = file
+        imageViewerVisible.value = true
+        contextSheetVisible.value = false
+      },
+    })
+  }
+
+  if (isAudio) {
+    contextActions.value.push({
+      id: 'play-audio',
+      label: 'Play Audio',
+
+      fn: () => {
+        playingAudioFile.value = file
+        audioPlayerVisible.value = true
+        contextSheetVisible.value = false
+      },
+    })
+  }
+
+  if (isVideo) {
+    contextActions.value.push({
+      id: 'play-video',
+      label: 'Play Video',
+
+      fn: () => {
+        playingVideoFile.value = file
+        videoPlayerVisible.value = true
+        contextSheetVisible.value = false
+      },
+    })
+  }
+
+  contextActions.value.push(
+    {
+      id: 'rename',
+      label: t('common.rename'),
+
+      fn: async () => {
+        const newName = await showDialog({
+          type: 'input',
+          title: t('common.rename'),
+          placeholder: t('fm.enterNewName'),
+          defaultValue: file.name,
+          confirmText: t('common.rename'),
+        })
+
+        if (newName && typeof newName === 'string' && newName !== file.name) {
+          try {
+            renameFile(file.name, newName)
+          } catch (error) {
+            console.error('[FileManager] Failed to rename:', error)
+          }
+        }
+        contextSheetVisible.value = false
+      },
+    },
+    {
+      id: 'delete',
+      label: t('common.delete'),
+
+      danger: true,
+      fn: async () => {
+        const confirmed = await showDialog({
+          type: 'confirm',
+          title: t('common.delete'),
+          message: t('fm.deleteConfirm', { name: file.name }),
+          confirmText: t('common.delete'),
+          danger: true,
+        })
+
+        if (confirmed) {
+          try {
+            deleteFile(file.name)
+          } catch (error) {
+            console.error('[FileManager] Failed to delete:', error)
+          }
+        }
+        contextSheetVisible.value = false
+      },
+    }
+  )
+
+  contextSheetVisible.value = true
+}
+
+function onListContextMenu(_event: MouseEvent) {
+  contextSheetTitle.value = t('fm.folderActions')
+  contextActions.value = [
+    {
+      id: 'new-file',
+      label: t('fm.newFile'),
+
+      fn: () => {
+        createNewFile()
+        contextSheetVisible.value = false
+      },
+    },
+    {
+      id: 'new-folder',
+      label: t('fm.newFolder'),
+
+      fn: () => {
+        createNewFolder()
+        contextSheetVisible.value = false
+      },
+    },
+  ]
+  contextSheetVisible.value = true
+}
+
+function onSaveTextFile(data: { name: string; content: string }) {
+  const path = fmStore.currentPath === '/' ? '/' + data.name : fmStore.currentPath + '/' + data.name
+  try {
+    writeFile(path, data.content)
+  } catch (error) {
+    console.error('[FileManager] Failed to save file:', error)
+  }
+}
+
+// Drag & Drop
+function onDragOver() {
+  isDragOver.value = true
+}
+
+function onDragLeave() {
+  isDragOver.value = false
+}
+
+async function onDrop(event: DragEvent) {
+  isDragOver.value = false
+  const files = event.dataTransfer?.files
+  if (!files || files.length === 0) return
+
+  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
+  let cloudSuccess = 0
+  let cloudFail = 0
+
+  for (const { file, path } of localFiles) {
+    try {
+      if (authStore.userId) {
+        try {
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('path', path)
+          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+            method: 'POST',
+            body: formData,
+          })
+          if (response.ok) {
+            cloudSuccess++
+          } else {
+            const data = await response.json().catch(() => ({}))
+            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
+            cloudFail++
+          }
+        } catch (err) {
+          console.error('[FileManager] Cloud upload error:', err)
+          cloudFail++
+        }
+      }
+    } catch (error) {
+      console.error('[FileManager] Cloud upload wrapper failed:', error)
+    }
+  }
+
+  const messages: string[] = []
+  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
+  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
+  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (messages.length > 0) {
+    alert(messages.join('，'))
+  }
+}
 </script>
 
 <style scoped>
