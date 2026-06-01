@@ -7,7 +7,7 @@ class ApiResponseError extends Error {
   constructor(
     public readonly status: number,
     public readonly data: Record<string, unknown>,
-    public readonly statusText: string,
+    public readonly statusText: string
   ) {
     super(`HTTP ${status}: ${statusText}`)
   }
@@ -16,7 +16,7 @@ class ApiResponseError extends Error {
 async function apiFetch(
   url: string,
   params: Record<string, string | number>,
-  timeout: number,
+  timeout: number
 ): Promise<{ status: number; data: Record<string, unknown> }> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeout)
