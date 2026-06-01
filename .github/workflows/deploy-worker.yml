@@ -48,7 +48,6 @@ jobs:
     timeout-minutes: 10
     needs: [quality]
     environment: production
-    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
 
     steps:
       - name: Checkout code
@@ -67,7 +66,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Deploy Worker
-        run: pnpm --filter scp-os-worker run deploy
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN not configured — skipping deployment"
+            exit 0
+          fi
+          pnpm --filter scp-os-worker run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -85,7 +89,7 @@ jobs:
 
   notify-failure:
     name: Notify Deploy Failure
-    if: failure() && needs.deploy.result == 'failure'
+    if: failure()
     needs: [quality, deploy]
     runs-on: ubuntu-latest
     timeout-minutes: 5
