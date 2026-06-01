@@ -202,7 +202,7 @@ interface TaleSummary {
 
 // ── Constants ──────────────────────────────────────────────────────────
 
-const API_BASE = config?.api?.workerUrl || 'https://api.scpos.site'
+const API_BASE = config.api.workerUrl
 const FETCH_TIMEOUT_MS = 15000
 
 // ── State ──────────────────────────────────────────────────────────────

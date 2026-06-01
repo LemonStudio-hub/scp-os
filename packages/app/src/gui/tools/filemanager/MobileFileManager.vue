@@ -70,11 +70,11 @@
           <button
             class="mobile-file-manager__action-btn"
             :title="t('fm.syncCloud')"
-            :disabled="cloudSyncing"
+            :disabled="fmStore.cloudSyncing"
             @click="syncFromCloud"
           >
             <svg
-              v-if="!cloudSyncing"
+              v-if="!fmStore.cloudSyncing"
               width="20"
               height="20"
               viewBox="0 0 24 24"
@@ -385,9 +385,6 @@ import VideoPlayerModal from './VideoPlayerModal.vue'
 import TextEditorModal from './TextEditorModal.vue'
 import ImageViewerModal from './ImageViewerModal.vue'
 import { setI18n as setFileManagerI18n } from '../../stores/fileManager'
-import { filesystem } from '../../../utils/filesystem'
-import { useAuthStore } from '../../../stores/authStore'
-import { config } from '../../../config'
 
 interface Props {
   visible: boolean
@@ -419,14 +416,14 @@ const {
   renameFile,
   writeFile,
   uploadLocalFiles,
+  uploadToCloud,
+  syncCloudFiles,
   formatSize,
-  ensureDirectory,
   isImageFile,
   isAudioFile,
   isVideoFile,
   isTextFile,
 } = useFileManagerOps()
-const authStore = useAuthStore()
 
 // Navigate to initial path if provided
 const initialPath = props.data?.initialPath || props.windowInstance?.config?.data?.initialPath
@@ -443,7 +440,6 @@ watch(
   }
 )
 const mobileViewMode = ref<'grid' | 'list'>('grid')
-const cloudSyncing = ref(false)
 const currentFolderName = computed(() => {
   const parts = fmStore.currentPath.split('/').filter(Boolean)
   return parts.length > 0 ? parts[parts.length - 1] : t('fm.files')
@@ -572,123 +568,28 @@ async function onFileUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files
   if (!files || files.length === 0) return
-
   const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
-  let cloudSuccess = 0
-  let cloudFail = 0
-
-  for (const { file, path } of localFiles) {
-    try {
-      if (authStore.userId) {
-        try {
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('path', path)
-          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
-            method: 'POST',
-            body: formData,
-          })
-          if (response.ok) {
-            cloudSuccess++
-          } else {
-            const data = await response.json().catch(() => ({}))
-            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
-            cloudFail++
-          }
-        } catch (err) {
-          console.error('[FileManager] Cloud upload error:', err)
-          cloudFail++
-        }
-      }
-    } catch (error) {
-      console.error('[FileManager] Cloud upload wrapper failed:', error)
-    }
-  }
-
+  const { cloudSuccess, cloudFail } = await uploadToCloud(localFiles)
   input.value = ''
-
   const messages: string[] = []
   if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
   if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
   if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
   if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
-  if (messages.length > 0) {
-    alert(messages.join('，'))
-  }
+  if (messages.length > 0) alert(messages.join('，'))
 }
 
 async function syncFromCloud(): Promise<void> {
-  if (!authStore.userId || cloudSyncing.value) return
-  cloudSyncing.value = true
-  try {
-    const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
-    if (!response.ok) {
-      alert(t('fm.syncFailed') || 'Cloud sync failed')
-      return
-    }
-    const result = await response.json()
-    const cloudFiles = result.data || []
-    let success = 0
-    let fail = 0
-    for (const file of cloudFiles) {
-      try {
-        const downloadRes = await authStore.authFetch(
-          `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`
-        )
-        if (!downloadRes.ok) {
-          fail++
-          continue
-        }
-        const blob = await downloadRes.blob()
-        const contentType = file.contentType || ''
-        const isText =
-          contentType.startsWith('text/') ||
-          /\.(txt|md|json|js|ts|css|html|vue|xml|yaml|csv)$/i.test(file.key)
-        const content = isText
-          ? await blob.text()
-          : await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader()
-              reader.onload = () => resolve(reader.result as string)
-              reader.onerror = reject
-              reader.readAsDataURL(blob)
-            })
-        const path = `/home/scp/downloads/${file.key}`
-        const dirPath = path.substring(0, path.lastIndexOf('/'))
-        if (dirPath && !ensureDirectory(dirPath)) {
-          fail++
-          continue
-        }
-        const existingNode = filesystem.getNodeByPath(path)
-        let ok = false
-        if (existingNode && existingNode.type === 'file') {
-          ok = filesystem.writeFile(path, content)
-        } else {
-          ok = filesystem.createFile(path, content)
-        }
-        if (ok) {
-          success++
-        } else {
-          fail++
-        }
-      } catch {
-        fail++
-      }
-    }
-    fmStore.loadDirectory(fmStore.currentPath)
-    const messages: string[] = []
-    if (success > 0) messages.push(`同步成功 ${success} 个文件`)
-    if (fail > 0) messages.push(`同步失败 ${fail} 个`)
-    if (messages.length > 0) {
-      alert(messages.join('，'))
-    } else {
-      alert(t('fm.syncNoFiles') || 'No cloud files to sync')
-    }
-  } catch (err) {
-    console.error('[FileManager] Cloud sync error:', err)
+  const { success, fail, networkError } = await syncCloudFiles()
+  if (networkError) {
     alert(t('fm.syncFailed') || 'Cloud sync failed')
-  } finally {
-    cloudSyncing.value = false
+    return
   }
+  const messages: string[] = []
+  if (success > 0) messages.push(`同步成功 ${success} 个文件`)
+  if (fail > 0) messages.push(`同步失败 ${fail} 个`)
+  if (messages.length > 0) alert(messages.join('，'))
+  else alert(t('fm.syncNoFiles') || 'No cloud files to sync')
 }
 
 async function createNewFile() {
@@ -890,47 +791,14 @@ async function onDrop(event: DragEvent) {
   isDragOver.value = false
   const files = event.dataTransfer?.files
   if (!files || files.length === 0) return
-
   const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
-  let cloudSuccess = 0
-  let cloudFail = 0
-
-  for (const { file, path } of localFiles) {
-    try {
-      if (authStore.userId) {
-        try {
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('path', path)
-          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
-            method: 'POST',
-            body: formData,
-          })
-          if (response.ok) {
-            cloudSuccess++
-          } else {
-            const data = await response.json().catch(() => ({}))
-            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
-            cloudFail++
-          }
-        } catch (err) {
-          console.error('[FileManager] Cloud upload error:', err)
-          cloudFail++
-        }
-      }
-    } catch (error) {
-      console.error('[FileManager] Cloud upload wrapper failed:', error)
-    }
-  }
-
+  const { cloudSuccess, cloudFail } = await uploadToCloud(localFiles)
   const messages: string[] = []
   if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
   if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
   if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
   if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
-  if (messages.length > 0) {
-    alert(messages.join('，'))
-  }
+  if (messages.length > 0) alert(messages.join('，'))
 }
 </script>
 

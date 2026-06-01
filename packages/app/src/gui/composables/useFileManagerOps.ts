@@ -1,6 +1,8 @@
 import { onMounted, ref, watch } from 'vue'
 import { useFileManagerStore } from '../stores/fileManager'
+import { useAuthStore } from '../../stores/authStore'
 import { filesystem } from '../../utils/filesystem'
+import { config } from '../../config'
 import type { FileItem } from '../types'
 
 export const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
@@ -102,8 +104,15 @@ export function readFileAsLocal(file: File): Promise<string> {
   })
 }
 
+export interface CloudSyncResult {
+  success: number
+  fail: number
+  networkError: boolean
+}
+
 export function useFileManagerOps() {
   const fmStore = useFileManagerStore()
+  const authStore = useAuthStore()
   const searchText = ref(fmStore.searchQuery)
 
   watch(searchText, (val) => {
@@ -192,6 +201,90 @@ export function useFileManagerOps() {
     return true
   }
 
+  async function uploadToCloud(
+    localFiles: LocalUploadResult['files'],
+  ): Promise<{ cloudSuccess: number; cloudFail: number }> {
+    if (!authStore.userId) return { cloudSuccess: 0, cloudFail: 0 }
+    let cloudSuccess = 0
+    let cloudFail = 0
+    for (const { file, path } of localFiles) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('path', path)
+        const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
+          method: 'POST',
+          body: formData,
+        })
+        if (response.ok) {
+          cloudSuccess++
+        } else {
+          const data = (await response.json().catch(() => ({}))) as Record<string, unknown>
+          console.error('[FileManager] Cloud upload failed:', data['error'] || response.statusText)
+          cloudFail++
+        }
+      } catch (err) {
+        console.error('[FileManager] Cloud upload error:', err)
+        cloudFail++
+      }
+    }
+    return { cloudSuccess, cloudFail }
+  }
+
+  async function syncCloudFiles(): Promise<CloudSyncResult> {
+    if (!authStore.userId || fmStore.cloudSyncing) return { success: 0, fail: 0, networkError: false }
+    fmStore.cloudSyncing = true
+    let success = 0
+    let fail = 0
+    try {
+      const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
+      if (!response.ok) return { success: 0, fail: 0, networkError: true }
+      const result = (await response.json()) as { data?: Array<{ key: string; contentType?: string }> }
+      const cloudFiles = result.data || []
+      for (const file of cloudFiles) {
+        try {
+          const downloadRes = await authStore.authFetch(
+            `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`,
+          )
+          if (!downloadRes.ok) {
+            fail++
+            continue
+          }
+          const blob = await downloadRes.blob()
+          const isText =
+            (file.contentType || '').startsWith('text/') ||
+            /\.(txt|md|json|js|ts|css|html|vue|xml|yaml|csv)$/i.test(file.key)
+          const content = isText
+            ? await blob.text()
+            : await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader()
+                reader.onload = () => resolve(reader.result as string)
+                reader.onerror = reject
+                reader.readAsDataURL(blob)
+              })
+          const path = `/home/scp/downloads/${file.key}`
+          const dirPath = path.substring(0, path.lastIndexOf('/'))
+          if (dirPath && !ensureDirectory(dirPath)) {
+            fail++
+            continue
+          }
+          const existingNode = filesystem.getNodeByPath(path)
+          const ok =
+            existingNode?.type === 'file'
+              ? filesystem.writeFile(path, content)
+              : filesystem.createFile(path, content)
+          ok ? success++ : fail++
+        } catch {
+          fail++
+        }
+      }
+      fmStore.loadDirectory(fmStore.currentPath)
+    } finally {
+      fmStore.cloudSyncing = false
+    }
+    return { success, fail, networkError: false }
+  }
+
   return {
     fmStore,
     searchText,
@@ -205,6 +298,8 @@ export function useFileManagerOps() {
     uploadLocalFiles,
     currentPathForName,
     openDirectory,
+    uploadToCloud,
+    syncCloudFiles,
     formatSize,
     formatDate,
     sanitizeFileName,

@@ -463,8 +463,6 @@ import type { IconName } from '../../icons'
 import type { ToolType } from '../../types'
 import { filesystem } from '../../../utils/filesystem'
 import { parseDesktopFile } from '../../../utils/desktopShortcut'
-import { useAuthStore } from '../../../stores/authStore'
-import { config } from '../../../config'
 
 interface Props {
   windowInstance: WindowInstance
@@ -482,6 +480,8 @@ const {
   deleteFile,
   renameFile,
   uploadLocalFiles,
+  uploadToCloud,
+  syncCloudFiles,
   formatSize,
   formatDate,
   IMAGE_EXTS,
@@ -489,7 +489,6 @@ const {
   VIDEO_EXTS,
 } = useFileManagerOps()
 const wmStore = useWindowManagerStore()
-const authStore = useAuthStore()
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // Navigate to initial path if provided
@@ -765,96 +764,28 @@ async function onFileUpload(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement
   const files = input.files
   if (!files || files.length === 0) return
-
   const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files)
-  let cloudSuccess = 0
-  let cloudFail = 0
-
-  for (const { file, path } of localFiles) {
-    try {
-      if (authStore.userId) {
-        try {
-          const formData = new FormData()
-          formData.append('file', file)
-          formData.append('path', path)
-          const response = await authStore.authFetch(`${config.api.workerUrl}/files/upload`, {
-            method: 'POST',
-            body: formData,
-          })
-          if (response.ok) {
-            cloudSuccess++
-          } else {
-            const data = await response.json().catch(() => ({}))
-            console.error('[FileManager] Cloud upload failed:', data.error || response.statusText)
-            cloudFail++
-          }
-        } catch (err) {
-          console.error('[FileManager] Cloud upload error:', err)
-          cloudFail++
-        }
-      }
-    } catch (error) {
-      console.error('[FileManager] Cloud upload wrapper failed:', error)
-    }
-  }
-
+  const { cloudSuccess, cloudFail } = await uploadToCloud(localFiles)
   input.value = ''
-
   const messages: string[] = []
   if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
   if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
   if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
   if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
-  if (messages.length > 0) {
-    alert(messages.join('，'))
-  }
+  if (messages.length > 0) alert(messages.join('，'))
 }
 
 async function syncFromCloud(): Promise<void> {
-  if (!authStore.userId || fmStore.cloudSyncing) return
-  fmStore.cloudSyncing = true
-  try {
-    const response = await authStore.authFetch(`${config.api.workerUrl}/files`)
-    if (!response.ok) {
-      alert(t('fm.syncFailed') || 'Cloud sync failed')
-      return
-    }
-    const result = await response.json()
-    const cloudFiles = result.data || []
-    let success = 0
-    let fail = 0
-    for (const file of cloudFiles) {
-      try {
-        const downloadRes = await authStore.authFetch(
-          `${config.api.workerUrl}/files/${encodeURIComponent(file.key)}`
-        )
-        if (!downloadRes.ok) {
-          fail++
-          continue
-        }
-        const content = await downloadRes.text()
-        const path = `/home/scp/downloads/${file.key}`
-        filesystem.createFile(path, content)
-        success++
-      } catch {
-        fail++
-      }
-    }
-    fmStore.loadDirectory()
-    const messages: string[] = []
-    if (success > 0) messages.push(`同步成功 ${success} 个文件`)
-    if (fail > 0) messages.push(`同步失败 ${fail} 个`)
-    if (messages.length > 0) {
-      alert(messages.join('，'))
-    } else {
-      alert(t('fm.syncNoFiles') || 'No cloud files to sync')
-    }
-  } catch (err) {
-    console.error('[FileManager] Cloud sync error:', err)
+  const { success, fail, networkError } = await syncCloudFiles()
+  if (networkError) {
     alert(t('fm.syncFailed') || 'Cloud sync failed')
-  } finally {
-    fmStore.cloudSyncing = false
+    return
   }
+  const messages: string[] = []
+  if (success > 0) messages.push(`同步成功 ${success} 个文件`)
+  if (fail > 0) messages.push(`同步失败 ${fail} 个`)
+  if (messages.length > 0) alert(messages.join('，'))
+  else alert(t('fm.syncNoFiles') || 'No cloud files to sync')
 }
 
 // ── File open with type detection ───────────────────────────────────
