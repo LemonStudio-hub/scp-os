@@ -1,4 +1,3 @@
-<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <template>
   <div v-if="isOpen" class="pc-start-menu">
     <div class="pc-start-menu__container">
@@ -107,7 +106,6 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import GUIIcon from './ui/GUIIcon.vue'
@@ -219,7 +217,7 @@ function onPowerOptionClick(option: PowerOption) {
   emit('power-action', option.action)
 }
 
-function onItemClick(item: any) {
+function onItemClick(item: StartMenuApp | SystemOption | PowerOption) {
   if ('tool' in item) {
     emit('launch', item)
   } else if ('action' in item) {
