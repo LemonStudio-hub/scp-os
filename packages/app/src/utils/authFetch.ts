@@ -22,13 +22,9 @@ async function requestToken(userId: string): Promise<string> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId }),
   })
-  if (!response.ok) {
-    throw new Error(`Token request failed: ${response.status}`)
-  }
+  if (!response.ok) throw new Error(`Token request failed: ${response.status}`)
   const data = await response.json()
-  if (!data.success || !data.token) {
-    throw new Error('Token request returned invalid response')
-  }
+  if (!data.success || !data.token) throw new Error('Token request returned invalid response')
   return data.token
 }
 
@@ -46,13 +42,22 @@ export async function authenticatedFetch(
   options: RequestInit = {}
 ): Promise<Response> {
   const authHeader = await getAuthHeaders(userId)
-  return fetch(url, {
+  const response = await fetch(url, {
     ...options,
-    headers: {
-      ...options.headers,
-      ...authHeader,
-    },
+    headers: { ...options.headers, ...authHeader },
   })
+
+  if (response.status === 401) {
+    // Token expired — clear cache and retry once with a fresh token
+    clearAuthToken()
+    const freshHeader = await getAuthHeaders(userId)
+    return fetch(url, {
+      ...options,
+      headers: { ...options.headers, ...freshHeader },
+    })
+  }
+
+  return response
 }
 
 export { config }

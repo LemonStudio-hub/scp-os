@@ -86,38 +86,48 @@
           <div class="pc-settings__section-title">{{ t('settings.terminal') }}</div>
           <div class="pc-settings__card">
             <!-- Font Size -->
-            <div class="pc-settings__row" @click="showFontSizeSlider = !showFontSizeSlider">
+            <div class="pc-settings__row pc-settings__row--static">
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.fontSize') }}</div>
-                <div class="pc-settings__row-value">{{ settings.fontSize }}px</div>
               </div>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.3"
-                stroke-linecap="round"
-              >
-                <path d="M3 4.5L6 7.5L9 4.5" />
-              </svg>
-            </div>
-            <div v-if="showFontSizeSlider" class="pc-settings__slider-row">
-              <input
-                v-model.number="settings.fontSize"
-                type="range"
-                min="10"
-                max="22"
-                step="1"
-                class="k-ios-slider"
-              />
-              <div
-                class="pc-settings__slider-preview"
+              <span
+                class="pc-settings__font-preview"
                 :style="{ fontSize: `${settings.fontSize}px` }"
+              >{{ t('settings.fontPreview') }}</span>
+            </div>
+            <div class="pc-settings__font-control">
+              <button
+                class="pc-settings__step-btn"
+                :disabled="settings.fontSize <= 10"
+                @click="settings.fontSize = Math.max(10, settings.fontSize - 1)"
               >
-                {{ t('settings.fontPreview') }}
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                  <line x1="2" y1="7" x2="12" y2="7" />
+                </svg>
+              </button>
+              <div class="pc-settings__slider-wrap">
+                <span class="pc-settings__slider-bound">10</span>
+                <input
+                  v-model.number="settings.fontSize"
+                  type="range"
+                  min="10"
+                  max="22"
+                  step="1"
+                  class="pc-settings__slider"
+                />
+                <span class="pc-settings__slider-bound">22</span>
               </div>
+              <button
+                class="pc-settings__step-btn"
+                :disabled="settings.fontSize >= 22"
+                @click="settings.fontSize = Math.min(22, settings.fontSize + 1)"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                  <line x1="7" y1="2" x2="7" y2="12" />
+                  <line x1="2" y1="7" x2="12" y2="7" />
+                </svg>
+              </button>
+              <span class="pc-settings__font-value">{{ settings.fontSize }}px</span>
             </div>
 
             <!-- Cursor Blink -->
@@ -365,6 +375,57 @@
           </div>
         </template>
 
+        <!-- Account Section -->
+        <template v-if="activeSection === 'account'">
+          <div class="pc-settings__section-title">账户</div>
+          <div class="pc-settings__card">
+            <div class="pc-settings__row">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">工作代号</div>
+                <div class="pc-settings__row-description">{{ authStore.nickname }}</div>
+              </div>
+              <span class="pc-settings__badge pc-settings__badge--guest">游客</span>
+            </div>
+            <div v-if="!showNicknameEdit" class="pc-settings__row" @click="openNicknameEdit">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">修改工作代号</div>
+              </div>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+                <path d="M3 4.5L6 7.5L9 4.5" />
+              </svg>
+            </div>
+            <div v-else class="pc-settings__nickname-edit">
+              <input
+                ref="nicknameInputRef"
+                v-model="nicknameEditValue"
+                class="pc-settings__nickname-input"
+                type="text"
+                placeholder="输入新的工作代号"
+                maxlength="20"
+                @keyup.enter="submitNicknameEdit"
+                @keyup.escape="cancelNicknameEdit"
+              />
+              <div v-if="nicknameEditError" class="pc-settings__nickname-error">{{ nicknameEditError }}</div>
+              <div class="pc-settings__nickname-actions">
+                <button class="pc-settings__nickname-btn" @click="cancelNicknameEdit">取消</button>
+                <button class="pc-settings__nickname-btn pc-settings__nickname-btn--primary" :disabled="authStore.isLoading" @click="submitNicknameEdit">
+                  {{ authStore.isLoading ? '保存中...' : '保存' }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="pc-settings__card">
+            <div class="pc-settings__row pc-settings__row--destructive" @click="handleLogout">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">退出登录</div>
+              </div>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+                <path d="M3 4.5L6 7.5L9 4.5" />
+              </svg>
+            </div>
+          </div>
+        </template>
+
         <!-- About Section -->
         <template v-if="activeSection === 'about'">
           <div class="pc-settings__section-title">{{ t('settings.about') }}</div>
@@ -442,7 +503,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import { useSettings } from '../../composables/useSettings'
 import { localeNames } from '../../../locales'
@@ -450,6 +511,7 @@ import PCWindow from '../../components/PCWindow.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import CustomAccentPicker from './CustomAccentPicker.vue'
 import { useThemeStore } from '../../stores/themeStore'
+import { useAuthStore } from '../../../stores/authStore'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -476,6 +538,39 @@ const {
 } = useSettings()
 const themeStore = useThemeStore()
 themeStore.init()
+const authStore = useAuthStore()
+
+// Account section state
+const showNicknameEdit = ref(false)
+const nicknameEditValue = ref('')
+const nicknameEditError = ref('')
+const nicknameInputRef = ref<HTMLInputElement | null>(null)
+
+function openNicknameEdit(): void {
+  nicknameEditValue.value = authStore.nickname ?? ''
+  nicknameEditError.value = ''
+  showNicknameEdit.value = true
+  nextTick(() => nicknameInputRef.value?.focus())
+}
+
+function cancelNicknameEdit(): void {
+  showNicknameEdit.value = false
+  nicknameEditError.value = ''
+}
+
+async function submitNicknameEdit(): Promise<void> {
+  nicknameEditError.value = ''
+  const result = await authStore.updateNickname(nicknameEditValue.value)
+  if (result.success) {
+    showNicknameEdit.value = false
+  } else {
+    nicknameEditError.value = result.error || '更新失败'
+  }
+}
+
+async function handleLogout(): Promise<void> {
+  await authStore.logout()
+}
 
 const presetAccents = [
   '#0063D1', // Premium Blue
@@ -496,6 +591,11 @@ function toggleCustomAccent() {
 
 // Navigation sections
 const sections = computed(() => [
+  {
+    id: 'account',
+    label: '账户',
+    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  },
   {
     id: 'terminal',
     label: t('settings.terminal'),
@@ -558,13 +658,92 @@ function onWallpaperChange(_wallpaperId: string | null) {
   loadWallpaperName()
 }
 
-// UI state
-const showFontSizeSlider = ref(false)
-
 const buildDate = computed(() => '2026-04-06')
 </script>
 
 <style scoped>
+/* ── Account Section ───────────────────────────────────────────────── */
+.pc-settings__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.pc-settings__badge--guest {
+  background: rgba(255, 159, 10, 0.15);
+  color: var(--gui-warning, #ff9f0a);
+  border: 1px solid rgba(255, 159, 10, 0.3);
+}
+
+.pc-settings__nickname-edit {
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px) var(--gui-spacing-base, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gui-spacing-xs, 4px);
+}
+
+.pc-settings__nickname-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--gui-spacing-sm, 8px);
+  font-size: 13px;
+  color: var(--gui-text-primary, #fff);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.1));
+  border-radius: var(--gui-radius-base, 8px);
+  outline: none;
+}
+
+.pc-settings__nickname-input:focus {
+  border-color: var(--gui-accent, #8e8e93);
+}
+
+.pc-settings__nickname-error {
+  font-size: 11px;
+  color: var(--gui-error, #ff3b30);
+}
+
+.pc-settings__nickname-actions {
+  display: flex;
+  gap: var(--gui-spacing-xs, 4px);
+  justify-content: flex-end;
+}
+
+.pc-settings__nickname-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--gui-radius-base, 8px);
+  cursor: pointer;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-secondary, #8e8e93);
+  transition: background 120ms ease;
+}
+
+.pc-settings__nickname-btn:hover {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+}
+
+.pc-settings__nickname-btn--primary {
+  background: var(--gui-accent, #8e8e93);
+  color: var(--gui-text-inverse, #000);
+}
+
+.pc-settings__nickname-btn--primary:hover:not(:disabled) {
+  background: var(--gui-accent-hover, #aeaeb2);
+}
+
+.pc-settings__nickname-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Layout ────────────────────────────────────────────────────────── */
 .pc-settings {
   display: flex;
@@ -747,33 +926,128 @@ const buildDate = computed(() => '2026-04-06')
   box-shadow: inset 0 0 0 2px var(--gui-bg-surface, #2c2c2e);
 }
 
-/* ── Slider Row ────────────────────────────────────────────────────── */
-.pc-settings__slider-row {
-  padding: var(--gui-spacing-base, 16px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface-raised, #2c2c2e);
-  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  animation: sliderFadeIn 0.2s ease both;
+/* ── Font Size Control ─────────────────────────────────────────────── */
+.pc-settings__row--static {
+  cursor: default;
+  pointer-events: none;
 }
 
-@keyframes sliderFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.pc-settings__row--static:hover {
+  background: transparent;
 }
 
-.pc-settings__slider-preview {
+.pc-settings__font-preview {
   font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
-  color: var(--gui-text-primary, #ffffff);
+  color: var(--gui-text-secondary, #8e8e93);
   transition: font-size var(--gui-transition-base, 200ms ease);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.pc-settings__font-control {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px) var(--gui-spacing-md, 12px);
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
+}
+
+.pc-settings__step-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-base, 8px);
+  color: var(--gui-text-primary, #ffffff);
+  cursor: pointer;
+  transition: all var(--gui-transition-fast, 120ms ease);
+}
+
+.pc-settings__step-btn:hover:not(:disabled) {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.15));
+}
+
+.pc-settings__step-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.pc-settings__step-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pc-settings__slider-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-xs, 4px);
+}
+
+.pc-settings__slider-bound {
+  font-size: 10px;
+  color: var(--gui-text-tertiary, #636366);
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+  user-select: none;
+}
+
+.pc-settings__slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.pc-settings__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--gui-text-primary, #ffffff);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: transform var(--gui-transition-fast, 120ms ease), box-shadow var(--gui-transition-fast, 120ms ease);
+}
+
+.pc-settings__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.pc-settings__slider::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+}
+
+.pc-settings__slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--gui-text-primary, #ffffff);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.pc-settings__font-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gui-accent, #8e8e93);
+  flex-shrink: 0;
+  width: 30px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Language Dropdown ─────────────────────────────────────────────── */

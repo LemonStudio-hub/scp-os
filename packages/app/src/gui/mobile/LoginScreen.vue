@@ -158,6 +158,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
+import { isNicknameValid, validateNickname } from '../../utils/nicknameValidator'
 
 const emit = defineEmits<{
   'login-success': []
@@ -170,14 +171,7 @@ const error = ref('')
 const isFocused = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 
-// Validation: 2-20 characters, only letters, numbers, underscores, Chinese
-const isValid = computed(() => {
-  const value = nickname.value.trim()
-  if (!value) return false
-  if (value.length < 2 || value.length > 20) return false
-  const regex = /^[a-zA-Z0-9_\u4e00-\u9fa5]+$/
-  return regex.test(value)
-})
+const isValid = computed(() => isNicknameValid(nickname.value))
 
 function clearInput(): void {
   nickname.value = ''
@@ -186,43 +180,21 @@ function clearInput(): void {
 }
 
 function onInputChange(): void {
-  // Clear error when user starts typing
-  if (error.value) {
-    error.value = ''
-  }
+  if (error.value) error.value = ''
 }
 
 async function handleLogin(): Promise<void> {
-  const trimmedNickname = nickname.value.trim()
-
-  // Client-side validation
-  if (!trimmedNickname) {
-    error.value = '请输入工作代号'
+  const validation = validateNickname(nickname.value)
+  if (!validation.valid) {
+    error.value = validation.error!
     return
   }
 
-  if (trimmedNickname.length < 2) {
-    error.value = '工作代号至少需要 2 个字符'
-    return
-  }
-
-  if (trimmedNickname.length > 20) {
-    error.value = '工作代号不能超过 20 个字符'
-    return
-  }
-
-  const regex = /^[a-zA-Z0-9_\u4e00-\u9fa5]+$/
-  if (!regex.test(trimmedNickname)) {
-    error.value = '只允许字母、数字、下划线和中文'
-    return
-  }
-
-  // Proceed with login
   error.value = ''
   isLoading.value = true
 
   try {
-    const result = await authStore.login(trimmedNickname)
+    const result = await authStore.login(nickname.value.trim())
     if (result.success) {
       emit('login-success')
     } else {

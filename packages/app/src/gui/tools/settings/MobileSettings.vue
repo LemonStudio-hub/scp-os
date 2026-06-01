@@ -7,6 +7,73 @@
   >
     <div class="settings-app k-ios-page k-ios-page--dark">
       <div class="settings-app__content gui-scrollable">
+        <!-- Account Section -->
+        <div class="k-ios-block__title">账户</div>
+        <div class="k-ios-list">
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">工作代号</div>
+                <div class="k-ios-list__item-description">{{ authStore.nickname }}</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="settings-badge settings-badge--guest">游客</span>
+            </div>
+          </div>
+          <template v-if="!showNicknameEdit">
+            <div class="k-ios-list__item" @click="openNicknameEdit">
+              <div class="k-ios-list__item-left">
+                <div class="k-ios-list__item-content">
+                  <div class="k-ios-list__item-label">修改工作代号</div>
+                </div>
+              </div>
+              <div class="k-ios-list__item-right">
+                <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="k-ios-list__item settings-nickname-edit-item">
+              <div class="settings-nickname-edit">
+                <input
+                  ref="nicknameInputRef"
+                  v-model="nicknameEditValue"
+                  class="settings-nickname-input"
+                  type="text"
+                  placeholder="输入新的工作代号"
+                  maxlength="20"
+                  @keyup.enter="submitNicknameEdit"
+                  @keyup.escape="cancelNicknameEdit"
+                />
+                <div v-if="nicknameEditError" class="settings-nickname-error">{{ nicknameEditError }}</div>
+                <div class="settings-nickname-actions">
+                  <button class="settings-nickname-btn" @click="cancelNicknameEdit">取消</button>
+                  <button class="settings-nickname-btn settings-nickname-btn--primary" :disabled="authStore.isLoading" @click="submitNicknameEdit">
+                    {{ authStore.isLoading ? '保存中...' : '保存' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="k-ios-list">
+          <div class="k-ios-list__item" @click="handleLogout">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">退出登录</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         <!-- Terminal Section -->
         <div class="k-ios-block__title">{{ t('settings.terminal') }}</div>
         <div class="k-ios-list">
@@ -535,7 +602,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, nextTick } from 'vue'
 import { useI18n } from '../../composables/useI18n'
 import { useSettings } from '../../composables/useSettings'
 import { localeNames } from '../../../locales'
@@ -545,6 +612,7 @@ import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import CustomAccentPicker from './CustomAccentPicker.vue'
 import { useThemeStore } from '../../stores/themeStore'
+import { useAuthStore } from '../../../stores/authStore'
 
 const { t, locale, availableLocales } = useI18n()
 
@@ -572,9 +640,42 @@ const {
   confirmResetSettings,
 } = useSettings()
 const themeStore = useThemeStore()
+const authStore = useAuthStore()
 
 // Initialize theme store
 themeStore.init()
+
+// Account section state
+const showNicknameEdit = ref(false)
+const nicknameEditValue = ref('')
+const nicknameEditError = ref('')
+const nicknameInputRef = ref<HTMLInputElement | null>(null)
+
+function openNicknameEdit(): void {
+  nicknameEditValue.value = authStore.nickname ?? ''
+  nicknameEditError.value = ''
+  showNicknameEdit.value = true
+  nextTick(() => nicknameInputRef.value?.focus())
+}
+
+function cancelNicknameEdit(): void {
+  showNicknameEdit.value = false
+  nicknameEditError.value = ''
+}
+
+async function submitNicknameEdit(): Promise<void> {
+  nicknameEditError.value = ''
+  const result = await authStore.updateNickname(nicknameEditValue.value)
+  if (result.success) {
+    showNicknameEdit.value = false
+  } else {
+    nicknameEditError.value = result.error || '更新失败'
+  }
+}
+
+async function handleLogout(): Promise<void> {
+  await authStore.logout()
+}
 
 const presetAccents = [
   '#0063D1', // Premium Blue
@@ -945,5 +1046,86 @@ const buildDate = computed(() => '2026-04-04')
   background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
   border-color: var(--gui-accent, #636366);
   box-shadow: inset 0 0 0 3px var(--gui-bg-surface-raised, #f2f2f7);
+}
+
+/* ── Account Section ─────────────────────────────────────────────── */
+.settings-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.settings-badge--guest {
+  background: rgba(255, 159, 10, 0.15);
+  color: var(--gui-warning, #ff9f0a);
+  border: 1px solid rgba(255, 159, 10, 0.3);
+}
+
+.settings-nickname-edit-item {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+}
+
+.settings-nickname-edit {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.settings-nickname-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  font-size: 14px;
+  color: var(--gui-text-primary, #fff);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.1));
+  border-radius: 10px;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-nickname-input:focus {
+  border-color: var(--gui-accent, #8e8e93);
+}
+
+.settings-nickname-error {
+  font-size: 11px;
+  color: var(--gui-error, #ff3b30);
+}
+
+.settings-nickname-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.settings-nickname-btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-secondary, #8e8e93);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-nickname-btn--primary {
+  background: var(--gui-accent, #8e8e93);
+  color: var(--gui-text-inverse, #000);
+}
+
+.settings-nickname-btn:disabled {
+  opacity: 0.5;
 }
 </style>
