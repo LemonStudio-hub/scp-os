@@ -48,6 +48,7 @@ jobs:
     timeout-minutes: 10
     needs: [quality]
     environment: production
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
 
     steps:
       - name: Checkout code
@@ -84,7 +85,7 @@ jobs:
 
   notify-failure:
     name: Notify Deploy Failure
-    if: failure()
+    if: failure() && needs.deploy.result == 'failure'
     needs: [quality, deploy]
     runs-on: ubuntu-latest
     timeout-minutes: 5
