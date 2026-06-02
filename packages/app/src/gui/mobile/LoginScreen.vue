@@ -53,9 +53,45 @@
       <p class="login-screen__subtitle">输入您的工作代号以开始</p>
 
       <!-- Login Form -->
+      <div class="login-screen__mode-tabs">
+        <button
+          v-for="item in modes"
+          :key="item.id"
+          type="button"
+          class="login-screen__mode-tab"
+          :class="{ 'login-screen__mode-tab--active': mode === item.id }"
+          @click="setMode(item.id)"
+        >
+          {{ item.label }}
+        </button>
+      </div>
+
       <form class="login-screen__form" aria-label="登录表单" @submit.prevent="handleLogin">
+        <div v-if="mode !== 'guest'" class="login-screen__input-wrapper">
+          <input
+            v-model="email"
+            type="email"
+            class="login-screen__input"
+            :class="{ 'login-screen__input--error': error }"
+            placeholder="邮箱"
+            autocomplete="email"
+            @input="onInputChange"
+          />
+        </div>
+
+        <div v-if="mode !== 'guest'" class="login-screen__input-wrapper">
+          <input
+            v-model="password"
+            type="password"
+            class="login-screen__input"
+            :class="{ 'login-screen__input--error': error }"
+            placeholder="密码至少 8 位"
+            autocomplete="current-password"
+            @input="onInputChange"
+          />
+        </div>
         <!-- Input Field -->
-        <div class="login-screen__input-wrapper">
+        <div v-if="mode !== 'login'" class="login-screen__input-wrapper">
           <label for="mobile-nickname-input" class="sr-only">工作代号</label>
           <input
             id="mobile-nickname-input"
@@ -101,6 +137,7 @@
 
         <!-- Character Count -->
         <div
+          v-if="mode !== 'login'"
           class="login-screen__char-count"
           :class="{ 'login-screen__char-count--warning': nickname.length >= 18 }"
         >
@@ -117,7 +154,7 @@
           }"
           :disabled="!isValid || isLoading"
         >
-          <span v-if="!isLoading" class="login-screen__button-text">进入系统</span>
+          <span v-if="!isLoading" class="login-screen__button-text">{{ submitLabel }}</span>
           <span v-else class="login-screen__button-loading">
             <svg
               class="login-screen__spinner"
@@ -165,13 +202,37 @@ const emit = defineEmits<{
 }>()
 
 const authStore = useAuthStore()
+type LoginMode = 'guest' | 'login' | 'register'
+const modes: { id: LoginMode; label: string }[] = [
+  { id: 'guest', label: '游客' },
+  { id: 'login', label: '邮箱登录' },
+  { id: 'register', label: '邮箱注册' },
+]
+const mode = ref<LoginMode>('guest')
 const nickname = ref('')
+const email = ref('')
+const password = ref('')
 const isLoading = ref(false)
 const error = ref('')
 const isFocused = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 
-const isValid = computed(() => isNicknameValid(nickname.value))
+const isValid = computed(() => {
+  if (mode.value === 'guest') return isNicknameValid(nickname.value)
+  if (!email.value.includes('@') || password.value.length < 8) return false
+  return mode.value === 'login' || isNicknameValid(nickname.value)
+})
+
+const submitLabel = computed(() => {
+  if (mode.value === 'guest') return '游客进入'
+  if (mode.value === 'register') return '注册并进入'
+  return '登录'
+})
+
+function setMode(nextMode: LoginMode): void {
+  mode.value = nextMode
+  error.value = ''
+}
 
 function clearInput(): void {
   nickname.value = ''
@@ -184,9 +245,13 @@ function onInputChange(): void {
 }
 
 async function handleLogin(): Promise<void> {
+  if (mode.value !== 'guest' && (!email.value.includes('@') || password.value.length < 8)) {
+    error.value = '请输入有效邮箱和至少 8 位密码'
+    return
+  }
   const validation = validateNickname(nickname.value)
-  if (!validation.valid) {
-    error.value = validation.error!
+  if (mode.value !== 'login' && !validation.valid) {
+    error.value = validation.error || '请输入有效的工作代号'
     return
   }
 
@@ -194,7 +259,12 @@ async function handleLogin(): Promise<void> {
   isLoading.value = true
 
   try {
-    const result = await authStore.login(nickname.value.trim())
+    const result =
+      mode.value === 'guest'
+        ? await authStore.loginGuest(nickname.value.trim())
+        : mode.value === 'login'
+          ? await authStore.loginRegistered(email.value.trim(), password.value)
+          : await authStore.register(email.value.trim(), password.value, nickname.value.trim())
     if (result.success) {
       emit('login-success')
     } else {
@@ -401,6 +471,35 @@ onMounted(() => {
   gap: var(--gui-spacing-md, 12px);
   animation: form-slide-up 0.5s var(--ease-ios-gentle, cubic-bezier(0.25, 0.46, 0.45, 0.94)) 0.35s
     both;
+}
+
+.login-screen__mode-tabs {
+  width: 100%;
+  max-width: 340px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: var(--gui-spacing-md, 12px);
+  padding: 4px;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+}
+
+.login-screen__mode-tab {
+  height: 32px;
+  border: 0;
+  border-radius: var(--gui-radius-base, 8px);
+  background: transparent;
+  color: var(--gui-text-secondary, #8e8e93);
+  font-size: var(--gui-font-xs, 11px);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  cursor: pointer;
+}
+
+.login-screen__mode-tab--active {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  color: var(--gui-text-primary, #ffffff);
 }
 
 @keyframes form-slide-up {

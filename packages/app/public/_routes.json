@@ -13,8 +13,7 @@
     "/api/*",
     "/performance*",
     "/docs*",
-    "/notifications*",
-    "/admin*"
+    "/notifications*"
   ],
   "exclude": []
 }

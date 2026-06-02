@@ -15,14 +15,3 @@ export async function count(db: D1Database, table: string, where = '1=1', params
   const row = await first<{ total: number }>(db, `SELECT COUNT(*) as total FROM ${table} WHERE ${where}`, params)
   return row?.total || 0
 }
-
-export async function logAdmin(db: D1Database, adminId: number, username: string, action: string, targetType = '', targetId = '', details = '', ip = ''): Promise<void> {
-  try {
-    await run(
-      db,
-      'INSERT INTO admin_logs (admin_id, admin_username, action, target_type, target_id, details, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [adminId, username, action, targetType, targetId, details, ip]
-    )
-  } catch {
-  }
-}

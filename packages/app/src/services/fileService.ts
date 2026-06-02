@@ -1,5 +1,6 @@
 import { config } from '../config'
 import { filesystem } from '../utils/filesystem'
+import { useAuthStore } from '../stores/authStore'
 
 const API_BASE = config.api.workerUrl
 
@@ -35,11 +36,13 @@ export interface UploadResponse {
  * 上传文件到 R2
  */
 export async function uploadFile(file: File, folder = 'uploads'): Promise<UploadResponse> {
+  const authStore = useAuthStore()
+  if (!authStore.canUseCloudSync) return { success: false, error: '游客不能使用云同步' }
   const formData = new FormData()
   formData.append('file', file)
   formData.append('folder', folder)
 
-  const response = await fetch(`${API_BASE}/files/upload`, {
+  const response = await authStore.authFetch(`${API_BASE}/files/upload`, {
     method: 'POST',
     body: formData,
   })
@@ -51,11 +54,13 @@ export async function uploadFile(file: File, folder = 'uploads'): Promise<Upload
  * 获取文件列表
  */
 export async function listFiles(prefix = '', limit = 100): Promise<FileListResponse> {
+  const authStore = useAuthStore()
+  if (!authStore.canUseCloudSync) return { success: false, data: [], error: '游客不能使用云同步' }
   const url = new URL(`${API_BASE}/files`)
   if (prefix) url.searchParams.set('prefix', prefix)
   if (limit) url.searchParams.set('limit', String(limit))
 
-  const response = await fetch(url.toString())
+  const response = await authStore.authFetch(url.toString())
   return response.json()
 }
 
@@ -63,7 +68,9 @@ export async function listFiles(prefix = '', limit = 100): Promise<FileListRespo
  * 删除文件
  */
 export async function deleteFile(key: string): Promise<{ success: boolean; error?: string }> {
-  const response = await fetch(`${API_BASE}/files/${encodeURIComponent(key)}`, {
+  const authStore = useAuthStore()
+  if (!authStore.canUseCloudSync) return { success: false, error: '游客不能使用云同步' }
+  const response = await authStore.authFetch(`${API_BASE}/files/${encodeURIComponent(key)}`, {
     method: 'DELETE',
   })
   return response.json()
@@ -76,7 +83,9 @@ export async function updateFileContent(
   key: string,
   content: string
 ): Promise<{ success: boolean; error?: string }> {
-  const response = await fetch(`${API_BASE}/files/${encodeURIComponent(key)}`, {
+  const authStore = useAuthStore()
+  if (!authStore.canUseCloudSync) return { success: false, error: '游客不能使用云同步' }
+  const response = await authStore.authFetch(`${API_BASE}/files/${encodeURIComponent(key)}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'text/plain' },
     body: content,

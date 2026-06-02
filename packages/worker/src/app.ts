@@ -12,8 +12,8 @@ import { registerUsers } from './routes/users'
 import { registerPerformance } from './routes/performance'
 import { registerDocs } from './routes/docs'
 import { registerNotifications } from './routes/notifications'
-import { registerAdmin } from './routes/admin'
 import { registerFiles } from './routes/files'
+import { registerSync } from './routes/sync'
 
 type AppEnv = { Bindings: Env }
 
@@ -46,7 +46,10 @@ export function createApp(): Hono<AppEnv> {
       '/feedback/list-with-votes': 'Feedback list with vote state',
       '/docs/items': 'Reader item list',
       '/notifications': 'User notification list',
-      '/api/admin/login': 'Admin login',
+      '/api/auth/register': 'Email registration',
+      '/api/auth/login': 'Email login',
+      '/api/auth/guest': 'Guest login',
+      '/api/sync/data': 'Registered user R2 full data sync',
     },
   }))
 
@@ -130,8 +133,8 @@ export function createApp(): Hono<AppEnv> {
   registerPerformance(app)
   registerDocs(app)
   registerNotifications(app)
-  registerAdmin(app)
   registerFiles(app)
+  registerSync(app)
 
   app.notFound(() => json({ code: 'INTERNAL_ERROR', message: 'Not found' }, 404))
   app.onError((error) => {

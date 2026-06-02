@@ -41,7 +41,7 @@ export interface UIComponentDefinition {
   /** Vue component */
   component: Component
   /** Component props definition */
-  props?: Record<string, any>
+  props?: Record<string, unknown>
   /** Component events definition */
   events?: string[]
   /** Component slots definition */

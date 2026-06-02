@@ -3,8 +3,9 @@ import { config } from '../config'
 let cachedToken: string | null = null
 let tokenUserId: string | null = null
 
-export function setAuthToken(token: string): void {
+export function setAuthToken(token: string, userId?: string): void {
   cachedToken = token
+  if (userId) tokenUserId = userId
 }
 
 export function getAuthToken(): string | null {

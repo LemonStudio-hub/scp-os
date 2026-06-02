@@ -11,7 +11,7 @@ const app = createApp()
 const API_PATH_PREFIXES = [
   '/scrape', '/search', '/list', '/stats', '/debug', '/image-proxy',
   '/chat', '/feedback', '/v1/', '/api/', '/performance',
-  '/docs', '/notifications', '/admin',
+  '/docs', '/notifications',
 ]
 
 function isApiPath(path: string): boolean {

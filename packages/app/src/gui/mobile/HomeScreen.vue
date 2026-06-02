@@ -675,11 +675,13 @@ function onAppTouchStart(e: TouchEvent, app: HomeApp): void {
 
 async function setDragOverAndReorder(targetId: string): Promise<void> {
   if (isReordering || dragOverId.value === targetId) return
+  const dragging = draggingId.value
+  if (!dragging) return
   isReordering = true
   dragOverId.value = targetId
 
   const cur = [...dragOrder.value]
-  const fromIdx = cur.indexOf(draggingId.value!)
+  const fromIdx = cur.indexOf(dragging)
   if (fromIdx === -1) {
     isReordering = false
     return
@@ -689,13 +691,13 @@ async function setDragOverAndReorder(targetId: string): Promise<void> {
   // Find target in the ALREADY-modified array so insert position is exact
   const toIdx = cur.indexOf(targetId)
   if (toIdx !== -1) {
-    cur.splice(toIdx, 0, draggingId.value!)
+    cur.splice(toIdx, 0, dragging)
     dragOrder.value = cur
 
     await nextTick()
 
     // Recalculate layout center by temporarily removing the transform
-    const btn = document.querySelector<HTMLElement>(`[data-app-id="${draggingId.value}"]`)
+    const btn = document.querySelector<HTMLElement>(`[data-app-id="${dragging}"]`)
     if (btn) {
       const saved = btn.style.transform
       btn.style.transform = 'none'
@@ -707,7 +709,7 @@ async function setDragOverAndReorder(targetId: string): Promise<void> {
     }
   } else {
     // Target not found after removal (edge case) — revert
-    cur.splice(fromIdx, 0, draggingId.value!)
+    cur.splice(fromIdx, 0, dragging)
   }
 
   isReordering = false

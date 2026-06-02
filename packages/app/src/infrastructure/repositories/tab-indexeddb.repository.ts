@@ -49,7 +49,6 @@ export class TabIndexedDBRepository
   /**
    * Convert DB format to entity
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected fromDB(data: any): TabEntity {
     return TabEntity.fromJSON(data)
   }

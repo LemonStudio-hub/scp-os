@@ -459,6 +459,67 @@ class IndexedDBService {
     })
   }
 
+  async exportAllData(): Promise<Record<string, unknown[]>> {
+    await this.init()
+    const db = this.getDB()
+    const storeNames = Array.from(db.objectStoreNames)
+    const transaction = db.transaction(storeNames, 'readonly')
+    const result: Record<string, unknown[]> = {}
+
+    await Promise.all(
+      storeNames.map(
+        (storeName) =>
+          new Promise<void>((resolve, reject) => {
+            const request = transaction.objectStore(storeName).getAll()
+            request.onsuccess = () => {
+              result[storeName] = request.result || []
+              resolve()
+            }
+            request.onerror = () => reject(request.error)
+          })
+      )
+    )
+
+    return result
+  }
+
+  async importAllData(data: Record<string, unknown[]>): Promise<void> {
+    await this.init()
+    const db = this.getDB()
+    const storeNames = Object.keys(data).filter((storeName) =>
+      db.objectStoreNames.contains(storeName)
+    )
+    if (!storeNames.length) return
+
+    const transaction = db.transaction(storeNames, 'readwrite')
+    await Promise.all(
+      storeNames.map(
+        (storeName) =>
+          new Promise<void>((resolve, reject) => {
+            const store = transaction.objectStore(storeName)
+            const clearRequest = store.clear()
+            clearRequest.onerror = () => reject(clearRequest.error)
+            clearRequest.onsuccess = () => {
+              const records = data[storeName] || []
+              if (!records.length) {
+                resolve()
+                return
+              }
+              let completed = 0
+              for (const record of records) {
+                const putRequest = store.put(record)
+                putRequest.onerror = () => reject(putRequest.error)
+                putRequest.onsuccess = () => {
+                  completed += 1
+                  if (completed === records.length) resolve()
+                }
+              }
+            }
+          })
+      )
+    )
+  }
+
   /**
    * Save filesystem data
    */

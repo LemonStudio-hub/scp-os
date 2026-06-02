@@ -346,9 +346,35 @@
             <div class="pc-settings__row">
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.cloudStorage') }}</div>
-                <div class="pc-settings__row-description">{{ formatCloudFiles(cloudQuota) }}</div>
+                <div class="pc-settings__row-description">
+                  {{ authStore.canUseCloudSync ? formatCloudFiles(cloudQuota) : '仅普通用户开放' }}
+                </div>
               </div>
-              <div class="pc-settings__row-value">{{ formatCloudQuota(cloudQuota) }}</div>
+              <div class="pc-settings__row-value">
+                {{ authStore.canUseCloudSync ? formatCloudQuota(cloudQuota) : '游客不可用' }}
+              </div>
+            </div>
+            <div
+              class="pc-settings__row"
+              :class="{ 'pc-settings__row--disabled': !authStore.canUseCloudSync || syncBusy }"
+              @click="handleCloudUpload"
+            >
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">上传全部数据到云端</div>
+                <div class="pc-settings__row-description">{{ syncMessage }}</div>
+              </div>
+              <div class="pc-settings__row-value">{{ syncBusy ? '同步中' : '最新覆盖' }}</div>
+            </div>
+            <div
+              class="pc-settings__row"
+              :class="{ 'pc-settings__row--disabled': !authStore.canUseCloudSync || syncBusy }"
+              @click="handleCloudDownload"
+            >
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">从云端恢复全部数据</div>
+                <div class="pc-settings__row-description">云端较新的数据会覆盖本地</div>
+              </div>
+              <div class="pc-settings__row-value">下载</div>
             </div>
             <div class="pc-settings__row">
               <div class="pc-settings__row-info">
@@ -384,7 +410,15 @@
                 <div class="pc-settings__row-label">工作代号</div>
                 <div class="pc-settings__row-description">{{ authStore.nickname }}</div>
               </div>
-              <span class="pc-settings__badge pc-settings__badge--guest">游客</span>
+              <span class="pc-settings__badge" :class="{ 'pc-settings__badge--guest': !authStore.canUseCloudSync }">
+                {{ authStore.canUseCloudSync ? '普通用户' : '游客' }}
+              </span>
+            </div>
+            <div v-if="authStore.email" class="pc-settings__row">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">邮箱</div>
+                <div class="pc-settings__row-description">{{ authStore.email }}</div>
+              </div>
             </div>
             <div v-if="!showNicknameEdit" class="pc-settings__row" @click="openNicknameEdit">
               <div class="pc-settings__row-info">
@@ -512,6 +546,7 @@ import WallpaperPicker from '../../components/WallpaperPicker.vue'
 import CustomAccentPicker from './CustomAccentPicker.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useAuthStore } from '../../../stores/authStore'
+import { downloadCloudData, uploadAllLocalData } from '../../../services/cloudSyncService'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -545,6 +580,8 @@ const showNicknameEdit = ref(false)
 const nicknameEditValue = ref('')
 const nicknameEditError = ref('')
 const nicknameInputRef = ref<HTMLInputElement | null>(null)
+const syncBusy = ref(false)
+const syncMessage = ref('普通用户可用，最大 512MB')
 
 function openNicknameEdit(): void {
   nicknameEditValue.value = authStore.nickname ?? ''
@@ -570,6 +607,24 @@ async function submitNicknameEdit(): Promise<void> {
 
 async function handleLogout(): Promise<void> {
   await authStore.logout()
+}
+
+async function handleCloudUpload(): Promise<void> {
+  if (!authStore.canUseCloudSync || syncBusy.value) return
+  syncBusy.value = true
+  syncMessage.value = '正在上传...'
+  const result = await uploadAllLocalData()
+  syncMessage.value = result.success ? '已上传，冲突策略为最新覆盖' : result.error || '上传失败'
+  syncBusy.value = false
+}
+
+async function handleCloudDownload(): Promise<void> {
+  if (!authStore.canUseCloudSync || syncBusy.value) return
+  syncBusy.value = true
+  syncMessage.value = '正在下载...'
+  const result = await downloadCloudData()
+  syncMessage.value = result.success ? '已恢复云端数据' : result.error || '下载失败'
+  syncBusy.value = false
 }
 
 const presetAccents = [
@@ -848,6 +903,15 @@ const buildDate = computed(() => '2026-04-06')
 
 .pc-settings__row:hover {
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
+}
+
+.pc-settings__row--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pc-settings__row--disabled:hover {
+  background: transparent;
 }
 
 .pc-settings__row:active {

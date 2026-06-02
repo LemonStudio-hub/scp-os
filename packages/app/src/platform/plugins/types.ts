@@ -300,7 +300,7 @@ export interface DataSourceQueryOptions {
 /**
  * Data source query result
  */
-export interface DataSourceQueryResult<T = any> {
+export interface DataSourceQueryResult<T = unknown> {
   /** Query results */
   data: T[]
   /** Total number of results */
@@ -359,7 +359,7 @@ export interface DataSourcePlugin extends Plugin {
   /**
    * Query data from the data source
    */
-  query<T = any>(
+  query<T = unknown>(
     dataSourceId: string,
     options: DataSourceQueryOptions
   ): Promise<DataSourceQueryResult<T>>
@@ -367,12 +367,12 @@ export interface DataSourcePlugin extends Plugin {
   /**
    * Get a single item by ID
    */
-  get<T = any>(dataSourceId: string, id: string): Promise<T | null>
+  get<T = unknown>(dataSourceId: string, id: string): Promise<T | null>
 
   /**
    * Search for items
    */
-  search<T = any>(
+  search<T = unknown>(
     dataSourceId: string,
     keyword: string,
     options?: DataSourceQueryOptions
@@ -404,7 +404,7 @@ export interface DataSourcePlugin extends Plugin {
   getStatistics(dataSourceId: string): Promise<{
     totalItems: number
     lastUpdated?: string
-    [key: string]: any
+    [key: string]: unknown
   }>
 }
 

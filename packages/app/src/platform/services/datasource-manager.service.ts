@@ -112,7 +112,7 @@ export class DataSourceManagerService {
   /**
    * Query data from a data source
    */
-  async query<T = any>(
+  async query<T = unknown>(
     dataSourceId: string,
     options: DataSourceQueryOptions
   ): Promise<DataSourceQueryResult<T>> {
@@ -127,7 +127,7 @@ export class DataSourceManagerService {
   /**
    * Get a single item by ID
    */
-  async get<T = any>(dataSourceId: string, id: string): Promise<T | null> {
+  async get<T = unknown>(dataSourceId: string, id: string): Promise<T | null> {
     const plugin = this.getPluginByDataSourceId(dataSourceId)
     if (!plugin) {
       throw new Error(`Plugin not found for data source ${dataSourceId}`)
@@ -139,7 +139,7 @@ export class DataSourceManagerService {
   /**
    * Search for items
    */
-  async search<T = any>(
+  async search<T = unknown>(
     dataSourceId: string,
     keyword: string,
     options?: DataSourceQueryOptions
@@ -203,7 +203,7 @@ export class DataSourceManagerService {
   async getStatistics(dataSourceId: string): Promise<{
     totalItems: number
     lastUpdated?: string
-    [key: string]: any
+    [key: string]: unknown
   }> {
     const plugin = this.getPluginByDataSourceId(dataSourceId)
     if (!plugin) {

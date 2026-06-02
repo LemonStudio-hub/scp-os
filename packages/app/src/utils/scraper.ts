@@ -1,5 +1,5 @@
 import { OBJECT_CLASSES } from '../constants/scraperConfig'
-import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
+import type { SCPWikiData, ScraperResult, ObjectClassInfo, ObjectClass } from '../types/scraper'
 import { config } from '../config'
 import logger from './logger'
 
@@ -11,6 +11,15 @@ class ApiResponseError extends Error {
   ) {
     super(`HTTP ${status}: ${statusText}`)
   }
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.map(String) : []
+}
+
+function objectClass(value: unknown): ObjectClass {
+  const key = String(value || 'UNKNOWN').toUpperCase()
+  return key in OBJECT_CLASSES ? (key as ObjectClass) : 'UNKNOWN'
 }
 
 async function apiFetch(
@@ -333,18 +342,18 @@ class SCPScraper {
   /**
    * 标准化API返回的数据格式
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private normalizeData(data: any): SCPWikiData {
+  private normalizeData(value: unknown): SCPWikiData {
+    const data = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
     return {
-      id: data.id || `SCP-${data.number}`,
-      name: data.name || '未知',
-      objectClass: data.objectClass || 'UNKNOWN',
-      containment: Array.isArray(data.containment) ? data.containment : [],
-      description: Array.isArray(data.description) ? data.description : [],
-      appendix: Array.isArray(data.appendix) ? data.appendix : [],
-      references: Array.isArray(data.references) ? data.references : [],
-      author: data.author || '未知作者',
-      url: data.url || '',
+      id: String(data.id || `SCP-${data.number || ''}`),
+      name: String(data.name || '未知'),
+      objectClass: objectClass(data.objectClass),
+      containment: stringArray(data.containment),
+      description: stringArray(data.description),
+      appendix: stringArray(data.appendix),
+      references: stringArray(data.references),
+      author: String(data.author || '未知作者'),
+      url: String(data.url || ''),
     }
   }
 
@@ -360,7 +369,7 @@ class SCPScraper {
 
     if (isMobile) {
       // 移动端：简化格式，去除复杂边框
-      return this.formatForMobile(data, classInfo as any, terminalWidth)
+      return this.formatForMobile(data, classInfo, terminalWidth)
     }
 
     // 桌面端：完整格式带边框
@@ -450,7 +459,7 @@ class SCPScraper {
    */
   private formatForMobile(
     data: SCPWikiData,
-    classInfo: Record<string, unknown>,
+    classInfo: ObjectClassInfo,
     terminalWidth: number
   ): string[] {
     const lines: string[] = []

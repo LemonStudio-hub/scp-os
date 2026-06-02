@@ -35,7 +35,6 @@ const desktopToolWindowSuffixes = [
   '/feedback/PCFeedbackWindow.vue',
   '/docs/PCDocsWindow.vue',
   '/notification/PCNotificationCenter.vue',
-  '/admin/AdminLayout.vue',
 ]
 let pinia: ReturnType<typeof createPinia>
 
@@ -187,12 +186,7 @@ describe('desktop window shells', () => {
   it('keeps every registered desktop app on a shared window shell', () => {
     for (const suffix of desktopToolWindowSuffixes) {
       const source = getToolWindowSourceBySuffix(suffix)
-      if (suffix === '/admin/AdminLayout.vue') {
-        expect(source).toContain('PCWindow')
-        expect(source).toContain('windowInstance')
-      } else {
-        expect(source).toMatch(/<(PCWindow|SCPWindow)\b/)
-      }
+      expect(source).toMatch(/<(PCWindow|SCPWindow)\b/)
     }
   })
 

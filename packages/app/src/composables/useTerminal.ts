@@ -12,7 +12,7 @@ import {
 import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
-import type { CommandType } from '../types/command'
+import type { CommandHandler, CommandType } from '../types/command'
 import { autocompleteService } from '../utils/commandAutocomplete'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
@@ -680,7 +680,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   }
 
   // 辅助函数：执行命令处理器（带错误处理，正确处理 async handler）
-  const executeCommandHandler = async (handler: any, args: string[], cmd: string) => {
+  const executeCommandHandler = async (handler: CommandHandler, args: string[], cmd: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
 

@@ -14,7 +14,7 @@ const NIKTO_FINDINGS: {
   description: string
   severity: 'critical' | 'high' | 'medium' | 'low'
 }[] = [
-  { osvdb: '383', path: '/admin/', description: 'Directory indexing found.', severity: 'medium' },
+  { osvdb: '383', path: '/login/', description: 'Directory indexing found.', severity: 'medium' },
   { osvdb: '3268', path: '/icons/', description: 'Default directory found.', severity: 'low' },
   {
     osvdb: '3092',

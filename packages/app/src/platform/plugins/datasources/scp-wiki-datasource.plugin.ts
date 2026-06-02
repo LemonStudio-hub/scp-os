@@ -35,7 +35,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
   }
 
   dataSources: DataSourceDefinition[] = []
-  private cache: Map<string, any> = new Map()
+  private cache: Map<string, unknown> = new Map()
   private apiUrl: string
 
   constructor(apiUrl: string = 'https://api.scpos.site') {
@@ -66,8 +66,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     ]
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async query<T = any>(
+  async query<T = unknown>(
     dataSourceId: string,
     options: DataSourceQueryOptions
   ): Promise<DataSourceQueryResult<T>> {
@@ -82,7 +81,11 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     if (options.offset) url.searchParams.set('offset', options.offset.toString())
 
     const response = await fetch(url.toString())
-    const data = await response.json()
+    const data = (await response.json()) as {
+      data?: T[]
+      total?: number
+      hasMore?: boolean
+    }
 
     return {
       data: data.data || [],
@@ -91,13 +94,12 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async get<T = any>(dataSourceId: string, id: string): Promise<T | null> {
+  async get<T = unknown>(dataSourceId: string, id: string): Promise<T | null> {
     const cacheKey = `${dataSourceId}:${id}`
 
     // Check cache
     if (this.cache.has(cacheKey)) {
-      return this.cache.get(cacheKey)
+      return this.cache.get(cacheKey) as T
     }
 
     const dataSource = this.getDataSource(dataSourceId)
@@ -110,7 +112,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
       url.searchParams.set('number', id)
 
       const response = await fetch(url.toString())
-      const data = await response.json()
+      const data = (await response.json()) as { success?: boolean; data?: T }
 
       if (data.success && data.data) {
         this.cache.set(cacheKey, data.data)
@@ -124,8 +126,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async search<T = any>(
+  async search<T = unknown>(
     dataSourceId: string,
     keyword: string,
     options: DataSourceQueryOptions = {}
@@ -141,7 +142,11 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
     if (options.offset) url.searchParams.set('offset', options.offset.toString())
 
     const response = await fetch(url.toString())
-    const data = await response.json()
+    const data = (await response.json()) as {
+      data?: T[]
+      total?: number
+      hasMore?: boolean
+    }
 
     return {
       data: data.data || [],

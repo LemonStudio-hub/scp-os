@@ -20,7 +20,7 @@ export async function fetchCloudQuota(): Promise<CloudQuota | null> {
   }
 
   const authStore = useAuthStore()
-  if (!authStore.isLoggedIn) {
+  if (!authStore.canUseCloudSync) {
     cachedQuota = null
     cachedAt = now
     return null

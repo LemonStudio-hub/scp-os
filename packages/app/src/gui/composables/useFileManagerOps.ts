@@ -273,7 +273,11 @@ export function useFileManagerOps() {
             existingNode?.type === 'file'
               ? filesystem.writeFile(path, content)
               : filesystem.createFile(path, content)
-          ok ? success++ : fail++
+          if (ok) {
+            success++
+          } else {
+            fail++
+          }
         } catch {
           fail++
         }

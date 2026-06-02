@@ -35,7 +35,6 @@ const env = {
   SCP_FILES: r2(),
   CHAT_ROOM_DO: {} as DurableObjectNamespace,
   JWT_SECRET: 'test-secret',
-  ADMIN_JWT_SECRET: 'admin-secret',
 } satisfies Env
 
 describe('rewritten worker contract', () => {

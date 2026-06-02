@@ -68,10 +68,54 @@
         <h1 class="pc-login-screen__title">欢迎回来</h1>
         <p class="pc-login-screen__subtitle">输入您的工作代号以访问系统</p>
 
+        <div class="pc-login-screen__mode-tabs">
+          <button
+            v-for="item in modes"
+            :key="item.id"
+            type="button"
+            class="pc-login-screen__mode-tab"
+            :class="{ 'pc-login-screen__mode-tab--active': mode === item.id }"
+            @click="setMode(item.id)"
+          >
+            {{ item.label }}
+          </button>
+        </div>
+
         <!-- Login Form -->
         <form class="pc-login-screen__form" @submit.prevent="handleLogin">
+          <div v-if="mode !== 'guest'" class="pc-login-screen__input-group">
+            <label class="pc-login-screen__label" for="email-input">邮箱</label>
+            <div class="pc-login-screen__input-wrapper">
+              <input
+                id="email-input"
+                v-model="email"
+                type="email"
+                class="pc-login-screen__input"
+                :class="{ 'pc-login-screen__input--error': error }"
+                placeholder="name@gmail.com"
+                autocomplete="email"
+                @input="onInputChange"
+              />
+            </div>
+          </div>
+
+          <div v-if="mode !== 'guest'" class="pc-login-screen__input-group">
+            <label class="pc-login-screen__label" for="password-input">密码</label>
+            <div class="pc-login-screen__input-wrapper">
+              <input
+                id="password-input"
+                v-model="password"
+                type="password"
+                class="pc-login-screen__input"
+                :class="{ 'pc-login-screen__input--error': error }"
+                placeholder="至少 8 位"
+                autocomplete="current-password"
+                @input="onInputChange"
+              />
+            </div>
+          </div>
           <!-- Input Field Group -->
-          <div class="pc-login-screen__input-group">
+          <div v-if="mode !== 'login'" class="pc-login-screen__input-group">
             <label class="pc-login-screen__label" for="nickname-input">工作代号</label>
             <div class="pc-login-screen__input-wrapper">
               <input
@@ -131,7 +175,7 @@
           </div>
 
           <!-- Character Count & Validation Hint -->
-          <div class="pc-login-screen__meta-row">
+          <div v-if="mode !== 'login'" class="pc-login-screen__meta-row">
             <span
               class="pc-login-screen__char-count"
               :class="{ 'pc-login-screen__char-count--warning': nickname.length >= 18 }"
@@ -154,7 +198,7 @@
             :disabled="!isValid || isLoading"
           >
             <span v-if="!isLoading" class="pc-login-screen__button-text">
-              进入系统
+              {{ submitLabel }}
               <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                 <path
                   d="M9 3l5 5m0 0l-5 5m5-5H3"
@@ -213,13 +257,37 @@ const emit = defineEmits<{
 }>()
 
 const authStore = useAuthStore()
+type LoginMode = 'guest' | 'login' | 'register'
+const modes: { id: LoginMode; label: string }[] = [
+  { id: 'guest', label: '游客' },
+  { id: 'login', label: '邮箱登录' },
+  { id: 'register', label: '邮箱注册' },
+]
+const mode = ref<LoginMode>('guest')
 const nickname = ref('')
+const email = ref('')
+const password = ref('')
 const isLoading = ref(false)
 const error = ref('')
 const isFocused = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 
-const isValid = computed(() => isNicknameValid(nickname.value))
+const isValid = computed(() => {
+  if (mode.value === 'guest') return isNicknameValid(nickname.value)
+  if (!email.value.includes('@') || password.value.length < 8) return false
+  return mode.value === 'login' || isNicknameValid(nickname.value)
+})
+
+const submitLabel = computed(() => {
+  if (mode.value === 'guest') return '游客进入'
+  if (mode.value === 'register') return '注册并进入'
+  return '登录'
+})
+
+function setMode(nextMode: LoginMode): void {
+  mode.value = nextMode
+  error.value = ''
+}
 
 function clearInput(): void {
   nickname.value = ''
@@ -232,9 +300,13 @@ function onInputChange(): void {
 }
 
 async function handleLogin(): Promise<void> {
+  if (mode.value !== 'guest' && (!email.value.includes('@') || password.value.length < 8)) {
+    error.value = '请输入有效邮箱和至少 8 位密码'
+    return
+  }
   const validation = validateNickname(nickname.value)
-  if (!validation.valid) {
-    error.value = validation.error!
+  if (mode.value !== 'login' && !validation.valid) {
+    error.value = validation.error || '请输入有效的工作代号'
     return
   }
 
@@ -242,7 +314,12 @@ async function handleLogin(): Promise<void> {
   isLoading.value = true
 
   try {
-    const result = await authStore.login(nickname.value.trim())
+    const result =
+      mode.value === 'guest'
+        ? await authStore.loginGuest(nickname.value.trim())
+        : mode.value === 'login'
+          ? await authStore.loginRegistered(email.value.trim(), password.value)
+          : await authStore.register(email.value.trim(), password.value, nickname.value.trim())
     if (result.success) {
       emit('login-success')
     } else {
@@ -498,6 +575,34 @@ onMounted(() => {
   gap: var(--gui-spacing-md, 12px);
   animation: form-fade-up 0.5s var(--ease-ios-gentle, cubic-bezier(0.25, 0.46, 0.45, 0.94)) 0.4s
     both;
+}
+
+.pc-login-screen__mode-tabs {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  margin-bottom: var(--gui-spacing-md, 12px);
+  padding: 4px;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-lg, 12px);
+}
+
+.pc-login-screen__mode-tab {
+  height: 32px;
+  border: 0;
+  border-radius: var(--gui-radius-base, 8px);
+  background: transparent;
+  color: var(--gui-text-secondary, #8e8e93);
+  font-size: var(--gui-font-xs, 11px);
+  font-weight: var(--gui-font-weight-semibold, 600);
+  cursor: pointer;
+}
+
+.pc-login-screen__mode-tab--active {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  color: var(--gui-text-primary, #ffffff);
 }
 
 @keyframes form-fade-up {

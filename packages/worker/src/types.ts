@@ -4,7 +4,6 @@ export interface Env {
   SCP_FILES: R2Bucket
   CHAT_ROOM_DO: DurableObjectNamespace
   JWT_SECRET?: string
-  ADMIN_JWT_SECRET?: string
 }
 
 export interface ApiResult<T = unknown> {
@@ -24,26 +23,20 @@ export interface RequestInfo {
   userAgent: string
 }
 
-export type AdminRole = 'super_admin' | 'admin' | 'moderator'
-
-export interface AdminSession {
-  adminId: number
-  username: string
-  role: AdminRole
-}
+export type AccountType = 'guest' | 'registered'
 
 export interface JwtUserPayload {
   userId: string
+  accountType: AccountType
+  email?: string
   iat?: number
   exp?: number
 }
 
-export interface JwtAdminPayload {
-  adminId: number
-  username: string
-  role: AdminRole
-  iat?: number
-  exp?: number
+export interface UserSession {
+  userId: string
+  accountType: AccountType
+  email?: string
 }
 
 export interface SCPData {

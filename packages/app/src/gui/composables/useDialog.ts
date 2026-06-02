@@ -15,10 +15,12 @@ const current = ref<DialogState | null>(null)
 
 function processQueue() {
   if (current.value || queue.length === 0) return
-  current.value = queue.shift()!
+  const next = queue.shift()
+  if (!next) return
+  current.value = next
 }
 
-function push(state: Omit<DialogState, 'resolve'>): Promise<any> {
+function push(state: Omit<DialogState, 'resolve'>): Promise<boolean | string | null> {
   return new Promise((resolve) => {
     queue.push({ ...state, resolve })
     if (!current.value) processQueue()
@@ -35,12 +37,14 @@ export const dialogService = {
   current,
   resolve,
   alert(message: string, title?: string): Promise<void> {
-    return push({ type: 'alert', message, title })
+    return push({ type: 'alert', message, title }).then(() => undefined)
   },
   confirm(message: string, title?: string): Promise<boolean> {
-    return push({ type: 'confirm', message, title })
+    return push({ type: 'confirm', message, title }).then((value) => value === true)
   },
   prompt(message: string, defaultValue = '', title?: string): Promise<string | null> {
-    return push({ type: 'prompt', message, defaultValue, title })
+    return push({ type: 'prompt', message, defaultValue, title }).then((value) =>
+      typeof value === 'string' ? value : null
+    )
   },
 }

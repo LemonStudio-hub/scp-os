@@ -13,8 +13,8 @@
     <!-- Active Tool Overlay (full-screen) — rendered via ToolRegistry -->
     <Transition name="tool-slide">
       <component
-        v-if="activeTool && activeToolModule"
         :is="activeToolModule.mobileComponent"
+        v-if="activeTool && activeToolModule"
         :visible="true"
         :data="activeToolData"
         @close="closeActiveTool"

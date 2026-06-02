@@ -1,11 +1,12 @@
 <template>
-  <!-- eslint-disable-next-line vue/no-v-html -- icons are hardcoded static SVGs -->
+  <!-- eslint-disable vue/no-v-html -- icons are hardcoded static SVGs -->
   <span
     class="gui-icon"
     :class="className"
     :style="{ width: `${size}px`, height: `${size}px` }"
     v-html="svg"
   />
+  <!-- eslint-enable vue/no-v-html -->
 </template>
 
 <script setup lang="ts">

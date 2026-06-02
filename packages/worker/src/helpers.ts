@@ -1,8 +1,8 @@
 import type { Context } from 'hono'
-import type { AdminSession, Env, SCPData } from './types'
+import type { Env, SCPData, UserSession } from './types'
 import { all, count, first, run } from './db'
 import { cleanText, intValue, json, readJson, requestInfo } from './http'
-import { adminFromRequest, userFromRequest } from './security'
+import { userFromRequest, userSessionFromRequest } from './security'
 
 type AppEnv = { Bindings: Env }
 type Ctx = Context<AppEnv>
@@ -10,26 +10,25 @@ type RouteHandler = (c: Ctx) => Response | Promise<Response>
 
 export type { AppEnv, Ctx, RouteHandler }
 
-export function adminSecret(env: Env): string {
-  return env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
-}
-
 export async function requiredUser(c: Ctx): Promise<string | Response> {
   const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
   return id || json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
 }
 
-export async function requiredAdmin(c: Ctx): Promise<AdminSession | Response> {
-  const session = await adminFromRequest(c.req.raw, adminSecret(c.env))
-  if (!session) return json({ success: false, error: 'Please login to admin panel' }, 401)
-  const row = await first<{ id: number }>(c.env.SCP_DB, 'SELECT id FROM admin_users WHERE id = ? AND is_active = 1', [session.adminId])
-  return row ? session : json({ success: false, error: 'Admin account disabled' }, 403)
-}
-
-export async function adminMiddleware(c: Ctx, next: () => Promise<void>): Promise<Response | void> {
-  const admin = await requiredAdmin(c)
-  if (admin instanceof Response) return admin
-  await next()
+export async function requiredRegisteredUser(c: Ctx): Promise<UserSession | Response> {
+  const session = await userSessionFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+  if (!session) return json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
+  if (session.accountType !== 'registered' || !session.email) {
+    return json({ code: 'FORBIDDEN', message: 'Cloud sync is available to registered users only' }, 403)
+  }
+  const row = await first<{ user_id: string; email: string; is_banned: number }>(
+    c.env.SCP_DB,
+    'SELECT user_id, email, is_banned FROM users WHERE email = ? AND account_type = ?',
+    [session.email, 'registered']
+  )
+  if (!row) return json({ code: 'UNAUTHORIZED', message: 'Registered account no longer exists' }, 401)
+  if (row.is_banned) return json({ code: 'FORBIDDEN', message: 'Account disabled' }, 403)
+  return { userId: row.user_id, email: row.email, accountType: 'registered' }
 }
 
 export async function rateLimit(env: Env, identifier: string): Promise<boolean> {

@@ -44,7 +44,6 @@ const AsyncPCNotificationCenter = defineAsyncComponent(
 const AsyncMobileNotificationCenter = defineAsyncComponent(
   () => import('../tools/notification/MobileNotificationCenter.vue')
 )
-const AsyncAdminLayout = defineAsyncComponent(() => import('../tools/admin/AdminLayout.vue'))
 
 function lbl(key: string): () => string {
   return () => {
@@ -152,20 +151,6 @@ export function registerAllTools(): void {
       render() {
         // eslint-disable-next-line @typescript-eslint/no-empty-function
         return h(AsyncMobileNotificationCenter, { visible: true, onClose: () => {} })
-      },
-    },
-  })
-
-  ToolRegistry.register({
-    id: 'admin',
-    label: '管理后台',
-    icon: 'shield',
-    windowConfig: { width: 1200, height: 800, minWidth: 800, minHeight: 600, resizable: true },
-    desktopComponent: AsyncAdminLayout,
-    singleton: true,
-    mobileComponent: {
-      render() {
-        return h(AsyncAdminLayout)
       },
     },
   })

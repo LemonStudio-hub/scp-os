@@ -1,26 +1,34 @@
 import { Hono } from 'hono'
 import type { Env } from '../types'
 import { json, readJson } from '../http'
-import { requiredUser } from '../helpers'
+import { requiredRegisteredUser } from '../helpers'
 
 type AppEnv = { Bindings: Env }
+const CLOUD_QUOTA_BYTES = 512 * 1024 * 1024
+
+async function cloudUsage(bucket: R2Bucket, userId: string): Promise<{ used: number; count: number }> {
+  const prefix = `users/${userId}/`
+  const listResult = await bucket.list({ prefix, limit: 1000 })
+  return {
+    used: listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0),
+    count: listResult.objects.length,
+  }
+}
 
 export function registerFiles(app: Hono<AppEnv>): void {
   app.post('/files/upload', async (c) => {
-    const userId = await requiredUser(c)
-    if (userId instanceof Response) return userId
+    const session = await requiredRegisteredUser(c)
+    if (session instanceof Response) return session
+    const userId = session.userId
     const formData = await c.req.formData()
     const file = formData.get('file') as File | null
     const path = (formData.get('path') as string) || ''
     if (!file) return json({ code: 'VALIDATION_ERROR', message: 'No file provided' }, 400)
     const safePath = path.replace(/^\/+/, '') || file.name
     const key = `users/${userId}/files/${safePath}`
-    const prefix = `users/${userId}/files/`
-    const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
-    const usedSize = listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0)
-    const maxSize = 100 * 1024 * 1024
-    if (usedSize + file.size > maxSize) {
-      return json({ success: false, error: 'Storage quota exceeded (max 100MB)' }, 413)
+    const usage = await cloudUsage(c.env.SCP_FILES, userId)
+    if (usage.used + file.size > CLOUD_QUOTA_BYTES) {
+      return json({ success: false, error: 'Storage quota exceeded (max 512MB)' }, 413)
     }
     await c.env.SCP_FILES.put(key, file.stream(), {
       httpMetadata: { contentType: file.type || 'application/octet-stream' },
@@ -30,8 +38,9 @@ export function registerFiles(app: Hono<AppEnv>): void {
   })
 
   app.get('/files', async (c) => {
-    const userId = await requiredUser(c)
-    if (userId instanceof Response) return userId
+    const session = await requiredRegisteredUser(c)
+    if (session instanceof Response) return session
+    const userId = session.userId
     const prefix = `users/${userId}/files/`
     const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
     const files = listResult.objects.map((obj: R2Object) => ({
@@ -44,18 +53,16 @@ export function registerFiles(app: Hono<AppEnv>): void {
   })
 
   app.get('/files/quota', async (c) => {
-    const userId = await requiredUser(c)
-    if (userId instanceof Response) return userId
-    const prefix = `users/${userId}/files/`
-    const listResult = await c.env.SCP_FILES.list({ prefix, limit: 1000 })
-    const used = listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0)
-    const max = 100 * 1024 * 1024
-    return json({ success: true, data: { used, max, percent: Math.round((used / max) * 100), count: listResult.objects.length } })
+    const session = await requiredRegisteredUser(c)
+    if (session instanceof Response) return session
+    const usage = await cloudUsage(c.env.SCP_FILES, session.userId)
+    return json({ success: true, data: { used: usage.used, max: CLOUD_QUOTA_BYTES, percent: Math.round((usage.used / CLOUD_QUOTA_BYTES) * 100), count: usage.count } })
   })
 
   app.get('/files/:key', async (c) => {
-    const userId = await requiredUser(c)
-    if (userId instanceof Response) return userId
+    const session = await requiredRegisteredUser(c)
+    if (session instanceof Response) return session
+    const userId = session.userId
     const key = `users/${userId}/files/${c.req.param('key')}`
     const obj = await c.env.SCP_FILES.get(key)
     if (!obj) return json({ code: 'NOT_FOUND', message: 'File not found' }, 404)
@@ -68,8 +75,9 @@ export function registerFiles(app: Hono<AppEnv>): void {
   })
 
   app.put('/files/:key', async (c) => {
-    const userId = await requiredUser(c)
-    if (userId instanceof Response) return userId
+    const session = await requiredRegisteredUser(c)
+    if (session instanceof Response) return session
+    const userId = session.userId
     const oldKey = `users/${userId}/files/${c.req.param('key')}`
     const body = await readJson<{ path?: string }>(c.req.raw)
     const newPath = body?.path?.replace(/^\/+/, '')
@@ -83,8 +91,9 @@ export function registerFiles(app: Hono<AppEnv>): void {
   })
 
   app.delete('/files/:key', async (c) => {
-    const userId = await requiredUser(c)
-    if (userId instanceof Response) return userId
+    const session = await requiredRegisteredUser(c)
+    if (session instanceof Response) return session
+    const userId = session.userId
     const key = `users/${userId}/files/${c.req.param('key')}`
     await c.env.SCP_FILES.delete(key)
     return json({ success: true })
