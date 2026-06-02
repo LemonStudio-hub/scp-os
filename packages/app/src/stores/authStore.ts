@@ -155,10 +155,34 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function sendVerificationCode(
+    emailInput: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const data = await authRequest('/api/auth/send-code', {
+        email: emailInput.trim(),
+      })
+      if (!data.success) {
+        return {
+          success: false,
+          error: data.error || data.message || 'Failed to send verification code',
+        }
+      }
+      return { success: true }
+    } catch (error) {
+      logger.error('[Auth] Send verification code failed:', error)
+      return {
+        success: false,
+        error: `Failed to send verification code: ${(error as Error).message}`,
+      }
+    }
+  }
+
   async function register(
     emailInput: string,
     password: string,
-    nicknameInput: string
+    nicknameInput: string,
+    code: string
   ): Promise<{ success: boolean; error?: string }> {
     const validation = validateNickname(nicknameInput)
     if (!validation.valid) return { success: false, error: validation.error }
@@ -169,6 +193,7 @@ export const useAuthStore = defineStore('auth', () => {
         email: emailInput.trim(),
         password,
         nickname: nicknameInput.trim(),
+        code: code.trim(),
       })
       if (!data.success || !data.user || !data.token) {
         return { success: false, error: data.error || data.message || 'Registration failed' }
@@ -258,6 +283,7 @@ export const useAuthStore = defineStore('auth', () => {
     login: loginGuest,
     loginGuest,
     loginRegistered,
+    sendVerificationCode,
     register,
     logout,
     checkNicknameAvailability,

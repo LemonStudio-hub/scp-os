@@ -1,6 +1,5 @@
 <template>
   <div class="login-screen" role="dialog" aria-label="SCP-OS 登录" aria-modal="true">
-    <!-- Background with gradient and pattern (same as HomeScreen) -->
     <div class="login-screen__background">
       <div class="login-screen__gradient" />
       <div class="login-screen__pattern">
@@ -14,21 +13,10 @@
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="login-screen__content">
-      <!-- Logo Section -->
       <div class="login-screen__logo-section" aria-hidden="true">
         <div class="login-screen__logo-container">
-          <!-- SCP Foundation Logo -->
-          <svg
-            class="login-screen__logo"
-            width="80"
-            height="80"
-            viewBox="0 0 80 80"
-            fill="none"
-            role="img"
-            aria-label="SCP 基金会标志"
-          >
+          <svg class="login-screen__logo" width="80" height="80" viewBox="0 0 80 80" fill="none">
             <circle cx="40" cy="40" r="36" stroke="currentColor" stroke-width="2" opacity="0.6" />
             <circle cx="40" cy="40" r="28" stroke="currentColor" stroke-width="1.5" opacity="0.4" />
             <circle cx="40" cy="40" r="20" stroke="currentColor" stroke-width="1" opacity="0.2" />
@@ -48,11 +36,9 @@
         </div>
       </div>
 
-      <!-- Welcome Text -->
       <h1 class="login-screen__title">欢迎</h1>
-      <p class="login-screen__subtitle">输入您的工作代号以开始</p>
+      <p class="login-screen__subtitle">选择进入方式并完成身份验证</p>
 
-      <!-- Login Form -->
       <div class="login-screen__mode-tabs">
         <button
           v-for="item in modes"
@@ -85,12 +71,36 @@
             type="password"
             class="login-screen__input"
             :class="{ 'login-screen__input--error': error }"
-            placeholder="密码至少 8 位"
+            placeholder="密码，至少 8 位"
             autocomplete="current-password"
             @input="onInputChange"
           />
         </div>
-        <!-- Input Field -->
+
+        <div v-if="mode === 'register'" class="login-screen__code-row">
+          <div class="login-screen__input-wrapper login-screen__input-wrapper--code">
+            <input
+              v-model="verificationCode"
+              type="text"
+              inputmode="numeric"
+              maxlength="6"
+              class="login-screen__input"
+              :class="{ 'login-screen__input--error': error }"
+              placeholder="邮箱验证码"
+              autocomplete="one-time-code"
+              @input="onInputChange"
+            />
+          </div>
+          <button
+            type="button"
+            class="login-screen__code-button"
+            :disabled="sendCodeLoading || countdownSeconds > 0"
+            @click="handleSendCode"
+          >
+            {{ sendCodeLabel }}
+          </button>
+        </div>
+
         <div v-if="mode !== 'login'" class="login-screen__input-wrapper">
           <label for="mobile-nickname-input" class="sr-only">工作代号</label>
           <input
@@ -109,7 +119,6 @@
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
-            aria-required="true"
             :aria-invalid="!!error"
             :aria-describedby="error ? 'mobile-login-error' : undefined"
             @focus="isFocused = true"
@@ -128,14 +137,12 @@
           </div>
         </div>
 
-        <!-- Error Message -->
         <transition name="error-fade">
           <p v-if="error" id="mobile-login-error" class="login-screen__error" role="alert">
             {{ error }}
           </p>
         </transition>
 
-        <!-- Character Count -->
         <div
           v-if="mode !== 'login'"
           class="login-screen__char-count"
@@ -144,7 +151,6 @@
           {{ nickname.length }}/20
         </div>
 
-        <!-- Submit Button -->
         <button
           type="submit"
           class="login-screen__button"
@@ -185,7 +191,6 @@
       </form>
     </div>
 
-    <!-- Footer -->
     <footer class="login-screen__footer">
       <p class="login-screen__copyright">&copy; SCP Foundation &mdash; Secure. Contain. Protect.</p>
     </footer>
@@ -193,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useAuthStore } from '../../stores/authStore'
 import { isNicknameValid, validateNickname } from '../../utils/nicknameValidator'
 
@@ -201,26 +206,35 @@ const emit = defineEmits<{
   'login-success': []
 }>()
 
-const authStore = useAuthStore()
 type LoginMode = 'guest' | 'login' | 'register'
+
+const authStore = useAuthStore()
 const modes: { id: LoginMode; label: string }[] = [
   { id: 'guest', label: '游客' },
   { id: 'login', label: '邮箱登录' },
   { id: 'register', label: '邮箱注册' },
 ]
+
 const mode = ref<LoginMode>('guest')
 const nickname = ref('')
 const email = ref('')
 const password = ref('')
+const verificationCode = ref('')
 const isLoading = ref(false)
+const sendCodeLoading = ref(false)
+const countdownSeconds = ref(0)
 const error = ref('')
 const isFocused = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+let countdownTimer: number | null = null
+
 const isValid = computed(() => {
   if (mode.value === 'guest') return isNicknameValid(nickname.value)
-  if (!email.value.includes('@') || password.value.length < 8) return false
-  return mode.value === 'login' || isNicknameValid(nickname.value)
+  if (!emailPattern.test(email.value.trim()) || password.value.length < 8) return false
+  if (mode.value === 'login') return true
+  return isNicknameValid(nickname.value) && /^\d{6}$/.test(verificationCode.value.trim())
 })
 
 const submitLabel = computed(() => {
@@ -229,9 +243,16 @@ const submitLabel = computed(() => {
   return '登录'
 })
 
+const sendCodeLabel = computed(() => {
+  if (sendCodeLoading.value) return '发送中...'
+  if (countdownSeconds.value > 0) return `${countdownSeconds.value}s`
+  return '发送验证码'
+})
+
 function setMode(nextMode: LoginMode): void {
   mode.value = nextMode
   error.value = ''
+  verificationCode.value = ''
 }
 
 function clearInput(): void {
@@ -244,11 +265,62 @@ function onInputChange(): void {
   if (error.value) error.value = ''
 }
 
+function stopCountdown(): void {
+  if (countdownTimer !== null) {
+    window.clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+}
+
+function startCountdown(seconds: number): void {
+  stopCountdown()
+  countdownSeconds.value = seconds
+  countdownTimer = window.setInterval(() => {
+    if (countdownSeconds.value <= 1) {
+      countdownSeconds.value = 0
+      stopCountdown()
+      return
+    }
+    countdownSeconds.value -= 1
+  }, 1000)
+}
+
+async function handleSendCode(): Promise<void> {
+  if (!emailPattern.test(email.value.trim())) {
+    error.value = '请输入有效邮箱'
+    return
+  }
+
+  error.value = ''
+  sendCodeLoading.value = true
+  try {
+    const result = await authStore.sendVerificationCode(email.value.trim())
+    if (!result.success) {
+      error.value = result.error || '验证码发送失败'
+      return
+    }
+    startCountdown(60)
+  } catch (err) {
+    console.error('[Login] Send code error:', err)
+    error.value = '验证码发送失败，请稍后重试'
+  } finally {
+    sendCodeLoading.value = false
+  }
+}
+
 async function handleLogin(): Promise<void> {
-  if (mode.value !== 'guest' && (!email.value.includes('@') || password.value.length < 8)) {
+  if (
+    mode.value !== 'guest' &&
+    (!emailPattern.test(email.value.trim()) || password.value.length < 8)
+  ) {
     error.value = '请输入有效邮箱和至少 8 位密码'
     return
   }
+  if (mode.value === 'register' && !/^\d{6}$/.test(verificationCode.value.trim())) {
+    error.value = '请输入 6 位邮箱验证码'
+    return
+  }
+
   const validation = validateNickname(nickname.value)
   if (mode.value !== 'login' && !validation.valid) {
     error.value = validation.error || '请输入有效的工作代号'
@@ -264,35 +336,42 @@ async function handleLogin(): Promise<void> {
         ? await authStore.loginGuest(nickname.value.trim())
         : mode.value === 'login'
           ? await authStore.loginRegistered(email.value.trim(), password.value)
-          : await authStore.register(email.value.trim(), password.value, nickname.value.trim())
+          : await authStore.register(
+              email.value.trim(),
+              password.value,
+              nickname.value.trim(),
+              verificationCode.value.trim()
+            )
+
     if (result.success) {
       emit('login-success')
     } else {
       error.value = result.error || '登录失败，请重试'
     }
-  } catch (e) {
-    console.error('[Login] Error:', e)
-    error.value = '网络错误，请检查连接后重试'
+  } catch (err) {
+    console.error('[Login] Error:', err)
+    error.value = '网络错误，请稍后重试'
   } finally {
     isLoading.value = false
   }
 }
 
-// Pattern colors from theme store (fallback to design tokens)
 const patternColor1 = 'rgba(142, 142, 147, 0.08)'
 const patternColor2 = 'rgba(142, 142, 147, 0.05)'
 const patternColor3 = 'rgba(63, 63, 66, 0.03)'
 
-// Auto-focus input on mount
 onMounted(() => {
   setTimeout(() => {
     inputRef.value?.focus()
-  }, 600) // Wait for entrance animation to complete
+  }, 600)
+})
+
+onUnmounted(() => {
+  stopCountdown()
 })
 </script>
 
 <style scoped>
-/* ── Main Container ─────────────────────────────────────────────── */
 .login-screen {
   position: relative;
   width: 100%;
@@ -304,7 +383,6 @@ onMounted(() => {
   color: var(--gui-text-primary, #ffffff);
 }
 
-/* ── Background Layer ───────────────────────────────────────────── */
 .login-screen__background {
   position: absolute;
   inset: 0;
@@ -340,7 +418,6 @@ onMounted(() => {
   opacity: 0.5;
 }
 
-/* ── Main Content ───────────────────────────────────────────────── */
 .login-screen__content {
   position: relative;
   z-index: 5;
@@ -349,40 +426,14 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--gui-spacing-4xl, 60px) var(--gui-spacing-xl, 24px);
-  animation: login-content-enter 0.7s var(--ease-ios-spring, cubic-bezier(0.32, 0.72, 0, 1)) both;
+  padding: 60px 24px;
 }
 
-@keyframes login-content-enter {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ── Logo Section ───────────────────────────────────────────────── */
 .login-screen__logo-section {
-  margin-bottom: var(--gui-spacing-2xl, 32px);
-  animation: logo-enter 0.6s var(--ease-ios-bounce, cubic-bezier(0.34, 1.56, 0.64, 1)) 0.15s both;
-}
-
-@keyframes logo-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  margin-bottom: 32px;
 }
 
 .login-screen__logo-container {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -391,86 +442,20 @@ onMounted(() => {
 .login-screen__logo {
   color: var(--gui-text-primary, #ffffff);
   filter: drop-shadow(0 0 20px rgba(142, 142, 147, 0.3));
-  animation: subtle-glow 3s ease-in-out infinite;
 }
 
-@keyframes subtle-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 20px rgba(142, 142, 147, 0.3));
-  }
-  50% {
-    filter: drop-shadow(0 0 30px rgba(142, 142, 147, 0.5));
-  }
-}
-
-/* ── Typography ─────────────────────────────────────────────────── */
 .login-screen__title {
-  margin: 0 0 var(--gui-spacing-sm, 8px);
-  font-family: var(
-    --gui-font-sans,
-    -apple-system,
-    'SF Pro Display',
-    'Segoe UI',
-    Roboto,
-    sans-serif
-  );
-  font-size: var(--gui-font-3xl, 28px);
-  font-weight: var(--gui-font-weight-bold, 700);
-  letter-spacing: 0.02em;
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
   text-align: center;
-  background: linear-gradient(
-    135deg,
-    var(--gui-text-primary, #ffffff) 0%,
-    var(--gui-text-secondary, #8e8e93) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: title-shimmer 3s ease-in-out infinite;
-  background-size: 200% 200%;
-}
-
-@keyframes title-shimmer {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
 }
 
 .login-screen__subtitle {
-  margin: 0 0 var(--gui-spacing-3xl, 48px);
-  font-size: var(--gui-font-sm, 12px);
-  font-weight: var(--gui-font-weight-medium, 500);
+  margin: 0 0 32px;
+  font-size: 13px;
   color: var(--gui-text-secondary, #8e8e93);
   text-align: center;
-  letter-spacing: 0.02em;
-  animation: subtitle-fade-in 0.5s ease 0.3s both;
-}
-
-@keyframes subtitle-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ── Form ───────────────────────────────────────────────────────── */
-.login-screen__form {
-  width: 100%;
-  max-width: 340px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--gui-spacing-md, 12px);
-  animation: form-slide-up 0.5s var(--ease-ios-gentle, cubic-bezier(0.25, 0.46, 0.45, 0.94)) 0.35s
-    both;
 }
 
 .login-screen__mode-tabs {
@@ -479,87 +464,76 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 4px;
-  margin-bottom: var(--gui-spacing-md, 12px);
+  margin-bottom: 12px;
   padding: 4px;
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
-  border-radius: var(--gui-radius-lg, 12px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
 }
 
 .login-screen__mode-tab {
   height: 32px;
   border: 0;
-  border-radius: var(--gui-radius-base, 8px);
+  border-radius: 8px;
   background: transparent;
   color: var(--gui-text-secondary, #8e8e93);
-  font-size: var(--gui-font-xs, 11px);
-  font-weight: var(--gui-font-weight-semibold, 600);
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .login-screen__mode-tab--active {
-  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  background: rgba(255, 255, 255, 0.12);
   color: var(--gui-text-primary, #ffffff);
 }
 
-@keyframes form-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.login-screen__form {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* ── Input Field ────────────────────────────────────────────────── */
 .login-screen__input-wrapper {
   position: relative;
   width: 100%;
 }
 
+.login-screen__code-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  gap: 8px;
+}
+
 .login-screen__input {
   width: 100%;
   height: 52px;
-  padding: 0 var(--gui-spacing-lg, 20px);
-  padding-right: 44px; /* Space for clear button */
-  font-family: var(
-    --gui-font-sans,
-    -apple-system,
-    'SF Pro Display',
-    'Segoe UI',
-    Roboto,
-    sans-serif
-  );
-  font-size: var(--gui-font-lg, 15px);
-  font-weight: var(--gui-font-weight-medium, 500);
+  padding: 0 20px;
+  padding-right: 44px;
+  font-size: 15px;
   color: var(--gui-text-primary, #ffffff);
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  background: rgba(255, 255, 255, 0.06);
   border: 1.5px solid transparent;
-  border-radius: var(--gui-radius-lg, 12px);
+  border-radius: 12px;
   outline: none;
-  transition: all var(--gui-transition-base, 200ms ease);
-  -webkit-tap-highlight-color: transparent;
+  transition: all 200ms ease;
 }
 
 .login-screen__input::placeholder {
   color: var(--gui-text-tertiary, #636366);
-  font-weight: var(--gui-font-weight-normal, 400);
 }
 
 .login-screen__input:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
-  border-color: var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .login-screen__input--focused,
 .login-screen__input:focus {
-  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.09));
+  background: rgba(255, 255, 255, 0.09);
   border-color: var(--gui-accent, #8e8e93);
-  box-shadow:
-    0 0 0 3px var(--gui-accent-glow, rgba(142, 142, 147, 0.15)),
-    0 4px 16px var(--gui-backdrop-bg, rgba(0, 0, 0, 0.2));
+  box-shadow: 0 0 0 3px rgba(142, 142, 147, 0.15);
 }
 
 .login-screen__input--error {
@@ -567,14 +541,6 @@ onMounted(() => {
   background: rgba(255, 59, 48, 0.05);
 }
 
-.login-screen__input--error:focus {
-  border-color: var(--gui-error, #ff3b30);
-  box-shadow:
-    0 0 0 3px var(--gui-error-bg, rgba(255, 59, 48, 0.15)),
-    0 4px 16px var(--gui-backdrop-bg, rgba(0, 0, 0, 0.2));
-}
-
-/* Clear Button */
 .login-screen__input-clear {
   position: absolute;
   right: 14px;
@@ -587,77 +553,66 @@ onMounted(() => {
   height: 24px;
   cursor: pointer;
   color: var(--gui-text-tertiary, #636366);
-  border-radius: var(--gui-radius-full, 9999px);
-  transition: all var(--gui-transition-fast, 120ms ease);
-  -webkit-tap-highlight-color: transparent;
+  border-radius: 9999px;
 }
 
-.login-screen__input-clear:hover {
+.login-screen__code-button {
+  height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--gui-text-primary, #ffffff);
-  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.1));
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 200ms ease;
 }
 
-.login-screen__input-clear:active {
-  transform: translateY(-50%) scale(0.9);
+.login-screen__code-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
-/* ── Error Message ──────────────────────────────────────────────── */
+.login-screen__code-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .login-screen__error {
   margin: 0;
-  padding: 0 var(--gui-spacing-sm, 8px);
-  font-size: var(--gui-font-xs, 11px);
-  font-weight: var(--gui-font-weight-medium, 500);
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 500;
   color: var(--gui-error, #ff3b30);
-  line-height: var(--gui-line-height-tight, 1.3);
 }
 
-.error-fade-enter-active {
-  transition: all 0.25s ease;
-}
-
+.error-fade-enter-active,
 .error-fade-leave-active {
   transition: all 0.2s ease;
 }
 
-.error-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-6px);
-}
-
+.error-fade-enter-from,
 .error-fade-leave-to {
   opacity: 0;
   transform: translateY(-4px);
 }
 
-/* ── Character Count ────────────────────────────────────────────── */
 .login-screen__char-count {
   align-self: flex-end;
-  font-size: var(--gui-font-xs, 11px);
-  font-weight: var(--gui-font-weight-normal, 400);
+  font-size: 11px;
   color: var(--gui-text-tertiary, #636366);
-  transition: color var(--gui-transition-fast, 120ms ease);
 }
 
 .login-screen__char-count--warning {
   color: var(--gui-warning, #ffcc00);
 }
 
-/* ── Submit Button ──────────────────────────────────────────────── */
 .login-screen__button {
-  position: relative;
   width: 100%;
   height: 52px;
-  margin-top: var(--gui-spacing-md, 12px);
-  font-family: var(
-    --gui-font-sans,
-    -apple-system,
-    'SF Pro Display',
-    'Segoe UI',
-    Roboto,
-    sans-serif
-  );
-  font-size: var(--gui-font-lg, 15px);
-  font-weight: var(--gui-font-weight-semibold, 600);
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--gui-text-inverse, #000000);
   background: linear-gradient(
     135deg,
@@ -665,45 +620,9 @@ onMounted(() => {
     var(--gui-accent, #8e8e93) 100%
   );
   border: none;
-  border-radius: var(--gui-radius-lg, 12px);
+  border-radius: 12px;
   cursor: pointer;
-  overflow: hidden;
-  transition: all var(--gui-transition-base, 200ms ease);
-  -webkit-tap-highlight-color: transparent;
-  will-change: transform;
-}
-
-.login-screen__button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
-  opacity: 0;
-  transition: opacity var(--gui-transition-fast, 120ms ease);
-}
-
-.login-screen__button:hover:not(.login-screen__button--disabled):not(
-    .login-screen__button--loading
-  ) {
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 24px rgba(142, 142, 147, 0.4),
-    0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.login-screen__button:hover:not(.login-screen__button--disabled):not(
-    .login-screen__button--loading
-  )::before {
-  opacity: 1;
-}
-
-.login-screen__button:active:not(.login-screen__button--disabled):not(
-    .login-screen__button--loading
-  ) {
-  transform: translateY(0) scale(0.98);
-  box-shadow:
-    0 4px 12px rgba(142, 142, 147, 0.3),
-    0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 200ms ease;
 }
 
 .login-screen__button--disabled {
@@ -712,29 +631,14 @@ onMounted(() => {
   pointer-events: none;
 }
 
-.login-screen__button--loading {
-  cursor: wait;
-}
-
+.login-screen__button-loading,
 .login-screen__button-text {
-  position: relative;
-  z-index: 1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--gui-spacing-sm, 8px);
+  gap: 8px;
 }
 
-.login-screen__button-loading {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--gui-spacing-sm, 8px);
-}
-
-/* Spinner Animation */
 .login-screen__spinner {
   animation: spin 0.8s linear infinite;
 }
@@ -748,52 +652,36 @@ onMounted(() => {
   }
 }
 
-/* ── Footer ─────────────────────────────────────────────────────── */
 .login-screen__footer {
   position: relative;
   z-index: 10;
   width: 100%;
-  padding: var(--gui-spacing-lg, 20px) var(--gui-spacing-xl, 24px);
-  padding-bottom: max(var(--gui-spacing-lg, 20px), env(safe-area-inset-bottom, 20px));
+  padding: 20px 24px;
   text-align: center;
-  animation: footer-fade-in 0.5s ease 0.6s both;
-}
-
-@keyframes footer-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .login-screen__copyright {
   margin: 0;
-  font-size: var(--gui-font-xs, 11px);
-  font-weight: var(--gui-font-weight-normal, 400);
+  font-size: 11px;
   color: var(--gui-text-tertiary, #636366);
-  letter-spacing: 0.04em;
   opacity: 0.7;
 }
 
-/* ── Responsive Adjustments ─────────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (max-width: 480px) {
   .login-screen__content {
-    padding: var(--gui-spacing-3xl, 48px) var(--gui-spacing-lg, 20px);
-  }
-
-  .login-screen__logo svg {
-    width: 70px;
-    height: 70px;
-  }
-
-  .login-screen__title {
-    font-size: 26px;
-  }
-
-  .login-screen__subtitle {
-    margin-bottom: var(--gui-spacing-2xl, 32px);
+    padding: 48px 20px;
   }
 
   .login-screen__form {
@@ -801,49 +689,13 @@ onMounted(() => {
   }
 
   .login-screen__input,
-  .login-screen__button {
+  .login-screen__button,
+  .login-screen__code-button {
     height: 48px;
   }
-}
 
-/* ── Reduced Motion Support ─────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  .login-screen__code-row {
+    grid-template-columns: minmax(0, 1fr) 104px;
   }
-}
-
-/* ── Light Mode Overrides ─────────────────────────────────────────── */
-.light .login-screen__input {
-  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
-  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
-}
-.light .login-screen__input:hover {
-  background: var(--gui-bg-surface-active, rgba(0, 0, 0, 0.06));
-}
-.light .login-screen__input:focus {
-  background: var(--gui-bg-surface, #fff);
-  border-color: var(--gui-accent, #636366);
-  box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(99, 99, 102, 0.15));
-}
-.light
-  .login-screen__button:hover:not(.login-screen__button--disabled):not(
-    .login-screen__button--loading
-  ) {
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.1),
-    0 4px 8px rgba(0, 0, 0, 0.04);
-}
-.light
-  .login-screen__button:active:not(.login-screen__button--disabled):not(
-    .login-screen__button--loading
-  ) {
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    0 2px 4px rgba(0, 0, 0, 0.04);
 }
 </style>
