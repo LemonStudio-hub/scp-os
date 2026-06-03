@@ -362,6 +362,7 @@
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useHammer } from '../composables/useHammer'
 import { useThemeStore } from '../stores/themeStore'
+import { usePreferencesStore } from '../stores/preferencesStore'
 import { useI18n } from '../composables/useI18n'
 import { wallpaperService } from '../../utils/wallpaperService'
 import { config } from '../../config'
@@ -391,11 +392,14 @@ const homeAppLabelKeys: Partial<Record<ToolType, string>> = {
   editor: 'home.apps.editor',
 }
 
-const ORDER_KEY = 'scp-os-home-order'
+const prefsStore = usePreferencesStore()
 
 function loadOrder(): string[] {
+  if (prefsStore.ready && prefsStore.prefs.homeOrder.length > 0) {
+    return [...prefsStore.prefs.homeOrder]
+  }
   try {
-    return JSON.parse(localStorage.getItem(ORDER_KEY) || '[]')
+    return JSON.parse(localStorage.getItem('scp-os-home-order') || '[]')
   } catch {
     return []
   }
@@ -404,7 +408,7 @@ function loadOrder(): string[] {
 const customOrder = ref<string[]>(loadOrder())
 
 function saveOrder() {
-  localStorage.setItem(ORDER_KEY, JSON.stringify(customOrder.value))
+  prefsStore.set('homeOrder', [...customOrder.value]).catch(() => {})
 }
 
 const baseApps = computed<HomeApp[]>(() =>

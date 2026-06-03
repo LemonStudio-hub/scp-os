@@ -9,7 +9,7 @@ import { ANSICode } from '../constants/theme'
 const TEST_TARGETS = [
   { name: 'SCP Wiki (CN)', host: 'scp-wiki-cn.wikidot.com', port: 443, type: 'HTTPS' },
   { name: 'SCP Wiki (EN)', host: 'scp-wiki.wikidot.com', port: 443, type: 'HTTPS' },
-  { name: 'API Endpoint', host: 'api.scpos.site', port: 443, type: 'HTTPS' },
+  { name: 'API Endpoint', host: 'os1api.daum.pw', port: 443, type: 'HTTPS' },
   { name: 'Cloudflare DNS', host: '1.1.1.1', port: 53, type: 'DNS' },
   { name: 'Google DNS', host: '8.8.8.8', port: 53, type: 'DNS' },
 ]

@@ -18,6 +18,7 @@ import {
   setContext,
 } from './gui'
 import { useThemeStore } from './gui/stores/themeStore'
+import { usePreferencesStore } from './gui/stores/preferencesStore'
 import { filesystem } from './utils/filesystem'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
@@ -32,6 +33,7 @@ const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
+const preferencesStore = usePreferencesStore()
 const { addNotification } = useNotification()
 const mobile = useMobile()
 const { t } = useI18n()
@@ -90,6 +92,10 @@ onMounted(() => {
       loadingStep.value = 'loading.steps.data'
       loadingProgress.value = 45
       await indexedDBService.init()
+
+      // Step 4.5: Load unified preferences from IndexedDB into preferencesStore
+      // (themeStore already applied the correct theme from localStorage on creation)
+      await preferencesStore.init()
 
       // Step 5: Load tabs, window states, and filesystem in parallel
       loadingProgress.value = 50

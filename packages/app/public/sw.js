@@ -170,11 +170,6 @@ async function handleStaticRequest(request) {
   }
 
   try {
-    const cachedResponse = await caches.match(request)
-    if (cachedResponse) {
-      return cachedResponse
-    }
-
     const response = await fetch(request)
 
     if (!response.ok) {
@@ -186,6 +181,11 @@ async function handleStaticRequest(request) {
 
     return response
   } catch (error) {
+    // Network failed — fall back to cache
+    const cachedResponse = await caches.match(request)
+    if (cachedResponse) {
+      return cachedResponse
+    }
     console.error('[SW] Static fetch error:', error)
     return new Response('Offline', { status: 503 })
   }

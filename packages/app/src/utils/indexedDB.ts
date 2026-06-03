@@ -81,6 +81,13 @@ class IndexedDBService {
 
       request.onsuccess = () => {
         this.db = request.result
+        // Reset connection state when browser forces the DB closed
+        // (e.g. manual DevTools clear, deleteDatabase from another tab, version upgrade)
+        this.db.onversionchange = () => {
+          this.db?.close()
+          this.db = null
+          this.initPromise = null
+        }
         logger.info('[IndexedDB] Database opened successfully')
         resolve()
       }
@@ -491,33 +498,22 @@ class IndexedDBService {
     )
     if (!storeNames.length) return
 
-    const transaction = db.transaction(storeNames, 'readwrite')
-    await Promise.all(
-      storeNames.map(
-        (storeName) =>
-          new Promise<void>((resolve, reject) => {
-            const store = transaction.objectStore(storeName)
-            const clearRequest = store.clear()
-            clearRequest.onerror = () => reject(clearRequest.error)
-            clearRequest.onsuccess = () => {
-              const records = data[storeName] || []
-              if (!records.length) {
-                resolve()
-                return
-              }
-              let completed = 0
-              for (const record of records) {
-                const putRequest = store.put(record)
-                putRequest.onerror = () => reject(putRequest.error)
-                putRequest.onsuccess = () => {
-                  completed += 1
-                  if (completed === records.length) resolve()
-                }
-              }
-            }
-          })
-      )
-    )
+    return new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction(storeNames, 'readwrite')
+
+      transaction.oncomplete = () => resolve()
+      transaction.onerror = () => reject(transaction.error)
+      transaction.onabort = () => reject(new Error('Import transaction aborted'))
+
+      for (const storeName of storeNames) {
+        const store = transaction.objectStore(storeName)
+        store.clear().onsuccess = () => {
+          for (const record of data[storeName] || []) {
+            store.put(record)
+          }
+        }
+      }
+    })
   }
 
   /**

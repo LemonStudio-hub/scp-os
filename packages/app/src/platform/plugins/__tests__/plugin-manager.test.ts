@@ -8,6 +8,7 @@ import { ExtensionRegistry } from '../../extensions/extension-point'
 import { EventBus } from '../../events/event-bus'
 import type { CommandPlugin, ThemePlugin } from '../types'
 import { PluginStatus } from '../types'
+import { pluginSyncRegistry } from '../../../services/pluginSyncRegistry'
 
 describe('PluginManager', () => {
   let pluginManager: PluginManager
@@ -22,6 +23,9 @@ describe('PluginManager', () => {
       extensionRegistry,
     })
     resetGlobalPluginManager()
+    for (const desc of pluginSyncRegistry.getAll()) {
+      pluginSyncRegistry.unregister(desc.id)
+    }
   })
 
   describe('Plugin Registration', () => {
@@ -212,6 +216,89 @@ describe('PluginManager', () => {
       expect(result.success).toBe(false)
       expect(result.error).toContain('Load error')
       expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.ERROR)
+    })
+
+    it('should register plugin sync descriptor after load succeeds', async () => {
+      const plugin: CommandPlugin = {
+        name: 'test-command',
+        version: '1.0.0',
+        type: 'command',
+        syncDescriptor: {
+          localStorageKeys: ['test-command-setting'],
+          idbSettingsKey: 'settings',
+          defaults: {
+            'test-command-setting': 'default',
+          },
+        },
+        commands: [
+          {
+            name: 'test',
+            description: 'Test command',
+            handler: vi.fn(),
+          },
+        ],
+      }
+
+      await pluginManager.register(plugin)
+
+      expect(pluginSyncRegistry.getAll()).toEqual([
+        {
+          id: 'test-command',
+          localStorageKeys: ['test-command-setting'],
+          idbSettingsKey: 'settings',
+          defaults: {
+            'test-command-setting': 'default',
+          },
+        },
+      ])
+    })
+
+    it('should unregister plugin sync descriptor after unload succeeds', async () => {
+      const plugin: CommandPlugin = {
+        name: 'test-command',
+        version: '1.0.0',
+        type: 'command',
+        syncDescriptor: {
+          localStorageKeys: ['test-command-setting'],
+        },
+        commands: [
+          {
+            name: 'test',
+            description: 'Test command',
+            handler: vi.fn(),
+          },
+        ],
+      }
+
+      await pluginManager.register(plugin)
+      await pluginManager.unregister('test-command')
+
+      expect(pluginSyncRegistry.getAll()).toEqual([])
+    })
+
+    it('should not leave sync descriptors for failed loads', async () => {
+      const plugin: CommandPlugin = {
+        name: 'test-command',
+        version: '1.0.0',
+        type: 'command',
+        syncDescriptor: {
+          localStorageKeys: ['test-command-setting'],
+        },
+        onLoad: () => {
+          throw new Error('Load error')
+        },
+        commands: [
+          {
+            name: 'test',
+            description: 'Test command',
+            handler: vi.fn(),
+          },
+        ],
+      }
+
+      await pluginManager.register(plugin)
+
+      expect(pluginSyncRegistry.getAll()).toEqual([])
     })
   })
 

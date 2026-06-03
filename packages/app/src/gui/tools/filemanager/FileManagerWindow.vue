@@ -51,14 +51,6 @@
             :title="t('fm.upload')"
             @click="fileInputRef?.click()"
           />
-          <SCPButton
-            variant="ghost"
-            size="sm"
-            icon="refresh"
-            :title="t('fm.syncCloud') || 'Sync from cloud'"
-            :loading="fmStore.cloudSyncing"
-            @click="syncFromCloud"
-          />
           <div class="file-manager__toolbar-divider" />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
@@ -480,8 +472,6 @@ const {
   deleteFile,
   renameFile,
   uploadLocalFiles,
-  uploadToCloud,
-  syncCloudFiles,
   formatSize,
   formatDate,
   IMAGE_EXTS,
@@ -764,28 +754,12 @@ async function onFileUpload(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement
   const files = input.files
   if (!files || files.length === 0) return
-  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files)
-  const { cloudSuccess, cloudFail } = await uploadToCloud(localFiles)
+  const { localSuccess, localFail } = await uploadLocalFiles(files)
   input.value = ''
   const messages: string[] = []
-  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
-  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
-  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
-  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (localSuccess > 0) messages.push(`已导入 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`失败 ${localFail} 个`)
   if (messages.length > 0) alert(messages.join('，'))
-}
-
-async function syncFromCloud(): Promise<void> {
-  const { success, fail, networkError } = await syncCloudFiles()
-  if (networkError) {
-    alert(t('fm.syncFailed') || 'Cloud sync failed')
-    return
-  }
-  const messages: string[] = []
-  if (success > 0) messages.push(`同步成功 ${success} 个文件`)
-  if (fail > 0) messages.push(`同步失败 ${fail} 个`)
-  if (messages.length > 0) alert(messages.join('，'))
-  else alert(t('fm.syncNoFiles') || 'No cloud files to sync')
 }
 
 // ── File open with type detection ───────────────────────────────────

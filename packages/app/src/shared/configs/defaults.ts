@@ -10,7 +10,7 @@ import type { ConfigSchema } from './types'
  */
 export const defaultConfig = {
   // API Configuration
-  'api.worker-url': 'https://api.scpos.site',
+  'api.worker-url': 'https://os1api.daum.pw',
   'api.timeout': 15000,
 
   // Cache Configuration

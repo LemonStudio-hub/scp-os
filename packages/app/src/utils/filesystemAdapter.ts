@@ -1,5 +1,4 @@
 import logger from './logger'
-import opfsStorage from './opfsStorage'
 
 export interface FilesystemSnapshot {
   root: unknown
@@ -15,61 +14,6 @@ export interface FilesystemStorageAdapter {
   getBackendName(): string
 }
 
-class OPFSFilesystemAdapter implements FilesystemStorageAdapter {
-  private initialized = false
-
-  async init(): Promise<void> {
-    if (this.initialized) return
-    await opfsStorage.init()
-    this.initialized = true
-    logger.info('[OPFSAdapter] Initialized')
-  }
-
-  async load(): Promise<FilesystemSnapshot | null> {
-    await this.init()
-    try {
-      const data = await opfsStorage.loadMeta()
-      if (data) {
-        logger.info('[OPFSAdapter] Loaded filesystem snapshot from OPFS')
-      }
-      return data as FilesystemSnapshot | null
-    } catch (error) {
-      logger.error('[OPFSAdapter] Failed to load from OPFS:', error)
-      return null
-    }
-  }
-
-  async save(data: FilesystemSnapshot): Promise<void> {
-    await this.init()
-    try {
-      await opfsStorage.saveMeta(data)
-      logger.debug('[OPFSAdapter] Saved filesystem snapshot to OPFS')
-    } catch (error) {
-      logger.error('[OPFSAdapter] Failed to save to OPFS:', error)
-      throw error
-    }
-  }
-
-  async saveImmediate(data: FilesystemSnapshot): Promise<void> {
-    await this.init()
-    try {
-      await opfsStorage.saveMetaImmediate(data)
-      logger.debug('[OPFSAdapter] Saved filesystem snapshot to OPFS (immediate)')
-    } catch (error) {
-      logger.error('[OPFSAdapter] Failed to save to OPFS (immediate):', error)
-      throw error
-    }
-  }
-
-  isAvailable(): boolean {
-    return Boolean(navigator.storage && navigator.storage.getDirectory)
-  }
-
-  getBackendName(): string {
-    return 'OPFS'
-  }
-}
-
 class IndexedDBFilesystemAdapter implements FilesystemStorageAdapter {
   private db: IDBDatabase | null = null
   private initPromise: Promise<void> | null = null
@@ -82,27 +26,16 @@ class IndexedDBFilesystemAdapter implements FilesystemStorageAdapter {
   }
 
   private getDB(): IDBDatabase {
-    if (!this.db) {
-      throw new Error('[IndexedDBAdapter] Database not initialized')
-    }
+    if (!this.db) throw new Error('[IndexedDBAdapter] Database not initialized')
     return this.db
   }
 
   private openDB(): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('scp-terminal-db', 5)
-      request.onerror = () => {
-        this.initPromise = null
-        reject(request.error)
-      }
-      request.onsuccess = () => {
-        this.db = request.result
-        resolve()
-      }
-      request.onblocked = () => {
-        this.initPromise = null
-        reject(new Error('IndexedDB blocked'))
-      }
+      request.onerror = () => { this.initPromise = null; reject(request.error) }
+      request.onsuccess = () => { this.db = request.result; resolve() }
+      request.onblocked = () => { this.initPromise = null; reject(new Error('IndexedDB blocked')) }
     })
   }
 
@@ -111,8 +44,7 @@ class IndexedDBFilesystemAdapter implements FilesystemStorageAdapter {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const tx = db.transaction(['filesystem'], 'readonly')
-      const store = tx.objectStore('filesystem')
-      const request = store.get('filesystem')
+      const request = tx.objectStore('filesystem').get('filesystem')
       request.onsuccess = () => {
         const data = request.result
         resolve(data ? { root: data.root, currentPath: data.currentPath } : null)
@@ -126,8 +58,7 @@ class IndexedDBFilesystemAdapter implements FilesystemStorageAdapter {
     const db = this.getDB()
     return new Promise((resolve, reject) => {
       const tx = db.transaction(['filesystem'], 'readwrite')
-      const store = tx.objectStore('filesystem')
-      const request = store.put({
+      const request = tx.objectStore('filesystem').put({
         key: 'filesystem',
         root: data.root,
         currentPath: data.currentPath,
@@ -142,85 +73,44 @@ class IndexedDBFilesystemAdapter implements FilesystemStorageAdapter {
     return this.save(data)
   }
 
-  isAvailable(): boolean {
-    return typeof indexedDB !== 'undefined'
-  }
-
-  getBackendName(): string {
-    return 'IndexedDB'
-  }
-}
-
-const STORAGE_PREF_KEY = 'scp_fs_backend'
-
-function getPreferredBackend(): string {
-  try {
-    return localStorage.getItem(STORAGE_PREF_KEY) || 'opfs'
-  } catch {
-    return 'opfs'
-  }
-}
-
-function setPreferredBackend(name: string): void {
-  try {
-    localStorage.setItem(STORAGE_PREF_KEY, name)
-  } catch {
-    logger.warn('[FileSystemAdapter] Failed to save storage preference')
-  }
+  isAvailable(): boolean { return typeof indexedDB !== 'undefined' }
+  getBackendName(): string { return 'IndexedDB' }
 }
 
 export function createStorageAdapter(): FilesystemStorageAdapter {
-  const preferred = getPreferredBackend()
-  const opfsAdapter = new OPFSFilesystemAdapter()
-  const idbAdapter = new IndexedDBFilesystemAdapter()
-
-  if (preferred === 'opfs' && opfsAdapter.isAvailable()) {
-    return opfsAdapter
-  }
-
-  if (idbAdapter.isAvailable()) {
-    return idbAdapter
-  }
-
-  return opfsAdapter
+  return new IndexedDBFilesystemAdapter()
 }
 
-export async function migrateToOPFS(): Promise<boolean> {
-  const opfsAdapter = new OPFSFilesystemAdapter()
-  const idbAdapter = new IndexedDBFilesystemAdapter()
-
-  if (!opfsAdapter.isAvailable()) {
-    logger.warn('[Migration] OPFS not available, skipping migration')
-    return false
-  }
-
+// One-time migration: if OPFS has filesystem data and IDB doesn't, copy it over
+export async function migrateFromOPFS(): Promise<void> {
   try {
-    const opfsData = await opfsAdapter.load()
-    if (opfsData) {
-      logger.info('[Migration] OPFS data already exists, skipping migration')
-      setPreferredBackend('opfs')
-      return true
+    if (!navigator.storage?.getDirectory) return
+    const opfsRoot = await navigator.storage.getDirectory()
+    let metaFile: FileSystemFileHandle | null = null
+    try {
+      metaFile = await opfsRoot.getFileHandle('meta.json')
+    } catch {
+      return // no OPFS data
     }
+    if (!metaFile) return
 
+    const idbAdapter = new IndexedDBFilesystemAdapter()
     await idbAdapter.init()
-    const idbData = await idbAdapter.load()
-    if (!idbData) {
-      logger.info('[Migration] No IndexedDB data to migrate')
-      setPreferredBackend('opfs')
-      return true
+    const existing = await idbAdapter.load()
+    if (existing) {
+      logger.info('[Migration] IDB filesystem already has data, skipping OPFS migration')
+      return
     }
 
-    await opfsAdapter.init()
-    await opfsAdapter.saveImmediate(idbData)
+    const file = await metaFile.getFile()
+    const text = await file.text()
+    const snapshot = JSON.parse(text) as FilesystemSnapshot
+    await idbAdapter.save(snapshot)
+    logger.info('[Migration] Migrated filesystem from OPFS to IndexedDB')
 
-    setPreferredBackend('opfs')
-    logger.info('[Migration] Successfully migrated from IndexedDB to OPFS')
-    return true
-  } catch (error) {
-    logger.error('[Migration] Failed to migrate to OPFS:', error)
-    setPreferredBackend('indexeddb')
-    return false
+    // Clear the OPFS meta file so we don't re-migrate
+    try { await opfsRoot.removeEntry('meta.json') } catch { /* ignore */ }
+  } catch (err) {
+    logger.warn('[Migration] OPFS→IDB migration failed (non-fatal):', err)
   }
 }
-
-export { OPFSFilesystemAdapter, IndexedDBFilesystemAdapter }

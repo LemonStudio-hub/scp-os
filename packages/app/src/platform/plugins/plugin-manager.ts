@@ -19,6 +19,7 @@ import { ExtensionRegistry, getGlobalExtensionRegistry } from '../extensions/ext
 import { EventBus, getGlobalEventBus } from '../events/event-bus'
 import { EventType } from '../events/types'
 import logger from '../../utils/logger'
+import { pluginSyncRegistry } from '../../services/pluginSyncRegistry'
 
 /**
  * Plugin manager configuration
@@ -158,6 +159,13 @@ export class PluginManager {
 
       // Register extensions
       await this.registerExtensions(entry.plugin)
+
+      if (entry.plugin.syncDescriptor) {
+        pluginSyncRegistry.register({
+          id: entry.plugin.name,
+          ...entry.plugin.syncDescriptor,
+        })
+      }
 
       if (this.config.debug) {
         logger.info(`Loaded plugin: ${pluginName}`)
@@ -338,6 +346,8 @@ export class PluginManager {
 
       // Update status
       entry.status = Status.UNLOADED
+
+      pluginSyncRegistry.unregister(pluginName)
 
       if (this.config.debug) {
         logger.info(`Unloaded plugin: ${pluginName}`)

@@ -38,7 +38,7 @@ export class ScpWikiDataSourcePlugin implements DataSourcePlugin {
   private cache: Map<string, unknown> = new Map()
   private apiUrl: string
 
-  constructor(apiUrl: string = 'https://api.scpos.site') {
+  constructor(apiUrl: string = 'https://os1api.daum.pw') {
     this.apiUrl = apiUrl
     this.initializeDataSources()
   }

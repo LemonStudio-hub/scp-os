@@ -109,7 +109,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 500,
   },
   server: {
-    port: 37291,
+    port: 5174,
     strictPort: true,
     host: true,
     headers: {
@@ -117,13 +117,6 @@ export default defineConfig({
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'SAMEORIGIN',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
-    },
-    proxy: {
-      '/api': {
-        target: 'https://api.scpos.site',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      },
     },
   },
   preview: {

@@ -1,7 +1,7 @@
 import logger from './logger'
 import {
   createStorageAdapter,
-  migrateToOPFS,
+  migrateFromOPFS,
   type FilesystemStorageAdapter,
 } from './filesystemAdapter'
 
@@ -49,7 +49,7 @@ export class FileSystem {
   }
 
   async init(): Promise<void> {
-    await migrateToOPFS()
+    await migrateFromOPFS()
     this.storageAdapter = createStorageAdapter()
     await this.loadFromStorage()
   }
@@ -912,8 +912,7 @@ export class FileSystem {
   }
 
   async forceFlush(): Promise<void> {
-    const opfsStorage = (await import('./opfsStorage')).default
-    await opfsStorage.forceFlush()
+    await this.storageAdapter.saveImmediate({ root: this.root, currentPath: this.currentPath })
   }
 }
 

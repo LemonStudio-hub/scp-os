@@ -623,8 +623,13 @@ async function handleCloudDownload(): Promise<void> {
   syncBusy.value = true
   syncMessage.value = '正在下载...'
   const result = await downloadCloudData()
-  syncMessage.value = result.success ? '已恢复云端数据' : result.error || '下载失败'
-  syncBusy.value = false
+  if (result.success) {
+    syncMessage.value = '已恢复云端数据，即将重启...'
+    setTimeout(() => location.reload(), 1200)
+  } else {
+    syncMessage.value = result.error || '下载失败'
+    syncBusy.value = false
+  }
 }
 
 const presetAccents = [

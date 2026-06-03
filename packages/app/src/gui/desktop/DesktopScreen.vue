@@ -302,6 +302,7 @@
 import { ref, onMounted, computed, onUnmounted, reactive } from 'vue'
 import { useThemeStore } from '../stores/themeStore'
 import { useWindowManagerStore } from '../stores/windowManager'
+import { usePreferencesStore } from '../stores/preferencesStore'
 import { wallpaperService } from '../../utils/wallpaperService'
 import PCTaskbar, { type PCTaskbarItem } from '../components/PCTaskbar.vue'
 import PCStartMenu, { type StartMenuApp } from '../components/PCStartMenu.vue'
@@ -336,6 +337,7 @@ export interface DesktopApp {
 }
 
 const { t } = useI18n()
+const prefsStore = usePreferencesStore()
 
 const apps = reactive<DesktopApp[]>([])
 
@@ -466,6 +468,10 @@ const DEFAULT_PINNED_TOOLS: ToolType[] = [
 ]
 
 function loadPinnedTools(): ToolType[] {
+  if (prefsStore.ready) {
+    const saved = prefsStore.prefs.taskbarPinned
+    if (Array.isArray(saved) && saved.length > 0) return saved as ToolType[]
+  }
   try {
     const raw = localStorage.getItem('scp-os-taskbar-pinned')
     if (!raw) return [...DEFAULT_PINNED_TOOLS]
@@ -482,7 +488,7 @@ function loadPinnedTools(): ToolType[] {
 const pinnedTools = ref<ToolType[]>(loadPinnedTools())
 
 function persistPinnedTools() {
-  localStorage.setItem('scp-os-taskbar-pinned', JSON.stringify(pinnedTools.value))
+  prefsStore.set('taskbarPinned', [...pinnedTools.value]).catch(() => {})
 }
 
 function reloadPinnedTools(): void {
@@ -572,6 +578,7 @@ const isStartMenuOpen = ref(false)
 
 // Grid snap state — drives drop-snap AND visible grid overlay during drag
 function loadGridSnap(): boolean {
+  if (prefsStore.ready) return prefsStore.prefs.desktopGridSnap
   const saved = localStorage.getItem('scp-os-grid-snap')
   if (saved === 'false') return false
   return true
@@ -582,7 +589,7 @@ const isDraggingDesktopIcon = ref(false)
 
 function setGridSnap(enabled: boolean): void {
   gridSnapEnabled.value = enabled
-  localStorage.setItem('scp-os-grid-snap', String(enabled))
+  prefsStore.set('desktopGridSnap', enabled).catch(() => {})
 }
 
 function toggleGridSnap(): void {
@@ -595,8 +602,12 @@ const desktopIconSize = ref<'large' | 'medium' | 'small'>('medium')
 // Desktop sort order: name | date
 const desktopSortBy = ref<'name' | 'date'>('name')
 
-// Load saved icon size from localStorage
+// Load saved icon size
 function loadIconSize() {
+  if (prefsStore.ready) {
+    desktopIconSize.value = prefsStore.prefs.desktopIconSize
+    return
+  }
   const saved = localStorage.getItem('scp-os-desktop-icon-size')
   if (saved === 'large' || saved === 'medium' || saved === 'small') {
     desktopIconSize.value = saved
@@ -650,13 +661,17 @@ function arrangeApps() {
 // Save and apply icon size
 function setDesktopIconSize(size: 'large' | 'medium' | 'small') {
   desktopIconSize.value = size
-  localStorage.setItem('scp-os-desktop-icon-size', size)
+  prefsStore.set('desktopIconSize', size).catch(() => {})
   logger.info('Desktop icon size changed to:', size)
   arrangeApps() // Re-arrange with new gap
 }
 
 // Load saved sort preference
 function loadSortBy() {
+  if (prefsStore.ready) {
+    desktopSortBy.value = prefsStore.prefs.desktopSortBy
+    return
+  }
   const saved = localStorage.getItem('scp-os-desktop-sort-by')
   if (saved === 'name' || saved === 'date') {
     desktopSortBy.value = saved
@@ -665,7 +680,7 @@ function loadSortBy() {
 
 function setDesktopSortBy(sort: 'name' | 'date') {
   desktopSortBy.value = sort
-  localStorage.setItem('scp-os-desktop-sort-by', sort)
+  prefsStore.set('desktopSortBy', sort).catch(() => {})
   arrangeApps()
   logger.info('Desktop sort changed to:', sort)
 }

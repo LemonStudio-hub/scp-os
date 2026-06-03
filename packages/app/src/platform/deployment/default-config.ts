@@ -145,7 +145,7 @@ export const DEFAULT_PROD_CONFIG: DeploymentConfiguration = {
       id: 'cloudflare-workers',
       name: 'Cloudflare Workers',
       type: 'cloudflare',
-      url: 'https://api.scpos.site',
+      url: 'https://os1api.daum.pw',
       config: {
         type: 'workers',
         entrypoint: 'worker/index.ts',

@@ -66,30 +66,6 @@
               <path d="M4 18h16" />
             </svg>
           </button>
-          <!-- Sync from cloud -->
-          <button
-            class="mobile-file-manager__action-btn"
-            :title="t('fm.syncCloud')"
-            :disabled="fmStore.cloudSyncing"
-            @click="syncFromCloud"
-          >
-            <svg
-              v-if="!fmStore.cloudSyncing"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.6"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M17.5 8.5A5.5 5.5 0 008.2 7.2 4 4 0 108.5 15H17a3.5 3.5 0 00.5-7z" />
-              <path d="M12 21v-7" />
-              <path d="M9 17l3 4 3-4" />
-            </svg>
-            <div v-else class="mobile-file-manager__spinner" />
-          </button>
           <!-- New File -->
           <button
             class="mobile-file-manager__action-btn"
@@ -416,8 +392,6 @@ const {
   renameFile,
   writeFile,
   uploadLocalFiles,
-  uploadToCloud,
-  syncCloudFiles,
   formatSize,
   isImageFile,
   isAudioFile,
@@ -568,28 +542,12 @@ async function onFileUpload(event: Event) {
   const input = event.target as HTMLInputElement
   const files = input.files
   if (!files || files.length === 0) return
-  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
-  const { cloudSuccess, cloudFail } = await uploadToCloud(localFiles)
+  const { localSuccess, localFail } = await uploadLocalFiles(files, true)
   input.value = ''
   const messages: string[] = []
-  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
-  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
-  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
-  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (localSuccess > 0) messages.push(`已导入 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`失败 ${localFail} 个`)
   if (messages.length > 0) alert(messages.join('，'))
-}
-
-async function syncFromCloud(): Promise<void> {
-  const { success, fail, networkError } = await syncCloudFiles()
-  if (networkError) {
-    alert(t('fm.syncFailed') || 'Cloud sync failed')
-    return
-  }
-  const messages: string[] = []
-  if (success > 0) messages.push(`同步成功 ${success} 个文件`)
-  if (fail > 0) messages.push(`同步失败 ${fail} 个`)
-  if (messages.length > 0) alert(messages.join('，'))
-  else alert(t('fm.syncNoFiles') || 'No cloud files to sync')
 }
 
 async function createNewFile() {
@@ -791,13 +749,10 @@ async function onDrop(event: DragEvent) {
   isDragOver.value = false
   const files = event.dataTransfer?.files
   if (!files || files.length === 0) return
-  const { localSuccess, localFail, files: localFiles } = await uploadLocalFiles(files, true)
-  const { cloudSuccess, cloudFail } = await uploadToCloud(localFiles)
+  const { localSuccess, localFail } = await uploadLocalFiles(files, true)
   const messages: string[] = []
-  if (localSuccess > 0) messages.push(`本地 ${localSuccess} 个文件`)
-  if (localFail > 0) messages.push(`本地失败 ${localFail} 个`)
-  if (cloudSuccess > 0) messages.push(`云端 ${cloudSuccess} 个文件`)
-  if (cloudFail > 0) messages.push(`云端失败 ${cloudFail} 个`)
+  if (localSuccess > 0) messages.push(`已导入 ${localSuccess} 个文件`)
+  if (localFail > 0) messages.push(`失败 ${localFail} 个`)
   if (messages.length > 0) alert(messages.join('，'))
 }
 </script>

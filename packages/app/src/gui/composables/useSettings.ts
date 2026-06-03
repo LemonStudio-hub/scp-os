@@ -4,6 +4,7 @@ import indexedDBService from '../../utils/indexedDB'
 import { useCloudQuota, type CloudQuota } from './useCloudQuota'
 import { useI18n } from './useI18n'
 import type { AppSettings } from '../types/settings'
+import { usePreferencesStore } from '../stores/preferencesStore'
 
 interface ConfirmDialog {
   title: string
@@ -42,7 +43,21 @@ export function formatBytes(bytes: number): string {
 export function useSettings() {
   const { t } = useI18n()
   const terminalStore = useTerminalStore()
-  const settings = reactive<AppSettings>(loadSettings())
+  const prefsStore = usePreferencesStore()
+
+  // Seed from preferencesStore if already loaded, otherwise fall back to localStorage
+  const initialSettings = prefsStore.ready
+    ? {
+        ...defaultSettings,
+        fontSize: prefsStore.prefs.fontSize,
+        cursorBlink: prefsStore.prefs.cursorBlink,
+        bootAnimation: prefsStore.prefs.bootAnimation,
+        haptic: prefsStore.prefs.haptic,
+        animations: prefsStore.prefs.animations,
+      }
+    : loadSettings()
+
+  const settings = reactive<AppSettings>(initialSettings)
   const confirmDialog = ref<ConfirmDialog | null>(null)
   const storageUsed = ref('--')
   const userId = ref<string>(t('common.loading'))
@@ -54,6 +69,12 @@ export function useSettings() {
     settings,
     () => {
       localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+      // Mirror to preferencesStore (IDB) so cloud sync picks these up
+      prefsStore.set('fontSize', settings.fontSize).catch(() => {})
+      prefsStore.set('cursorBlink', settings.cursorBlink).catch(() => {})
+      prefsStore.set('bootAnimation', settings.bootAnimation).catch(() => {})
+      prefsStore.set('haptic', settings.haptic).catch(() => {})
+      prefsStore.set('animations', settings.animations).catch(() => {})
       applySettings()
     },
     { deep: true }
