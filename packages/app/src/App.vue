@@ -28,6 +28,7 @@ import GlobalDialog from './gui/components/GlobalDialog.vue'
 import { dialogService } from './gui/composables/useDialog'
 import logger from './utils/logger'
 import indexedDBService from './utils/indexedDB'
+import { localAppManager } from './platform/apps/local-app-manager'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
@@ -100,6 +101,7 @@ onMounted(() => {
       // Step 5: Load tabs, window states, and filesystem in parallel
       loadingProgress.value = 50
       await Promise.all([tabsStore.initialize(), wmStore.loadWindowStates(), filesystem.init()])
+      await localAppManager.loadInstalledApps()
       loadingProgress.value = 90
 
       // Step 6: Auth initialization

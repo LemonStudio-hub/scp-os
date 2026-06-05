@@ -20,6 +20,8 @@ import { EventBus, getGlobalEventBus } from '../events/event-bus'
 import { EventType } from '../events/types'
 import logger from '../../utils/logger'
 import { pluginSyncRegistry } from '../../services/pluginSyncRegistry'
+import { commandRegistry } from '../../commands/commandRegistry'
+import { registerBuiltinCommands } from '../../commands'
 
 /**
  * Plugin manager configuration
@@ -65,6 +67,7 @@ export class PluginManager {
 
     this.eventBus = this.config.eventBus
     this.extensionRegistry = this.config.extensionRegistry
+    registerBuiltinCommands()
 
     if (this.config.debug) {
       logger.info('Plugin manager initialized', this.config)
@@ -101,6 +104,14 @@ export class PluginManager {
             error: `Plugin ${plugin.name} requires ${dep}, but it is not registered`,
           }
         }
+      }
+    }
+
+    const commandConflicts = this.validateCommandConflicts(plugin)
+    if (commandConflicts.length > 0) {
+      return {
+        success: false,
+        error: `Plugin ${plugin.name} has command conflicts: ${commandConflicts.join(', ')}`,
       }
     }
 
@@ -229,6 +240,8 @@ export class PluginManager {
         await entry.plugin.onEnable()
       }
 
+      this.registerRuntimeCommands(entry.plugin)
+
       // Update status
       entry.status = Status.ENABLED
 
@@ -285,6 +298,8 @@ export class PluginManager {
       if (entry.plugin.onDisable) {
         await entry.plugin.onDisable()
       }
+
+      commandRegistry.unregisterPlugin(pluginName)
 
       // Update status
       entry.status = Status.DISABLED
@@ -343,6 +358,7 @@ export class PluginManager {
 
       // Unregister extensions
       await this.unregisterExtensions(entry.plugin)
+      commandRegistry.unregisterPlugin(pluginName)
 
       // Update status
       entry.status = Status.UNLOADED
@@ -513,6 +529,60 @@ export class PluginManager {
       valid: errors.length === 0,
       errors,
       warnings,
+    }
+  }
+
+  private validateCommandConflicts(plugin: Plugin): string[] {
+    const pluginType = (plugin as TypedPlugin).type
+    if (pluginType !== 'command') return []
+
+    const commandPlugin = plugin as CommandPlugin
+    const conflicts = new Set<string>()
+    const seen = new Set<string>()
+
+    for (const command of commandPlugin.commands) {
+      const names = [command.name, ...(command.aliases ?? [])]
+        .map((name) => name.trim().toLowerCase())
+        .filter(Boolean)
+
+      for (const name of names) {
+        if (seen.has(name) || commandRegistry.has(name)) {
+          conflicts.add(name)
+        }
+        seen.add(name)
+      }
+    }
+
+    for (const existing of this.getAllPlugins()) {
+      if ((existing as TypedPlugin).type !== 'command') continue
+      const existingCommandPlugin = existing as CommandPlugin
+      for (const command of existingCommandPlugin.commands) {
+        for (const name of [command.name, ...(command.aliases ?? [])]) {
+          const normalized = name.trim().toLowerCase()
+          if (seen.has(normalized)) conflicts.add(normalized)
+        }
+      }
+    }
+
+    return [...conflicts]
+  }
+
+  private registerRuntimeCommands(plugin: Plugin): void {
+    const pluginType = (plugin as TypedPlugin).type
+    if (pluginType !== 'command') return
+
+    const commandPlugin = plugin as CommandPlugin
+    for (const command of commandPlugin.commands) {
+      commandRegistry.register({
+        name: command.name,
+        aliases: command.aliases,
+        description: command.description,
+        usage: command.usage,
+        permission: command.permission,
+        source: 'plugin',
+        pluginId: plugin.name,
+        handler: command.handler,
+      })
     }
   }
 

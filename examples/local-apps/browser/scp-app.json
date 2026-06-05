@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "local.browser",
+  "name": "Browser",
+  "version": "1.0.0",
+  "runtime": "iframe-app",
+  "entry": "index.html",
+  "description": "A sandboxed local browser app for SCP-OS.",
+  "author": "SCP-OS",
+  "icon": "search",
+  "permissions": ["network", "storage"],
+  "sandbox": {
+    "allowSameOrigin": true,
+    "allowPopups": true
+  },
+  "window": {
+    "width": 1040,
+    "height": 720,
+    "minWidth": 520,
+    "minHeight": 360,
+    "resizable": true
+  }
+}

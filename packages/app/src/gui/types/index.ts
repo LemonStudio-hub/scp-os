@@ -3,7 +3,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export type ToolType =
+export type BuiltInToolType =
   | 'filemanager'
   | 'editor'
   | 'terminal'
@@ -15,6 +15,8 @@ export type ToolType =
   | 'docs'
   | 'notification'
   | 'admin'
+
+export type ToolType = BuiltInToolType | (string & {})
 
 export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen'
 

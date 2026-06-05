@@ -9,10 +9,10 @@ import {
   isPrintableCharacter,
   isMobileDevice,
 } from '../utils/terminal'
-import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
 import { getCommandHandler } from '../commands'
-import type { CommandHandler, CommandType } from '../types/command'
+import { commandRegistry } from '../commands/commandRegistry'
+import type { CommandHandler } from '../types/command'
 import { autocompleteService } from '../utils/commandAutocomplete'
 import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
@@ -559,7 +559,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     // 检查输入是否是有效命令
     const inputLower = newInput.toLowerCase().trim()
-    const isCommand = AVAILABLE_COMMANDS.some((cmd) => cmd === inputLower)
+    const isCommand = commandRegistry.has(inputLower)
 
     if (isCommand && newInput.trim() !== '') {
       // 命令高亮：绿色
@@ -734,7 +734,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         return
       }
 
-      const handler = getCommandHandler(cmd as CommandType)
+      const handler = getCommandHandler(cmd)
 
       if (handler) {
         await executeCommandHandler(handler, args, cmd)

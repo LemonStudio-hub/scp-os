@@ -187,7 +187,7 @@
       >
         <!-- Delete badge in jiggle mode (hidden for protected apps) -->
         <div
-          v-if="isJiggling && !APP_CATALOG.find((c) => c.id === app.id)?.protected"
+          v-if="isJiggling && !isProtectedApp(app)"
           class="home-screen__app-delete"
           @click.stop="void onDeleteApp(app)"
         >
@@ -351,6 +351,9 @@
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" />
             </svg>
           </template>
+          <template v-else>
+            <span class="home-screen__app-icon--fallback">{{ app.label.slice(0, 1).toUpperCase() }}</span>
+          </template>
         </div>
         <span class="home-screen__app-label">{{ app.label }}</span>
       </button>
@@ -369,6 +372,7 @@ import { config } from '../../config'
 import type { ToolType } from '../types'
 import { APP_CATALOG, getInstalledAppTools, uninstallApp } from '../utils/appCatalog'
 import { dialogService } from '../composables/useDialog'
+import { localAppManager } from '../../platform/apps/local-app-manager'
 
 export interface HomeApp {
   id: string
@@ -408,17 +412,35 @@ function loadOrder(): string[] {
 const customOrder = ref<string[]>(loadOrder())
 
 function saveOrder() {
-  prefsStore.set('homeOrder', [...customOrder.value]).catch(() => {})
+  prefsStore.set('homeOrder', [...customOrder.value]).catch(() => {
+    /* ignore persistence failures */
+  })
 }
 
-const baseApps = computed<HomeApp[]>(() =>
-  APP_CATALOG.filter((app) => installedTools.value.has(app.tool)).map((app) => ({
+function isLocalAppTool(tool: ToolType): boolean {
+  return String(tool).startsWith('local-app:')
+}
+
+const baseApps = computed<HomeApp[]>(() => {
+  const builtInApps = APP_CATALOG.filter((app) => installedTools.value.has(app.tool)).map((app) => ({
     id: app.id,
     label: t(homeAppLabelKeys[app.tool] ?? app.labelKey),
     tool: app.tool,
     color: 'var(--gui-accent)',
   }))
-)
+
+  const localApps = localAppManager
+    .getInstalledApps()
+    .filter((app) => app.manifest.runtime === 'iframe-app')
+    .map((app) => ({
+      id: app.manifest.id,
+      label: app.manifest.name,
+      tool: app.toolId as ToolType,
+      color: 'var(--gui-accent)',
+    }))
+
+  return [...builtInApps, ...localApps]
+})
 
 // dragOrder: live order during drag (empty = use customOrder)
 const dragOrder = ref<string[]>([])
@@ -434,6 +456,10 @@ const apps = computed<HomeApp[]>(() => {
 
 function refreshInstalledApps(): void {
   installedTools.value = getInstalledAppTools()
+}
+
+function isProtectedApp(app: HomeApp): boolean {
+  return Boolean(APP_CATALOG.find((item) => item.id === app.id)?.protected)
 }
 
 const emit = defineEmits<{
@@ -800,7 +826,11 @@ async function onDeleteApp(app: HomeApp): Promise<void> {
 
   customOrder.value = customOrder.value.filter((id) => id !== app.id)
   saveOrder()
-  uninstallApp(app.tool)
+  if (isLocalAppTool(app.tool)) {
+    await localAppManager.uninstall(app.id)
+  } else {
+    uninstallApp(app.tool)
+  }
   refreshInstalledApps()
   if (apps.value.length === 0) exitJiggleMode()
 }

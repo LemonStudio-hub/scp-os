@@ -1,6 +1,6 @@
-import { AVAILABLE_COMMANDS, COMMAND_DESCRIPTIONS } from '../constants/commands'
-import type { CommandType } from '../types/command'
 import { ANSICode } from '../constants/theme'
+import { commandRegistry } from '../commands/commandRegistry'
+import { registerBuiltinCommands } from '../commands'
 
 /**
  * 补全结果接口
@@ -52,6 +52,10 @@ export class CommandAutocompleteService {
   private history: CompletionHistory = new CompletionHistory()
   private maxSuggestions: number = 8
 
+  constructor() {
+    registerBuiltinCommands()
+  }
+
   /**
    * 模糊匹配算法
    * 使用子序列匹配，允许字符不连续
@@ -102,15 +106,27 @@ export class CommandAutocompleteService {
   private getCommandSuggestions(input: string): AutocompleteSuggestion[] {
     const suggestions: AutocompleteSuggestion[] = []
 
-    for (const command of AVAILABLE_COMMANDS) {
-      const score = this.calculateMatchScore(input, command)
+    for (const command of commandRegistry.getSummaries()) {
+      const score = this.calculateMatchScore(input, command.name)
       if (score > 0) {
         suggestions.push({
-          text: command,
-          displayText: command,
-          description: COMMAND_DESCRIPTIONS[command],
+          text: command.name,
+          displayText: command.name,
+          description: command.description,
           type: 'command',
         })
+      }
+
+      for (const alias of command.aliases) {
+        const aliasScore = this.calculateMatchScore(input, alias)
+        if (aliasScore > 0) {
+          suggestions.push({
+            text: alias,
+            displayText: `${alias} -> ${command.name}`,
+            description: command.description,
+            type: 'command',
+          })
+        }
       }
     }
 
@@ -209,7 +225,7 @@ export class CommandAutocompleteService {
   /**
    * 获取命令参数补全建议
    */
-  private getArgumentSuggestions(command: CommandType, args: string[]): AutocompleteSuggestion[] {
+  private getArgumentSuggestions(command: string, args: string[]): AutocompleteSuggestion[] {
     switch (command) {
       case 'shutdown':
         return this.getShutdownSuggestions(args)
@@ -228,21 +244,21 @@ export class CommandAutocompleteService {
 
     if (!trimmed) {
       // 空输入，返回所有命令
-      return AVAILABLE_COMMANDS.map((cmd) => ({
-        text: cmd,
-        displayText: cmd,
-        description: COMMAND_DESCRIPTIONS[cmd],
+      return commandRegistry.getSummaries().map((cmd) => ({
+        text: cmd.name,
+        displayText: cmd.name,
+        description: cmd.description,
         type: 'command' as const,
       })).slice(0, this.maxSuggestions)
     }
 
     // 解析输入
     const parts = trimmed.split(/\s+/)
-    const command = parts[0] as CommandType
+    const command = parts[0]
     const args = parts.slice(1)
 
     // 检查是否是已知命令
-    const knownCommand = AVAILABLE_COMMANDS.includes(command)
+    const knownCommand = commandRegistry.has(command)
 
     if (!knownCommand) {
       // 未知命令，尝试补全命令名

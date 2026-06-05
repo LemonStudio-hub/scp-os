@@ -9,6 +9,8 @@ import { EventBus } from '../../events/event-bus'
 import type { CommandPlugin, ThemePlugin } from '../types'
 import { PluginStatus } from '../types'
 import { pluginSyncRegistry } from '../../../services/pluginSyncRegistry'
+import { commandRegistry } from '../../../commands/commandRegistry'
+import { registerBuiltinCommands } from '../../../commands'
 
 describe('PluginManager', () => {
   let pluginManager: PluginManager
@@ -16,6 +18,8 @@ describe('PluginManager', () => {
   let extensionRegistry: ExtensionRegistry
 
   beforeEach(() => {
+    commandRegistry.clear()
+    registerBuiltinCommands()
     eventBus = new EventBus()
     extensionRegistry = new ExtensionRegistry()
     pluginManager = new PluginManager({

@@ -1,6 +1,7 @@
 import type { CommandType, CommandHandler, CommandMap } from '../types/command'
 import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
+import { commandRegistry } from './commandRegistry'
 import { scraper } from '../utils/scraper'
 import { filesystem } from '../utils/filesystem'
 import { useTabsStore } from '../stores/tabs'
@@ -101,19 +102,20 @@ export const commandHandlers: CommandMap = {
     const b = border()
     const t = borderedTitle('Available Commands')
     const isNarrow = isNarrowTerminal()
+    const commands = commandRegistry.getSummaries()
 
     const helpText = [
       b,
       t,
       b,
       '',
-      ...Object.entries(COMMAND_DESCRIPTIONS).map(([cmd, desc]) => {
-        const usage = COMMAND_USAGE[cmd as CommandType]
+      ...commands.map((command) => {
+        const pluginLabel = command.source === 'plugin' ? ' [plugin]' : ''
         if (isNarrow) {
           // 移动端：简化格式
-          return `  ${usage}\n    ${desc}`
+          return `  ${command.usage}${pluginLabel}\n    ${command.description}`
         }
-        return `  ${usage} - ${desc}`
+        return `  ${command.usage}${pluginLabel} - ${command.description}`
       }),
       '',
       b,
@@ -1313,6 +1315,25 @@ export const commandHandlers: CommandMap = {
   },
 }
 
-export function getCommandHandler(command: CommandType): CommandHandler | null {
-  return commandHandlers[command] || null
+let builtinsRegistered = false
+
+export function registerBuiltinCommands(): void {
+  if (builtinsRegistered && commandRegistry.has('help')) return
+  builtinsRegistered = true
+
+  for (const [name, handler] of Object.entries(commandHandlers)) {
+    commandRegistry.register({
+      name,
+      description: COMMAND_DESCRIPTIONS[name as CommandType],
+      usage: COMMAND_USAGE[name as CommandType],
+      source: 'builtin',
+      handler,
+    })
+  }
+}
+
+registerBuiltinCommands()
+
+export function getCommandHandler(command: string): CommandHandler | null {
+  return commandRegistry.get(command)?.handler || null
 }
