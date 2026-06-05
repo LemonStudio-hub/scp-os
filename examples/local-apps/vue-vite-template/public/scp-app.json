@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "local.vue-vite-demo",
+  "name": "Vue Vite Demo",
+  "version": "1.0.0",
+  "runtime": "iframe-app",
+  "entry": "index.html",
+  "description": "A Vue/Vite local app template for SCP-OS.",
+  "author": "SCP-OS",
+  "icon": "code",
+  "permissions": ["storage", "theme.read", "window.control"],
+  "window": {
+    "width": 760,
+    "height": 560,
+    "minWidth": 440,
+    "minHeight": 320,
+    "resizable": true
+  }
+}

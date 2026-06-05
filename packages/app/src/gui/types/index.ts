@@ -2,11 +2,8 @@
  * GUI Window Management Types
  */
 
-export * from './chat'
-export * from './feedback'
-export * from './settings'
-
-export type ToolType =
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type BuiltInToolType =
   | 'filemanager'
   | 'editor'
   | 'terminal'
@@ -18,6 +15,8 @@ export type ToolType =
   | 'docs'
   | 'notification'
   | 'admin'
+
+export type ToolType = BuiltInToolType | (string & {})
 
 export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen'
 
@@ -233,3 +232,7 @@ export interface ToolbarItem {
   badge?: number
   disabled?: boolean
 }
+
+export * from './feedback'
+export * from './settings'
+export * from './chat'

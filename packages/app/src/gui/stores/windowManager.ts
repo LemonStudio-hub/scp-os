@@ -400,6 +400,21 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     return true
   }
 
+  function updateWindowTitle(windowId: string, title: string): boolean {
+    const win = windows.value.get(windowId)
+    if (!win) return false
+
+    updateWindow(windowId, {
+      ...win,
+      config: {
+        ...win.config,
+        title,
+      },
+    })
+
+    return true
+  }
+
   function updateWindowPosition(windowId: string, x: number, y: number): boolean {
     const win = windows.value.get(windowId)
     if (!win) return false
@@ -524,6 +539,7 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     restoreWindow,
     maximizeWindow,
     updateWindowDimensions,
+    updateWindowTitle,
     updateWindowPosition,
     getWindow,
     hasWindow,

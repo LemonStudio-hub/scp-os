@@ -1,6 +1,7 @@
 import type { CommandType, CommandHandler, CommandMap } from '../types/command'
 import { COMMAND_DESCRIPTIONS, COMMAND_USAGE } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
+import { commandRegistry } from './commandRegistry'
 import { scraper } from '../utils/scraper'
 import { filesystem } from '../utils/filesystem'
 import { useTabsStore } from '../stores/tabs'
@@ -15,7 +16,7 @@ import { generateSecurityCheckLogs } from '../utils/securityCheckLogs'
 import { generateNetworkTestLogs } from '../utils/networkTestLogs'
 import { penetrationHandler } from './penetration'
 
-// Responsive border helpers that adapt to terminal width
+// 响应式边框辅助函数
 function border(color: string = ANSICode.red, char: string = '═'): string {
   return `${color}${createBorderLine(char)}${ANSICode.reset}`
 }
@@ -101,19 +102,20 @@ export const commandHandlers: CommandMap = {
     const b = border()
     const t = borderedTitle('Available Commands')
     const isNarrow = isNarrowTerminal()
+    const commands = commandRegistry.getSummaries()
 
     const helpText = [
       b,
       t,
       b,
       '',
-      ...Object.entries(COMMAND_DESCRIPTIONS).map(([cmd, desc]) => {
-        const usage = COMMAND_USAGE[cmd as CommandType]
+      ...commands.map((command) => {
+        const pluginLabel = command.source === 'plugin' ? ' [plugin]' : ''
         if (isNarrow) {
-          // Stack usage and description vertically to fit narrow screens
-          return `  ${usage}\n    ${desc}`
+          // 移动端：简化格式
+          return `  ${command.usage}${pluginLabel}\n    ${command.description}`
         }
-        return `  ${usage} - ${desc}`
+        return `  ${command.usage}${pluginLabel} - ${command.description}`
       }),
       '',
       b,
@@ -239,32 +241,32 @@ export const commandHandlers: CommandMap = {
       return
     }
 
-    // Parse branch prefix and SCP number from input (e.g. "CN-173")
-    let forcedBranch: string | null = null // Non-null when user explicitly specifies branch via CN-/EN- prefix
+    // 解析分部和编号
+    let forcedBranch: string | null = null // 用户是否强制指定了分部
     let scpNumber = input
 
-    // Detect explicit branch prefix so we can query the correct wiki
+    // 检查是否是中文分部 (CN-xxx 格式)
     if (input.toUpperCase().startsWith('CN-')) {
       forcedBranch = 'cn'
-      scpNumber = input.slice(3) // Strip the branch prefix to get the raw number
+      scpNumber = input.slice(3) // 移除 CN- 前缀
     } else if (input.toUpperCase().startsWith('EN-')) {
       forcedBranch = 'en'
-      scpNumber = input.slice(3) // Strip the branch prefix to get the raw number
+      scpNumber = input.slice(3) // 移除 EN- 前缀
     }
 
     try {
       if (forcedBranch) {
-        // Branch was explicitly specified, query that branch directly
+        // 用户强制指定了分部，直接查询
         writeln(
           `${ANSICode.cyan}Connecting to ${forcedBranch.toUpperCase()} Branch Wiki...${ANSICode.reset}`
         )
         writeln('')
 
-        // Display animated query logs to simulate a realistic network lookup
+        // 显示查询日志（带动画效果）
         const queryLogs = generateInfoQueryLogs(scpNumber, forcedBranch)
         for (const line of queryLogs) {
           writeln(line)
-          // Vary delay per log prefix to feel like real network/parse operations
+          // 动态延迟，模拟真实查询过程
           let delay = 20
           if (line.includes('[NET]') || line.includes('[AUTH]')) delay = 40
           if (line.includes('[FETCH]') || line.includes('[HTTP]')) delay = 60
@@ -297,11 +299,11 @@ export const commandHandlers: CommandMap = {
           writeln(`${ANSICode.red}Network query failed${ANSICode.reset}`)
         }
       } else {
-        // No branch specified -- try Chinese branch first, fall back to English main site
+        // 未指定分部，优先查询中文分部，找不到再查英文主站点
         writeln(`${ANSICode.cyan}Connecting to Chinese Branch Wiki...${ANSICode.reset}`)
         writeln('')
 
-        // Display animated query logs to simulate a realistic network lookup
+        // 显示查询日志（带动画效果）
         const queryLogs = generateInfoQueryLogs(scpNumber, 'cn')
         for (const line of queryLogs) {
           writeln(line)
@@ -316,7 +318,7 @@ export const commandHandlers: CommandMap = {
 
         const cnResult = await scraper.scrapeSCP(scpNumber, 'cn')
 
-        // Check if CN branch returned meaningful content (not just empty fields)
+        // 检查中文分部结果是否有效（非空内容）
         const cnData = cnResult.data
         const cnIsEmpty =
           cnData &&
@@ -336,13 +338,13 @@ export const commandHandlers: CommandMap = {
           const formattedLines = scraper.formatForTerminal(cnData)
           formattedLines.forEach((line) => writeln(line))
         } else {
-          // CN branch returned nothing useful, fall back to English main site
+          // 中文分部找不到或内容为空，尝试英文主站点
           writeln(
             `${ANSICode.yellow}Not found on Chinese Branch, trying English Main Site...${ANSICode.reset}`
           )
           writeln('')
 
-          // Display animated query logs for the English branch fallback
+          // 显示查询日志（带动画效果）
           const enQueryLogs = generateInfoQueryLogs(scpNumber, 'en')
           for (const line of enQueryLogs) {
             writeln(line)
@@ -547,7 +549,7 @@ export const commandHandlers: CommandMap = {
     for (const line of logs) {
       writeln(line)
 
-      // Vary delay per log prefix to simulate a realistic security scan
+      // 动态延迟，模拟真实扫描过程
       let delay = 15
 
       if (line.includes('[INIT]')) delay = 30
@@ -555,7 +557,7 @@ export const commandHandlers: CommandMap = {
       if (line.includes('[SECU]')) delay = 25
       if (line.includes('[NETW]')) delay = 30
       if (line.includes('[CRYP]')) delay = 20
-      if (line.includes('Progress:')) delay = 50 // Pause longer on progress bars for visual effect
+      if (line.includes('Progress:')) delay = 50 // 进度条停顿一下
       if (line.includes('[SUMMARY]')) delay = 30
       if (line.includes('SYSTEM SECURE')) delay = 100
 
@@ -644,7 +646,7 @@ export const commandHandlers: CommandMap = {
     const path = _args[0] || ''
 
     try {
-      // Validate that the target path exists and is a directory
+      // 检查路径是否存在
       if (path) {
         const node = filesystem.getNodeByPath(path)
         if (!node) {
@@ -666,7 +668,7 @@ export const commandHandlers: CommandMap = {
         return
       }
 
-      // Display total size in KB, mirroring real ls output
+      // 计算总大小
       const totalSize = files.reduce((sum, file) => sum + file.size, 0)
       writeln(`${ANSICode.gray}total ${Math.ceil(totalSize / 1024)}${ANSICode.reset}`)
 
@@ -701,7 +703,7 @@ export const commandHandlers: CommandMap = {
   cd: (_args, _write, writeln) => {
     const path = _args[0]
     if (!path) {
-      // Default to home directory when no path argument is given
+      // 如果没有参数，切换到用户主目录
       if (filesystem.changeDirectory('~')) {
         return
       }
@@ -722,7 +724,7 @@ export const commandHandlers: CommandMap = {
       }
 
       if (filesystem.changeDirectory(path)) {
-        // Successful cd produces no output, matching Unix convention
+        // 目录更改成功，不输出任何内容
       } else {
         writeln(`${ANSICode.red}cd: ${path}: Permission denied${ANSICode.reset}`)
       }
@@ -745,7 +747,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Verify the parent directory exists before attempting creation
+      // 检查父目录是否存在
       const parts = dirPath.split('/').filter((p) => p !== '')
       parts.pop()
       const parentPath = parts.join('/')
@@ -766,7 +768,7 @@ export const commandHandlers: CommandMap = {
         }
       }
 
-      // Prevent duplicate directories
+      // 检查目录是否已存在
       const existingNode = filesystem.getNodeByPath(dirPath)
       if (existingNode) {
         writeln(
@@ -807,9 +809,9 @@ export const commandHandlers: CommandMap = {
         return
       }
 
-      // Non-recursive rm should refuse non-empty directories
+      // 检查是否是目录且没有递归选项
       if (node.type === 'directory' && !recursive) {
-        // Check if directory has children before refusing
+        // 检查目录是否为空
         const children = Object.keys(node.children || {})
         if (children.length > 0) {
           writeln(`${ANSICode.red}rm: cannot remove '${path}': Is a directory${ANSICode.reset}`)
@@ -870,7 +872,7 @@ export const commandHandlers: CommandMap = {
       return
     }
 
-    // Look for > or >> redirection operators to write output to a file
+    // 解析重定向操作符
     let redirectIndex = -1
     let appendMode = false
 
@@ -891,34 +893,34 @@ export const commandHandlers: CommandMap = {
         return
       }
 
-      // Read existing content to determine append vs overwrite behavior
+      // 检查文件是否存在
       const existingContent = filesystem.readFile(filePath)
 
       if (appendMode && existingContent !== null) {
-        // Append mode: prepend newline only if content doesn't already end with one
+        // 追加模式
         const newContent = existingContent + (existingContent.endsWith('\n') ? '' : '\n') + text
         if (filesystem.writeFile(filePath, newContent)) {
-          // Redirect succeeded silently, matching Unix echo behavior
+          // 重定向成功，不输出任何内容
         } else {
           writeln(
             `${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`
           )
         }
       } else {
-        // Overwrite mode or create new file
+        // 覆盖模式或创建新文件
         if (existingContent !== null) {
-          // File exists, overwrite it
+          // 文件存在，直接写入
           if (filesystem.writeFile(filePath, text)) {
-            // Redirect succeeded silently, matching Unix echo behavior
+            // 重定向成功，不输出任何内容
           } else {
             writeln(
               `${ANSICode.red}echo: cannot write to '${filePath}': Permission denied${ANSICode.reset}`
             )
           }
         } else {
-          // File doesn't exist yet, create it
+          // 文件不存在，创建新文件
           if (filesystem.createFile(filePath, text)) {
-            // Redirect succeeded silently, matching Unix echo behavior
+            // 重定向成功，不输出任何内容
           } else {
             writeln(
               `${ANSICode.red}echo: cannot create file '${filePath}': No such file or directory${ANSICode.reset}`
@@ -939,7 +941,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Verify the parent directory exists before creating the file
+      // 检查父目录是否存在
       const parts = filePath.split('/').filter((p) => p !== '')
       parts.pop()
       const parentPath = parts.join('/')
@@ -960,7 +962,7 @@ export const commandHandlers: CommandMap = {
         }
       }
 
-      // If the file already exists, just update its mtime instead of erroring
+      // 检查文件是否已存在
       const existingNode = filesystem.getNodeByPath(filePath)
       if (existingNode) {
         if (existingNode.type === 'directory') {
@@ -969,7 +971,7 @@ export const commandHandlers: CommandMap = {
           )
           return
         }
-        // File already exists, update modification time
+        // 文件已存在，更新修改时间
         existingNode.mtime = Date.now()
         writeln(`${ANSICode.green}Updated: ${filePath}${ANSICode.reset}`)
         return
@@ -999,7 +1001,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Verify the source path exists before attempting copy
+      // 检查源文件是否存在
       const sourceNode = filesystem.getNodeByPath(source)
       if (!sourceNode) {
         writeln(
@@ -1008,7 +1010,7 @@ export const commandHandlers: CommandMap = {
         return
       }
 
-      // Verify the destination's parent directory exists
+      // 检查目标父目录是否存在
       const destParts = destination.split('/').filter((p) => p !== '')
       destParts.pop()
       const destParentPath = destParts.join('/')
@@ -1029,7 +1031,7 @@ export const commandHandlers: CommandMap = {
         }
       }
 
-      // Prevent overwriting existing files
+      // 检查目标是否已存在
       const existingNode = filesystem.getNodeByPath(destination)
       if (existingNode) {
         writeln(`${ANSICode.red}cp: cannot copy to '${destination}': File exists${ANSICode.reset}`)
@@ -1060,7 +1062,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Verify the source path exists before attempting move
+      // 检查源文件是否存在
       const sourceNode = filesystem.getNodeByPath(source)
       if (!sourceNode) {
         writeln(
@@ -1069,7 +1071,7 @@ export const commandHandlers: CommandMap = {
         return
       }
 
-      // Verify the destination's parent directory exists
+      // 检查目标父目录是否存在
       const destParts = destination.split('/').filter((p) => p !== '')
       destParts.pop()
       const destParentPath = destParts.join('/')
@@ -1148,7 +1150,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Validate that the search root path exists and is a directory
+      // 检查起始路径是否存在
       if (path) {
         const node = filesystem.getNodeByPath(path)
         if (!node) {
@@ -1186,7 +1188,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Filter to only valid, non-directory files before searching
+      // 验证所有文件是否存在且可读
       const validFiles: string[] = []
       for (const file of files) {
         const node = filesystem.getNodeByPath(file)
@@ -1214,7 +1216,7 @@ export const commandHandlers: CommandMap = {
 
       results.forEach((result) => {
         result.lines.forEach((line) => {
-          // Highlight matched text so it stands out in the terminal
+          // 高亮匹配的部分
           const highlightedLine = line.replace(
             new RegExp(pattern, 'gi'),
             (match) => `${ANSICode.red}${match}${ANSICode.reset}`
@@ -1239,7 +1241,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Verify the target file exists
+      // 检查文件是否存在
       const node = filesystem.getNodeByPath(filePath)
       if (!node) {
         writeln(
@@ -1248,7 +1250,7 @@ export const commandHandlers: CommandMap = {
         return
       }
 
-      // Simplified permission set (real chmod would parse octal/symbolic modes)
+      // 简化的权限设置
       const newPermissions = {
         user: { read: true, write: true, execute: true },
         group: { read: true, write: false, execute: true },
@@ -1287,7 +1289,7 @@ export const commandHandlers: CommandMap = {
     }
 
     try {
-      // Verify the target file exists
+      // 检查文件是否存在
       const node = filesystem.getNodeByPath(filePath)
       if (!node) {
         writeln(
@@ -1313,6 +1315,25 @@ export const commandHandlers: CommandMap = {
   },
 }
 
-export function getCommandHandler(command: CommandType): CommandHandler | null {
-  return commandHandlers[command] || null
+let builtinsRegistered = false
+
+export function registerBuiltinCommands(): void {
+  if (builtinsRegistered && commandRegistry.has('help')) return
+  builtinsRegistered = true
+
+  for (const [name, handler] of Object.entries(commandHandlers)) {
+    commandRegistry.register({
+      name,
+      description: COMMAND_DESCRIPTIONS[name as CommandType],
+      usage: COMMAND_USAGE[name as CommandType],
+      source: 'builtin',
+      handler,
+    })
+  }
+}
+
+registerBuiltinCommands()
+
+export function getCommandHandler(command: string): CommandHandler | null {
+  return commandRegistry.get(command)?.handler || null
 }

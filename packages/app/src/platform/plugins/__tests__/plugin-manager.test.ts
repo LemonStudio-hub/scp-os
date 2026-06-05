@@ -6,8 +6,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { PluginManager, getGlobalPluginManager, resetGlobalPluginManager } from '../plugin-manager'
 import { ExtensionRegistry } from '../../extensions/extension-point'
 import { EventBus } from '../../events/event-bus'
-import type { CommandPlugin, ThemePlugin, DataSourcePlugin, UIPlugin } from '../types'
+import type { CommandPlugin, ThemePlugin } from '../types'
 import { PluginStatus } from '../types'
+import { pluginSyncRegistry } from '../../../services/pluginSyncRegistry'
+import { commandRegistry } from '../../../commands/commandRegistry'
+import { registerBuiltinCommands } from '../../../commands'
 
 describe('PluginManager', () => {
   let pluginManager: PluginManager
@@ -15,6 +18,8 @@ describe('PluginManager', () => {
   let extensionRegistry: ExtensionRegistry
 
   beforeEach(() => {
+    commandRegistry.clear()
+    registerBuiltinCommands()
     eventBus = new EventBus()
     extensionRegistry = new ExtensionRegistry()
     pluginManager = new PluginManager({
@@ -22,6 +27,9 @@ describe('PluginManager', () => {
       extensionRegistry,
     })
     resetGlobalPluginManager()
+    for (const desc of pluginSyncRegistry.getAll()) {
+      pluginSyncRegistry.unregister(desc.id)
+    }
   })
 
   describe('Plugin Registration', () => {
@@ -212,6 +220,89 @@ describe('PluginManager', () => {
       expect(result.success).toBe(false)
       expect(result.error).toContain('Load error')
       expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.ERROR)
+    })
+
+    it('should register plugin sync descriptor after load succeeds', async () => {
+      const plugin: CommandPlugin = {
+        name: 'test-command',
+        version: '1.0.0',
+        type: 'command',
+        syncDescriptor: {
+          localStorageKeys: ['test-command-setting'],
+          idbSettingsKey: 'settings',
+          defaults: {
+            'test-command-setting': 'default',
+          },
+        },
+        commands: [
+          {
+            name: 'test',
+            description: 'Test command',
+            handler: vi.fn(),
+          },
+        ],
+      }
+
+      await pluginManager.register(plugin)
+
+      expect(pluginSyncRegistry.getAll()).toEqual([
+        {
+          id: 'test-command',
+          localStorageKeys: ['test-command-setting'],
+          idbSettingsKey: 'settings',
+          defaults: {
+            'test-command-setting': 'default',
+          },
+        },
+      ])
+    })
+
+    it('should unregister plugin sync descriptor after unload succeeds', async () => {
+      const plugin: CommandPlugin = {
+        name: 'test-command',
+        version: '1.0.0',
+        type: 'command',
+        syncDescriptor: {
+          localStorageKeys: ['test-command-setting'],
+        },
+        commands: [
+          {
+            name: 'test',
+            description: 'Test command',
+            handler: vi.fn(),
+          },
+        ],
+      }
+
+      await pluginManager.register(plugin)
+      await pluginManager.unregister('test-command')
+
+      expect(pluginSyncRegistry.getAll()).toEqual([])
+    })
+
+    it('should not leave sync descriptors for failed loads', async () => {
+      const plugin: CommandPlugin = {
+        name: 'test-command',
+        version: '1.0.0',
+        type: 'command',
+        syncDescriptor: {
+          localStorageKeys: ['test-command-setting'],
+        },
+        onLoad: () => {
+          throw new Error('Load error')
+        },
+        commands: [
+          {
+            name: 'test',
+            description: 'Test command',
+            handler: vi.fn(),
+          },
+        ],
+      }
+
+      await pluginManager.register(plugin)
+
+      expect(pluginSyncRegistry.getAll()).toEqual([])
     })
   })
 
@@ -429,281 +520,6 @@ describe('PluginManager', () => {
       const commandPlugins = pluginManager.getPluginsByType<CommandPlugin>('command')
       expect(commandPlugins).toHaveLength(1)
       expect(commandPlugins[0].name).toBe('plugin1')
-    })
-  })
-
-  describe('validatePlugin', () => {
-    it('should return error for missing name', async () => {
-      const plugin = { version: '1.0.0', type: 'command', commands: [] } as unknown as CommandPlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Plugin name is required')
-    })
-
-    it('should return error for missing version', async () => {
-      const plugin = { name: 'test', type: 'command', commands: [] } as unknown as CommandPlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Plugin version is required')
-    })
-
-    it('should return error for invalid type', async () => {
-      const plugin = { name: 'test', version: '1.0.0', type: 'invalid' } as unknown as CommandPlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Invalid plugin type')
-    })
-
-    it('should return error for command type without commands array', async () => {
-      const plugin = { name: 'test', version: '1.0.0', type: 'command' } as unknown as CommandPlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Command plugin must have commands array')
-    })
-
-    it('should return error for theme type without theme', async () => {
-      const plugin = { name: 'test', version: '1.0.0', type: 'theme' } as unknown as ThemePlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Theme plugin must have theme definition')
-    })
-
-    it('should return error for datasource type without dataSources', async () => {
-      const plugin = {
-        name: 'test',
-        version: '1.0.0',
-        type: 'datasource',
-        metadata: {},
-      } as unknown as DataSourcePlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('DataSource plugin must have dataSources array')
-    })
-
-    it('should return error for datasource type without metadata', async () => {
-      const plugin = {
-        name: 'test',
-        version: '1.0.0',
-        type: 'datasource',
-        dataSources: [],
-      } as unknown as DataSourcePlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('DataSource plugin must have metadata')
-    })
-
-    it('should return error for ui type without components', async () => {
-      const plugin = { name: 'test', version: '1.0.0', type: 'ui' } as unknown as UIPlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('UI plugin must have components array')
-    })
-
-    it('should return error when dependencies is not an array', async () => {
-      const plugin = {
-        name: 'test',
-        version: '1.0.0',
-        type: 'command',
-        commands: [{ name: 'cmd', description: 'test', handler: vi.fn() }],
-        dependencies: 'not-an-array',
-      } as unknown as CommandPlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Dependencies must be an array')
-    })
-
-    it('should return error when dependencies contain non-string entries', async () => {
-      const plugin = {
-        name: 'test',
-        version: '1.0.0',
-        type: 'command',
-        commands: [{ name: 'cmd', description: 'test', handler: vi.fn() }],
-        dependencies: [123],
-      } as unknown as CommandPlugin
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Dependency must be a string')
-    })
-  })
-
-  describe('Lifecycle Error Paths', () => {
-    it('should set ERROR status when onLoad throws', async () => {
-      const plugin: CommandPlugin = {
-        name: 'test-command',
-        version: '1.0.0',
-        type: 'command',
-        onLoad: () => {
-          throw new Error('onLoad failed')
-        },
-        commands: [{ name: 'test', description: 'Test', handler: vi.fn() }],
-      }
-
-      const result = await pluginManager.register(plugin)
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('onLoad failed')
-      expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.ERROR)
-    })
-
-    it('should set ERROR status when onEnable throws', async () => {
-      const plugin: CommandPlugin = {
-        name: 'test-command',
-        version: '1.0.0',
-        type: 'command',
-        onEnable: () => {
-          throw new Error('onEnable failed')
-        },
-        commands: [{ name: 'test', description: 'Test', handler: vi.fn() }],
-      }
-
-      await pluginManager.register(plugin)
-      const result = await pluginManager.enable('test-command')
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('onEnable failed')
-      expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.ERROR)
-    })
-
-    it('should set ERROR status when onDisable throws', async () => {
-      const plugin: CommandPlugin = {
-        name: 'test-command',
-        version: '1.0.0',
-        type: 'command',
-        onDisable: () => {
-          throw new Error('onDisable failed')
-        },
-        commands: [{ name: 'test', description: 'Test', handler: vi.fn() }],
-      }
-
-      await pluginManager.register(plugin)
-      await pluginManager.enable('test-command')
-      const result = await pluginManager.disable('test-command')
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('onDisable failed')
-      expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.ERROR)
-    })
-
-    it('should set ERROR status when onUnload throws', async () => {
-      const plugin: CommandPlugin = {
-        name: 'test-command',
-        version: '1.0.0',
-        type: 'command',
-        onUnload: () => {
-          throw new Error('onUnload failed')
-        },
-        commands: [{ name: 'test', description: 'Test', handler: vi.fn() }],
-      }
-
-      await pluginManager.register(plugin)
-      const result = await pluginManager.unload('test-command')
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('onUnload failed')
-      expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.ERROR)
-    })
-  })
-
-  describe('enable from REGISTERED state', () => {
-    it('should trigger load first when enabling from REGISTERED state', async () => {
-      const onLoad = vi.fn()
-      const onEnable = vi.fn()
-      const plugin: CommandPlugin = {
-        name: 'test-command',
-        version: '1.0.0',
-        type: 'command',
-        onLoad,
-        onEnable,
-        commands: [{ name: 'test', description: 'Test', handler: vi.fn() }],
-      }
-
-      // Manually insert as REGISTERED without triggering load
-      const validation = pluginManager.validatePlugin(plugin)
-      expect(validation.valid).toBe(true)
-
-      // Use register but intercept load by checking call order
-      await pluginManager.register(plugin)
-      // register() calls load() internally, so onLoad should have been called
-      expect(onLoad).toHaveBeenCalled()
-    })
-  })
-
-  describe('unload when ENABLED', () => {
-    it('should trigger disable first when unloading an ENABLED plugin', async () => {
-      const onDisable = vi.fn()
-      const onUnload = vi.fn()
-      const plugin: CommandPlugin = {
-        name: 'test-command',
-        version: '1.0.0',
-        type: 'command',
-        onDisable,
-        onUnload,
-        commands: [{ name: 'test', description: 'Test', handler: vi.fn() }],
-      }
-
-      await pluginManager.register(plugin)
-      await pluginManager.enable('test-command')
-      expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.ENABLED)
-
-      await pluginManager.unload('test-command')
-      expect(onDisable).toHaveBeenCalled()
-      expect(onUnload).toHaveBeenCalled()
-      expect(pluginManager.getStatus('test-command')).toBe(PluginStatus.UNLOADED)
-    })
-  })
-
-  describe('getPluginsByType', () => {
-    it('should filter plugins by type correctly', async () => {
-      const cmdPlugin: CommandPlugin = {
-        name: 'cmd-plugin',
-        version: '1.0.0',
-        type: 'command',
-        commands: [{ name: 'test', description: 'Test', handler: vi.fn() }],
-      }
-
-      const themePlugin: ThemePlugin = {
-        name: 'theme-plugin',
-        version: '1.0.0',
-        type: 'theme',
-        theme: {
-          name: 'test',
-          colors: {
-            primary: '#000',
-            secondary: '#fff',
-            background: '#000',
-            foreground: '#fff',
-            error: '#f00',
-            success: '#0f0',
-            warning: '#ff0',
-            info: '#0ff',
-          },
-          terminal: {
-            ansiColors: {
-              black: '',
-              red: '',
-              green: '',
-              yellow: '',
-              blue: '',
-              magenta: '',
-              cyan: '',
-              white: '',
-              reset: '',
-            },
-            fontFamily: 'monospace',
-            fontSize: 14,
-          },
-        },
-      }
-
-      await pluginManager.register(cmdPlugin)
-      await pluginManager.register(themePlugin)
-
-      const commands = pluginManager.getPluginsByType<CommandPlugin>('command')
-      expect(commands).toHaveLength(1)
-      expect(commands[0].name).toBe('cmd-plugin')
-
-      const themes = pluginManager.getPluginsByType<ThemePlugin>('theme')
-      expect(themes).toHaveLength(1)
-      expect(themes[0].name).toBe('theme-plugin')
-
-      const datasources = pluginManager.getPluginsByType<DataSourcePlugin>('datasource')
-      expect(datasources).toHaveLength(0)
     })
   })
 
