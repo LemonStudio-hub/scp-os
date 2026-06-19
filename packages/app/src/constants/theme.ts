@@ -48,10 +48,10 @@ export const ANSICode = {
   brightBlue: '\x1b[94m',
   brightMagenta: '\x1b[95m',
   brightCyan: '\x1b[96m',
-  // 命令高亮配置
-  command: '\x1b[32m', // 绿色高亮有效命令
-  commandInvalid: '\x1b[37m', // 白色显示无效输入
-  prompt: '\x1b[31m', // 红色提示符
+  // Command highlighting: green for valid, white for invalid, red for the prompt prefix
+  command: '\x1b[32m',
+  commandInvalid: '\x1b[37m',
+  prompt: '\x1b[31m',
   brightWhite: '\x1b[97m',
 }
 

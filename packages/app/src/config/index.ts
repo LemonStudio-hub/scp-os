@@ -1,6 +1,7 @@
 /**
- * 统一配置管理模块
- * 从环境变量读取配置，提供默认值
+ * Centralized configuration module.
+ * Reads from VITE_ environment variables so all config is in one place
+ * and every consumer gets the same defaults.
  */
 
 export const config = {

@@ -34,7 +34,7 @@ new_sqlite_classes = ["ChatRoomDO"]
 [triggers]
 crons = ["*/10 * * * *"]
 
-# ─── 生产环境（正式部署）────────────────────────────────
+# ─── Production (deployed to Cloudflare) ────────────────────────
 # wrangler deploy --env production
 [env.production]
 vars = { ENVIRONMENT = "production", API_DOMAIN = "os1api.daum.pw" }
@@ -59,7 +59,7 @@ migrations_dir = "migrations"
 binding = "SCP_CACHE"
 id = "40f0d23a05e14f7484232bc1960e217f"
 
-# ─── 开发环境（本地测试）────────────────────────────────
+# ─── Development (local testing) ────────────────────────────────
 # wrangler dev --env development
 [env.development]
 vars = { ENVIRONMENT = "development", API_DOMAIN = "api.scpos.site" }

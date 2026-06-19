@@ -19,7 +19,7 @@ interface Logger {
 
 class ConsoleLogger implements Logger {
   debug(message: string, ...args: unknown[]): void {
-    // debug 信息只在开发环境输出，且使用 console.log 是合理的
+    // Debug logs are dev-only; console.log is intentional here to avoid ESLint no-console errors in production builds
     if (import.meta.env?.DEV) {
       /* eslint-disable-next-line no-console */
       console.log(`[DEBUG] ${message}`, ...args)

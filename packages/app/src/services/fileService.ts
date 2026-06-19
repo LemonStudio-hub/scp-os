@@ -32,7 +32,7 @@ export interface UploadResponse {
 }
 
 /**
- * 上传文件到 R2
+ * Upload a file to R2 via the worker API.
  */
 export async function uploadFile(file: File, folder = 'uploads'): Promise<UploadResponse> {
   const formData = new FormData()
@@ -48,7 +48,7 @@ export async function uploadFile(file: File, folder = 'uploads'): Promise<Upload
 }
 
 /**
- * 获取文件列表
+ * List files stored in R2, optionally filtered by prefix.
  */
 export async function listFiles(prefix = '', limit = 100): Promise<FileListResponse> {
   const url = new URL(`${API_BASE}/files`)
@@ -60,7 +60,7 @@ export async function listFiles(prefix = '', limit = 100): Promise<FileListRespo
 }
 
 /**
- * 删除文件
+ * Delete a file from R2 by its key.
  */
 export async function deleteFile(key: string): Promise<{ success: boolean; error?: string }> {
   const response = await fetch(`${API_BASE}/files/${encodeURIComponent(key)}`, {
@@ -70,7 +70,7 @@ export async function deleteFile(key: string): Promise<{ success: boolean; error
 }
 
 /**
- * 更新文件内容（文本文件）
+ * Update the content of a text file already stored in R2.
  */
 export async function updateFileContent(
   key: string,
@@ -85,15 +85,16 @@ export async function updateFileContent(
 }
 
 /**
- * 读取文件内容（自动处理 R2 URL）
- * 如果虚拟文件系统中存的是 R2 URL，会自动 fetch 实际内容
+ * Read file content, transparently resolving R2 URLs.
+ * The virtual filesystem stores either inline content or an R2 URL;
+ * this function fetches the actual content when a URL is stored.
  */
 export async function readFileContent(path: string): Promise<string | null> {
   const data = filesystem.readFile(path)
   if (data === null) return null
   if (typeof data !== 'string') return null
 
-  // 如果内容是 R2 URL，fetch 获取实际内容
+  // If the stored value is an R2 URL, fetch the actual content from it
   if (data.startsWith('http')) {
     try {
       const response = await fetch(data, { cache: 'no-cache' })
@@ -110,26 +111,25 @@ export async function readFileContent(path: string): Promise<string | null> {
 }
 
 /**
- * 保存文本文件到 R2
- * 更新虚拟文件系统中的 URL
+ * Save a text file to R2 and update the virtual filesystem with the resulting URL.
  */
 export async function saveTextFile(path: string, content: string): Promise<boolean> {
   try {
-    // 检查是否已有 R2 key
+    // Check if this path already has an R2 object so we can update instead of re-upload
     const existing = filesystem.readFile(path)
     let key: string | null = null
 
     if (typeof existing === 'string' && existing.startsWith(`${API_BASE}/files/`)) {
-      // 提取 key
+      // Extract the R2 object key from the stored URL
       key = decodeURIComponent(existing.replace(`${API_BASE}/files/`, ''))
     }
 
     if (key) {
-      // 更新已有文件
+      // Update the existing R2 object in-place
       const result = await updateFileContent(key, content)
       return result.success
     } else {
-      // 创建新文件：先上传到 R2
+      // New file: upload to R2 first, then register the URL in the virtual filesystem
       const fileName = path.split('/').pop() || 'untitled.txt'
       const blob = new Blob([content], { type: 'text/plain' })
       const file = new File([blob], fileName, { type: 'text/plain' })
@@ -147,7 +147,7 @@ export async function saveTextFile(path: string, content: string): Promise<boole
 }
 
 /**
- * 获取文件下载/预览 URL
+ * Build the direct download/preview URL for an R2 object key.
  */
 export function getFileUrl(key: string): string {
   return `${API_BASE}/files/${encodeURIComponent(key)}`

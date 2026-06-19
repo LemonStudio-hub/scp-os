@@ -16,13 +16,13 @@ export default defineConfig({
       name: 'copy-service-worker',
       apply: 'build',
       async generateBundle() {
-        // 编译 Service Worker TypeScript 到 JavaScript
+        // Service Worker must be compiled from TS to JS because browsers cannot execute TypeScript directly
         const swSource = join(__dirname, 'public/sw.ts')
         const swDest = join(__dirname, '../../dist/sw.js')
 
         if (existsSync(swSource)) {
           try {
-            // 使用 esbuild 编译 TypeScript
+            // esbuild is used instead of tsc for faster build times in the plugin pipeline
             const sourceCode = readFileSync(swSource, 'utf-8')
             const result = await esbuild.transform(sourceCode, {
               loader: 'ts',
@@ -39,7 +39,7 @@ export default defineConfig({
           }
         }
 
-        // 复制 manifest.json
+        // Copy PWA manifest to dist so the browser can discover the app manifest
         const manifestSource = join(__dirname, 'public/manifest.json')
         const manifestDest = join(__dirname, '../../dist/manifest.json')
 
@@ -48,7 +48,7 @@ export default defineConfig({
           console.log('Manifest copied to dist/manifest.json')
         }
 
-        // 复制离线页面
+        // Copy offline fallback page for PWA when network is unavailable
         const offlineSource = join(__dirname, 'public/offline.html')
         const offlineDest = join(__dirname, '../../dist/offline.html')
 

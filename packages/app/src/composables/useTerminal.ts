@@ -6,16 +6,11 @@ import type { TerminalInstance } from '../types/terminal'
 import {
   createTerminalConfig,
   sleep,
-  isPrintableCharacter,
   isMobileDevice,
 } from '../utils/terminal'
-import { AVAILABLE_COMMANDS } from '../constants/commands'
 import { ANSICode } from '../constants/theme'
-import { getCommandHandler } from '../commands'
-import type { CommandType } from '../types/command'
-import { autocompleteService } from '../utils/commandAutocomplete'
-import { useCommandHistory } from './useCommandHistory'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
+import { useTerminalEmulator } from '../gui/composables/useTerminalEmulator'
 import { getBootLogs, getShutdownLogs } from '../constants/bootLogs'
 import { config } from '../config'
 import { useTabsStore } from '../stores/tabs'
@@ -93,17 +88,24 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     fitAddon: null,
   })
 
-  const { addToHistory, navigateHistory: navHistory, resetIndex } = useCommandHistory()
-  const currentInput = ref('')
   const systemStore = useSystemStore()
 
-  // 补全相关状态
-  const autocompleteSuggestions = ref<string[]>([])
-  const autocompleteIndex = ref(0)
-
-  // 标记：防止重复绑定事件监听器
+  // Guard against duplicate event listener registration
   let commandHandlerSetup = false
   let resizeHandler: (() => void) | null = null
+
+  // Unified input handling — shared with GUI terminal components
+  const {
+    inputBuffer,
+    writePrompt,
+    handleInput,
+    navigateHistory,
+    autocomplete,
+    executeCommand,
+  } = useTerminalEmulator({
+    getTerminal: () => terminalInstance.value.terminal,
+    promptStyle: 'legacy',
+  })
 
   const initTerminal = () => {
     try {
@@ -124,7 +126,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         }
         terminalInstance.value.terminal.focus()
       } else {
-        throw new Error('容器元素未找到')
+        throw new Error('Container element not found')
       }
 
       resizeHandler = () => {
@@ -141,14 +143,14 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
           errorHandler.handleError({
             type: ErrorType.SYSTEM_ERROR,
             severity: ErrorSeverity.LOW,
-            message: '终端调整大小失败',
+            message: 'Terminal resize failed',
             details: error instanceof Error ? error.message : String(error),
           })
         }
       }
       window.addEventListener('resize', resizeHandler)
 
-      // 设置终端写入器到错误处理器
+      // Wire terminal writer into error handler so errors display in terminal
       errorHandler.setTerminalWriter((data: string) => {
         terminalInstance.value.terminal?.write(data)
       })
@@ -178,7 +180,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       const errorObj = errorHandler.handleError({
         type: ErrorType.TERMINAL_INIT_FAILED,
         severity: ErrorSeverity.CRITICAL,
-        message: '终端初始化失败',
+        message: 'Terminal initialization failed',
         details: error instanceof Error ? error.message : String(error),
         logToConsole: true,
       })
@@ -196,13 +198,13 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
         terminalInstance.value.terminal.dispose()
         terminalInstance.value.terminal = null
       }
-      // 重置事件监听器标志
+      // Reset the guard so listeners can be re-attached on re-init
       commandHandlerSetup = false
     } catch (error) {
       errorHandler.handleError({
         type: ErrorType.TERMINAL_DISPOSE_FAILED,
         severity: ErrorSeverity.MEDIUM,
-        message: '终端销毁失败',
+        message: 'Terminal disposal failed',
         details: error instanceof Error ? error.message : String(error),
         logToConsole: true,
       })
@@ -222,11 +224,11 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     const bootLogs = getBootLogs(fastMode || config.app.fastBoot)
 
-    // 动态速度配置（已放慢，提供更好的视觉效果）
+    // Tuned for a slower, more cinematic boot animation
     const baseDelay = fastMode || config.app.fastBoot ? 5 : 30
-    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.98 // 速度衰减因子
-    const minDelay = fastMode || config.app.fastBoot ? 3 : 15 // 最小延迟
-    const maxDelay = fastMode || config.app.fastBoot ? 10 : 60 // 最大延迟
+    const speedDecay = fastMode || config.app.fastBoot ? 0.98 : 0.98 // Multiplier applied each line to gradually speed up
+    const minDelay = fastMode || config.app.fastBoot ? 3 : 15 // Floor to prevent instant playback
+    const maxDelay = fastMode || config.app.fastBoot ? 10 : 60 // Cap to prevent excessively long pauses
 
     let currentSpeedMultiplier = 1.0
 
@@ -234,20 +236,20 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       try {
         terminal.writeln(line)
 
-        // 计算动态延迟
+        // Calculate dynamic delay based on multiple factors
         let dynamicDelay = baseDelay
 
-        // 1. 根据行长度调整（更长的行需要更长时间阅读）
-        const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length // 移除 ANSI 颜色代码
+        // 1. Longer lines take more time to read
+        const lineLength = line.replace(/\x1b\[[0-9;]*m/g, '').length // Strip ANSI codes for accurate length
         const lengthMultiplier = Math.min(Math.max(lineLength / 50, 0.8), 1.5)
 
-        // 2. 根据是否为空行调整（空行快速滚动）
+        // 2. Empty lines scroll quickly
         const isEmptyLine = line.trim().length === 0
         if (isEmptyLine) {
           dynamicDelay = minDelay
         }
 
-        // 3. 根据是否包含重要信息调整（颜色代码、系统状态等）
+        // 3. Important status lines linger longer so users can read them
         const hasImportantInfo =
           line.includes('ONLINE') ||
           line.includes('Security') ||
@@ -256,37 +258,37 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
           line.includes('COMPLETE') ||
           line.includes('══════════')
         if (hasImportantInfo) {
-          dynamicDelay *= 1.3 // 重要信息显示更长时间
+          dynamicDelay *= 1.3
         }
 
-        // 4. 根据是否为ASCII艺术框调整
+        // 4. ASCII art borders get a slight extra pause
         const isBoxArt = line.includes('═') || line.includes('█')
         if (isBoxArt) {
           dynamicDelay *= 1.2
         }
 
-        // 5. 应用长度倍数
+        // 5. Apply length multiplier
         if (!isEmptyLine) {
           dynamicDelay *= lengthMultiplier
         }
 
-        // 6. 应用当前速度倍数（逐渐加快）
+        // 6. Apply progressive speed multiplier (boot accelerates over time)
         dynamicDelay *= currentSpeedMultiplier
 
-        // 7. 确保延迟在合理范围内
+        // 7. Clamp delay to configured bounds
         dynamicDelay = Math.max(minDelay, Math.min(maxDelay, dynamicDelay))
 
-        // 8. 应用随机变化（避免过于机械）
+        // 8. Add jitter to avoid a mechanical, metronome-like feel
         if (!fastMode) {
-          dynamicDelay *= 0.9 + Math.random() * 0.2 // ±10% 的随机变化
+          dynamicDelay *= 0.9 + Math.random() * 0.2 // +/-10% random variation
         }
 
         await sleep(Math.round(dynamicDelay))
 
-        // 更新速度倍数（逐渐加快）
+        // Decay the speed multiplier so later lines display faster
         if (!fastMode) {
           currentSpeedMultiplier *= speedDecay
-          currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier) // 最多加快到2倍
+          currentSpeedMultiplier = Math.max(0.5, currentSpeedMultiplier) // Cap at 2x speedup
         }
       } catch (error) {
         errorHandler.handleError({
@@ -299,7 +301,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     }
 
     try {
-      // 最终延迟（让用户有时间阅读最后的信息）
+      // Final pause so users can read the last boot message
       await sleep(fastMode || config.app.fastBoot ? 100 : 500)
     } catch (error) {
       errorHandler.handleError({
@@ -543,168 +545,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
     systemStore.markSystemRunning()
   }
 
-  const writePrompt = () => {
-    const terminal = terminalInstance.value.terminal
-    if (!terminal) return
-    terminal.write(`${ANSICode.prompt}SCP-ROOT>${ANSICode.reset} `)
-  }
-
-  const replaceCurrentLine = (newInput: string) => {
-    const terminal = terminalInstance.value.terminal
-    if (!terminal) return
-
-    // 清除当前行并重新写入提示和新内容
-    terminal.write('\r\x1b[K') // 回车并清除行
-    terminal.write(`${ANSICode.prompt}SCP-ROOT>${ANSICode.reset} `)
-
-    // 检查输入是否是有效命令
-    const inputLower = newInput.toLowerCase().trim()
-    const isCommand = AVAILABLE_COMMANDS.some((cmd) => cmd === inputLower)
-
-    if (isCommand && newInput.trim() !== '') {
-      // 命令高亮：绿色
-      terminal.write(`${ANSICode.command}${newInput}${ANSICode.reset}`)
-    } else {
-      // 普通输入：白色
-      terminal.write(newInput)
-    }
-
-    currentInput.value = newInput
-
-    // 如果输入发生变化，清除补全建议
-    if (autocompleteSuggestions.value.length > 0) {
-      const lastSuggestion = autocompleteSuggestions.value[autocompleteIndex.value]
-      if (newInput !== lastSuggestion) {
-        autocompleteSuggestions.value = []
-        autocompleteIndex.value = 0
-      }
-    }
-  }
-
-  const navigateHistory = (direction: number) => {
-    navHistory(direction, (command) => {
-      // 更新当前输入
-      currentInput.value = command
-      replaceCurrentLine(command)
-    })
-  }
-
-  const autocomplete = () => {
-    const terminal = terminalInstance.value.terminal
-    if (!terminal || currentInput.value.trim() === '') return
-
-    // 获取补全建议
-    const suggestions = autocompleteService.getSuggestions(currentInput.value)
-
-    if (suggestions.length === 0) {
-      // 没有匹配的建议
-      return
-    }
-
-    if (suggestions.length === 1) {
-      // 单个匹配，直接应用
-      const suggestion = suggestions[0]
-      currentInput.value = suggestion.text
-      replaceCurrentLine(currentInput.value)
-      autocompleteService.recordChoice(currentInput.value, suggestion.text)
-      autocompleteSuggestions.value = []
-      autocompleteIndex.value = 0
-    } else {
-      // 多个匹配
-      const formatted = autocompleteService.formatSuggestions(suggestions)
-
-      // 如果已经有显示的建议，循环选择
-      if (autocompleteSuggestions.value.length > 0) {
-        autocompleteIndex.value = autocompleteService.cycleSuggestions(
-          suggestions,
-          autocompleteIndex.value
-        )
-        const selected = autocompleteService.getSuggestionAt(suggestions, autocompleteIndex.value)
-        if (selected) {
-          currentInput.value = selected
-          replaceCurrentLine(currentInput.value)
-        }
-      } else {
-        // 第一次显示建议列表
-        terminal.writeln('\r\n')
-        formatted.forEach((line) => terminal.writeln(line))
-        writePrompt()
-        replaceCurrentLine(currentInput.value)
-        autocompleteSuggestions.value = suggestions.map((s) => s.text)
-        autocompleteIndex.value = 0
-      }
-    }
-  }
-
-  const executeCommand = async () => {
-    const terminal = terminalInstance.value.terminal
-    if (!terminal) return
-
-    const command = currentInput.value.trim()
-    if (!command) {
-      writePrompt()
-      return
-    }
-
-    addToHistory(command)
-    resetIndex()
-    currentInput.value = ''
-
-    // 清除补全建议
-    autocompleteSuggestions.value = []
-    autocompleteIndex.value = 0
-
-    await processCommand(command)
-    writePrompt()
-  }
-
-  // 辅助函数：安全的终端写入
-  const safeTerminalWrite = (data: string, isWriteln = false) => {
-    const terminal = terminalInstance.value.terminal
-    if (!terminal) return
-
-    try {
-      if (isWriteln) {
-        terminal.writeln(data)
-      } else {
-        terminal.write(data)
-      }
-    } catch (error) {
-      errorHandler.handleError({
-        type: ErrorType.TERMINAL_WRITE_FAILED,
-        severity: ErrorSeverity.LOW,
-        message: '终端写入失败',
-        details: error instanceof Error ? error.message : String(error),
-      })
-    }
-  }
-
-  // 辅助函数：执行命令处理器（带错误处理，正确处理 async handler）
-  const executeCommandHandler = async (handler: any, args: string[], cmd: string) => {
-    const terminal = terminalInstance.value.terminal
-    if (!terminal) return
-
-    try {
-      await handler(
-        args,
-        (data: string) => safeTerminalWrite(data, false),
-        (data: string) => safeTerminalWrite(data, true)
-      )
-    } catch (error) {
-      errorHandler.handleError({
-        type: ErrorType.COMMAND_EXECUTION_FAILED,
-        severity: ErrorSeverity.MEDIUM,
-        message: `命令执行失败: ${cmd}`,
-        details: error instanceof Error ? error.message : String(error),
-        logToConsole: true,
-      })
-      terminal.writeln(`${ANSICode.red}命令执行失败: ${cmd}${ANSICode.reset}`)
-      terminal.writeln(
-        `${ANSICode.yellow}详情: ${error instanceof Error ? error.message : String(error)}${ANSICode.reset}`
-      )
-    }
-  }
-
+  // System-state guard: only 'start' is allowed when the system is offline
   const processCommand = async (command: string) => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) {
@@ -717,49 +558,29 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
       return
     }
 
-    try {
-      const [cmd, ...args] = command.toLowerCase().trim().split(/\s+/)
+    const cmd = command.toLowerCase().trim().split(/\s+/)[0]
 
-      // If system is not running, only allow 'start' command
-      if (!systemStore.isRunning && cmd !== 'start') {
-        terminal.writeln(
-          `${ANSICode.yellow}[!] System is offline. Please boot the system first.${ANSICode.reset}`
-        )
-        terminal.writeln('')
-        terminal.writeln(`${ANSICode.gray}Usage: Type "start" to boot the system.${ANSICode.reset}`)
-        terminal.writeln(
-          `${ANSICode.gray}       Type "help" after booting to see available commands.${ANSICode.reset}`
-        )
-        terminal.writeln('')
-        return
-      }
-
-      const handler = getCommandHandler(cmd as CommandType)
-
-      if (handler) {
-        await executeCommandHandler(handler, args, cmd)
-      } else {
-        terminal.writeln(
-          `${ANSICode.red}Unknown command: ${cmd}. Type "help" to see available commands.${ANSICode.reset}`
-        )
-      }
-    } catch (error) {
-      errorHandler.handleError({
-        type: ErrorType.COMMAND_PARSING_FAILED,
-        severity: ErrorSeverity.MEDIUM,
-        message: 'Command parsing failed',
-        details: error instanceof Error ? error.message : String(error),
-        logToConsole: true,
-      })
-      terminal.writeln(`${ANSICode.red}Command parsing failed${ANSICode.reset}`)
+    if (!systemStore.isRunning && cmd !== 'start') {
+      terminal.writeln(
+        `${ANSICode.yellow}[!] System is offline. Please boot the system first.${ANSICode.reset}`
+      )
+      terminal.writeln('')
+      terminal.writeln(`${ANSICode.gray}Usage: Type "start" to boot the system.${ANSICode.reset}`)
+      terminal.writeln(
+        `${ANSICode.gray}       Type "help" after booting to see available commands.${ANSICode.reset}`
+      )
+      terminal.writeln('')
+      return
     }
+
+    await executeCommand(command)
   }
 
   const setupCommandHandler = () => {
     const terminal = terminalInstance.value.terminal
     if (!terminal) return
 
-    // 防止重复绑定事件监听器
+    // Prevent duplicate event listener binding
     if (commandHandlerSetup) {
       return
     }
@@ -767,46 +588,12 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
     terminal.onData((data) => {
       if (data === '\r') {
-        // Enter
+        // Enter — execute with system-state guard, then write prompt
         terminal.write('\r\n')
-        executeCommand()
-      } else if (data === '\x1b[A') {
-        // Arrow Up
-        navigateHistory(-1)
-        // 清除补全建议
-        autocompleteSuggestions.value = []
-        autocompleteIndex.value = 0
-      } else if (data === '\x1b[B') {
-        // Arrow Down
-        navigateHistory(1)
-        // 清除补全建议
-        autocompleteSuggestions.value = []
-        autocompleteIndex.value = 0
-      } else if (data === '\t') {
-        // Tab
-        autocomplete()
-      } else if (data === '\x7f') {
-        // Backspace
-        if (currentInput.value.length > 0) {
-          currentInput.value = currentInput.value.slice(0, -1)
-          replaceCurrentLine(currentInput.value)
-        }
-        // 清除补全建议
-        if (autocompleteSuggestions.value.length > 0) {
-          autocompleteSuggestions.value = []
-          autocompleteIndex.value = 0
-        }
-      } else if (data === '\x03') {
-        // Ctrl+C
-        terminal.write('^C\r\n')
-        currentInput.value = ''
-        // 清除补全建议
-        autocompleteSuggestions.value = []
-        autocompleteIndex.value = 0
-        writePrompt()
-      } else if (isPrintableCharacter(data)) {
-        currentInput.value += data
-        replaceCurrentLine(currentInput.value)
+        processCommand(inputBuffer.value).then(() => writePrompt())
+      } else {
+        // Delegate all other input to the unified handler
+        handleInput(data)
       }
     })
   }
@@ -837,7 +624,7 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
 
   return {
     terminalInstance,
-    currentInput,
+    inputBuffer,
     initTerminal,
     destroyTerminal,
     displayBootLog,

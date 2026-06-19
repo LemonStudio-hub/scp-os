@@ -1,11 +1,11 @@
 /**
- * 安全检查命令日志生成器
- * 模拟真实的系统安全检查过程
+ * Security check command log generator.
+ * Simulates a realistic system security audit for terminal display.
  */
 
 import { ANSICode } from '../constants/theme'
 
-// 模拟文件系统结构
+// Simulated filesystem paths for realistic scan output
 const FILE_SYSTEM = [
   '/etc/scp-security/',
   '/etc/scp-security/protocols/',
@@ -53,7 +53,7 @@ const FILE_NAMES = [
   'security_scan.result',
 ]
 
-// 安全检查阶段定义
+// Ordered security check phases with display labels and colors
 const CHECK_PHASES = [
   { name: 'SYSTEM_SCAN', icon: 'SCAN', color: ANSICode.cyan },
   { name: 'FILE_INTEGRITY', icon: 'FINT', color: ANSICode.yellow },
@@ -69,8 +69,7 @@ interface ProgressState {
 }
 
 /**
- * 生成 Linux 风格进度条
- * [████████░░░░░░░░░░░░] 40%
+ * Render a Linux-style progress bar: [████████░░░░░░░░░░░░] 40%
  */
 export function generateProgressBar(state: ProgressState): string {
   const percentage = Math.floor((state.current / state.total) * 100)
@@ -84,7 +83,7 @@ export function generateProgressBar(state: ProgressState): string {
 }
 
 /**
- * 生成随机文件路径
+ * Generate a random file path from the simulated filesystem.
  */
 function randomFilePath(): string {
   const dir = FILE_SYSTEM[Math.floor(Math.random() * FILE_SYSTEM.length)]
@@ -93,7 +92,7 @@ function randomFilePath(): string {
 }
 
 /**
- * 生成随机文件大小
+ * Generate a random file size string (bytes or KB).
  */
 function randomFileSize(): string {
   const size = Math.floor(Math.random() * 50000) + 100
@@ -102,7 +101,7 @@ function randomFileSize(): string {
 }
 
 /**
- * 生成随机检查状态
+ * Roll a random check status (mostly OK, rarely WARN or FAIL).
  */
 function randomStatus(): { icon: string; color: string; text: string } {
   const rand = Math.random()
@@ -115,7 +114,7 @@ function randomStatus(): { icon: string; color: string; text: string } {
 }
 
 /**
- * 生成完整的安全检查日志
+ * Generate the full security check log output with all phases and summary.
  */
 export function generateSecurityCheckLogs(): string[] {
   const logs: string[] = []
@@ -141,7 +140,7 @@ export function generateSecurityCheckLogs(): string[] {
   const totalFiles = 150 + Math.floor(Math.random() * 50)
   let filesChecked = 0
 
-  // 每个检查阶段
+  // Iterate through each security check phase
   for (const phase of CHECK_PHASES) {
     logs.push(`${phase.color}[${phase.icon}] Starting ${phase.name} phase...${ANSICode.reset}`)
     logs.push('')
@@ -164,7 +163,7 @@ export function generateSecurityCheckLogs(): string[] {
         `${phase.color}[${phase.icon}]${ANSICode.reset}   Status: ${status.color}${status.icon} ${status.text}${ANSICode.reset}`
       )
 
-      // 每 10 个文件显示进度条
+      // Show progress bar every 10 files and at the end
       if (filesChecked % 10 === 0 || filesChecked === totalFiles) {
         const progress = generateProgressBar({
           current: filesChecked,
@@ -224,7 +223,7 @@ export function generateSecurityCheckLogs(): string[] {
 }
 
 /**
- * 生成随机校验和
+ * Generate a random 32-character hex checksum.
  */
 function generateChecksum(): string {
   const chars = '0123456789abcdef'

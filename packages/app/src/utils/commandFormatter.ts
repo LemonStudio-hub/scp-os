@@ -1,10 +1,10 @@
 import { ANSICode } from '../constants/theme'
 
 /**
- * 创建带边框的文本框
- * @param lines 内容行数组
- * @param title 可选的标题
- * @returns 格式化后的行数组
+ * Wrap content lines in a decorative border, optionally with a centered title
+ * @param lines Content lines to display inside the box
+ * @param title Optional centered title shown at the top
+ * @returns Formatted lines including border and content
  */
 export function createBox(lines: string[], title?: string): string[] {
   const separator = '═══════════════════════════════════════════════════════════════'
@@ -25,46 +25,46 @@ export function createBox(lines: string[], title?: string): string[] {
 }
 
 /**
- * 创建章节标题
- * @param title 标题文本
- * @param color 颜色代码（默认为绿色）
- * @returns 格式化后的标题行
+ * Render a section title with ANSI color
+ * @param title Title text to display
+ * @param color ANSI color code (defaults to green)
+ * @returns Color-formatted title string
  */
 export function createSectionHeader(title: string, color: string = ANSICode.green): string {
   return `${color}${title}${ANSICode.reset}`
 }
 
 /**
- * 创建警告信息
- * @param message 警告消息
- * @returns 格式化后的警告行
+ * Format a warning message in yellow
+ * @param message Warning text
+ * @returns Color-formatted warning string
  */
 export function createWarning(message: string): string {
   return `${ANSICode.yellow}${message}${ANSICode.reset}`
 }
 
 /**
- * 创建错误信息
- * @param message 错误消息
- * @returns 格式化后的错误行
+ * Format an error message in red
+ * @param message Error text
+ * @returns Color-formatted error string
  */
 export function createError(message: string): string {
   return `${ANSICode.red}${message}${ANSICode.reset}`
 }
 
 /**
- * 创建成功信息
- * @param message 成功消息
- * @returns 格式化后的成功行
+ * Format a success message in green
+ * @param message Success text
+ * @returns Color-formatted success string
  */
 export function createSuccess(message: string): string {
   return `${ANSICode.green}${message}${ANSICode.reset}`
 }
 
 /**
- * 创建信息提示
- * @param message 提示消息
- * @returns 格式化后的提示行
+ * Format an informational message in white
+ * @param message Info text
+ * @returns Color-formatted info string
  */
 export function createInfo(message: string): string {
   return `${ANSICode.white}${message}${ANSICode.reset}`

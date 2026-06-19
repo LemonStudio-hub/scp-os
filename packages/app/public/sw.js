@@ -1,6 +1,7 @@
 /**
  * Service Worker for SCP-OS
- * 实现完整的 PWA 功能：离线缓存、性能优化、后台同步
+ * Handles offline caching, stale-while-revalidate for API data,
+ * and cache eviction to keep storage bounded
  */
 
 const CACHE_NAME = 'scp-os-v3'

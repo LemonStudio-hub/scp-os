@@ -1,7 +1,7 @@
 /**
  * useDocsReader Composable
- * SCP 文档阅读器核心逻辑，提供文章列表加载、详情获取、
- * 搜索筛选、收藏管理、阅读进度保存、HTML 清洗等功能。
+ * Core logic for the SCP document reader: article listing, detail fetching,
+ * search/filter, favorites, reading-progress persistence, and HTML sanitization.
  */
 
 import { ref, onMounted, onBeforeUnmount } from 'vue'

@@ -414,7 +414,7 @@ onMounted(async () => {
   opacity: 0.5;
 }
 
-/* App Grid - 响应式网格布局 */
+/* App Grid - wraps responsively so icons stay centered on all screen sizes */
 .home-screen__grid {
   position: relative;
   z-index: 5;

@@ -1,740 +1,696 @@
-# SCP-OS 项目完整总结
+# SCP-OS Project Complete Summary
 
-> 生成时间：2026-05-12
-> 项目名称：SCP-OS（SCP Foundation Web OS）
-> 版本：0.4.0
-> 仓库类型：Monorepo（pnpm workspace）
-
----
-
-## 一、项目概述
-
-SCP-OS 是一个以 **SCP 基金会** 为主题的 Web 操作系统，在浏览器中提供完整的桌面环境体验。系统内置命令行终端、文件管理器、代码编辑器、实时聊天、性能仪表盘、反馈系统、SCP 离线阅读器（Docs）等 7 款以上内置应用，支持桌面与移动端自适应适配。
-
-**核心价值**：
-- Web OS 体验：类 Windows 桌面 + 类 iOS 移动主屏
-- 沉浸式设计：SCP 基金会世界观贯穿始终
-- 数据集成：实时爬取 SCP Wiki 数据（中英文分部）
-- 双端适配：桌面端与移动端无缝切换
-- 可扩展性：内置插件系统、工具注册表与依赖注入容器
-- 安全可靠：CSP 策略、速率限制、HTML 清洗、本地优先
+> Generated: 2026-05-12
+> Project Name: SCP-OS (SCP Foundation Web OS)
+> Version: 0.5.0
+> Repository Type: Monorepo (pnpm workspace)
 
 ---
 
-## 二、整体技术栈
+## 1. Project Overview
 
-### 前端（Web 应用）
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Vue | 3.5 | 前端框架 |
-| TypeScript | 5.9 | 类型系统 |
-| Vite | 6 | 构建工具 |
-| Pinia | 3 | 状态管理 |
-| Tailwind CSS | 4 | 原子化样式 |
-| xterm.js | 5 | 终端模拟器 |
-| CodeMirror | 6 | 代码编辑器 |
-| Hammer.js | 2 | 手势识别 |
-| axios | 1.14 | HTTP 客户端 |
-| DOMPurify | 3.4 | HTML 消毒（防 XSS） |
-| uuid | 13 | UUID 生成 |
+SCP-OS is a **SCP Foundation**-themed Web Operating System that provides a complete desktop environment experience in the browser. The system includes a command-line terminal, file manager, code editor, real-time chat, performance dashboard, feedback system, SCP offline reader (Docs), and over 7 built-in applications, with seamless desktop and mobile responsive adaptation.
 
-### 桌面端
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Tauri | 2.10 | 桌面应用框架 |
-| Rust | stable | 原生后端语言 |
+**Core Values**:
+- Web OS Experience: Windows-like desktop + iOS-like mobile home screen
+- Immersive Design: SCP Foundation worldview permeates throughout
+- Data Integration: Real-time SCP Wiki data scraping (English/Chinese branches)
+- Dual-Platform Adaptation: Seamless switching between desktop and mobile
+- Extensibility: Built-in plugin system, tool registry, and dependency injection container
+- Security & Reliability: CSP policies, rate limiting, HTML sanitization, local-first approach
 
-### 后端（Worker）
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| Cloudflare Workers | - | 无服务器边缘运行时 |
-| Cloudflare D1 | - | SQLite 边缘数据库 |
-| Cloudflare KV | - | 键值缓存 |
-| Durable Objects | - | 聊天室状态持久化 |
-| cheerio | 1.2 | HTML 解析（jQuery 风格） |
-| linkedom | 0.18 | DOM 模拟（Defuddle 前置） |
-| Defuddle | 1.0 | 文章内容提取 |
+---
 
-### 工程化
-| 技术 | 版本 | 用途 |
-|------|------|------|
-| pnpm | 10.3.0 | 包管理器 + workspace |
-| ESLint | 9 | 代码检查 |
-| Prettier | 3 | 代码格式化 |
-| Vitest | 4 | 单元测试 |
-| vue-tsc | 3.2 | Vue 类型检查 |
+## 2. Complete Tech Stack
+
+### Frontend (Web Application)
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Vue | 3.5 | Frontend framework |
+| TypeScript | 5.9 | Type system |
+| Vite | 6 | Build tool |
+| Pinia | 3 | State management |
+| Tailwind CSS | 4 | Utility-first CSS |
+| xterm.js | 5 | Terminal emulator |
+| CodeMirror | 6 | Code editor |
+| Hammer.js | 2 | Gesture recognition |
+| axios | 1.14 | HTTP client |
+| DOMPurify | 3.4 | HTML sanitization (XSS prevention) |
+| uuid | 13 | UUID generation |
+
+### Desktop
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Tauri | 2.10 | Desktop application framework |
+| Rust | stable | Native backend language |
+
+### Backend (Worker)
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Cloudflare Workers | - | Serverless edge runtime |
+| Cloudflare D1 | - | SQLite edge database |
+| Cloudflare KV | - | Key-value cache |
+| Durable Objects | - | Chat room state persistence |
+| cheerio | 1.2 | HTML parsing (jQuery-style) |
+| linkedom | 0.18 | DOM simulation (Defuddle prerequisite) |
+| Defuddle | 1.0 | Article content extraction |
+
+### Tooling
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| pnpm | 10.3.0 | Package manager + workspace |
+| ESLint | 9 | Code linting |
+| Prettier | 3 | Code formatting |
+| Vitest | 4 | Unit testing |
+| vue-tsc | 3.2 | Vue type checking |
 | GitHub Actions | - | CI/CD |
 
 ---
 
-## 三、Monorepo 目录结构总览
+## 3. Monorepo Directory Structure Overview
 
 ```
 scp-os/
-├── .github/workflows/          # CI/CD 工作流
-├── .githooks/                  # Git 钩子（pre-commit、pre-push 等）
-├── .vscode/                    # VS Code 推荐扩展配置
-├── docs/                       # 项目文档
-├── dist/                       # Web 构建产物（Vite 输出）
-├── coverage/                   # 测试覆盖率报告
+├── .github/workflows/          # CI/CD workflows
+├── .githooks/                  # Git hooks (pre-commit, pre-push, etc.)
+├── .vscode/                    # VS Code recommended extensions config
+├── docs/                       # Project documentation
+├── dist/                       # Web build output (Vite output)
+├── coverage/                   # Test coverage reports
 ├── packages/
-│   ├── app/                    # 前端 Web 应用（@scp-os/app）
-│   ├── desktop/                # Tauri 桌面客户端（@scp-os/desktop）
-│   └── worker/                 # Cloudflare Worker（scp-scraper-worker）
-├── package.json                # 根 package.json（脚本聚合）
-├── pnpm-workspace.yaml         # pnpm workspace 配置
-├── pnpm-lock.yaml              # 依赖锁定文件
-├── .env.example                # 环境变量模板
-├── .env.development            # 开发环境变量
-├── .env.production             # 生产环境变量
-├── wrangler-pages.toml         # Cloudflare Pages 配置
-├── .eslintrc.json              # ESLint 配置
-├── .prettierrc                 # Prettier 配置
-└── README.md                   # 项目主文档
+│   ├── app/                    # Frontend Web Application (@scp-os/app)
+│   ├── desktop/                # Tauri Desktop Client (@scp-os/desktop)
+│   └── worker/                 # Cloudflare Worker (scp-os-worker)
+├── package.json                # Root package.json (script aggregation)
+├── pnpm-workspace.yaml         # pnpm workspace configuration
+├── pnpm-lock.yaml              # Dependency lockfile
+├── .env.example                # Environment variable template
+├── .env.development            # Development environment variables
+├── .env.production             # Production environment variables
+├── wrangler-pages.toml         # Cloudflare Pages configuration
+├── .eslintrc.json              # ESLint configuration
+├── .prettierrc                 # Prettier configuration
+└── README.md                   # Project main documentation
 ```
 
 ---
 
-## 四、根目录文件详解
+## 4. Root Directory Files Detail
 
-| 文件/目录 | 说明 |
-|-----------|------|
-| `package.json` | 根级 package.json，定义全局脚本（dev/build/test/worker:dev/desktop:dev 等），不发布到 npm（private: true） |
-| `pnpm-workspace.yaml` | 定义 workspace 包含 `packages/*`，使 pnpm 识别三个子包 |
-| `pnpm-lock.yaml` | 全 Monorepo 的依赖锁定文件，确保构建可复现 |
-| `.env.example` | 环境变量配置模板，包含 API 地址、缓存配置、终端配置、JWT 密钥等说明 |
-| `.env.development` | 开发环境变量（Vite 开发模式加载） |
-| `.env.production` | 生产环境变量（Vite 生产模式加载） |
-| `wrangler-pages.toml` | Cloudflare Pages 部署配置（若前端托管到 Pages） |
-| `.eslintrc.json` | 根级 ESLint 配置 |
-| `.prettierrc` | 根级 Prettier 配置 |
-| `.eslintignore` | ESLint 忽略列表 |
-| `.prettierignore` | Prettier 忽略列表 |
-| `.node-version` | 指定 Node.js 版本（供 nvm/fnm 使用） |
-| `release-please-config.json` | release-please 自动化发版配置 |
-| `.release-please-manifest.json` | release-please 版本清单 |
-| `CHANGELOG.md` | 变更日志 |
-| `CONTRIBUTING.md` | 贡献指南 |
-| `LICENSE` | MIT 许可证 |
+| File/Directory | Description |
+|----------------|-------------|
+| `package.json` | Root-level package.json, defines global scripts (dev/build/test/worker:dev/desktop:dev, etc.), not published to npm (private: true) |
+| `pnpm-workspace.yaml` | Defines workspace containing `packages/*`, enabling pnpm to recognize the three sub-packages |
+| `pnpm-lock.yaml` | Full monorepo dependency lockfile, ensuring reproducible builds |
+| `.env.example` | Environment variable configuration template, includes API URL, cache config, terminal config, JWT secret, etc. |
+| `.env.development` | Development environment variables (loaded by Vite in development mode) |
+| `.env.production` | Production environment variables (loaded by Vite in production mode) |
+| `wrangler-pages.toml` | Cloudflare Pages deployment configuration (if frontend is hosted on Pages) |
+| `.eslintrc.json` | Root-level ESLint configuration |
+| `.prettierrc` | Root-level Prettier configuration |
+| `.eslintignore` | ESLint ignore list |
+| `.prettierignore` | Prettier ignore list |
+| `.node-version` | Specifies Node.js version (for nvm/fnm) |
+| `release-please-config.json` | release-please automated release configuration |
+| `.release-please-manifest.json` | release-please version manifest |
+| `CHANGELOG.md` | Changelog |
+| `CONTRIBUTING.md` | Contributing guide |
+| `LICENSE` | MIT License |
 
 ---
 
-## 五、前端包详解：`packages/app`
+## 5. Frontend Package Detail: `packages/app`
 
-这是项目的核心前端应用，一个完整的 Web OS GUI。
+This is the project's core frontend application — a complete Web OS GUI.
 
-### 5.1 配置文件
+### 5.1 Configuration Files
 
-| 文件 | 说明 |
-|------|------|
-| `package.json` | 定义前端依赖（Vue、Pinia、Tailwind、xterm、CodeMirror、axios 等）和脚本（dev/build/test/lint/format/typecheck） |
-| `vite.config.ts` | Vite 主配置：Vue 插件、Service Worker 编译（esbuild TS→JS）、PWA 资源复制、手动代码分割（vue-vendor/terminal/network/gestures/editor）、Terser 压缩、开发代理（/api → 生产 API）、安全响应头 |
-| `vite-admin.config.ts` | 管理后台独立构建配置 |
-| `tsconfig.json` | TypeScript 配置 |
-| `vitest.config.ts` | Vitest 测试配置（含覆盖率） |
-| `eslint.config.js` | ESLint 9 扁平配置 |
-| `postcss.config.js` | PostCSS 配置（Tailwind CSS v4） |
-| `.prettierrc` | Prettier 格式化规则 |
-| `index.html` | Web 应用入口 HTML |
-| `admin-index.html` | 管理后台入口 HTML |
+| File | Description |
+|------|-------------|
+| `package.json` | Defines frontend dependencies (Vue, Pinia, Tailwind, xterm, CodeMirror, axios, etc.) and scripts (dev/build/test/lint/format/typecheck) |
+| `vite.config.ts` | Vite main config: Vue plugin, Service Worker compilation (TypeScript → JS via custom plugin), PWA asset copying, manual code splitting (vue-vendor/terminal/network/gestures/editor), Terser minification, dev proxy (/api → production API), security response headers |
+| `vite-admin.config.ts` | Admin panel standalone build configuration |
+| `tsconfig.json` | TypeScript configuration |
+| `vitest.config.ts` | Vitest test configuration (with coverage) |
+| `eslint.config.js` | ESLint 9 flat config |
+| `postcss.config.js` | PostCSS configuration (Tailwind CSS v4) |
+| `.prettierrc` | Prettier formatting rules |
+| `index.html` | Web application entry HTML |
+| `admin-index.html` | Admin panel entry HTML |
 
-### 5.2 入口与全局文件
+### 5.2 Entry Points & Global Files
 
-| 文件 | 说明 |
-|------|------|
-| `src/main.ts` | **前端主入口**：创建 Vue 应用、注册 Pinia、初始化终端 Store、设置全局错误处理（window.onerror / unhandledrejection / Vue errorHandler）、注销旧 Service Worker、初始化用户 UUID |
-| `src/admin-main.ts` | 管理后台独立入口 |
-| `src/App.vue` | **根 Vue 组件**：包裹整个应用，根据设备类型渲染桌面端或移动端布局 |
-| `src/style.css` | 全局样式（含 Tailwind 导入、SCP 主题变量） |
-| `src/admin-style.css` | 管理后台全局样式 |
+| File | Description |
+|------|-------------|
+| `src/main.ts` | **Frontend main entry**: Creates Vue app, registers Pinia, initializes terminal store, sets up global error handling (window.onerror / unhandledrejection / Vue errorHandler), unregisters old Service Workers, initializes user UUID |
+| `src/admin-main.ts` | Admin panel standalone entry |
+| `src/App.vue` | **Root Vue component**: Wraps the entire app, renders desktop or mobile layout based on device type |
+| `src/style.css` | Global styles (includes Tailwind imports, SCP theme variables) |
+| `src/admin-style.css` | Admin panel global styles |
 
-### 5.3 分层架构目录（DDD 风格）
+### 5.3 Layered Architecture Directories (DDD Style)
 
-#### `src/core/` —— 核心层（DI 容器）
-| 文件 | 说明 |
-|------|------|
-| `container.ts` | 依赖注入容器实现，支持 Singleton / Scoped / Transient 三种生命周期，内置循环依赖检测 |
-| `types.ts` | DI 容器相关类型定义 |
+#### `src/core/` — Core Layer (DI Container)
+| File | Description |
+|------|-------------|
+| `container.ts` | Dependency injection container implementation, supports Singleton / Scoped / Transient lifecycles with built-in circular dependency detection |
+| `types.ts` | DI container related type definitions |
 
-#### `src/domain/` —— 领域层（实体、值对象、仓库接口）
-| 文件 | 说明 |
-|------|------|
-| `entities/command-history.entity.ts` | 命令历史领域实体 |
-| `entities/scp.entity.ts` | SCP 数据领域实体 |
-| `entities/tab.entity.ts` | 终端标签页领域实体 |
-| `repositories/command-history-repository.interface.ts` | 命令历史仓库接口 |
-| `repositories/scp-repository.interface.ts` | SCP 数据仓库接口 |
-| `repositories/tab-repository.interface.ts` | 标签页仓库接口 |
-| `value-objects/command-id.vo.ts` | 命令 ID 值对象 |
-| `value-objects/scp-number.vo.ts` | SCP 编号值对象 |
+#### `src/domain/` — Domain Layer (Entities, Value Objects, Repository Interfaces)
+| File | Description |
+|------|-------------|
+| `entities/command-history.entity.ts` | Command history domain entity |
+| `entities/scp.entity.ts` | SCP data domain entity |
+| `entities/tab.entity.ts` | Terminal tab domain entity |
+| `repositories/command-history-repository.interface.ts` | Command history repository interface |
+| `repositories/scp-repository.interface.ts` | SCP data repository interface |
+| `repositories/tab-repository.interface.ts` | Tab repository interface |
+| `value-objects/command-id.vo.ts` | Command ID value object |
+| `value-objects/scp-number.vo.ts` | SCP number value object |
 
-#### `src/application/` —— 应用层（控制器、应用服务）
-| 文件 | 说明 |
-|------|------|
-| `controllers/command.controller.ts` | 命令处理控制器 |
-| `services/terminal-application.service.ts` | 终端应用服务，协调领域逻辑与基础设施 |
+#### `src/application/` — Application Layer (Controllers, Application Services)
+| File | Description |
+|------|-------------|
+| `controllers/command.controller.ts` | Command handling controller |
+| `services/terminal-application.service.ts` | Terminal application service, coordinates domain logic with infrastructure |
 
-#### `src/infrastructure/` —— 基础设施层（仓库实现、HTTP 客户端）
-| 文件 | 说明 |
-|------|------|
-| `http/fetch-http-client.ts` | fetch 封装 HTTP 客户端 |
-| `repositories/command-history-indexeddb.repository.ts` | 命令历史 IndexedDB 仓库实现 |
-| `repositories/command-history-memory.repository.ts` | 命令历史内存仓库实现（降级） |
-| `repositories/tab-indexeddb.repository.ts` | 标签页 IndexedDB 仓库实现 |
-| `repositories/tab-memory.repository.ts` | 标签页内存仓库实现 |
-| `repositories/indexeddb-base.repository.ts` | IndexedDB 仓库基类 |
-| `repositories/memory-base.repository.ts` | 内存仓库基类 |
+#### `src/infrastructure/` — Infrastructure Layer (Repository Implementations, HTTP Client)
+| File | Description |
+|------|-------------|
+| `http/fetch-http-client.ts` | fetch-based HTTP client wrapper |
+| `repositories/command-history-indexeddb.repository.ts` | Command history IndexedDB repository implementation |
+| `repositories/command-history-memory.repository.ts` | Command history in-memory repository implementation (fallback) |
+| `repositories/tab-indexeddb.repository.ts` | Tab IndexedDB repository implementation |
+| `repositories/tab-memory.repository.ts` | Tab in-memory repository implementation |
+| `repositories/indexeddb-base.repository.ts` | IndexedDB repository base class |
+| `repositories/memory-base.repository.ts` | In-memory repository base class |
 
-#### `src/platform/` —— 平台层（插件、事件、扩展点）
-| 文件 | 说明 |
-|------|------|
-| `events/event-bus.ts` | 事件总线，跨模块事件驱动通信 |
-| `plugins/plugin-manager.ts` | 插件管理器，支持 4 种插件类型（命令/主题/数据源/UI 组件） |
-| `plugins/plugin-loader.ts` | 插件加载器 |
-| `plugins/plugin.interface.ts` | 插件接口定义 |
-| `plugins/datasource-plugin.interface.ts` | 数据源插件接口 |
-| `plugins/datasources/scp-wiki-datasource.plugin.ts` | SCP Wiki 数据源插件实现 |
-| `extensions/extension-point.ts` | 扩展点注册与管理 |
-| `capabilities/capability-manager.service.ts` | 能力管理器（运行时功能开关） |
-| `performance/performance-monitor.service.ts` | 性能监控服务 |
-| `performance/performance-optimizer.service.ts` | 性能优化服务 |
-| `multi-tenant/tenant-manager.service.ts` | 多租户管理（预留） |
+#### `src/platform/` — Platform Layer (Plugins, Events, Extension Points)
+| File | Description |
+|------|-------------|
+| `events/event-bus.ts` | Event bus, cross-module event-driven communication |
+| `plugins/plugin-manager.ts` | Plugin manager, supports 4 plugin types (command/theme/data source/UI component) |
+| `plugins/plugin-loader.ts` | Plugin loader |
+| `plugins/plugin.interface.ts` | Plugin interface definition |
+| `plugins/datasource-plugin.interface.ts` | Data source plugin interface |
+| `plugins/datasources/scp-wiki-datasource.plugin.ts` | SCP Wiki data source plugin implementation |
+| `extensions/extension-point.ts` | Extension point registration and management |
+| `capabilities/capability-manager.service.ts` | Capability manager (runtime feature flags) |
+| `performance/performance-monitor.service.ts` | Performance monitoring service |
+| `performance/performance-optimizer.service.ts` | Performance optimization service |
+| `multi-tenant/tenant-manager.service.ts` | Multi-tenant management (reserved) |
 
-### 5.4 GUI 层（Vue 组件与交互）
+### 5.4 GUI Layer (Vue Components & Interaction)
 
-#### `src/gui/desktop/` —— 桌面端界面
-| 文件 | 说明 |
-|------|------|
-| `DesktopScreen.vue` | 桌面主屏幕（壁纸 + 桌面图标 + 右键菜单） |
-| `PCLoginScreen.vue` | 桌面端登录界面 |
+#### `src/gui/desktop/` — Desktop UI
+| File | Description |
+|------|-------------|
+| `DesktopScreen.vue` | Desktop main screen (wallpaper + desktop icons + right-click menu) |
+| `PCLoginScreen.vue` | Desktop login screen |
 
-#### `src/gui/mobile/` —— 移动端界面
-| 文件 | 说明 |
-|------|------|
-| `HomeScreen.vue` | iOS 风格主屏（应用图标网格） |
-| `LoginScreen.vue` | 移动端登录界面 |
-| `MobileApp.vue` | 移动端根布局（含 Dock、状态栏、手势区域） |
+#### `src/gui/mobile/` — Mobile UI
+| File | Description |
+|------|-------------|
+| `HomeScreen.vue` | iOS-style home screen (app icon grid) |
+| `LoginScreen.vue` | Mobile login screen |
+| `MobileApp.vue` | Mobile root layout (includes Dock, status bar, gesture areas) |
 
-#### `src/gui/components/` —— 通用 GUI 组件
-| 文件 | 说明 |
-|------|------|
-| `PCWindow.vue` | 桌面窗口组件（支持拖拽、缩放、最小化/最大化/关闭） |
-| `MobileWindow.vue` | 移动端窗口/全屏页面组件 |
-| `PCTaskbar.vue` | 桌面任务栏（开始按钮 + 打开窗口列表 + 系统托盘） |
-| `PCStartMenu.vue` | 桌面开始菜单（工具列表 + 用户信息） |
-| `MobileDock.vue` | 移动端底部 Dock |
-| `MobileNavBar.vue` | 移动端顶部导航栏 |
-| `MobileBottomSheet.vue` | 移动端底部抽屉面板 |
-| `PCNotification.vue` | 桌面通知组件 |
-| `SCPWindow.vue` | SCP 风格窗口壳（标题栏 + 内容区） |
-| `SCPToolbar.vue` | 工具栏组件 |
-| `WallpaperPicker.vue` | 壁纸选择器（预设 + 自定义上传） |
-| `ui/SCPButton.vue` | SCP 风格按钮 |
-| `ui/SCPInput.vue` | SCP 风格输入框 |
-| `ui/SCPTabs.vue` | 标签页组件 |
-| `ui/SCPContextMenu.vue` | 右键上下文菜单 |
-| `ui/SCPStatusBar.vue` | 状态栏 |
-| `ui/SCPBreadcrumbs.vue` | 面包屑导航 |
-| `ui/SCPFileIcon.vue` | 文件图标组件 |
-| `ui/GUIIcon.vue` | GUI 图标组件 |
-| `ui/PCCContextMenu.vue` | 桌面右键菜单 |
+#### `src/gui/components/` — Shared GUI Components
+| File | Description |
+|------|-------------|
+| `PCWindow.vue` | Desktop window component (draggable, resizable, minimizable/maximizable/closable) |
+| `MobileWindow.vue` | Mobile window/fullscreen page component |
+| `PCTaskbar.vue` | Desktop taskbar (start button + open window list + system tray) |
+| `PCStartMenu.vue` | Desktop start menu (tool list + user info) |
+| `MobileDock.vue` | Mobile bottom Dock |
+| `MobileNavBar.vue` | Mobile top navigation bar |
+| `MobileBottomSheet.vue` | Mobile bottom sheet panel |
+| `PCNotification.vue` | Desktop notification component |
+| `SCPWindow.vue` | SCP-style window shell (title bar + content area) |
+| `SCPToolbar.vue` | Toolbar component |
+| `WallpaperPicker.vue` | Wallpaper picker (presets + custom upload) |
+| `ui/SCPButton.vue` | SCP-style button |
+| `ui/SCPInput.vue` | SCP-style input |
+| `ui/SCPTabs.vue` | Tab component |
+| `ui/SCPContextMenu.vue` | Right-click context menu |
+| `ui/SCPStatusBar.vue` | Status bar |
+| `ui/SCPBreadcrumbs.vue` | Breadcrumb navigation |
+| `ui/SCPFileIcon.vue` | File icon component |
+| `ui/GUIIcon.vue` | GUI icon component |
+| `ui/PCCContextMenu.vue` | Desktop right-click menu |
 
-#### `src/gui/tools/` —— 内置工具（桌面 + 移动双版本）
+#### `src/gui/tools/` — Built-in Tools (Desktop + Mobile Dual Versions)
 
-| 工具 | 桌面组件 | 移动组件 | 说明 |
-|------|---------|---------|------|
-| 终端 | `terminal/TerminalPanel.vue` | `terminal/MobileTerminal.vue` | xterm.js 终端，多标签支持 |
-| 文件管理器 | `filemanager/FileManagerWindow.vue` | `filemanager/MobileFileManager.vue` | 虚拟文件系统 GUI，含图片/音频/视频/文本预览 |
-| 代码编辑器 | `editor/EditorWindow.vue` | `editor/MobileEditor.vue` | CodeMirror 6，支持 CSS/HTML/JS/JSON/Markdown/Python/SQL 等 |
-| 设置 | `settings/SettingsWindow.vue` | `settings/MobileSettings.vue` | 主题切换、壁纸管理、终端配置 |
-| 聊天 | `chat/PCChatWindow.vue` | `chat/ChatWindow.vue` | 多房间实时聊天 |
-| 仪表盘 | `dash/PCDashboard.vue` | `dash/MobileDash.vue` | 性能监控仪表盘 |
-| 反馈 | `feedback/PCFeedbackWindow.vue` | `feedback/MobileFeedback.vue` | 反馈提交与浏览 |
-| SCP 阅读器 | `docs/PCDocsWindow.vue` | `docs/MobileDocs.vue` | Docs 离线阅读器 |
-| 通知中心 | `notification/PCNotificationCenter.vue` | `notification/MobileNotificationCenter.vue` | 系统通知管理 |
-| 管理后台 | `admin/`（多页面） | - | 管理员后台（独立构建） |
+| Tool | Desktop Component | Mobile Component | Description |
+|------|-------------------|------------------|-------------|
+| Terminal | `terminal/TerminalPanel.vue` | `terminal/MobileTerminal.vue` | xterm.js terminal, multi-tab support |
+| File Manager | `filemanager/FileManagerWindow.vue` | `filemanager/MobileFileManager.vue` | Virtual file system GUI, with image/audio/video/text preview |
+| Code Editor | `editor/EditorWindow.vue` | `editor/MobileEditor.vue` | CodeMirror 6, supports CSS/HTML/JS/JSON/Markdown/Python/SQL, etc. |
+| Settings | `settings/SettingsWindow.vue` | `settings/MobileSettings.vue` | Theme switching, wallpaper management, terminal configuration |
+| Chat | `chat/PCChatWindow.vue` | `chat/ChatWindow.vue` | Multi-room real-time chat |
+| Dashboard | `dash/PCDashboard.vue` | `dash/MobileDash.vue` | Performance monitoring dashboard |
+| Feedback | `feedback/PCFeedbackWindow.vue` | `feedback/MobileFeedback.vue` | Feedback submission and browsing |
+| SCP Reader | `docs/PCDocsWindow.vue` | `docs/MobileDocs.vue` | Docs offline reader |
+| Notification | `notification/PCNotificationCenter.vue` | `notification/MobileNotificationCenter.vue` | System notification management |
+| Admin Panel | `admin/` (multi-page) | - | Admin panel (standalone build) |
 
-**文件管理器预览组件**：
-- `filemanager/ImageViewerModal.vue` — 图片查看器
-- `filemanager/AudioPlayerModal.vue` — 音频播放器
-- `filemanager/VideoPlayerModal.vue` — 视频播放器
-- `filemanager/TextEditorModal.vue` — 文本预览编辑器
-- `filemanager/DialogModal.vue` — 通用对话框
+**File Manager Preview Components**:
+- `filemanager/ImageViewerModal.vue` — Image viewer
+- `filemanager/AudioPlayerModal.vue` — Audio player
+- `filemanager/VideoPlayerModal.vue` — Video player
+- `filemanager/TextEditorModal.vue` — Text preview editor
+- `filemanager/DialogModal.vue` — Generic dialog
 
-**管理后台目录 `src/gui/tools/admin/`**：
-- `AdminLayout.vue` / `AdminSidebar.vue` / `AdminTopbar.vue` — 布局框架
-- `pages/DashboardPage.vue` — 数据概览
-- `pages/UserManagement.vue` — 用户管理
-- `pages/ChatManagement.vue` — 聊天管理
-- `pages/FeedbackManagement.vue` — 反馈管理
-- `pages/ContentManagement.vue` — 内容管理
-- `pages/AuditLog.vue` — 审计日志
-- `pages/SystemSettings.vue` — 系统设置
-- `services/adminApi.ts` — 管理后台 API 封装
-- `stores/adminStore.ts` — 管理后台 Pinia Store
-- `composables/useToast.ts` — Toast 通知组合式函数
-- `components/` — 通用后台组件（DataTable、Pagination、Modal、StatCard、TrendChart 等）
+**Admin Panel Directory `src/gui/tools/admin/`**:
+- `AdminLayout.vue` / `AdminSidebar.vue` / `AdminTopbar.vue` — Layout framework
+- `AdminLogin.vue` — Admin login page
+- `pages/DashboardPage.vue` — Data overview
+- `pages/UserManagement.vue` — User management
+- `pages/ChatManagement.vue` — Chat management
+- `pages/FeedbackManagement.vue` — Feedback management
+- `pages/ContentManagement.vue` — Content management
+- `pages/AuditLog.vue` — Audit log
+- `pages/SystemSettings.vue` — System settings
+- `services/adminApi.ts` — Admin panel API wrapper
+- `stores/adminStore.ts` — Admin panel Pinia store
+- `composables/useToast.ts` — Toast notification composable
+- `components/` — Shared admin components (DataTable, Pagination, Modal, StatCard, TrendChart, etc.)
 
-#### `src/gui/composables/` —— GUI 组合式函数
-| 文件 | 说明 |
-|------|------|
-| `useDraggable.ts` | 窗口拖拽逻辑（含 5px 阈值） |
-| `useResizable.ts` | 窗口 8 方向缩放逻辑 |
-| `useZIndex.ts` | 窗口层级（z-index）自动管理 |
-| `useKeyboardShortcuts.ts` | 全局键盘快捷键（Ctrl+Shift+T 打开终端等） |
-| `useTheme.ts` | 主题切换（8 种强调色 + CSS 变量注入） |
-| `useMobile.ts` | 移动端检测与适配 |
-| `useHammer.ts` | Hammer.js 手势封装 |
-| `useSwipeGesture.ts` | 滑动手势封装 |
-| `useChatWebSocket.ts` | 聊天 WebSocket（或轮询）连接管理 |
-| `useDashboardData.ts` | 仪表盘数据获取与展示 |
-| `useDocsReader.ts` | Docs 阅读器数据获取、缓存、阅读进度管理 |
-| `useTerminalEmulator.ts` | xterm.js 终端实例生命周期管理 |
-| `useNotification.ts` | 通知系统管理 |
-| `useI18n.ts` | 国际化（预留） |
+#### `src/gui/composables/` — GUI Composables
+| File | Description |
+|------|-------------|
+| `useDraggable.ts` | Window drag logic (with 5px threshold) |
+| `useResizable.ts` | Window 8-direction resize logic |
+| `useZIndex.ts` | Window z-index automatic management |
+| `useKeyboardShortcuts.ts` | Global keyboard shortcuts (Ctrl+Shift+T opens terminal, etc.) |
+| `useTheme.ts` | Theme switching (8 accent colors + CSS variable injection) |
+| `useMobile.ts` | Mobile detection and adaptation |
+| `useHammer.ts` | Hammer.js gesture wrapper |
+| `useSwipeGesture.ts` | Swipe gesture wrapper |
+| `useChatWebSocket.ts` | Chat WebSocket (or polling) connection management |
+| `useDashboardData.ts` | Dashboard data fetching and display |
+| `useDocsReader.ts` | Docs reader data fetching, caching, reading progress management |
+| `useTerminalEmulator.ts` | xterm.js terminal instance lifecycle management |
+| `useNotification.ts` | Notification system management |
+| `useI18n.ts` | Internationalization |
 
-#### `src/gui/stores/` —— GUI 专用 Pinia Store
-| 文件 | 说明 |
-|------|------|
-| `windowManager.ts` | 窗口管理 Store（打开/关闭/聚焦/最小化/最大化/层级） |
-| `fileManager.ts` | 文件管理器状态（当前目录、选中文件等） |
-| `terminalPanel.ts` | 终端面板状态 |
-| `textEditor.ts` | 文本编辑器状态 |
-| `themeStore.ts` | 主题状态（当前主题、壁纸） |
+#### `src/gui/stores/` — GUI-Specific Pinia Stores
+| File | Description |
+|------|-------------|
+| `windowManager.ts` | Window management store (open/close/focus/minimize/maximize/z-index) |
+| `fileManager.ts` | File manager state (current directory, selected files, etc.) |
+| `terminalPanel.ts` | Terminal panel state |
+| `textEditor.ts` | Text editor state |
+| `themeStore.ts` | Theme state (current theme, wallpaper) |
 
-#### `src/gui/registry/` —— 工具注册表
-| 文件 | 说明 |
-|------|------|
-| `ToolRegistry.ts` | 工具注册表实现，维护工具元数据与组件映射 |
-| `registerTools.ts` | 注册所有内置工具到注册表 |
+#### `src/gui/registry/` — Tool Registry
+| File | Description |
+|------|-------------|
+| `ToolRegistry.ts` | Tool registry implementation, maintains tool metadata and component mapping |
+| `registerTools.ts` | Registers all built-in tools to the registry |
 
-#### `src/gui/themes/` —— 主题定义
-| 文件 | 说明 |
-|------|------|
-| `index.ts` | 8 种强调色主题定义（红/橙/黄/绿/蓝/紫/粉/灰），SCP 终端配色同步 |
+#### `src/gui/themes/` — Theme Definitions
+| File | Description |
+|------|-------------|
+| `index.ts` | 8 accent color theme definitions (red/orange/yellow/green/blue/purple/pink/gray), synchronized SCP terminal color scheme |
 
-#### `src/gui/design-tokens.ts` —— 设计令牌
-统一 CSS 变量体系（iOS 暗色模式风格），通过 `injectGUITokens()` 注入全局。
+#### `src/gui/design-tokens.ts` — Design Tokens
+Unified CSS variable system (iOS dark mode style), injected globally via `injectGUITokens()`.
 
-#### `src/gui/events/EventBus.ts` —— 事件总线实现
+#### `src/gui/events/EventBus.ts` — Event Bus Implementation
 
-### 5.5 其他核心目录
+### 5.5 Other Core Directories
 
-#### `src/commands/` —— 终端命令处理
-| 文件 | 说明 |
-|------|------|
-| `index.ts` | 命令注册与分发中心，包含 40+ 条命令的映射 |
-| `penetration.ts` | 渗透测试相关命令（独立模块） |
+#### `src/commands/` — Terminal Command Handling
+| File | Description |
+|------|-------------|
+| `index.ts` | Command registration and dispatch center, contains 40+ command mappings |
+| `penetration.ts` | Penetration testing related commands (standalone module) |
 
-#### `src/components/` —— 通用组件
-| 文件 | 说明 |
-|------|------|
-| `SCPTerminal.vue` | 终端主组件（嵌入 xterm.js） |
-| `TabBar.vue` | 终端标签栏 |
-| `Sidebar.vue` | 侧边栏 |
-| `PerformanceDashboard.vue` | 性能仪表盘组件 |
-| `DocReaderPanel.vue` | 文档阅读器面板 |
-| `TalesListPanel.vue` | 故事列表面板 |
-| `dashboard/` | 仪表盘子组件（Header、Footer、MetricCard、IssueList、PerformanceScore、RecommendationList） |
+#### `src/components/` — Shared Components
+| File | Description |
+|------|-------------|
+| `SCPTerminal.vue` | Terminal main component (embeds xterm.js) |
+| `TabBar.vue` | Terminal tab bar |
+| `Sidebar.vue` | Sidebar |
+| `PerformanceDashboard.vue` | Performance dashboard component |
+| `DocReaderPanel.vue` | Document reader panel |
+| `TalesListPanel.vue` | Tales list panel |
+| `dashboard/` | Dashboard sub-components (Header, Footer, MetricCard, IssueList, PerformanceScore, RecommendationList) |
 
-#### `src/composables/` —— 应用级组合式函数
-| 文件 | 说明 |
-|------|------|
-| `useTerminal.ts` | 终端核心逻辑（命令解析、执行管道） |
-| `useCommandHistory.ts` | 命令历史管理（内存 + IndexedDB） |
-| `useTabsRefactored.ts` | 标签页管理（重构版） |
-| `useTerminalRefactored.ts` | 终端管理（重构版） |
+#### `src/composables/` — Application-Level Composables
+| File | Description |
+|------|-------------|
+| `useTerminal.ts` | Terminal core logic (command parsing, execution pipeline) |
+| `useCommandHistory.ts` | Command history management (memory + IndexedDB) |
+| `useTabsRefactored.ts` | Tab management (refactored version) |
+| `useTerminalRefactored.ts` | Terminal management (refactored version) |
 
-#### `src/stores/` —— Pinia Store（应用级）
-| 文件 | 说明 |
-|------|------|
-| `terminal.ts` | 终端全局状态（字体大小、行高、回滚行数等） |
-| `tabs.ts` | 标签页全局状态 |
-| `command.ts` | 命令执行状态 |
-| `scraper.ts` | SCP 数据获取状态 |
-| `authStore.ts` | 用户认证状态（JWT、昵称、UUID） |
-| `system.ts` | 系统状态（启动/关机、性能指标） |
-| `notificationStore.ts` | 通知状态 |
+#### `src/stores/` — Pinia Stores (Application-Level)
+| File | Description |
+|------|-------------|
+| `terminal.ts` | Terminal global state (font size, line height, scrollback lines, etc.) |
+| `tabs.ts` | Tab global state |
+| `command.ts` | Command execution state |
+| `scraper.ts` | SCP data fetching state |
+| `authStore.ts` | User authentication state (JWT, nickname, UUID) |
+| `system.ts` | System state (boot/shutdown, performance metrics) |
+| `notificationStore.ts` | Notification state |
 
-#### `src/utils/` —— 工具函数
-| 文件 | 说明 |
-|------|------|
-| `filesystem.ts` | 虚拟文件系统实现（Linux 风格目录结构、权限检查、CRUD、搜索、grep） |
-| `terminal.ts` | 终端输出格式化、回车换行处理、CJK 字符宽度计算 |
-| `commandAutocomplete.ts` | 命令自动补全（模糊匹配、子序列匹配、循环选择） |
-| `commandFormatter.ts` | 命令格式化与着色 |
-| `indexedDB.ts` | IndexedDB 封装（5 个 Object Store：tabs、commandHistory、wallpapers、settings、docsCache） |
-| `scraper.ts` | SCP 数据抓取客户端封装 |
-| `authFetch.ts` | 带 JWT 认证的 fetch 封装 |
-| `jwt.ts` | JWT 生成与验证工具 |
-| `wallpaperService.ts` | 壁纸上传、缩略图生成、IndexedDB 持久化 |
-| `imageProxy.ts` | 图片代理（处理跨域） |
-| `errorHandler.ts` | 全局错误处理与分类 |
-| `logger.ts` | 日志工具 |
-| `terminalResponsive.ts` | 终端响应式布局计算 |
-| `infoQueryLogs.ts` | info 命令查询日志 |
-| `networkTestLogs.ts` | network 命令测试日志 |
-| `securityCheckLogs.ts` | check 命令安全检查日志 |
+#### `src/utils/` — Utility Functions
+| File | Description |
+|------|-------------|
+| `filesystem.ts` | Virtual file system implementation (Linux-style directory structure, permission checks, CRUD, search, grep) |
+| `terminal.ts` | Terminal output formatting, newline handling, CJK character width calculation |
+| `commandAutocomplete.ts` | Command auto-completion (fuzzy matching, subsequence matching, cycle selection) |
+| `commandFormatter.ts` | Command formatting and coloring |
+| `indexedDB.ts` | IndexedDB wrapper (5 Object Stores: tabs, commandHistory, wallpapers, settings, docsCache) |
+| `scraper.ts` | SCP data scraping client wrapper |
+| `authFetch.ts` | JWT-authenticated fetch wrapper |
+| `jwt.ts` | JWT generation and verification utilities |
+| `wallpaperService.ts` | Wallpaper upload, thumbnail generation, IndexedDB persistence |
+| `imageProxy.ts` | Image proxy (handles cross-origin) |
+| `errorHandler.ts` | Global error handling and classification |
+| `logger.ts` | Logging utility |
+| `terminalResponsive.ts` | Terminal responsive layout calculation |
+| `infoQueryLogs.ts` | info command query logs |
+| `networkTestLogs.ts` | network command test logs |
+| `securityCheckLogs.ts` | check command security check logs |
 
-#### `src/types/` —— 类型定义
-| 文件 | 说明 |
-|------|------|
-| `command.ts` | 命令相关类型 |
-| `terminal.ts` | 终端相关类型 |
-| `scp.ts` | SCP 数据类型 |
-| `scraper.ts` | 爬虫相关类型 |
-| `error.ts` | 错误类型 |
-| `global.d.ts` | 全局类型声明（如 `window.__USER_ID__`） |
-| `hammerjs.d.ts` | Hammer.js 类型补充 |
+#### `src/types/` — Type Definitions
+| File | Description |
+|------|-------------|
+| `command.ts` | Command-related types |
+| `terminal.ts` | Terminal-related types |
+| `scp.ts` | SCP data types |
+| `scraper.ts` | Scraper-related types |
+| `error.ts` | Error types |
+| `global.d.ts` | Global type declarations (e.g., `window.__USER_ID__`) |
+| `hammerjs.d.ts` | Hammer.js type supplements |
 
-#### `src/constants/` —— 常量定义
-| 文件 | 说明 |
-|------|------|
-| `commands.ts` | 所有可用命令的定义与元数据 |
-| `theme.ts` | 主题常量 |
-| `scraperConfig.ts` | 爬虫配置常量（重试次数、超时等） |
-| `bootLogs.ts` | 系统启动日志文本（SCP 风格） |
+#### `src/constants/` — Constants
+| File | Description |
+|------|-------------|
+| `commands.ts` | All available command definitions and metadata |
+| `theme.ts` | Theme constants |
+| `scraperConfig.ts` | Scraper configuration constants (retry count, timeout, etc.) |
+| `bootLogs.ts` | System boot log text (SCP-style) |
 
-#### `src/config/` —— 配置管理
-| 文件 | 说明 |
-|------|------|
-| `index.ts` | 运行时配置聚合（从 import.meta.env 读取环境变量并设置默认值） |
+#### `src/config/` — Configuration Management
+| File | Description |
+|------|-------------|
+| `index.ts` | Runtime configuration aggregation (reads environment variables from import.meta.env and sets defaults) |
 
-#### `src/shared/` —— 共享配置
-| 文件 | 说明 |
-|------|------|
-| `configs/config-manager.ts` | 配置管理器（支持多环境） |
-| `configs/defaults.ts` | 默认配置值 |
+#### `src/shared/` — Shared Configuration
+| File | Description |
+|------|-------------|
+| `configs/config-manager.ts` | Configuration manager (supports multiple environments) |
+| `configs/defaults.ts` | Default configuration values |
 
-#### `src/penetration/` —— 渗透测试模拟模块
-| 文件 | 说明 |
-|------|------|
-| `engine.ts` | 渗透测试引擎核心 |
-| `effects.ts` | 视觉效果模拟 |
-| `output.ts` | 输出格式化 |
-| `randomizer.ts` | 随机化工具 |
-| `types.ts` | 渗透测试类型定义 |
-| `scenarios/` | 各种渗透场景（recon、vulnscan、exploit、privesc、exfil、persist、scp-target） |
-| `templates/` | 渗透工具模板（nmap、nikto、sqlmap、msfconsole、mimikatz、misc） |
+#### `src/penetration/` — Penetration Testing Simulation Module
+| File | Description |
+|------|-------------|
+| `engine.ts` | Penetration testing engine core |
+| `effects.ts` | Visual effects simulation |
+| `output.ts` | Output formatting |
+| `randomizer.ts` | Randomization utilities |
+| `types.ts` | Penetration testing type definitions |
+| `scenarios/` | Various penetration scenarios (recon, vulnscan, exploit, privesc, exfil, persist, scp-target) |
+| `templates/` | Penetration tool templates (nmap, nikto, sqlmap, msfconsole, mimikatz, misc) |
 
-### 5.6 静态资源 `packages/app/public/`
+### 5.6 Static Assets `packages/app/public/`
 
-| 文件 | 说明 |
-|------|------|
+| File | Description |
+|------|-------------|
 | `manifest.json` | PWA Web App Manifest |
-| `sw.js` / `sw.ts` | Service Worker（离线缓存策略） |
-| `offline.html` | 离线 fallback 页面 |
-| `favicon.ico` / `favicon.svg` / `favicon-*.png` | 多尺寸网站图标 |
-| `apple-touch-icon.png` | iOS 主屏图标 |
-| `android-chrome-*.png` | Android 图标 |
-| `browserconfig.xml` | IE/Edge tile 配置 |
-| `robots.txt` | 搜索引擎爬虫规则 |
-| `sitemap.xml` | 站点地图 |
+| `sw.js` / `sw.ts` | Service Worker (offline caching strategy) |
+| `offline.html` | Offline fallback page |
+| `favicon.ico` / `favicon.svg` / `favicon-*.png` | Multi-size favicons |
+| `apple-touch-icon.png` | iOS home screen icon |
+| `android-chrome-*.png` | Android icons |
+| `browserconfig.xml` | IE/Edge tile configuration |
+| `robots.txt` | Search engine crawler rules |
+| `sitemap.xml` | Sitemap |
 
 ---
 
-## 六、桌面端包详解：`packages/desktop`
+## 6. Desktop Package Detail: `packages/desktop`
 
-Tauri 2 桌面客户端，将前端 Web 应用打包为原生桌面应用。
+Tauri 2 desktop client, packages the frontend web application as a native desktop application.
 
-### 6.1 配置文件
+### 6.1 Configuration Files
 
-| 文件 | 说明 |
-|------|------|
-| `package.json` | 桌面端 package.json，仅依赖 `@tauri-apps/cli` |
-| `tauri.conf.json` | **Tauri 核心配置**：窗口尺寸（默认 1200x800，最小 800x600）、CSP 安全策略、打包目标（deb/appimage/dmg/msi/nsis）、图标路径 |
-| `Cargo.toml` | Rust 项目配置 |
-| `Cargo.lock` | Rust 依赖锁定 |
-| `build.rs` | Rust 构建脚本 |
+| File | Description |
+|------|-------------|
+| `package.json` | Desktop package.json, only depends on `@tauri-apps/cli` |
+| `tauri.conf.json` | **Tauri core configuration**: Window size (default 1200x800, minimum 800x600), CSP security policy, packaging targets (deb/appimage/dmg/msi/nsis), icon paths |
+| `Cargo.toml` | Rust project configuration |
+| `Cargo.lock` | Rust dependency lockfile |
+| `build.rs` | Rust build script |
 
-### 6.2 Rust 源码
+### 6.2 Rust Source Code
 
-| 文件 | 说明 |
-|------|------|
-| `src/main.rs` | **Rust 程序入口**：初始化 Tauri 运行时，加载前端 dist 产物，启动原生窗口 |
-| `src/lib.rs` | Rust 库入口（命令/插件注册预留） |
+| File | Description |
+|------|-------------|
+| `src/main.rs` | **Rust program entry**: Initializes Tauri runtime, loads frontend dist output, starts native window |
+| `src/lib.rs` | Rust library entry (command/plugin registration reserved) |
 
-### 6.3 资源
+### 6.3 Resources
 
-| 文件 | 说明 |
-|------|------|
-| `icons/` | 多平台应用图标（PNG/ICO/ICNS，尺寸从 32x32 到 512x512） |
-| `capabilities/default.json` | Tauri 能力声明（权限配置） |
+| File | Description |
+|------|-------------|
+| `icons/` | Multi-platform application icons (PNG/ICO/ICNS, sizes from 32x32 to 512x512) |
+| `capabilities/default.json` | Tauri capability declarations (permission configuration) |
 
-### 6.4 构建行为
+### 6.4 Build Behavior
 
-- `beforeDevCommand`：运行 `pnpm run dev`（启动前端开发服务器）
-- `beforeBuildCommand`：运行 `pnpm run build:production`（构建前端产物到 `dist/`）
-- `frontendDist`：指向 `../../dist`（使用前端构建产物）
-
----
-
-## 七、后端包详解：`packages/worker`
-
-Cloudflare Workers 后端服务，负责 SCP 数据爬取、聊天、反馈、用户管理、Docs 索引查询等。
-
-### 7.1 配置文件
-
-| 文件 | 说明 |
-|------|------|
-| `package.json` | Worker 依赖（cheerio、linkedom、defuddle）和脚本（dev/deploy/tail/test） |
-| `wrangler.toml` | **Cloudflare Wrangler 核心配置**：Worker 名称、D1 数据库绑定（SCP_DB + SCP_READER_DB）、KV 命名空间（SCP_CACHE）、Durable Objects（ChatRoomDO）、定时任务（每 10 分钟广播聊天消息）、生产/开发环境切换 |
-| `tsconfig.json` / `tsconfig.ci.json` | TypeScript 配置 |
-| `vitest.config.ts` | Vitest 测试配置 |
-
-### 7.2 入口与路由
-
-| 文件 | 说明 |
-|------|------|
-| `index.ts` | **Worker 主入口**：导出 `SCPScraper` 类和 `ChatRoomDO`，实例化解析器/清洗器/限流器/CORS 管理器，包含所有业务方法（爬取 SCP、搜索、聊天、反馈、统计、Docs 查询等） |
-| `router.ts` | 自定义轻量级路由路由器，支持 GET/POST/PUT/DELETE、参数化路由、/api/admin/* 别名映射 |
-| `routes.ts` | 路由注册中心，将所有 API 端点绑定到 Router |
-
-### 7.3 API 路由模块 `api/`
-
-| 文件 | 说明 |
-|------|------|
-| `admin.ts` | 管理后台聚合路由 |
-| `admin-auth.ts` | 管理员认证路由（登录/验证） |
-| `admin-logs.ts` | 审计日志路由 |
-| `docs.ts` | Docs（SCP 阅读器）API：条目列表、单条元数据、正文获取（KV → GitHub Raw 回退）、故事列表、Hub 列表 |
-| `feedback.ts` | 反馈系统路由（提交/列表/点赞/投票/评论/分类统计） |
-| `user.ts` | 用户路由（注册/查询/昵称检查） |
-| `notification.ts` | 通知路由 |
-
-### 7.4 HTML 解析器 `parsers/`
-
-| 文件 | 说明 |
-|------|------|
-| `htmlParser.ts` | HTML 结构解析、文本提取、HTML 验证 |
-| `sectionParser.ts` | 章节分割（收容程序 / 描述 / 附录） |
-| `classParser.ts` | SCP 项目等级解析与验证（Safe/Euclid/Keter/Thaumiel/Neutralized/Pending/Unknown） |
-
-### 7.5 安全模块 `security/`
-
-| 文件 | 说明 |
-|------|------|
-| `rateLimiter.ts` | 速率限制实现（IP 级 60 次/分钟、用户级 10 条消息/分钟），支持内存和 KV 两种后端 |
-| `cors.ts` | CORS 策略管理 |
-| `auth.ts` | JWT 认证中间件 |
-| `admin-auth.ts` | 管理员认证逻辑 |
-
-### 7.6 错误处理 `errors/`
-
-| 文件 | 说明 |
-|------|------|
-| `scraperError.ts` | 爬虫错误类（网络/超时/解析/验证错误） |
-| `retryStrategy.ts` | 重试策略（指数退避） |
-
-### 7.7 工具函数 `utils/`
-
-| 文件 | 说明 |
-|------|------|
-| `htmlCleaner.ts` | HTML 清理（移除广告、导航、版权信息） |
-| `htmlSanitizer.ts` | HTML 消毒（防 XSS） |
-| `htmlUtils.ts` | HTML 工具函数 |
-| `paragraphFilter.ts` | 段落过滤（移除短文本、符号行） |
-| `browserHeaders.ts` | 模拟浏览器请求头 |
-| `logger.ts` | Worker 端日志工具 |
-| `performanceMonitor.ts` | 性能监控计时器 |
-| `regexCache.ts` | 正则表达式缓存 |
-
-### 7.8 Durable Objects `durableObjects/`
-
-| 文件 | 说明 |
-|------|------|
-| `ChatRoomDO.ts` | **ChatRoom Durable Object**：聊天室状态持久化，支持 WebSocket 实时消息广播 |
-
-### 7.9 共享模块 `shared/`
-
-| 文件 | 说明 |
-|------|------|
-| `types.ts` | Worker 全站类型定义（Env、SCPWikiData、ChatMessage、ChatRoom 等） |
-| `errors.ts` | 统一错误响应工厂（validationError、notFoundError、rateLimitedError 等） |
-| `config.ts` | Worker 运行时配置（超时、重试、缓存时长） |
-
-### 7.10 数据库迁移 `migrations/`
-
-| 文件 | 说明 |
-|------|------|
-| `0001_init.sql` | 初始化：scp_index 表 |
-| `0002_fill_data.sql` | 填充基础数据 |
-| `0003_quick_fill.sql` | 快速填充 |
-| `0004_chat_messages.sql` | 聊天消息表 |
-| `0005_chat_rooms.sql` | 聊天室表 |
-| `0006_feedbacks.sql` | 反馈表 |
-| `0007_users.sql` | 用户表 |
-| `0008_feedback_votes_comments.sql` | 反馈投票与评论表 |
-| `0009_scp_reader_tables.sql` | **Docs 索引表**：scp_items、scp_tales、scp_goi、scp_hubs、scp_search（FTS5 全文搜索） |
-| `0010_user_settings.sql` | 用户设置表 |
-| `0011_notifications.sql` | 通知表 |
-| `0012_admin_system.sql` | 管理员系统表 |
-| `schema.sql` | 完整数据库 Schema |
-
-### 7.11 脚本 `scripts/`
-
-| 文件 | 说明 |
-|------|------|
-| `migrate-scp-data.ts` | 将 scp-api 仓库的 JSON 数据迁移到 D1 数据库 |
-| `preload-kv-content.ts` | 预加载 SCP 正文到 Cloudflare KV（每日 900 条限速） |
-| `fillDatabase.ts` | 数据库填充工具 |
-| `quickFill.ts` | 快速填充工具 |
-| `bulkFillDatabase.ts` | 批量填充工具 |
-| `scrapeAllScps.ts` | 全量 SCP 爬取脚本 |
-
-### 7.12 测试 `__tests__/` / `benchmarks/`
-
-| 文件 | 说明 |
-|------|------|
-| `classParser.test.ts` | 项目等级解析测试 |
-| `htmlParser.test.ts` | HTML 解析测试 |
-| `sectionParser.test.ts` | 章节分割测试 |
-| `performance.test.ts` | 性能基准测试 |
+- `beforeDevCommand`: Runs `pnpm run dev` (starts frontend dev server)
+- `beforeBuildCommand`: Runs `pnpm run build:production` (builds frontend output to `dist/`)
+- `frontendDist`: Points to `../../dist` (uses frontend build output)
 
 ---
 
-## 八、Docs（SCP 离线阅读器）数据流
+## 7. Backend Package Detail: `packages/worker`
+
+Cloudflare Workers backend service, responsible for SCP data scraping, chat, feedback, user management, Docs index queries, and more.
+
+### 7.1 Configuration Files
+
+| File | Description |
+|------|-------------|
+| `package.json` | Worker dependencies (cheerio, linkedom, defuddle) and scripts (dev/deploy/tail/test) |
+| `wrangler.toml` | **Cloudflare Wrangler core configuration**: Worker name, D1 database bindings (SCP_DB + SCP_READER_DB), KV namespace (SCP_CACHE), Durable Objects (ChatRoomDO), cron triggers (every 10 minutes for chat message broadcasting), production/development environment switching |
+| `tsconfig.json` / `tsconfig.ci.json` | TypeScript configuration |
+| `vitest.config.ts` | Vitest test configuration |
+
+### 7.2 Entry Point & Source Modules
+
+| File | Description |
+|------|-------------|
+| `src/app.ts` | **Worker main application**: Sets up Hono app with middleware and route registration |
+| `src/chat-room.ts` | ChatRoom Durable Object implementation |
+| `src/db.ts` | Database query helpers |
+| `src/helpers.ts` | Shared helper functions |
+| `src/http.ts` | HTTP client utilities |
+| `src/security.ts` | Security middleware (CORS, rate limiting, auth) |
+| `src/types.ts` | Worker-wide type definitions |
+
+### 7.3 API Route Modules `src/routes/`
+
+| File | Description |
+|------|-------------|
+| `admin.ts` | Admin panel aggregated routes |
+| `auth.ts` | Authentication routes (login/verify) |
+| `chat.ts` | Chat routes (send messages, rooms, nicknames) |
+| `docs.ts` | Docs (SCP reader) API: entry list, single entry metadata, content fetching (KV → GitHub Raw fallback), tales list, Hub list |
+| `feedback.ts` | Feedback system routes (submit/list/like/vote/comment/category stats) |
+| `files.ts` | File-related routes |
+| `notifications.ts` | Notification routes |
+| `performance.ts` | Performance monitoring routes |
+| `users.ts` | User routes (register/query/nickname check) |
+
+### 7.4 Database Migrations `migrations/`
+
+| File | Description |
+|------|-------------|
+| `0001_init.sql` | Initialization: scp_index table |
+| `0002_fill_data.sql` | Fill basic data |
+| `0003_quick_fill.sql` | Quick fill |
+| `0004_chat_messages.sql` | Chat messages table |
+| `0005_chat_rooms.sql` | Chat rooms table |
+| `0006_feedbacks.sql` | Feedback table |
+| `0007_users.sql` | Users table |
+| `0008_feedback_votes_comments.sql` | Feedback votes and comments table |
+| `0009_scp_reader_tables.sql` | **Docs index tables**: scp_items, scp_tales, scp_goi, scp_hubs, scp_search (FTS5 full-text search) |
+| `0010_user_settings.sql` | User settings table |
+| `0011_notifications.sql` | Notifications table |
+| `0012_admin_system.sql` | Admin system table |
+| `schema.sql` | Complete database schema |
+
+### 7.5 Scripts `scripts/`
+
+| File | Description |
+|------|-------------|
+| `migrate-scp-data.ts` | Migrates JSON data from scp-api repository to D1 database |
+| `preload-kv-content.ts` | Preloads SCP content into Cloudflare KV (900 entries/day rate limit) |
+| `fillDatabase.ts` | Database fill utility |
+| `quickFill.ts` | Quick fill utility |
+| `bulkFillDatabase.ts` | Bulk fill utility |
+| `scrapeAllScps.ts` | Full SCP scraping script |
+
+### 7.6 Tests `__tests__/` / `benchmarks/`
+
+| File | Description |
+|------|-------------|
+| `classParser.test.ts` | Object class parsing tests |
+| `htmlParser.test.ts` | HTML parsing tests |
+| `sectionParser.test.ts` | Section splitting tests |
+| `performance.test.ts` | Performance benchmark tests |
+
+---
+
+## 8. Docs (SCP Offline Reader) Data Flow
 
 ```
-用户打开 Docs
+User opens Docs
     │
     ▼
-前端调用 /docs/items（D1 索引查询）
+Frontend calls /docs/items (D1 index query)
     │
     ▼
-用户点击某篇 SCP
+User clicks on an SCP entry
     │
-    ├── 优先查询 Cloudflare KV（<50ms）
-    │       └── 命中 → 直接返回正文
+    ├── Priority: Query Cloudflare KV (<50ms)
+    │       └── Hit → Return content directly
     │
-    └── KV 未命中
-            └── 回退到 GitHub Raw API
-                    └── 获取成功后写入 KV 缓存
-                            └── 返回正文
-    │
-    ▼
-前端将正文存入 IndexedDB（离线缓存）
+    └── KV miss
+            └── Fallback to GitHub Raw API
+                    └── On success, write to KV cache
+                            └── Return content
     │
     ▼
-断网后再次阅读 → 从 IndexedDB 读取（完全离线）
+Frontend stores content in IndexedDB (offline cache)
+    │
+    ▼
+Offline re-read → Read from IndexedDB (fully offline)
 ```
 
-**数据库规模**：
-- SCP 条目：9526+
-- 故事：6487 篇
-- GOI 条目：711
-- Hub：126
+**Database Scale**:
+- SCP Entries: 9526+
+- Tales: 6487
+- GOI Entries: 711
+- Hubs: 126
 
 ---
 
-## 九、关键业务流程
+## 9. Key Business Flows
 
-### 9.1 首次启动流程
-1. 浏览器加载 `index.html` → `main.ts` 创建 Vue 应用
-2. 初始化 Pinia → 终端 Store 检测设备类型（桌面/移动）
-3. 用户进入登录界面 → 输入昵称 → 前端生成 UUID → 调用 Worker `/api/user/register`
-4. 登录成功 → 渲染桌面/移动端主界面
-5. 终端显示启动日志（`bootLogs.ts` 中的 SCP 风格文本）
-6. 用户输入 `start` 命令完成系统初始化
+### 9.1 First Launch Flow
+1. Browser loads `index.html` → `main.ts` creates Vue app
+2. Initialize Pinia → Terminal store detects device type (desktop/mobile)
+3. User enters login screen → Enters nickname → Frontend generates UUID → Calls Worker `/api/user/register`
+4. Login success → Renders desktop/mobile main interface
+5. Terminal displays boot logs (SCP-style text from `bootLogs.ts`)
+6. User enters `start` command to complete first-time system initialization
 
-### 9.2 终端命令执行流程
-1. 用户在 xterm.js 输入命令 → `SCPTerminal.vue` 捕获输入
-2. `useTerminal.ts` 解析命令字符串
-3. `commands/index.ts` 查找对应命令处理器
-4. 命令分类处理：
-   - **SCP 查询** → 调用 `scraper.ts` → HTTP 请求 Worker `/scrape` 或 `/search`
-   - **文件系统** → 调用 `filesystem.ts`（纯前端虚拟文件系统）
-   - **系统命令** → 直接操作前端状态（Store）
-5. 结果格式化后通过 xterm.js API 输出到终端
+### 9.2 Terminal Command Execution Flow
+1. User enters command in xterm.js → `SCPTerminal.vue` captures input
+2. `useTerminal.ts` parses command string
+3. `commands/index.ts` looks up corresponding command handler
+4. Command classification handling:
+   - **SCP Query** → Calls `scraper.ts` → HTTP request to Worker `/scrape` or `/search`
+   - **File System** → Calls `filesystem.ts` (pure frontend virtual file system)
+   - **System Commands** → Directly operates frontend state (Store)
+5. Results formatted and output to terminal via xterm.js API
 
-### 9.3 窗口管理流程（桌面端）
-1. 用户双击桌面图标或点击开始菜单 → `ToolRegistry` 查找工具定义
-2. `windowManager.ts` Store 创建新窗口状态（位置、尺寸、标题、内容组件）
-3. `PCWindow.vue` 渲染窗口，注入 `useDraggable` + `useResizable` + `useZIndex`
-4. 窗口拖拽/缩放时更新 Store 状态 → 响应式更新视图
-5. 任务栏 `PCTaskbar.vue` 订阅窗口列表 → 显示所有打开窗口
+### 9.3 Window Management Flow (Desktop)
+1. User double-clicks desktop icon or clicks start menu → `ToolRegistry` looks up tool definition
+2. `windowManager.ts` store creates new window state (position, size, title, content component)
+3. `PCWindow.vue` renders window, injects `useDraggable` + `useResizable` + `useZIndex`
+4. Window drag/resize updates store state → Reactive view update
+5. Taskbar `PCTaskbar.vue` subscribes to window list → Displays all open windows
 
-### 9.4 聊天消息流程
-1. 用户输入消息 → 前端调用 Worker `POST /chat/send`
-2. Worker `index.ts` 检查频率限制（D1 查询最近 1 分钟消息数）
-3. 通过限制 → 插入 D1 `chat_messages` 表
-4. 更新 `chat_rooms` 消息计数
-5. 定时任务（每 10 分钟 Cron Trigger）调用 `broadcastNewMessages()` 标记未广播消息
-6. 或 Durable Object `ChatRoomDO` 维护 WebSocket 实时推送
-
----
-
-## 十、CI/CD 与 GitHub Actions
-
-目录 `.github/workflows/` 包含自动化工作流（具体内容需查看 workflow 文件）：
-
-- **测试工作流**：运行 Vitest 单元测试（app + worker）
-- **构建工作流**：构建前端产物、类型检查、Lint 检查
-- **Tauri 构建工作流**：多平台桌面端构建（Linux/macOS/Windows）
-- **安全扫描**：依赖漏洞检测
-- **发布工作流**：release-please 自动发版
+### 9.4 Chat Message Flow
+1. User enters message → Frontend calls Worker `POST /chat/send`
+2. Worker `src/app.ts` checks rate limit (D1 query for messages in last 1 minute)
+3. Passes limit → Inserts into D1 `chat_messages` table
+4. Updates `chat_rooms` message count
+5. Cron trigger (every 10 minutes) calls `broadcastNewMessages()` to mark unboardcasted messages
+6. Or Durable Object `ChatRoomDO` maintains WebSocket real-time push
 
 ---
 
-## 十一、Git 钩子 `.githooks/`
+## 10. CI/CD & GitHub Actions
 
-| 文件 | 说明 |
-|------|------|
-| `pre-commit` / `pre-commit.ps1` | 提交前自动运行 ESLint 和 Prettier |
-| `post-checkout` | 切换分支后钩子 |
-| `post-commit` | 提交后钩子 |
-| `post-merge` | 合并后钩子 |
-| `pre-push` | 推送前钩子 |
+The `.github/workflows/` directory contains automated workflows (specific content should be checked in workflow files):
 
----
-
-## 十二、环境变量完整清单
-
-| 变量名 | 默认值 | 说明 |
-|--------|--------|------|
-| `VITE_WORKER_API_URL` | `https://api.woodcat.online` | Worker API 地址 |
-| `VITE_API_TIMEOUT` | `15000` | API 超时（ms） |
-| `VITE_CACHE_DURATION` | `1800000` | 缓存有效期（30 分钟） |
-| `VITE_CACHE_MAX_SIZE` | `100` | 最大缓存条目数 |
-| `VITE_SCRAPER_RETRY_ATTEMPTS` | `3` | 爬虫重试次数 |
-| `VITE_SCRAPER_RETRY_DELAY` | `1000` | 爬虫重试延迟（ms） |
-| `VITE_TERMINAL_SCROLLBACK` | `1000` | 终端回滚行数 |
-| `VITE_TERMINAL_TAB_STOP_WIDTH` | `4` | Tab 宽度 |
-| `VITE_APP_VERSION` | `0.1.0` | 应用版本 |
-| `VITE_APP_NAME` | `SCP-OS` | 应用名称 |
-| `VITE_FAST_BOOT` | `false` | 快速启动（跳过动画） |
-| `VITE_JWT_SECRET` | - | JWT 签名密钥（需配置） |
-| `VITE_DOWNLOAD_MAX_FILE_SIZE` | `524288000` | 最大下载文件大小（500MB） |
-| `VITE_DOWNLOAD_DEFAULT_RATE_LIMIT` | `0` | 下载限速（KB/s，0=不限） |
-| `VITE_DOWNLOAD_STREAM_BUFFER_SIZE` | `65536` | 下载流缓冲区 |
-| `VITE_DOWNLOAD_HISTORY_MAX_SIZE` | `200` | 下载历史最大条数 |
+- **Test Workflow**: Runs Vitest unit tests (app + worker)
+- **Build Workflow**: Builds frontend output, type checking, lint checking
+- **Tauri Build Workflow**: Multi-platform desktop builds (Linux/macOS/Windows)
+- **Security Scan**: Dependency vulnerability detection
+- **Release Workflow**: release-please automated releases
 
 ---
 
-## 十三、代码分割策略（Vite）
+## 11. Git Hooks `.githooks/`
 
-| Chunk 名称 | 包含内容 | 说明 |
-|-----------|---------|------|
-| `vue-vendor` | Vue 核心库 | 框架基础 |
-| `terminal` | xterm.js + 相关 | 终端模拟器 |
-| `network` | axios | HTTP 客户端 |
-| `gestures` | Hammer.js | 手势库 |
-| `editor` | CodeMirror 6 全家桶 | 代码编辑器 |
-
----
-
-## 十四、IndexedDB 结构（前端持久化）
-
-数据库名：`scp-os-db`
-
-| Object Store | 用途 |
-|-------------|------|
-| `tabs` | 终端标签页状态持久化 |
-| `commandHistory` | 命令历史（跨会话保留） |
-| `wallpapers` | 自定义壁纸图片数据 |
-| `settings` | 用户设置（主题、终端配置等） |
-| `docsCache` | Docs 阅读器正文缓存（离线阅读） |
+| File | Description |
+|------|-------------|
+| `pre-commit` / `pre-commit.ps1` | Runs ESLint and Prettier before commit |
+| `post-checkout` | Post branch-switch hook |
+| `post-commit` | Post commit hook |
+| `post-merge` | Post merge hook |
+| `pre-push` | Pre-push hook |
 
 ---
 
-> 本文档由项目代码自动生成，涵盖所有主要目录和关键文件的作用说明。
+## 12. Complete Environment Variables List
+
+| Variable Name | Default Value | Description |
+|---------------|---------------|-------------|
+| `VITE_WORKER_API_URL` | `https://api.woodcat.online` | Worker API URL |
+| `VITE_API_TIMEOUT` | `15000` | API timeout (ms) |
+| `VITE_CACHE_DURATION` | `1800000` | Cache duration (30 minutes) |
+| `VITE_CACHE_MAX_SIZE` | `100` | Maximum cache entries |
+| `VITE_SCRAPER_RETRY_ATTEMPTS` | `3` | Scraper retry attempts |
+| `VITE_SCRAPER_RETRY_DELAY` | `1000` | Scraper retry delay (ms) |
+| `VITE_TERMINAL_SCROLLBACK` | `1000` | Terminal scrollback lines |
+| `VITE_TERMINAL_TAB_STOP_WIDTH` | `4` | Tab width |
+| `VITE_APP_VERSION` | `0.2.0` | Application version |
+| `VITE_APP_NAME` | `SCP-OS` | Application name |
+| `VITE_FAST_BOOT` | `false` | Fast boot (skip animations) |
+| `VITE_JWT_SECRET` | - | JWT signing secret (must be configured) |
+| `VITE_DOWNLOAD_MAX_FILE_SIZE` | `524288000` | Maximum download file size (500MB) |
+| `VITE_DOWNLOAD_DEFAULT_RATE_LIMIT` | `0` | Download rate limit (KB/s, 0=unlimited) |
+| `VITE_DOWNLOAD_STREAM_BUFFER_SIZE` | `65536` | Download stream buffer size |
+| `VITE_DOWNLOAD_HISTORY_MAX_SIZE` | `200` | Maximum download history entries |
+
+---
+
+## 13. Code Splitting Strategy (Vite)
+
+| Chunk Name | Contents | Description |
+|------------|----------|-------------|
+| `vue-vendor` | Vue core library | Framework foundation |
+| `terminal` | xterm.js + related | Terminal emulator |
+| `network` | axios | HTTP client |
+| `gestures` | Hammer.js | Gesture library |
+| `editor` | CodeMirror 6 suite | Code editor |
+
+---
+
+## 14. IndexedDB Structure (Frontend Persistence)
+
+Database name: `scp-os-db`
+
+| Object Store | Purpose |
+|-------------|---------|
+| `tabs` | Terminal tab state persistence |
+| `commandHistory` | Command history (cross-session retention) |
+| `wallpapers` | Custom wallpaper image data |
+| `settings` | User settings (theme, terminal config, etc.) |
+| `docsCache` | Docs reader content cache (offline reading) |
+
+---
+
+> This document was generated from the project codebase, covering all major directories and key file descriptions.

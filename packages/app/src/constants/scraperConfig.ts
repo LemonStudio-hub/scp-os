@@ -1,12 +1,12 @@
 import type { ScraperConfig, ObjectClassInfo } from '../types/scraper'
 
 export const SCRAPER_CONFIG: ScraperConfig = {
-  // SCP 基金会中文维基 URL
+  // Chinese SCP Wiki is the data source for the reader feature
   baseUrl: 'https://scp-wiki-cn.wikidot.com',
   userAgent: 'SCP-Foundation-Terminal/3.0.1 (+https://github.com/LemonStudio-hub/scp-os)',
-  timeout: 10000, // 10秒超时
+  timeout: 10000, // Wiki pages can be large; generous timeout avoids false failures
   retryAttempts: 3,
-  retryDelay: 1000, // 1秒重试延迟
+  retryDelay: 1000, // Exponential backoff starts at 1s to respect the wiki's rate limits
 }
 
 export const OBJECT_CLASSES: Record<string, ObjectClassInfo> = {

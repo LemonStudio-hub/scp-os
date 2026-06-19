@@ -241,7 +241,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * 执行需要认证的 POST 请求
+   * Execute a fetch request with the current user's credentials attached.
    */
   async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
     return authenticatedFetch(url, userId.value!, options)

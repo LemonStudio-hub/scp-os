@@ -88,7 +88,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   let currentUsername = username
 
   function getWsUrl(): string {
-    // 开发模式下优先连接本地 worker，避免被 Cloudflare 拦截
+    // In dev mode, connect to the local wrangler server to avoid Cloudflare tunnel issues
     if (import.meta.env.DEV) {
       return `ws://localhost:8787/chat/ws?user_id=${encodeURIComponent(currentUserId)}&username=${encodeURIComponent(currentUsername)}&room_id=${currentRoomId}`
     }
