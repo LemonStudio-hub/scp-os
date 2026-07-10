@@ -87,7 +87,7 @@ export class ErrorHandler {
   }
 
   private logToConsole(error: SCPError) {
-    // 错误处理模块中使用 logger 是合理的，因为它本身就是处理错误的
+    // Using the logger here (instead of raw console) keeps error output consistent with the rest of the app
     const message = `[${error.severity}] ${error.type}: ${error.message}`
     if (error.details) {
       logger.error(message, error.details)
@@ -115,7 +115,7 @@ export class ErrorHandler {
       this.terminalWriter(`${ANSICode.gray}Details: ${error.details}${ANSICode.reset}\r\n`)
     }
 
-    // 显示建议
+    // Show actionable suggestions so the user knows how to recover
     if (suggestions.length > 0 && this.terminalWriter) {
       const writer = this.terminalWriter
       writer(`${ANSICode.cyan}Suggestions:${ANSICode.reset}\r\n`)

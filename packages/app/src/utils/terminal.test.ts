@@ -119,7 +119,8 @@ describe('terminal utils', () => {
       for (let i = 0; i < 100; i++) {
         results.add(randomDelay(10, 20))
       }
-      // 理论上应该有多个不同的值
+      // With a range of 10-20 over 100 calls, duplicates are almost guaranteed to exist,
+      // but the set should still contain more than one distinct value to prove randomness
       expect(results.size).toBeGreaterThan(1)
     })
 

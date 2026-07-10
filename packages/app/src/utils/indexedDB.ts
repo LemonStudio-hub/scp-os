@@ -619,7 +619,7 @@ class IndexedDBService {
   // ==================== User ID Management ====================
 
   /**
-   * 获取用户 ID，如果不存在则自动生成并存储
+   * Get or create a persistent user ID, auto-generating one on first visit.
    */
   async getUserId(): Promise<string> {
     try {
@@ -630,20 +630,20 @@ class IndexedDBService {
         return savedId as string
       }
 
-      // 首次访问，使用 uuid 包生成新的用户 ID
+      // First visit — generate a new UUID and persist it
       const newUserId = uuidv4()
       await this.saveSetting('user_id', newUserId)
       logger.info('[IndexedDB] Generated new user ID:', newUserId)
       return newUserId
     } catch (error) {
       logger.error('[IndexedDB] Failed to get user ID:', error)
-      // 降级方案：使用 uuid 包生成 UUID
+      // Fallback: generate a UUID even if storage failed
       return uuidv4()
     }
   }
 
   /**
-   * 保存设置项
+   * Persist a key-value setting.
    */
   async saveSetting(key: string, value: unknown): Promise<void> {
     await this.init()
@@ -664,7 +664,7 @@ class IndexedDBService {
   }
 
   /**
-   * 加载设置项
+   * Load a setting value by key.
    */
   async loadSetting(key: string): Promise<unknown> {
     await this.init()
@@ -684,7 +684,7 @@ class IndexedDBService {
   }
 
   /**
-   * 删除设置项
+   * Delete a setting by key.
    */
   async deleteSetting(key: string): Promise<void> {
     const db = this.getDB()
@@ -700,7 +700,7 @@ class IndexedDBService {
   }
 
   /**
-   * 清除所有设置
+   * Clear all stored settings.
    */
   async clearUserSettings(): Promise<void> {
     const db = this.getDB()
@@ -718,14 +718,14 @@ class IndexedDBService {
   // ==================== User Authentication ====================
 
   /**
-   * 保存用户昵称
+   * Save the user's display nickname.
    */
   async saveNickname(nickname: string): Promise<void> {
     return this.saveSetting('nickname', nickname)
   }
 
   /**
-   * 获取已保存的昵称
+   * Retrieve the saved nickname, if any.
    */
   async getNickname(): Promise<string | null> {
     const value = await this.loadSetting('nickname')
@@ -733,7 +733,7 @@ class IndexedDBService {
   }
 
   /**
-   * 清除用户相关数据（昵称等）
+   * Clear all user-specific data (nickname, etc.).
    */
   async clearUserData(): Promise<void> {
     try {
@@ -748,7 +748,7 @@ class IndexedDBService {
   // ==================== SCP Content Cache ====================
 
   /**
-   * 保存 SCP 内容缓存
+   * Cache SCP article content locally to avoid repeated fetches.
    */
   async saveSCPContent(data: {
     scpNumber: string
@@ -776,7 +776,7 @@ class IndexedDBService {
   }
 
   /**
-   * 获取 SCP 内容缓存
+   * Retrieve cached SCP article content by number.
    */
   async getSCPContent(scpNumber: string): Promise<SCPContentRecord | null> {
     const db = this.getDB()
@@ -795,7 +795,7 @@ class IndexedDBService {
   }
 
   /**
-   * 检查 SCP 内容是否已缓存
+   * Check whether an SCP article is already cached.
    */
   async isSCPCached(scpNumber: string): Promise<boolean> {
     const db = this.getDB()
@@ -814,7 +814,7 @@ class IndexedDBService {
   }
 
   /**
-   * 清除所有 SCP 内容缓存
+   * Evict all cached SCP article content.
    */
   async clearSCPContentCache(): Promise<void> {
     const db = this.getDB()
@@ -835,7 +835,7 @@ class IndexedDBService {
   // ==================== Reading Progress ====================
 
   /**
-   * 保存阅读进度
+   * Save reading progress, accumulating total reading time across sessions.
    */
   async saveReadingProgress(data: {
     scpNumber: string
@@ -868,7 +868,7 @@ class IndexedDBService {
   }
 
   /**
-   * 获取阅读进度
+   * Retrieve saved reading progress for an SCP article.
    */
   async getReadingProgress(scpNumber: string): Promise<ReadingProgressRecord | null> {
     const db = this.getDB()
@@ -889,7 +889,7 @@ class IndexedDBService {
   // ==================== SCP Favorites ====================
 
   /**
-   * 添加收藏
+   * Add an SCP article to the user's favorites list.
    */
   async saveFavorite(data: { scpNumber: string; title: string }): Promise<void> {
     const db = this.getDB()
@@ -910,7 +910,7 @@ class IndexedDBService {
   }
 
   /**
-   * 获取所有收藏
+   * Retrieve all favorited SCP articles.
    */
   async getFavorites(): Promise<FavoriteRecord[]> {
     const db = this.getDB()
@@ -929,7 +929,7 @@ class IndexedDBService {
   }
 
   /**
-   * 移除收藏
+   * Remove an SCP article from favorites.
    */
   async removeFavorite(scpNumber: string): Promise<void> {
     const db = this.getDB()

@@ -44,6 +44,10 @@ function normalizeCloudPath(path: string): string {
     .join('/')
 }
 
+/**
+ * Upload a file to R2 via the worker API.
+ */
+
 export async function uploadFile(file: File, folder = 'uploads'): Promise<UploadResponse> {
   const authStore = useAuthStore()
   if (!authStore.canUseCloudSync) return { success: false, error: GUEST_CLOUD_ERROR }
@@ -61,6 +65,9 @@ export async function uploadFile(file: File, folder = 'uploads'): Promise<Upload
   return response.json()
 }
 
+/**
+ * List files stored in R2, optionally filtered by prefix.
+ */
 export async function listFiles(prefix = '', limit = 100): Promise<FileListResponse> {
   const authStore = useAuthStore()
   if (!authStore.canUseCloudSync) return { success: false, data: [], error: GUEST_CLOUD_ERROR }
@@ -73,6 +80,9 @@ export async function listFiles(prefix = '', limit = 100): Promise<FileListRespo
   return response.json()
 }
 
+/**
+ * Delete a file from R2 by its key.
+ */
 export async function deleteFile(key: string): Promise<{ success: boolean; error?: string }> {
   const authStore = useAuthStore()
   if (!authStore.canUseCloudSync) return { success: false, error: GUEST_CLOUD_ERROR }
@@ -83,6 +93,9 @@ export async function deleteFile(key: string): Promise<{ success: boolean; error
   return response.json()
 }
 
+/**
+ * Update the content of a text file already stored in R2.
+ */
 export async function updateFileContent(
   key: string,
   content: string
@@ -98,11 +111,17 @@ export async function updateFileContent(
   return response.json()
 }
 
+/**
+ * Read file content, transparently resolving R2 URLs.
+ * The virtual filesystem stores either inline content or an R2 URL;
+ * this function fetches the actual content when a URL is stored.
+ */
 export async function readFileContent(path: string): Promise<string | null> {
   const data = filesystem.readFile(path)
   if (data === null) return null
   if (typeof data !== 'string') return null
 
+  // If the stored value is an R2 URL, fetch the actual content from it
   if (data.startsWith('http')) {
     try {
       const response = await fetch(data, { cache: 'no-cache' })
@@ -116,16 +135,22 @@ export async function readFileContent(path: string): Promise<string | null> {
   return data
 }
 
+/**
+ * Save a text file to R2 and update the virtual filesystem with the resulting URL.
+ */
 export async function saveTextFile(path: string, content: string): Promise<boolean> {
   try {
+    // Check if this path already has an R2 object so we can update instead of re-upload
     const existing = filesystem.readFile(path)
     let key: string | null = null
 
     if (typeof existing === 'string' && existing.startsWith(`${API_BASE}/files/`)) {
+      // Extract the R2 object key from the stored URL
       key = decodeURIComponent(existing.replace(`${API_BASE}/files/`, ''))
     }
 
     if (key) {
+      // Update the existing R2 object in-place
       const result = await updateFileContent(key, content)
       return result.success
     }
@@ -145,6 +170,9 @@ export async function saveTextFile(path: string, content: string): Promise<boole
   }
 }
 
+/**
+ * Build the direct download/preview URL for an R2 object key.
+ */
 export function getFileUrl(key: string): string {
   return `${API_BASE}/files/${encodeURIComponent(key)}`
 }

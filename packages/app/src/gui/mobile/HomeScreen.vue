@@ -1030,7 +1030,7 @@ onUnmounted(() => {
   opacity: 0.5;
 }
 
-/* App Grid - 强制 4 列网格 */
+/* App Grid - fixed 4-column grid so icons align consistently across screen sizes */
 .home-screen__grid {
   position: relative;
   z-index: 5;

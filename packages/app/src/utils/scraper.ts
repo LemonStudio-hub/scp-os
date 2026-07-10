@@ -46,7 +46,7 @@ async function apiFetch(
   }
 }
 
-// Worker 统一配置（与 Worker 保持一致）
+// Worker config values mirror the backend to ensure consistent timeout/retry behavior
 const WORKER_CONFIG = {
   timeout: 30000,
   retryAttempts: 3,
@@ -54,11 +54,11 @@ const WORKER_CONFIG = {
 }
 
 /**
- * 获取终端有效宽度（字符数）
- * 优先使用终端实例的 cols，否则根据屏幕宽度估算
+ * Estimate terminal width in columns for responsive text layout.
+ * Prefers the live terminal instance cols; falls back to screen-width heuristic.
  */
 function getTerminalWidth(): number {
-  // 尝试从全局终端实例获取实际列数
+  // Prefer the live terminal instance for accurate column count
   if (typeof window !== 'undefined' && window.__terminalInstance) {
     const cols = window.__terminalInstance.cols
     if (cols && cols > 0) {
@@ -66,41 +66,40 @@ function getTerminalWidth(): number {
     }
   }
 
-  // 回退：根据屏幕宽度估算
+  // Fallback: estimate from screen width
   if (typeof window !== 'undefined') {
     const screenWidth = window.innerWidth
     const isMobile = screenWidth < 768
     const fontSize = screenWidth < 480 ? 10 : screenWidth < 768 ? 12 : screenWidth < 1200 ? 14 : 16
 
     if (isMobile) {
-      // 移动端：使用更精确的计算
-      // 移动端通常使用 10-12px 字体，字符宽度约 6px
-      // 终端容器通常有 16-20px 的左右 padding
-      const charWidth = 6.5 // 移动端等宽字体字符宽度
-      const padding = 16 // 终端容器左右内边距
+      // Mobile monospace fonts are ~10-12px with ~6px char width and 16-20px container padding
+      const charWidth = 6.5
+      const padding = 16
       const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
-      return Math.max(25, Math.min(50, estimatedCols)) // 移动端限制在 25-50 列
+      return Math.max(25, Math.min(50, estimatedCols))
     }
 
-    // 桌面端：根据屏幕宽度估算
+    // Desktop: estimate from screen width
     const charWidth = fontSize * 0.6
     const padding = 20
     const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
     return Math.max(40, Math.min(120, estimatedCols))
   }
 
-  // 默认桌面端宽度
+  // Sensible default when no window is available
   return 80
 }
 
 /**
- * 计算字符串在终端中的实际显示宽度（考虑 CJK 字符占 2 列）
+ * Calculate display width of a string in terminal columns.
+ * CJK ideographs occupy 2 columns each, so a simple .length check is insufficient.
  */
 function getDisplayWidth(str: string): number {
   let width = 0
   for (const char of str) {
     const code = char.codePointAt(0) || 0
-    // CJK 字符（中日韩统一表意文字）通常占 2 列
+    // CJK ideographs are double-width in monospace terminals
     if (
       (code >= 0x4e00 && code <= 0x9fff) ||
       (code >= 0x3400 && code <= 0x4dbf) ||
@@ -122,7 +121,7 @@ function getDisplayWidth(str: string): number {
 }
 
 /**
- * 去除 ANSI 转义序列后计算字符串显示宽度
+ * Strip ANSI escape sequences before measuring display width to avoid counting color codes.
  */
 function getVisibleWidth(str: string): number {
   const cleanStr = str.replace(/\x1b\[[0-9;]*m/g, '')
@@ -130,7 +129,7 @@ function getVisibleWidth(str: string): number {
 }
 
 /**
- * 用空格填充字符串到指定显示宽度（考虑 CJK 字符宽度差异）
+ * Right-pad a string with spaces to a target display width, accounting for CJK double-width chars.
  */
 function padToWidth(str: string, targetWidth: number): string {
   const currentWidth = getVisibleWidth(str)
@@ -139,8 +138,7 @@ function padToWidth(str: string, targetWidth: number): string {
 }
 
 /**
- * 响应式边框生成器
- * 根据终端实际宽度动态生成边框字符
+ * Generates box-drawing borders sized to the current terminal width.
  */
 class BorderGenerator {
   private width: number
@@ -149,42 +147,42 @@ class BorderGenerator {
     this.width = width
   }
 
-  // 顶部外边框: ╔═══════════════════╗
+  // Double-line top border: ╔═══════════════════╗
   get topBorder(): string {
     const innerWidth = Math.max(1, this.width - 2)
     return `╔${'═'.repeat(innerWidth)}╗`
   }
 
-  // 底部外边框: ╚═══════════════════╝
+  // Double-line bottom border: ╚═══════════════════╝
   get bottomBorder(): string {
     const innerWidth = Math.max(1, this.width - 2)
     return `╚${'═'.repeat(innerWidth)}╝`
   }
 
-  // 外边框垂直线（两侧）
+  // Double-line vertical content row
   verticalLine(content: string): string {
     return `║ ${padToWidth(content, this.width - 4)} ║`
   }
 
-  // 内框顶部: ┌───────────────────┐
+  // Single-line top border: ┌───────────────────┐
   get boxTop(): string {
     const innerWidth = Math.max(1, this.width - 2)
     return `┌${'─'.repeat(innerWidth)}┐`
   }
 
-  // 内框底部: └───────────────────┘
+  // Single-line bottom border: └───────────────────┘
   get boxBottom(): string {
     const innerWidth = Math.max(1, this.width - 2)
     return `└${'─'.repeat(innerWidth)}┘`
   }
 
-  // 内框分隔线: ├───────────────────┤
+  // Single-line separator: ├───────────────────┤
   get boxSeparator(): string {
     const innerWidth = Math.max(1, this.width - 2)
     return `├${'─'.repeat(innerWidth)}┤`
   }
 
-  // 内框内容行: │ 内容              │
+  // Single-line content row: │ content              │
   boxContent(content: string): string {
     return `│${padToWidth(content, this.width - 2)}│`
   }
@@ -193,24 +191,24 @@ class BorderGenerator {
 class SCPScraper {
   private cache: Map<string, { data: SCPWikiData; timestamp: number }> = new Map()
   private readonly CACHE_DURATION = config.cache.duration
-  private readonly API_TIMEOUT = WORKER_CONFIG.timeout // 使用 Worker 配置
+  private readonly API_TIMEOUT = WORKER_CONFIG.timeout
 
   /**
-   * 爬取指定SCP的详细信息
-   * @param scpNumber SCP编号（如 "173"）
-   * @param branch 分部（如 "cn" 表示中文分部，默认 "en"）
-   * @returns 爬取结果
+   * Fetch detailed info for a specific SCP entry from the Worker API.
+   * @param scpNumber SCP number (e.g. "173")
+   * @param branch Wiki branch ("cn" for Chinese, defaults to "en")
+   * @returns Scraping result with data or error
    */
   async scrapeSCP(scpNumber: string, branch: string = 'en'): Promise<ScraperResult> {
     const cacheKey = `scp-${branch}-${scpNumber}`
 
-    // 检查缓存
+    // Return cached data immediately to avoid unnecessary network calls
     const cached = this.getFromCache(cacheKey)
     if (cached) {
       return { success: true, data: cached, cached: true }
     }
 
-    // 重试机制
+    // Retry with exponential backoff to handle transient network failures
     for (let attempt = 1; attempt <= WORKER_CONFIG.retryAttempts; attempt++) {
       try {
         const apiUrl = `${config.api.workerUrl}/scrape`
@@ -218,6 +216,7 @@ class SCPScraper {
           `[尝试 ${attempt}/${WORKER_CONFIG.retryAttempts}] 正在请求 API: ${apiUrl}?number=${scpNumber}&branch=${branch}`
         )
 
+        // Call the Cloudflare Worker API
         const response = await apiFetch(apiUrl, { number: scpNumber, branch }, this.API_TIMEOUT)
 
         logger.info(`API 响应状态: ${response.status}`)
@@ -225,6 +224,8 @@ class SCPScraper {
 
         if (response.data['success'] && response.data['data']) {
           const data = this.normalizeData(response.data['data'])
+
+          // Persist to in-memory cache for subsequent requests
           this.saveToCache(cacheKey, data)
           return { success: true, data }
         } else {
@@ -234,6 +235,7 @@ class SCPScraper {
           }
         }
       } catch (error) {
+        // Classify the error to decide whether to retry
         if (error instanceof ApiResponseError) {
           logger.error(`API 错误响应:`, { status: error.status, data: error.data })
           if (error.status >= 400 && error.status < 500) {
@@ -256,6 +258,7 @@ class SCPScraper {
           }
           await this.sleep(WORKER_CONFIG.retryDelay * attempt)
         } else {
+
           logger.error(`未知错误:`, error)
           return {
             success: false,
@@ -265,7 +268,7 @@ class SCPScraper {
       }
     }
 
-    // 所有重试都失败了
+    // All retry attempts exhausted
     return {
       success: false,
       error: `网络错误: 无法连接到服务器 (已重试 ${WORKER_CONFIG.retryAttempts} 次)`,
@@ -273,32 +276,36 @@ class SCPScraper {
   }
 
   /**
-   * 延迟函数
+   * Pause execution for retry backoff.
    */
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   /**
-   * 搜索SCP
-   * @param keyword 搜索关键词
-   * @returns 搜索结果
+   * Search for SCP entries matching a keyword.
+   * @param keyword Search term
+   * @returns Search result with data or error
    */
   async searchSCP(keyword: string): Promise<ScraperResult> {
     try {
       const apiUrl = `${config.api.workerUrl}/search`
       logger.info(`正在搜索: ${apiUrl}?keyword=${keyword}`)
 
+      // Call the Cloudflare Worker search API
       const response = await apiFetch(apiUrl, { keyword }, this.API_TIMEOUT)
 
       logger.info(`搜索响应状态: ${response.status}`)
       logger.info(`搜索响应数据:`, response.data)
 
       if (response.data['success'] && response.data['data']) {
+        // Array response indicates database search results
         if (Array.isArray(response.data['data'])) {
           if (response.data['data'].length === 0) {
             return { success: false, error: `未找到包含 "${keyword}" 的SCP对象` }
           }
+
+          // Use the first match as the primary result
           const firstResult = response.data['data'][0] as Record<string, unknown>
           const data = this.normalizeData({
             id: `SCP-${firstResult['scp_id']}`,
@@ -310,6 +317,7 @@ class SCPScraper {
           })
           return { success: true, data }
         } else if (typeof response.data['data'] === 'object') {
+          // Single object response indicates scraper result
           const data = this.normalizeData(response.data['data'])
           return { success: true, data }
         }
@@ -317,6 +325,7 @@ class SCPScraper {
 
       return { success: false, error: `未找到包含 "${keyword}" 的SCP对象` }
     } catch (error) {
+      // Classify the error for a meaningful user-facing message
       if (error instanceof ApiResponseError) {
         logger.error(`搜索错误响应:`, { status: error.status, data: error.data })
         return {
@@ -330,6 +339,7 @@ class SCPScraper {
         logger.error(`搜索无响应:`, { message: error.message })
         return { success: false, error: `网络错误: 无法连接到服务器 (NETWORK_ERROR)` }
       } else {
+
         logger.error(`搜索未知错误:`, error)
         return {
           success: false,
@@ -340,7 +350,7 @@ class SCPScraper {
   }
 
   /**
-   * 标准化API返回的数据格式
+   * Normalize API response into a consistent SCPWikiData shape.
    */
   private normalizeData(value: unknown): SCPWikiData {
     const data = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
@@ -358,8 +368,8 @@ class SCPScraper {
   }
 
   /**
-   * 格式化SCP数据为终端输出（响应式设计）
-   * 根据终端实际宽度动态调整边框和文本布局
+   * Format SCP data for terminal display with responsive borders and text wrapping.
+   * Adapts layout based on actual terminal width.
    */
   formatForTerminal(data: SCPWikiData): string[] {
     const lines: string[] = []
@@ -368,23 +378,23 @@ class SCPScraper {
     const isMobile = terminalWidth <= 50
 
     if (isMobile) {
-      // 移动端：简化格式，去除复杂边框
+      // Mobile: use simplified layout without complex box-drawing
       return this.formatForMobile(data, classInfo, terminalWidth)
     }
 
-    // 桌面端：完整格式带边框
+    // Desktop: full layout with double-line borders
     const border = new BorderGenerator(terminalWidth)
 
-    // ===== 顶部外边框 =====
+    // Top border
     lines.push(border.topBorder)
 
-    // ===== 标题行 =====
+    // Title row
     const title = `${data.id} - ${data.name} — ${classInfo.displayName}`
     lines.push(border.verticalLine(title))
     lines.push(border.bottomBorder)
     lines.push('')
 
-    // ===== 项目等级 =====
+    // Object class section
     lines.push(border.boxTop)
     lines.push(border.boxContent(' 项目等级'))
     lines.push(border.boxSeparator)
@@ -393,13 +403,13 @@ class SCPScraper {
     lines.push(border.boxBottom)
     lines.push('')
 
-    // ===== 作者（如果有） =====
+    // Author (if available)
     if (data.author && data.author !== '未知作者') {
       lines.push(`作者: ${data.author}`)
       lines.push('')
     }
 
-    // ===== 收容协议 =====
+    // Containment procedures section
     if (data.containment.length > 0) {
       lines.push(border.boxTop)
       lines.push(border.boxContent(' 收容协议'))
@@ -416,7 +426,7 @@ class SCPScraper {
       lines.push('')
     }
 
-    // ===== 描述 =====
+    // Description section
     if (data.description.length > 0) {
       lines.push(border.boxTop)
       lines.push(border.boxContent(' 描述'))
@@ -433,7 +443,7 @@ class SCPScraper {
       lines.push('')
     }
 
-    // ===== 附录 =====
+    // Appendix section
     if (data.appendix.length > 0) {
       lines.push(border.boxTop)
       lines.push(border.boxContent(' 附录'))
@@ -454,8 +464,8 @@ class SCPScraper {
   }
 
   /**
-   * 移动端专用格式化方法
-   * 使用简化的边框和布局，避免复杂的字符计算
+   * Simplified formatting for mobile terminals.
+   * Uses lightweight separators instead of box-drawing characters.
    */
   private formatForMobile(
     data: SCPWikiData,
@@ -465,14 +475,14 @@ class SCPScraper {
     const lines: string[] = []
     const padding = ' '.repeat(2)
 
-    // ===== 简化的标题 =====
+    // Simplified title
     lines.push('═'.repeat(terminalWidth))
     lines.push(`${padding}${data.id} - ${data.name}`)
     lines.push(`${padding}项目等级: ${data.objectClass} (${classInfo.displayName})`)
     lines.push('═'.repeat(terminalWidth))
     lines.push('')
 
-    // ===== 收容协议 =====
+    // Containment procedures section
     if (data.containment.length > 0) {
       lines.push('─'.repeat(terminalWidth))
       lines.push(`${padding}收容协议`)
@@ -487,7 +497,7 @@ class SCPScraper {
       lines.push('')
     }
 
-    // ===== 描述 =====
+    // Description section
     if (data.description.length > 0) {
       lines.push('─'.repeat(terminalWidth))
       lines.push(`${padding}描述`)
@@ -502,7 +512,7 @@ class SCPScraper {
       lines.push('')
     }
 
-    // ===== 附录 =====
+    // Appendix section
     if (data.appendix.length > 0) {
       lines.push('─'.repeat(terminalWidth))
       lines.push(`${padding}附录`)
@@ -521,10 +531,10 @@ class SCPScraper {
   }
 
   /**
-   * 文本自动换行（考虑 CJK 字符宽度）
-   * @param text 要换行的文本
-   * @param maxWidth 最大显示宽度
-   * @returns 换行后的文本数组
+   * Wrap text to fit within a max display width, accounting for CJK double-width chars.
+   * @param text Text to wrap
+   * @param maxWidth Maximum display width in columns
+   * @returns Array of wrapped lines
    */
   private wrapText(text: string, maxWidth: number): string[] {
     if (!text) return ['']
@@ -543,7 +553,7 @@ class SCPScraper {
 
       const charWidth = getDisplayWidth(char)
 
-      // 如果当前行加上这个字符会超出最大宽度，换行
+      // Break to a new line when adding this char would exceed the max width
       if (currentWidth + charWidth > maxWidth && currentLine.length > 0) {
         lines.push(currentLine)
         currentLine = char
@@ -554,7 +564,7 @@ class SCPScraper {
       }
     }
 
-    // 添加最后一行
+    // Push any remaining text as the final line
     if (currentLine) {
       lines.push(currentLine)
     }
@@ -563,14 +573,14 @@ class SCPScraper {
   }
 
   /**
-   * 获取项目等级信息
+   * Look up object class metadata by class key.
    */
   getClassInfo(objectClass: string): ObjectClassInfo {
     return OBJECT_CLASSES[objectClass] || OBJECT_CLASSES.UNKNOWN
   }
 
   /**
-   * 缓存管理
+   * In-memory cache helpers with TTL expiry.
    */
   private getFromCache(key: string): SCPWikiData | null {
     const cached = this.cache.get(key)
@@ -592,15 +602,14 @@ class SCPScraper {
   }
 
   /**
-   * 清除缓存
+   * Drop all cached entries.
    */
   clearCache(): void {
     this.cache.clear()
   }
 
   /**
-   * 测试 API 连接
-   * 用于诊断网络问题
+   * Test connectivity to the Worker API for diagnostics.
    */
   async testConnection(): Promise<{ success: boolean; message: string; details?: unknown }> {
     try {
@@ -634,11 +643,11 @@ class SCPScraper {
   }
 
   /**
-   * 获取 SCP 列表
-   * @param limit 每页数量
-   * @param offset 偏移量
-   * @param clearanceLevel 权限等级筛选（可选）
-   * @returns SCP 列表
+   * Fetch a paginated list of SCP entries.
+   * @param limit Number of results per page
+   * @param offset Pagination offset
+   * @param clearanceLevel Optional clearance level filter
+   * @returns Paginated SCP list
    */
   async listSCPs(
     limit: number = 100,
@@ -710,5 +719,5 @@ class SCPScraper {
   }
 }
 
-// 导出单例
+// Export singleton instance
 export const scraper = new SCPScraper()

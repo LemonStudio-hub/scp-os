@@ -1,13 +1,13 @@
 /**
- * 终端响应式工具
- * 根据终端宽度动态调整输出格式
+ * Terminal responsive utilities.
+ * Adapts output formatting to the current terminal width.
  */
 
 /**
- * 获取终端当前宽度（列数）
+ * Get the current terminal width in columns.
  */
 export function getTerminalWidth(): number {
-  // 尝试从全局终端实例获取
+  // Prefer the live terminal instance for accurate width
   if (typeof window !== 'undefined' && window.__terminalInstance) {
     const cols = window.__terminalInstance.cols
     if (cols && cols > 10) {
@@ -15,42 +15,42 @@ export function getTerminalWidth(): number {
     }
   }
 
-  // 根据屏幕宽度估算
+  // Fallback: estimate from screen width
   if (typeof window !== 'undefined') {
     const screenWidth = window.innerWidth
     const isMobile = screenWidth < 768
 
     if (isMobile) {
-      // 移动端：10-12px 字体，字符宽度约 6-7px
+      // Mobile: ~10-12px font with ~6-7px character width
       const charWidth = 6.5
       const padding = 16
       const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
       return Math.max(25, Math.min(50, estimatedCols))
     }
 
-    // 桌面端
+    // Desktop
     const charWidth = 9.6
     const padding = 20
     const estimatedCols = Math.floor((screenWidth - padding) / charWidth)
     return Math.max(40, Math.min(120, estimatedCols))
   }
 
-  // 默认值
+  // Sensible default when no window is available
   return 80
 }
 
 /**
- * 判断是否为移动端（窄终端）
+ * Check if the terminal is narrow (mobile layout).
  */
 export function isNarrowTerminal(): boolean {
   return getTerminalWidth() <= 50
 }
 
 /**
- * 生成响应式边框线
- * @param char 边框字符（默认 '═'）
- * @param minWidth 最小宽度（默认 20）
- * @param maxWidth 最大宽度（默认 120）
+ * Generate a border line sized to the current terminal width.
+ * @param char Border character (default '═')
+ * @param minWidth Minimum line width (default 20)
+ * @param maxWidth Maximum line width (default 120)
  */
 export function createBorderLine(
   char: string = '═',
@@ -63,18 +63,18 @@ export function createBorderLine(
 }
 
 /**
- * 生成带标题的响应式边框行
- * @param text 标题文本
- * @param borderChar 边框字符
- * @returns 格式化的边框行
+ * Generate a border line with a centered title.
+ * @param text Title text
+ * @param borderChar Border character
+ * @returns Formatted bordered title string
  */
 export function createBorderedTitle(text: string, borderChar: string = '═'): string {
   const width = getTerminalWidth()
-  const padding = 2 // 文本左右各留空格
+  const padding = 2
   const availableWidth = width - padding
 
   if (text.length >= availableWidth) {
-    // 文本太长，直接返回边框线
+    // Text is too long to center — return a plain border line instead
     return createBorderLine(borderChar)
   }
 
@@ -86,10 +86,10 @@ export function createBorderedTitle(text: string, borderChar: string = '═'): s
 }
 
 /**
- * 生成区块（带边框的标题和内容）
- * @param title 标题
- * @param contentLines 内容行数组
- * @returns 完整的区块字符串数组
+ * Generate a bordered block with a title and content lines.
+ * @param title Section title
+ * @param contentLines Array of content lines
+ * @returns Array of formatted strings for the complete block
  */
 export function createBlock(title: string, contentLines: string[]): string[] {
   const lines: string[] = []
@@ -107,47 +107,47 @@ export function createBlock(title: string, contentLines: string[]): string[] {
 }
 
 /**
- * 截断文本以适应终端宽度
- * @param text 原始文本
- * @param maxWidth 最大宽度（可选，默认使用终端宽度）
- * @returns 截断后的文本
+ * Truncate text to fit the terminal width, preserving ANSI color codes.
+ * @param text Original text
+ * @param maxWidth Maximum width (defaults to terminal width)
+ * @returns Truncated text with ellipsis
  */
 export function truncateText(text: string, maxWidth?: number): string {
   const width = maxWidth || getTerminalWidth()
 
-  // 移除 ANSI 颜色代码后计算长度
+  // Measure length after stripping ANSI color codes
   const cleanText = text.replace(/\x1b\[[0-9;]*m/g, '')
 
   if (cleanText.length <= width) {
     return text
   }
 
-  // 找到最后一个 ANSI 代码的位置
+  // Find the last ANSI code so we can append a reset after truncation
   const lastAnsiMatch = text.match(/\x1b\[[0-9;]*m/g)
   const resetCode = lastAnsiMatch ? lastAnsiMatch[lastAnsiMatch.length - 1] : ''
 
-  // 截断并添加重置代码
+  // Truncate and append reset code to avoid broken colors
   return text.substring(0, width - 3) + '...' + resetCode
 }
 
 /**
- * 自动换行文本以适应终端宽度
- * @param text 原始文本
- * @param maxWidth 最大宽度（可选）
- * @returns 换行后的文本数组
+ * Word-wrap text to fit the terminal width.
+ * @param text Original text
+ * @param maxWidth Maximum width (defaults to terminal width)
+ * @returns Array of wrapped lines
  */
 export function wrapText(text: string, maxWidth?: number): string[] {
   const width = maxWidth || getTerminalWidth()
   const lines: string[] = []
 
-  // 移除 ANSI 代码以便计算
+  // Strip ANSI codes for width calculation
   const cleanText = text.replace(/\x1b\[[0-9;]*m/g, '')
 
   if (cleanText.length <= width) {
     return [text]
   }
 
-  // 按单词分割并重新组合
+  // Split by words and recombine to fit within width
   const words = cleanText.split(' ')
   let currentLine = ''
 

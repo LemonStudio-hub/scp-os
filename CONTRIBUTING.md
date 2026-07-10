@@ -1,213 +1,213 @@
-# 贡献指南
+# Contributing Guide
 
-感谢你对 SCP-OS 项目的关注！我们欢迎各种形式的贡献，包括但不限于代码、文档、Bug 报告和功能建议。
-
----
-
-## 目录
-
-- [行为准则](#行为准则)
-- [如何贡献](#如何贡献)
-- [开发流程](#开发流程)
-- [代码规范](#代码规范)
-- [提交规范](#提交规范)
-- [Pull Request 流程](#pull-request-流程)
-- [报告 Bug](#报告-bug)
-- [功能建议](#功能建议)
-- [项目架构](#项目架构)
-- [添加新工具](#添加新工具)
+Thank you for your interest in the SCP-OS project! We welcome contributions of all kinds, including but not limited to code, documentation, bug reports, and feature suggestions.
 
 ---
 
-## 行为准则
+## Table of Contents
 
-- 尊重所有贡献者，友善沟通
-- 使用建设性的语言，聚焦问题本身
-- 关注问题而非个人，就事论事
-- 接纳不同的观点和经验，保持开放心态
+- [Code of Conduct](#code-of-conduct)
+- [How to Contribute](#how-to-contribute)
+- [Development Workflow](#development-workflow)
+- [Code Standards](#code-standards)
+- [Commit Convention](#commit-convention)
+- [Pull Request Process](#pull-request-process)
+- [Reporting Bugs](#reporting-bugs)
+- [Feature Suggestions](#feature-suggestions)
+- [Project Architecture](#project-architecture)
+- [Adding a New Tool](#adding-a-new-tool)
 
 ---
 
-## 如何贡献
+## Code of Conduct
 
-### 1. Fork 仓库
+- Respect all contributors and communicate kindly
+- Use constructive language and focus on the issue at hand
+- Address issues, not people — keep discussions objective
+- Embrace different viewpoints and experiences with an open mind
 
-点击 GitHub 页面右上角的 Fork 按钮，将仓库复制到你的账户。
+---
 
-### 2. 克隆到本地
+## How to Contribute
+
+### 1. Fork the Repository
+
+Click the Fork button in the top-right corner of the GitHub page to copy the repository to your account.
+
+### 2. Clone to Local
 
 ```bash
 git clone https://github.com/your-username/scp-os.git
 cd scp-os
 ```
 
-### 3. 创建分支
+### 3. Create a Branch
 
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
-分支命名规范：
+Branch naming conventions:
 
-| 前缀 | 用途 | 示例 |
-|------|------|------|
-| `feature/` | 新功能 | `feature/chat-rooms` |
-| `fix/` | Bug 修复 | `fix/terminal-scroll` |
-| `docs/` | 文档更新 | `docs/api-reference` |
-| `refactor/` | 代码重构 | `refactor/store-layer` |
-| `test/` | 测试相关 | `test/command-history` |
-| `chore/` | 构建/工具 | `chore/update-deps` |
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `feature/` | New features | `feature/chat-rooms` |
+| `fix/` | Bug fixes | `fix/terminal-scroll` |
+| `docs/` | Documentation updates | `docs/api-reference` |
+| `refactor/` | Code refactoring | `refactor/store-layer` |
+| `test/` | Testing | `test/command-history` |
+| `chore/` | Build/tools | `chore/update-deps` |
 
-### 4. 开发与测试
+### 4. Develop and Test
 
 ```bash
-# 安装依赖
+# Install dependencies
 pnpm install
 
-# 启动开发服务器
+# Start development server
 pnpm dev
 
-# 运行测试
+# Run tests
 pnpm test
 
-# 类型检查
+# Type checking
 pnpm typecheck
 
-# 代码检查
+# Lint check
 pnpm lint:check
 
-# 格式化
+# Format code
 pnpm format
 ```
 
-> **必读：每次修改代码后，必须在本地至少运行一遍完整验证流程。**
+> **Must read: After every code change, you must run the full verification flow locally at least once.**
 >
 > ```bash
 > pnpm typecheck && pnpm lint:check && pnpm test && pnpm build
 > ```
 >
-> 这是强制要求。任何跳过验证直接提交的代码，如果在 CI 中失败，会被直接打回。244 个 lint warning 是存量问题，**不要新增 error**。
+> This is mandatory. Any code submitted without verification that fails in CI will be rejected. The 244 lint warnings are legacy issues - **do not add new errors**.
 
-### 5. 提交代码
+### 5. Commit Code
 
 ```bash
 git add .
 git commit -m "feat: add chat room creation feature"
 ```
 
-### 6. 推送并创建 PR
+### 6. Push and Create PR
 
 ```bash
 git push origin feature/your-feature-name
 ```
 
-在 GitHub 上创建 Pull Request，填写 PR 模板。
+Create a Pull Request on GitHub and fill out the PR template.
 
 ---
 
-## 开发流程
+## Development Workflow
 
-### 环境搭建
+### Environment Setup
 
-详细的环境搭建步骤请参考 [安装与配置指南](docs/INSTALLATION.md)。
+For detailed environment setup steps, please refer to the [Installation & Configuration Guide](docs/INSTALLATION.md).
 
-### 开发模式
+### Development Mode
 
 ```bash
-# Web 开发
+# Web development
 pnpm dev
 
-# 桌面端开发
+# Desktop development
 pnpm desktop:dev
 
-# Worker 开发
+# Worker development
 pnpm worker:dev
 ```
 
-### 测试
+### Testing
 
 ```bash
-# 运行所有测试
+# Run all tests
 pnpm test
 
-# 运行特定测试文件
-pnpm vitest run path/to/test.test.ts
+# Run specific test file
+pnpm --filter @scp-os/app vitest run src/path/to/test.test.ts
 
-# 测试 UI
+# Test UI
 pnpm test:ui
 
-# 覆盖率报告
+# Coverage report
 pnpm test:coverage
 ```
 
-### 代码质量检查
+### Code Quality Checks
 
-在提交 PR 前，请确保以下检查全部通过：
+Before submitting a PR, ensure all the following checks pass:
 
 ```bash
-# TypeScript 类型检查
+# TypeScript type checking
 pnpm typecheck
 
-# ESLint 检查
+# ESLint check
 pnpm lint:check
 
-# 格式检查
-pnpm format:check
+# Format check
+pnpm format
 
-# 运行测试
+# Run tests
 pnpm test
 ```
 
 ---
 
-## 代码规范
+## Code Standards
 
 ### TypeScript
 
-- 严格模式，启用所有严格检查
-- 优先使用 `interface` 定义对象类型，`type` 用于联合类型和工具类型
-- 显式声明函数返回类型
-- 避免使用 `any`，必要时使用 `unknown` 并进行类型守卫
+- Strict mode with all strict checks enabled
+- Prefer `interface` for object types, `type` for unions and utility types
+- Explicitly declare function return types
+- Avoid `any`; use `unknown` with type guards when necessary
 
-### Vue 组件
+### Vue Components
 
-- 使用 `<script setup lang="ts">` 语法
-- 组件文件名使用 PascalCase：`MyComponent.vue`
-- Props 使用 `defineProps<T>()` 泛型语法
-- Emits 使用 `defineEmits<T>()` 泛型语法
-- 组件内逻辑抽取为 composables
+- Use `<script setup lang="ts">` syntax
+- Component filenames use PascalCase: `MyComponent.vue`
+- Props use `defineProps<T>()` generic syntax
+- Emits use `defineEmits<T>()` generic syntax
+- Extract component logic into composables
 
-### 状态管理
+### State Management
 
-- 使用 Pinia `defineStore`
-- Store 文件名使用 camelCase：`useWindowManager.ts`
-- Store 命名使用 `use[Name]Store` 模式
-- 异步操作放在 Store actions 中
+- Use Pinia `defineStore`
+- Store filenames use camelCase: `useWindowManager.ts`
+- Store naming follows `use[Name]Store` pattern
+- Async operations go in Store actions
 
-### 样式
+### Styling
 
-- 使用 Tailwind CSS 工具类优先
-- 组件特定样式使用 `<style scoped>`
-- 全局样式变量通过 CSS 自定义属性（`--gui-*`）
-- 颜色值使用设计令牌中定义的变量
+- Prefer Tailwind CSS utility classes
+- Component-specific styles use `<style scoped>`
+- Global style variables via CSS custom properties (`--gui-*`)
+- Use design token variables for color values
 
-### 文件组织
+### File Organization
 
 ```
 feature/
-├── __tests__/          # 测试文件
-├── components/         # Vue 组件
-├── composables/        # 组合式函数
-├── stores/             # Pinia Store
-├── types/              # 类型定义
-└── index.ts            # 统一导出
+├── __tests__/          # Test files
+├── components/         # Vue components
+├── composables/        # Composables
+├── stores/             # Pinia stores
+├── types/              # Type definitions
+└── index.ts            # Unified exports
 ```
 
 ---
 
-## 提交规范
+## Commit Convention
 
-项目遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
+The project follows [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>(<scope>): <subject>
@@ -219,31 +219,31 @@ feature/
 
 ### Type
 
-| Type | 说明 |
-|------|------|
-| `feat` | 新功能 |
-| `fix` | Bug 修复 |
-| `docs` | 文档更新 |
-| `style` | 代码格式（不影响功能） |
-| `refactor` | 代码重构 |
-| `perf` | 性能优化 |
-| `test` | 测试相关 |
-| `chore` | 构建/工具/依赖 |
-| `ci` | CI/CD 配置 |
+| Type | Description |
+|------|-------------|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation update |
+| `style` | Code formatting (no functional change) |
+| `refactor` | Code refactoring |
+| `perf` | Performance optimization |
+| `test` | Testing |
+| `chore` | Build/tools/dependencies |
+| `ci` | CI/CD configuration |
 
 ### Scope
 
-| Scope | 说明 |
-|-------|------|
-| `app` | 前端应用 |
-| `desktop` | 桌面端 |
-| `worker` | 后端 Worker |
-| `terminal` | 终端模块 |
-| `gui` | GUI 模块 |
-| `domain` | 领域层 |
-| `plugin` | 插件系统 |
+| Scope | Description |
+|-------|-------------|
+| `app` | Frontend application |
+| `desktop` | Desktop client |
+| `worker` | Backend Worker |
+| `terminal` | Terminal module |
+| `gui` | GUI module |
+| `domain` | Domain layer |
+| `plugin` | Plugin system |
 
-### 示例
+### Example
 
 ```
 feat(terminal): add command autocomplete with fuzzy matching
@@ -259,157 +259,157 @@ Closes #123
 
 ---
 
-## Pull Request 流程
+## Pull Request Process
 
-### PR 检查清单
+### PR Checklist
 
-在提交 PR 前，请确认：
+Before submitting a PR, confirm:
 
-- [ ] 代码通过 `pnpm typecheck` 类型检查
-- [ ] 代码通过 `pnpm lint:check` ESLint 检查
-- [ ] 代码通过 `pnpm format:check` 格式检查
-- [ ] 所有测试通过 `pnpm test`
-- [ ] 新功能添加了对应的测试
-- [ ] 提交信息遵循 Conventional Commits 规范
-- [ ] PR 描述清晰说明了变更内容
+- [ ] Code passes `pnpm typecheck` type checking
+- [ ] Code passes `pnpm lint:check` ESLint checking
+- [ ] Code passes `pnpm format` format checking
+- [ ] All tests pass with `pnpm test`
+- [ ] New features have corresponding tests
+- [ ] Commit messages follow Conventional Commits
+- [ ] PR description clearly explains the changes
 
-### PR 标题格式
+### PR Title Format
 
 ```
 <type>(<scope>): <subject>
 ```
 
-示例：`feat(gui): add wallpaper picker component`
+Example: `feat(gui): add wallpaper picker component`
 
-### PR 描述模板
+### PR Description Template
 
 ```markdown
-## 变更类型
-- [ ] 新功能
-- [ ] Bug 修复
-- [ ] 重构
-- [ ] 文档更新
-- [ ] 其他
+## Change Type
+- [ ] New feature
+- [ ] Bug fix
+- [ ] Refactoring
+- [ ] Documentation update
+- [ ] Other
 
-## 变更说明
-<!-- 描述你的变更内容 -->
+## Change Description
+<!-- Describe your changes -->
 
-## 相关 Issue
-<!-- 关联的 Issue 编号 -->
+## Related Issues
+<!-- Related issue numbers -->
 
-## 测试
-<!-- 描述如何测试你的变更 -->
+## Testing
+<!-- Describe how to test your changes -->
 
-## 截图
-<!-- 如有 UI 变更，请附上截图 -->
+## Screenshots
+<!-- If there are UI changes, include screenshots -->
 ```
 
-### 审查流程
+### Review Process
 
-1. 自动 CI 检查必须全部通过
-2. 至少需要一位维护者审核
-3. 根据审查意见完成修改
-4. 审核通过后合并至 main 分支
+1. Automated CI checks must all pass
+2. At least one maintainer review required
+3. Address review comments and make necessary changes
+4. Merge to main branch after approval
 
 ---
 
-## 报告 Bug
+## Reporting Bugs
 
-### Bug 报告模板
-
-```markdown
-## Bug 描述
-<!-- 清晰描述 Bug 的表现 -->
-
-## 复现步骤
-1. 进入 '...'
-2. 点击 '...'
-3. 输入 '...'
-4. 看到错误
-
-## 期望行为
-<!-- 描述期望的正确行为 -->
-
-## 实际行为
-<!-- 描述实际发生的行为 -->
-
-## 环境信息
-- 操作系统：
-- 浏览器：
-- 应用版本：
-- 设备类型（桌面/移动）：
-
-## 截图
-<!-- 如适用，附上截图 -->
-
-## 附加信息
-<!-- 错误日志、网络请求等 -->
-```
-
----
-
-## 功能建议
-
-### 功能建议模板
+### Bug Report Template
 
 ```markdown
-## 功能描述
-<!-- 清晰描述你建议的功能 -->
+## Bug Description
+<!-- Clearly describe the bug behavior -->
 
-## 问题背景
-<!-- 描述什么场景下需要这个功能 -->
+## Steps to Reproduce
+1. Go to '...'
+2. Click on '...'
+3. Enter '...'
+4. See error
 
-## 建议方案
-<!-- 描述你建议的实现方式 -->
+## Expected Behavior
+<!-- Describe the expected correct behavior -->
 
-## 替代方案
-<!-- 描述你考虑过的其他方案 -->
+## Actual Behavior
+<!-- Describe what actually happened -->
 
-## 附加信息
-<!-- 其他有助于理解的信息 -->
+## Environment
+- Operating System:
+- Browser:
+- App Version:
+- Device Type (Desktop/Mobile):
+
+## Screenshots
+<!-- If applicable, include screenshots -->
+
+## Additional Information
+<!-- Error logs, network requests, etc. -->
 ```
 
 ---
 
-## 项目架构
+## Feature Suggestions
 
-了解项目架构有助于你找到正确的修改位置。详细架构说明请参考 [README.md](README.md#项目架构)。
+### Feature Suggestion Template
 
-### 关键目录
+```markdown
+## Feature Description
+<!-- Clearly describe the suggested feature -->
 
-| 目录 | 职责 | 修改场景 |
-|------|------|---------|
-| `src/domain/` | 领域模型 | 添加实体、值对象、仓库接口 |
-| `src/gui/tools/` | GUI 工具 | 添加新工具组件 |
-| `src/gui/tools/docs/` | Docs 阅读器 | PCP CDocsWindow.vue + MobileDocs.vue |
-| `src/gui/registry/` | 工具注册 | 注册新工具 |
-| `src/gui/composables/` | 组合式函数 | 添加可复用逻辑 |
-| `src/gui/stores/` | GUI Store | 添加窗口管理相关状态 |
-| `src/stores/` | Pinia Store | 添加应用级状态 |
-| `src/commands/` | 命令处理 | 添加新终端命令 |
-| `src/utils/` | 工具函数 | 添加通用工具 |
-| `src/platform/plugins/` | 插件系统 | 添加插件类型或扩展 |
-| `packages/worker/` | 后端 API | 修改 API 接口 |
+## Problem Context
+<!-- Describe what scenario needs this feature -->
+
+## Suggested Solution
+<!-- Describe your suggested implementation approach -->
+
+## Alternatives Considered
+<!-- Describe other approaches you've considered -->
+
+## Additional Information
+<!-- Any other information that helps understand the suggestion -->
+```
 
 ---
 
-## 添加新工具
+## Project Architecture
 
-SCP-OS 使用工具注册表模式，添加新工具只需 3 步：
+Understanding the project architecture helps you find the right place to make changes. For detailed architecture information, please refer to [README.md](README.md#project-architecture).
 
-### 1. 创建工具组件
+### Key Directories
 
-在 `src/gui/tools/` 下创建新目录，包含桌面端和移动端组件：
+| Directory | Responsibility | Modification Scenarios |
+|-----------|----------------|----------------------|
+| `src/domain/` | Domain models | Add entities, value objects, repository interfaces |
+| `src/gui/tools/` | GUI tools | Add new tool components |
+| `src/gui/tools/docs/` | Docs reader | PCDocsWindow.vue + MobileDocs.vue |
+| `src/gui/registry/` | Tool registry | Register new tools |
+| `src/gui/composables/` | Composables | Add reusable logic |
+| `src/gui/stores/` | GUI stores | Add window management state |
+| `src/stores/` | Pinia stores | Add application-level state |
+| `src/commands/` | Command handling | Add new terminal commands |
+| `src/utils/` | Utility functions | Add general utilities |
+| `src/platform/plugins/` | Plugin system | Add plugin types or extensions |
+| `packages/worker/src/routes/` | Backend API | Modify API endpoints |
+
+---
+
+## Adding a New Tool
+
+SCP-OS uses a tool registry pattern. Adding a new tool requires only 3 steps:
+
+### 1. Create Tool Components
+
+Create a new directory under `src/gui/tools/` with desktop and mobile components:
 
 ```
 src/gui/tools/mytool/
-├── PCMyTool.vue        # 桌面端组件
-└── MobileMyTool.vue    # 移动端组件
+├── PCMyTool.vue        # Desktop component
+└── MobileMyTool.vue    # Mobile component
 ```
 
-### 2. 注册工具
+### 2. Register the Tool
 
-在 `src/gui/registry/registerTools.ts` 中添加注册代码：
+Add registration code in `src/gui/registry/registerTools.ts`:
 
 ```typescript
 import PCMyTool from '../tools/mytool/PCMyTool.vue'
@@ -418,7 +418,7 @@ import MobileMyTool from '../tools/mytool/MobileMyTool.vue'
 registerTool({
   id: 'mytool',
   label: (t) => t('tools.mytool'),
-  icon: iconMyTool(),  // icons.ts 中的 SVG 函数
+  icon: iconMyTool(),  // SVG function from icons.ts
   windowConfig: {
     width: 700,
     height: 500,
@@ -437,9 +437,9 @@ registerTool({
 })
 ```
 
-### 3. 添加国际化文本
+### 3. Add Internationalization Text
 
-在 `src/gui/composables/useI18n.ts` 的语言包中添加翻译：
+Add translations in the language packs of `src/gui/composables/useI18n.ts`:
 
 ```typescript
 const messages = {
@@ -456,10 +456,10 @@ const messages = {
 }
 ```
 
-完成！新工具会自动出现在桌面图标、开始菜单和移动端主屏中。
+Done! The new tool will automatically appear in desktop icons, start menu, and mobile home screen.
 
 ---
 
-## 许可协议
+## License
 
-通过向本项目贡献代码，你同意你的贡献将在 MIT 许可协议下授权。SCP 基金会相关内容遵循 CC BY-SA 3.0 许可协议。
+By contributing code to this project, you agree that your contributions will be licensed under the MIT License. SCP Foundation-related content follows the CC BY-SA 3.0 License.

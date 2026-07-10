@@ -1,60 +1,60 @@
-# 安装与配置指南
+# Installation & Configuration Guide
 
-本文档详细说明 SCP-OS 项目的环境搭建、配置与部署流程。
-
----
-
-## 目录
-
-- [环境要求](#环境要求)
-- [安装步骤](#安装步骤)
-- [环境变量配置](#环境变量配置)
-- [Worker 部署配置](#worker-部署配置)
-- [Tauri 桌面端配置](#tauri-桌面端配置)
-- [构建与部署](#构建与部署)
-- [开发工具配置](#开发工具配置)
+This document provides detailed instructions for setting up, configuring, and deploying the SCP-OS project.
 
 ---
 
-## 环境要求
+## Table of Contents
 
-### 必需
+- [System Requirements](#system-requirements)
+- [Installation Steps](#installation-steps)
+- [Environment Variables](#environment-variables)
+- [Worker Deployment Configuration](#worker-deployment-configuration)
+- [Tauri Desktop Configuration](#tauri-desktop-configuration)
+- [Build & Deploy](#build--deploy)
+- [Development Tools Configuration](#development-tools-configuration)
 
-| 工具 | 最低版本 | 推荐版本 | 说明 |
-|------|---------|---------|------|
-| Node.js | 18.0.0 | 20.x LTS | JavaScript 运行时 |
-| pnpm | 8.0.0 | 10.3.0 | 包管理器（项目指定） |
+---
 
-### 可选
+## System Requirements
 
-| 工具 | 说明 |
-|------|------|
-| Rust stable | Tauri 桌面端构建 |
-| Wrangler CLI | Cloudflare Worker 本地开发与部署 |
-| GTK3 + WebKit2GTK | Linux 下 Tauri 构建（仅 Linux） |
+### Required
 
-### 安装 Node.js
+| Tool | Minimum Version | Recommended | Description |
+|------|-----------------|-------------|-------------|
+| Node.js | 18.0.0 | 20.x LTS | JavaScript runtime |
+| pnpm | 8.0.0 | 10.3.0 | Package manager (project-specified) |
 
-推荐使用 [nvm](https://github.com/nvm-sh/nvm) 或 [fnm](https://github.com/Schniz/fnm) 管理 Node.js 版本：
+### Optional
+
+| Tool | Description |
+|------|-------------|
+| Rust stable | Tauri desktop build |
+| Wrangler CLI | Cloudflare Worker local development and deployment |
+| GTK3 + WebKit2GTK | Tauri build on Linux (Linux only) |
+
+### Installing Node.js
+
+Recommended to use [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm) to manage Node.js versions:
 
 ```bash
-# 使用 nvm
+# Using nvm
 nvm install 20
 nvm use 20
 
-# 使用 fnm
+# Using fnm
 fnm install 20
 fnm use 20
 ```
 
-### 启用 pnpm
+### Enabling pnpm
 
 ```bash
 corepack enable
 corepack prepare pnpm@10.3.0 --activate
 ```
 
-### 安装 Rust（桌面端开发）
+### Installing Rust (Desktop Development)
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -62,119 +62,119 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ---
 
-## 安装步骤
+## Installation Steps
 
-### 1. 克隆仓库
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/LemonStudio-hub/scp-os.git
 cd scp-os
 ```
 
-### 2. 安装依赖
+### 2. Install Dependencies
 
 ```bash
 pnpm install
 ```
 
-项目使用 pnpm workspace 管理 Monorepo，此命令会自动安装所有子包的依赖项。
+The project uses pnpm workspace to manage the monorepo. This command will automatically install all sub-package dependencies.
 
-### 3. 配置环境变量
+### 3. Configure Environment Variables
 
 ```bash
 cp .env.example .env.development
 ```
 
-根据 [环境变量配置](#环境变量配置) 章节编辑 `.env.development`。
+Edit `.env.development` according to the [Environment Variables](#environment-variables) section.
 
-### 4. 启动开发服务器
+### 4. Start Development Server
 
 ```bash
 pnpm dev
 ```
 
-浏览器访问 `http://localhost:5173` 即可看到应用。
+Access `http://localhost:5173` in your browser to see the application.
 
 ---
 
-## 环境变量配置
+## Environment Variables
 
-环境变量文件位于项目根目录，支持三种环境：
+Environment variable files are located in the project root directory, supporting three environments:
 
-| 文件 | 用途 |
-|------|------|
-| `.env.development` | 开发环境 |
-| `.env.production` | 生产环境 |
-| `.env.example` | 配置模板（已提交到版本控制） |
+| File | Purpose |
+|------|---------|
+| `.env.development` | Development environment |
+| `.env.production` | Production environment |
+| `.env.example` | Configuration template (committed to version control) |
 
-### 完整配置项
+### Complete Configuration
 
 ```bash
-# ==================== API 配置 ====================
+# ==================== API Configuration ====================
 
-# Worker API 地址
-# 开发环境可使用本地 Worker 地址：http://localhost:8787
-# 生产环境使用线上地址：https://api.scpos.site
+# Worker API URL
+# Development can use local Worker URL: http://localhost:8787
+# Production uses online URL: https://api.scpos.site
 VITE_WORKER_API_URL=https://api.woodcat.online
 
-# API 请求超时时间（毫秒）
+# API request timeout (milliseconds)
 VITE_API_TIMEOUT=15000
 
-# ==================== 缓存配置 ====================
+# ==================== Cache Configuration ====================
 
-# 缓存有效期（毫秒），默认 30 分钟
+# Cache duration (milliseconds), default 30 minutes
 VITE_CACHE_DURATION=1800000
 
-# 最大缓存条目数
+# Maximum cache entries
 VITE_CACHE_MAX_SIZE=100
 
-# ==================== 爬虫配置 ====================
+# ==================== Scraper Configuration ====================
 
-# 爬虫重试次数
+# Scraper retry attempts
 VITE_SCRAPER_RETRY_ATTEMPTS=3
 
-# 爬虫重试延迟（毫秒）
+# Scraper retry delay (milliseconds)
 VITE_SCRAPER_RETRY_DELAY=1000
 
-# ==================== 终端配置 ====================
+# ==================== Terminal Configuration ====================
 
-# 终端回滚缓冲区行数
+# Terminal scrollback buffer lines
 VITE_TERMINAL_SCROLLBACK=1000
 
-# Tab 键宽度（空格数）
+# Tab key width (spaces)
 VITE_TERMINAL_TAB_STOP_WIDTH=4
 
-# ==================== 应用配置 ====================
+# ==================== Application Configuration ====================
 
-# 应用版本号
-VITE_APP_VERSION=0.1.0
+# Application version
+VITE_APP_VERSION=0.2.0
 
-# 应用名称
+# Application name
 VITE_APP_NAME=SCP-OS
 
-# 快速启动模式（跳过启动动画）
+# Fast boot mode (skip boot animation)
 VITE_FAST_BOOT=false
 ```
 
-### 配置优先级
+### Configuration Priority
 
-1. 环境特定文件（`.env.development` / `.env.production`）
-2. 代码中的默认值（见 `packages/app/src/config/index.ts`）
+1. Environment-specific file (`.env.development` / `.env.production`)
+2. Default values in code (see `packages/app/src/config/index.ts`)
 
-Vite 会根据 `--mode` 参数自动加载对应的环境文件：
+Vite automatically loads the corresponding environment file based on the `--mode` parameter:
 
 ```bash
-vite --mode development   # 加载 .env.development
-vite --mode production    # 加载 .env.production
+vite --mode development   # Loads .env.development
+vite --mode production    # Loads .env.production
 ```
 
 ---
 
-## Worker 部署配置
+## Worker Deployment Configuration
 
-Worker 配置位于 `packages/worker/wrangler.toml`。
+Worker configuration is located at `packages/worker/wrangler.toml`.
 
-### 关键配置项
+### Key Configuration Items
 
 ```toml
 name = "scp-os-worker"
@@ -182,7 +182,7 @@ main = "index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# D1 数据库绑定（根级别，所有环境共享）
+# D1 database bindings (root level, shared across all environments)
 [[d1_databases]]
 binding = "SCP_DB"
 database_name = "scp-database"
@@ -195,87 +195,87 @@ database_name = "scp-reader-db"
 database_id = "7454655f-d3a5-49b6-9832-b5a146c192de"
 migrations_dir = "migrations"
 
-# KV 命名空间（内容缓存）
+# KV namespace (content cache)
 [[kv_namespaces]]
 binding = "SCP_CACHE"
 id = "40f0d23a05e14f7484232bc1960e217f"
 
-# 定时任务：每 10 分钟广播聊天消息
+# Cron trigger: broadcast chat messages every 10 minutes
 [triggers]
 crons = ["*/10 * * * *"]
 ```
 
-### 初始化 D1 数据库
+### Initialize D1 Database
 
 ```bash
 cd packages/worker
 
-# 查看数据库列表
+# View database list
 wrangler d1 list
 
-# 执行主数据库迁移（聊天、反馈、用户）
+# Run main database migration (chat, feedback, users)
 wrangler d1 execute scp-database --file=migrations/0001_init.sql --remote
 
-# 执行 SCP 索引数据库迁移（9 张表：scp_items、scp_tales、scp_goi、scp_hubs、scp_search FTS5）
+# Run SCP index database migration (9 tables: scp_items, scp_tales, scp_goi, scp_hubs, scp_search FTS5)
 wrangler d1 execute scp-reader-db --file=migrations/0009_scp_reader_tables.sql --remote
 
-# 迁移脚本位置：packages/worker/scripts/migrate-scp-data.ts
-# 使用方式：npx tsx scripts/migrate-scp-data.ts
+# Migration script location: packages/worker/scripts/migrate-scp-data.ts
+# Usage: npx tsx scripts/migrate-scp-data.ts
 ```
 
-### 创建 KV 命名空间
+### Create KV Namespace
 
 ```bash
 wrangler kv:namespace create SCP_CACHE
 ```
 
-将返回的 `id` 填入 `wrangler.toml`。
+Enter the returned `id` into `wrangler.toml`.
 
-### 本地开发 Worker
+### Local Worker Development
 
 ```bash
 cd packages/worker
 pnpm dev
 ```
 
-Worker 本地运行在 `http://localhost:8787`。
+Worker runs locally at `http://localhost:8787`.
 
-### 部署 Worker
+### Deploy Worker
 
 ```bash
 cd packages/worker
 pnpm deploy
 ```
 
-### 数据填充
+### Data Population
 
-Docs 索引数据通过 `migrate-scp-data.ts` 脚本导入（需配置 `SCP_DATA_REPO_PATH` 环境变量指向 scp-api 仓库）：
+Docs index data is imported via the `migrate-scp-data.ts` script (requires configuring `SCP_DATA_REPO_PATH` environment variable pointing to the scp-api repository):
 
 ```bash
-# 设置数据仓库路径（在 .env 中配置）
+# Set data repository path (configure in .env)
 SCP_DATA_REPO_PATH=d:/backup/scp-api/scp-api-main/docs/data/scp
 
-# 运行迁移脚本（将 JSON 转换为 SQL 并导入 D1）
+# Run migration script (converts JSON to SQL and imports to D1)
 npx tsx scripts/migrate-scp-data.ts
 ```
 
-KV 内容缓存通过 `preload-kv-content.ts` 脚本预加载（每日 900 条限速）：
+KV content cache is preloaded via the `preload-kv-content.ts` script (900 entries/day rate limit):
 
 ```bash
-# 运行 KV 预加载（遵守免费版每日 1000 次写入限制）
+# Run KV preload (respects free tier daily 1000 write limit)
 npx tsx scripts/preload-kv-content.ts
 
-# 查看进度
+# View progress
 cat scripts/.kv-preload-progress.json
 ```
 
 ---
 
-## Tauri 桌面端配置
+## Tauri Desktop Configuration
 
-Tauri 配置位于 `packages/desktop/tauri.conf.json`。
+Tauri configuration is located at `packages/desktop/tauri.conf.json`.
 
-### 关键配置项
+### Key Configuration Items
 
 ```json
 {
@@ -300,37 +300,37 @@ Tauri 配置位于 `packages/desktop/tauri.conf.json`。
 }
 ```
 
-### CSP 安全策略
+### CSP Security Policy
 
-Tauri 桌面端启用了严格的内容安全策略：
+The Tauri desktop enables a strict Content Security Policy:
 
-- `default-src 'self'` — 仅允许加载同源资源
-- `connect-src 'self' https://api.scpos.site` — 仅允许连接指定的 API 服务器
-- 禁止通过 `frame-src`、`object-src` 嵌入外部内容
+- `default-src 'self'` — Only allows loading same-origin resources
+- `connect-src 'self' https://api.scpos.site` — Only allows connecting to the specified API server
+- Blocks embedding external content via `frame-src`, `object-src`
 
-如需连接其他 API，需修改 `csp.connect-src` 配置。
+To connect to other APIs, modify the `csp.connect-src` configuration.
 
-### 构建 Tauri 应用
+### Building the Tauri Application
 
 ```bash
-# 开发模式
+# Development mode
 pnpm desktop:dev
 
-# 构建安装包
+# Build installer
 pnpm desktop:build
 ```
 
-构建产物位于 `packages/desktop/src-tauri/target/release/bundle/`：
+Build output is located at `packages/desktop/src-tauri/target/release/bundle/`:
 
-| 平台 | 产物格式 |
-|------|---------|
+| Platform | Output Format |
+|----------|---------------|
 | Linux | `.deb` |
 | macOS | `.dmg` |
-| Windows | `.msi` / `.exe`（NSIS） |
+| Windows | `.msi` / `.exe` (NSIS) |
 
-### Linux 依赖
+### Linux Dependencies
 
-在 Linux 上构建 Tauri 需要安装系统依赖：
+Building Tauri on Linux requires installing system dependencies:
 
 ```bash
 # Ubuntu/Debian
@@ -345,40 +345,40 @@ sudo pacman -S webkit2gtk-4.1 base-devel curl wget file openssl appmenu-gtk-modu
 
 ---
 
-## 构建与部署
+## Build & Deploy
 
-### Web 应用构建
+### Web Application Build
 
 ```bash
-# 标准构建
+# Standard build
 pnpm build
 
-# 按环境构建
+# Build by environment
 pnpm build:development
 pnpm build:production
 ```
 
-构建产物输出到项目根目录的 `dist/` 文件夹，包含：
+Build output is written to the project root `dist/` directory, containing:
 
-- 静态 HTML/CSS/JS
-- Service Worker（`sw.js`）
-- PWA Manifest（`manifest.json`）
-- 离线页面（`offline.html`）
+- Static HTML/CSS/JS
+- Service Worker (`sw.js`)
+- PWA Manifest (`manifest.json`)
+- Offline page (`offline.html`)
 
-### 代码分割策略
+### Code Splitting Strategy
 
-Vite 构建配置了手动代码分割，优化加载性能：
+Vite build is configured with manual code splitting to optimize loading performance:
 
-| Chunk | 包含内容 |
-|-------|---------|
-| `vue-vendor` | Vue 核心库 |
-| `terminal` | xterm.js 终端 |
-| `network` | axios 网络库 |
-| `gestures` | Hammer.js 手势库 |
+| Chunk | Contents |
+|-------|----------|
+| `vue-vendor` | Vue core library |
+| `terminal` | xterm.js terminal |
+| `network` | axios network library |
+| `gestures` | Hammer.js gesture library |
 
-### 部署到静态托管
+### Deploy to Static Hosting
 
-`dist/` 目录可直接部署到任何静态托管服务：
+The `dist/` directory can be directly deployed to any static hosting service:
 
 - **Cloudflare Pages**
 - **Vercel**
@@ -386,15 +386,15 @@ Vite 构建配置了手动代码分割，优化加载性能：
 - **GitHub Pages**
 - **Nginx / Apache**
 
-> **注意**：SPA 应用需要配置所有路由回退到 `index.html`。
+> **Note**: SPA applications need to configure all routes to fall back to `index.html`.
 
 ---
 
-## 开发工具配置
+## Development Tools Configuration
 
-### VS Code 推荐扩展
+### VS Code Recommended Extensions
 
-项目已配置 `.vscode/extensions.json`，推荐安装以下扩展：
+The project has configured `.vscode/extensions.json`. The following extensions are recommended:
 
 - Vue Language Features (Volar)
 - TypeScript Vue Plugin
@@ -402,50 +402,50 @@ Vite 构建配置了手动代码分割，优化加载性能：
 - Prettier
 - Tailwind CSS IntelliSense
 
-### ESLint 配置
+### ESLint Configuration
 
-ESLint 配置位于 `packages/app/eslint.config.js`，使用 ESLint 9 扁平配置格式：
+ESLint configuration is located at `packages/app/eslint.config.js`, using ESLint 9 flat config format:
 
 ```bash
-# 检查代码
+# Check code
 pnpm lint:check
 
-# 自动修复
+# Auto-fix
 pnpm lint
 ```
 
-### Prettier 配置
+### Prettier Configuration
 
-Prettier 配置位于 `packages/app/.prettierrc`：
+Prettier configuration is located at `packages/app/.prettierrc`:
 
 ```bash
-# 格式化代码
+# Format code
 pnpm format
 
-# 检查格式
-pnpm format:check
+# Check formatting
+pnpm format
 ```
 
-### TypeScript 配置
+### TypeScript Configuration
 
-TypeScript 配置位于 `packages/app/tsconfig.json`：
+TypeScript configuration is located at `packages/app/tsconfig.json`:
 
 ```bash
-# 类型检查
+# Type checking
 pnpm typecheck
 ```
 
-### 测试配置
+### Test Configuration
 
-测试使用 Vitest，配置位于 `packages/app/vitest.config.ts`：
+Tests use Vitest, configured at `packages/app/vitest.config.ts`:
 
 ```bash
-# 运行测试
+# Run tests
 pnpm test
 
-# 测试 UI
+# Test UI
 pnpm test:ui
 
-# 覆盖率
+# Coverage
 pnpm test:coverage
 ```

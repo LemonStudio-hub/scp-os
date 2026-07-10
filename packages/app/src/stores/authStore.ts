@@ -267,6 +267,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Execute a fetch request with the current user's credentials attached.
+   */
   async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
     return authenticatedFetch(url, userId.value ?? '', options)
   }

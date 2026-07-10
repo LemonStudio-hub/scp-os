@@ -77,7 +77,7 @@ export function createApp(): Hono<AppEnv> {
     }
     const data = await searchIndex(c.env.SCP_DB, keyword);
     if (data.length) return json({ success: true, data });
-    // 只有数字格式的关键词才尝试直接爬取（如 173、SCP-173）
+    // Only numeric keywords trigger live scraping, since text searches can't be resolved to a single SCP page
     const numberMatch = keyword.replace(/^SCP-/i, '').match(/^\d+$/);
     if (numberMatch) {
       return json(await scrape(c.env, keyword.replace(/^SCP-/i, ''), c.req.query('branch') || 'en'));

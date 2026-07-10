@@ -104,7 +104,7 @@ async function displayBootLog(): Promise<void> {
   const bootLogs = getBootLogs(config.app.fastBoot)
   const fastMode = config.app.fastBoot
 
-  // 动态速度配置（与主终端保持一致）
+  // Speed values mirror the desktop terminal so boot animation feels consistent
   const baseDelay = fastMode ? 5 : 30
   const minDelay = fastMode ? 3 : 15
   const maxDelay = fastMode ? 10 : 60
@@ -112,15 +112,15 @@ async function displayBootLog(): Promise<void> {
   for (const line of bootLogs) {
     term.writeln(line)
     if (!fastMode) {
-      // 根据行内容计算延迟
+      // Vary delay based on line content for a realistic scroll effect
       let delay = baseDelay
 
-      // 空行快速滚动
+      // Empty lines scroll quickly to avoid dead time
       if (line.trim().length === 0) {
         delay = minDelay
       }
 
-      // 包含重要信息的行显示更长时间
+      // Lines with key status info linger longer so the user can read them
       if (
         line.includes('ONLINE') ||
         line.includes('Security') ||
@@ -132,7 +132,7 @@ async function displayBootLog(): Promise<void> {
         delay *= 1.3
       }
 
-      // ASCII 框线框显示更长时间
+      // Decorative border lines are slightly slower for visual emphasis
       if (line.includes('═') || line.includes('█')) {
         delay *= 1.2
       }
@@ -149,7 +149,7 @@ async function displayShutdownLog(): Promise<void> {
   const shutdownLogs = getShutdownLogs(config.app.fastBoot)
   const fastMode = config.app.fastBoot
 
-  // 动态速度配置（与开机日志保持一致）
+  // Speed values mirror the boot log for visual consistency
   const baseDelay = fastMode ? 5 : 30
   const minDelay = fastMode ? 3 : 15
   const maxDelay = fastMode ? 10 : 60
@@ -157,20 +157,20 @@ async function displayShutdownLog(): Promise<void> {
   for (const line of shutdownLogs) {
     term.writeln(line)
     if (!fastMode) {
-      // 根据行内容计算延迟
+      // Vary delay based on line content for a realistic scroll effect
       let delay = baseDelay
 
-      // 空行快速滚动
+      // Empty lines scroll quickly to avoid dead time
       if (line.trim().length === 0) {
         delay = minDelay
       }
 
-      // OK 状态显示更长时间
+      // OK status lines linger briefly so the user sees each service stopped
       if (line.includes('[  OK  ]')) {
         delay *= 1.2
       }
 
-      // 系统停止信息显示更长时间
+      // Final halt message gets extra time as the dramatic conclusion
       if (line.includes('halted') || line.includes('SHUTDOWN') || line.includes('HALTED')) {
         delay *= 1.5
       }

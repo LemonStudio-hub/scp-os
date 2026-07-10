@@ -1,309 +1,309 @@
-# 常见问题解答 (FAQ)
+# Frequently Asked Questions (FAQ)
 
 ---
 
-## 目录
+## Table of Contents
 
-- [通用问题](#通用问题)
-- [安装与运行](#安装与运行)
-- [终端使用](#终端使用)
-- [SCP 数据查询](#scp-数据查询)
-- [GUI 与界面](#gui-与界面)
-- [桌面端](#桌面端)
-- [Worker 后端](#worker-后端)
-- [开发相关](#开发相关)
-
----
-
-## 通用问题
-
-### SCP-OS 是什么？
-
-SCP-OS 是一个以 SCP 基金会为主题的 Web 操作系统，在浏览器中提供完整的桌面环境。内置命令行终端、文件管理器、代码编辑器、实时聊天、性能仪表盘、反馈系统等多款应用，同时支持桌面与移动端自适应适配。
-
-### SCP-OS 是官方产品吗？
-
-不是。SCP-OS 是一个社区驱动的开源项目，仅供教育和娱乐目的使用。SCP 基金会相关内容的使用遵循 [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) 许可协议。
-
-### 支持哪些平台？
-
-- **Web**：任何现代浏览器（Chrome、Firefox、Safari、Edge）
-- **桌面**：Windows、macOS、Linux（通过 Tauri）
-- **移动**：通过浏览器访问，响应式适配手机和平板
-
-### 需要网络连接吗？
-
-大部分功能可以离线使用（终端命令、虚拟文件系统、本地设置等）。SCP 数据查询、聊天功能和 Docs 阅读器需要网络连接。Docs 阅读器支持离线阅读——已缓存的文章内容存储在 IndexedDB 中，断网后仍可阅读。
-
-### Docs 阅读器需要付费吗？
-
-不需要。Docs 阅读器使用 Cloudflare 免费额度构建：D1 数据库（500MB 免费存储）、KV 缓存（1GB 免费存储）、Worker（每日 10 万次免费请求）。正常使用完全免费。
-
-### Docs 内容多久更新一次？
-
-目前 Docs 使用 KV 预加载脚本每日分批写入（每日 900 条），预计 8-10 天可将全部 9526+ 条目写入 KV。GitHub Raw 作为回退源始终可用。
+- [General Questions](#general-questions)
+- [Installation & Running](#installation--running)
+- [Terminal Usage](#terminal-usage)
+- [SCP Data Queries](#scp-data-queries)
+- [GUI & Interface](#gui--interface)
+- [Desktop](#desktop)
+- [Worker Backend](#worker-backend)
+- [Development](#development)
 
 ---
 
-## 安装与运行
+## General Questions
 
-### pnpm install 报错怎么办？
+### What is SCP-OS?
 
-1. 确认 Node.js 版本 >= 18.0.0：`node -v`
-2. 确认 pnpm 版本 >= 8.0.0：`pnpm -v`
-3. 尝试清除缓存：`pnpm store prune`
-4. 删除 `node_modules` 和 lockfile 后重新安装：
+SCP-OS is an SCP Foundation-themed Web Operating System that provides a complete desktop environment in the browser. It includes a command-line terminal, file manager, code editor, real-time chat, performance dashboard, feedback system, and more. It supports seamless desktop and mobile responsive adaptation.
+
+### Is SCP-OS an official product?
+
+No. SCP-OS is a community-driven open-source project for educational and entertainment purposes only. Use of SCP Foundation content follows the [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) license.
+
+### What platforms are supported?
+
+- **Web**: Any modern browser (Chrome, Firefox, Safari, Edge)
+- **Desktop**: Windows, macOS, Linux (via Tauri)
+- **Mobile**: Via browser access, responsive adaptation for phones and tablets
+
+### Is an internet connection required?
+
+Most features work offline (terminal commands, virtual file system, local settings, etc.). SCP data queries, chat functionality, and the Docs reader require an internet connection. The Docs reader supports offline reading — cached article content is stored in IndexedDB and can be read without a network.
+
+### Is the Docs reader paid?
+
+No. The Docs reader is built using Cloudflare's free tier: D1 database (500MB free storage), KV cache (1GB free storage), Worker (100,000 free requests/day). Normal usage is completely free.
+
+### How often is Docs content updated?
+
+Currently, Docs uses a KV preload script that writes in batches daily (900 entries/day). It takes approximately 8-10 days to write all 9526+ entries to KV. GitHub Raw always remains available as a fallback source.
+
+---
+
+## Installation & Running
+
+### What to do if `pnpm install` fails?
+
+1. Confirm Node.js version >= 18.0.0: `node -v`
+2. Confirm pnpm version >= 8.0.0: `pnpm -v`
+3. Try clearing the cache: `pnpm store prune`
+4. Delete `node_modules` and lockfile, then reinstall:
    ```bash
    rm -rf node_modules packages/*/node_modules pnpm-lock.yaml
    pnpm install
    ```
 
-### 开发服务器启动失败？
+### Development server fails to start?
 
-1. 检查端口 5173 是否被占用
-2. 检查 `.env.development` 文件是否存在且配置正确
-3. 查看终端错误信息，常见问题：
-   - 依赖未安装：运行 `pnpm install`
-   - TypeScript 错误：运行 `pnpm typecheck` 查看详情
+1. Check if port 5173 is already in use
+2. Check if `.env.development` file exists and is configured correctly
+3. Check terminal error messages. Common issues:
+   - Dependencies not installed: Run `pnpm install`
+   - TypeScript errors: Run `pnpm typecheck` for details
 
-### 构建失败？
+### Build fails?
 
-1. 运行 `pnpm typecheck` 检查类型错误
-2. 运行 `pnpm lint:check` 检查代码规范
-3. 确保所有依赖已安装：`pnpm install`
-4. 清除构建缓存：删除 `dist/` 目录后重新构建
+1. Run `pnpm typecheck` to check for type errors
+2. Run `pnpm lint:check` to check code standards
+3. Ensure all dependencies are installed: `pnpm install`
+4. Clear build cache: Delete the `dist/` directory and rebuild
 
 ---
 
-## 终端使用
+## Terminal Usage
 
-### 命令不生效？
+### Commands not working?
 
-- 确认命令拼写正确（输入 `help` 查看所有可用命令）
-- 注意命令区分大小写
-- 某些命令需要参数，如 `info 173` 而不是 `info`
+- Confirm command spelling is correct (type `help` to see all available commands)
+- Commands are case-sensitive
+- Some commands require arguments, e.g., `info 173` not just `info`
 
-### 如何查询中文分部的 SCP？
+### How to query Chinese branch SCPs?
 
-使用 `CN-` 前缀：
+Use the `CN-` prefix:
 
 ```bash
 info CN-173
 ```
 
-搜索也支持中文关键词：
+Search also supports Chinese keywords:
 
 ```bash
 search 雕像
 ```
 
-### 终端显示乱码？
+### Terminal displays garbled text?
 
-- 确认浏览器支持 UTF-8 编码
-- 尝试调整终端字体大小（设置 → 终端配置）
-- 移动端可能需要横屏查看长文本
+- Confirm the browser supports UTF-8 encoding
+- Try adjusting terminal font size (Settings → Terminal Configuration)
+- Mobile devices may need landscape mode to view long text
 
-### 命令历史丢失？
+### Command history lost?
 
-命令历史存储在内存中，刷新页面后会丢失。标签页状态通过 IndexedDB 持久化，刷新后会自动恢复。
-
----
-
-## SCP 数据查询
-
-### 查询 SCP 返回错误？
-
-可能的原因：
-
-1. **网络问题**：运行 `network` 命令测试与 Wiki 的连接
-2. **编号不存在**：确认 SCP 编号有效（0-9999）
-3. **Wiki 页面格式变化**：爬虫可能需要更新以适配新的页面结构
-4. **API 超时**：重试或稍后再试
-
-### 搜索结果不准确？
-
-- 搜索功能基于 SCP Wiki 网站搜索，结果取决于 Wiki 的搜索引擎
-- 尝试使用更具体的关键词
-- 使用 `scp-list` 浏览已知 SCP 列表
-- 使用 `info <编号>` 直接查询特定 SCP
-
-### 缓存数据过期？
-
-缓存有效期为 30 分钟。如需获取最新数据：
-- 等待缓存过期后重新查询
-- 或清除浏览器缓存后重新查询
+Command history is stored in memory and will be lost when the page is refreshed. Tab state is persisted via IndexedDB and will be automatically restored after refresh.
 
 ---
 
-## GUI 与界面
+## SCP Data Queries
 
-### 窗口无法拖拽？
+### SCP query returns errors?
 
-- 确认拖拽的是窗口标题栏区域
-- 拖拽需要超过 5px 的移动阈值才会触发
-- 移动端不支持窗口拖拽（使用全屏模式）
+Possible causes:
 
-### 窗口大小调整异常？
+1. **Network issues**: Run the `network` command to test connectivity to the Wiki
+2. **Number doesn't exist**: Confirm the SCP number is valid (0-9999)
+3. **Wiki page format changed**: The scraper may need updating to adapt to new page structures
+4. **API timeout**: Retry or try again later
 
-- 从窗口边缘或角落拖拽调整大小
-- 确认窗口未处于最大化状态
-- 每个工具有最小尺寸限制
+### Search results are inaccurate?
 
-### 主题切换不生效？
+- Search functionality is based on SCP Wiki's site search; results depend on the Wiki's search engine
+- Try using more specific keywords
+- Use `scp-list` to browse the known SCP list
+- Use `info <number>` to directly query a specific SCP
 
-- 刷新页面后重试
-- 检查浏览器是否支持 CSS 自定义属性
-- 某些浏览器扩展可能覆盖样式
+### Cache data expired?
 
-### 壁纸上传失败？
-
-- 支持常见图片格式（PNG、JPG、WebP）
-- 图片大小限制取决于浏览器 IndexedDB 存储
-- 尝试压缩图片后重新上传
-
-### 移动端布局异常？
-
-- 确认浏览器视口设置正确
-- 尝试旋转设备重新触发布局计算
-- 某些浏览器可能需要添加到主屏幕以获得最佳体验
+Cache duration is 30 minutes. To get the latest data:
+- Wait for the cache to expire, then query again
+- Or clear the browser cache and query again
 
 ---
 
-## 桌面端
+## GUI & Interface
 
-### Tauri 构建失败？
+### Window cannot be dragged?
 
-**Linux**：
-- 确认已安装所有系统依赖（见 [安装指南](docs/INSTALLATION.md#linux-依赖)）
-- 检查 Rust 版本：`rustc --version`（需要 stable）
+- Confirm you are dragging the window title bar area
+- Dragging requires more than 5px of movement to trigger
+- Mobile does not support window dragging (uses fullscreen mode)
 
-**Windows**：
-- 安装 Visual Studio C++ Build Tools
-- 安装 WebView2 Runtime（Windows 10/11 通常已内置）
+### Window resize is abnormal?
 
-**macOS**：
-- 安装 Xcode Command Line Tools：`xcode-select --install`
+- Drag from the window edge or corner to resize
+- Confirm the window is not in maximized state
+- Each tool has minimum size limits
 
-### 桌面端无法连接 API？
+### Theme switching not taking effect?
 
-- 检查 CSP 配置是否允许连接 API 域名
-- 确认 `tauri.conf.json` 中 `security.csp.connect-src` 包含 API 地址
-- 检查网络代理设置
+- Refresh the page and try again
+- Check if the browser supports CSS custom properties
+- Some browser extensions may override styles
 
-### 桌面端窗口尺寸异常？
+### Wallpaper upload fails?
 
-- 窗口默认尺寸 1200x800，最小 800x600
-- 可在 `tauri.conf.json` 中修改默认尺寸
-- 删除本地存储的窗口状态后重启
+- Supports common image formats (PNG, JPG, WebP)
+- Image size limit depends on browser IndexedDB storage
+- Try compressing the image before uploading
+
+### Mobile layout is abnormal?
+
+- Confirm the browser viewport is set correctly
+- Try rotating the device to trigger layout recalculation
+- Some browsers may require adding to home screen for the best experience
 
 ---
 
-## Worker 后端
+## Desktop
 
-### Worker 本地开发报错？
+### Tauri build fails?
 
-1. 确认已安装 Wrangler：`wrangler --version`
-2. 检查 `wrangler.toml` 配置
-3. 确认 D1 数据库和 KV 命名空间已创建
-4. 运行数据库迁移
+**Linux**:
+- Confirm all system dependencies are installed (see [Installation Guide](INSTALLATION.md#linux-dependencies))
+- Check Rust version: `rustc --version` (requires stable)
 
-### D1 数据库迁移失败？
+**Windows**:
+- Install Visual Studio C++ Build Tools
+- Install WebView2 Runtime (usually built-in on Windows 10/11)
+
+**macOS**:
+- Install Xcode Command Line Tools: `xcode-select --install`
+
+### Desktop cannot connect to API?
+
+- Check if CSP configuration allows connecting to the API domain
+- Confirm `tauri.conf.json` `security.csp.connect-src` includes the API URL
+- Check network proxy settings
+
+### Desktop window size is abnormal?
+
+- Default window size is 1200x800, minimum 800x600
+- Can be modified in `tauri.conf.json`
+- Delete locally stored window state and restart
+
+---
+
+## Worker Backend
+
+### Worker local development errors?
+
+1. Confirm Wrangler is installed: `wrangler --version`
+2. Check `wrangler.toml` configuration
+3. Confirm D1 databases and KV namespaces have been created
+4. Run database migrations
+
+### D1 database migration fails?
 
 ```bash
-# 检查数据库是否存在
+# Check if database exists
 wrangler d1 list
 
-# 查看数据库信息
+# View database info
 wrangler d1 info scp-reader-db
 
-# 重新执行迁移
+# Re-run migration
 wrangler d1 execute scp-reader-db --file=migrations/0009_scp_reader_tables.sql --remote
 ```
 
-### Worker 部署失败？
+### Worker deployment fails?
 
-1. 确认 Cloudflare 账户已登录：`wrangler whoami`
-2. 检查 `wrangler.toml` 中的 `database_id` 和 KV `id` 是否正确
-3. 确认路由配置的域名已在 Cloudflare 管理
+1. Confirm Cloudflare account is logged in: `wrangler whoami`
+2. Check if `database_id` and KV `id` in `wrangler.toml` are correct
+3. Confirm the route configuration domain is managed by Cloudflare
 
-### API 速率限制触发？
+### API rate limit triggered?
 
-- 每个 IP 限制 60 次/分钟
-- 聊天消息限制 10 条/分钟/用户
-- 等待冷却期后重试
-- 开发环境可在 `rateLimiter.ts` 中调整限制
+- Each IP is limited to 60 requests/minute
+- Chat messages limited to 10 messages/minute/user
+- Wait for the cooldown period and retry
+- Development environment can adjust limits in `rateLimiter.ts`
 
 ---
 
-## 开发相关
+## Development
 
-### 如何添加新的终端命令？
+### How to add a new terminal command?
 
-1. 在 `src/constants/commands.ts` 中注册命令
-2. 在 `src/commands/` 中实现命令处理逻辑
-3. 添加对应的类型定义
-4. 编写测试
+1. Register the command in `src/constants/commands.ts`
+2. Implement command handling logic in `src/commands/`
+3. Add corresponding type definitions
+4. Write tests
 
-### 如何添加新的 GUI 工具？
+### How to add a new GUI tool?
 
-参考 [贡献指南](CONTRIBUTING.md#添加新工具) 中的详细步骤。
+Refer to the detailed steps in [Contributing Guide](CONTRIBUTING.md#adding-a-new-tool).
 
-### 如何调试 Worker？
+### How to debug the Worker?
 
 ```bash
-# 本地开发模式（带热重载）
+# Local development mode (with hot reload)
 cd packages/worker
 pnpm dev
 
-# 查看实时日志
+# View real-time logs
 pnpm worker:tail
 
-# 使用 /debug 端点获取原始 HTML
+# Use /debug endpoint to get raw HTML
 curl "http://localhost:8787/debug?number=173"
 ```
 
-### 如何运行特定测试？
+### How to run specific tests?
 
 ```bash
-# 运行单个测试文件
-pnpm vitest run src/gui/composables/__tests__/useDraggable.test.ts
+# Run a single test file
+pnpm --filter @scp-os/app vitest run src/gui/composables/__tests__/useDraggable.test.ts
 
-# 运行匹配模式的测试
-pnpm vitest run --grep "window manager"
+# Run tests matching a pattern
+pnpm --filter @scp-os/app vitest run --grep "window manager"
 
-# 监听模式
-pnpm vitest watch
+# Watch mode
+pnpm --filter @scp-os/app vitest watch
 ```
 
-### 如何查看测试覆盖率？
+### How to view test coverage?
 
 ```bash
 pnpm test:coverage
 ```
 
-覆盖率报告生成在 `coverage/` 目录，打开 `coverage/index.html` 查看详细报告。
+Coverage reports are generated in the `coverage/` directory. Open `coverage/index.html` to view the detailed report.
 
-### IndexedDB 数据如何清除？
+### How to clear IndexedDB data?
 
-打开浏览器开发者工具 → Application → IndexedDB → 删除 `scp-os-db` 数据库。
+Open browser Developer Tools → Application → IndexedDB → Delete the `scp-os-db` database.
 
-### 如何添加新的插件类型？
+### How to add a new plugin type?
 
-1. 在 `src/platform/plugins/plugin.interface.ts` 中添加新类型
-2. 在 `src/platform/plugins/plugin-manager.ts` 中更新验证逻辑
-3. 在 `src/platform/extensions/extension-point.ts` 中注册扩展点
-4. 编写测试
+1. Add a new type in `src/platform/plugins/plugin.interface.ts`
+2. Update validation logic in `src/platform/plugins/plugin-manager.ts`
+3. Register extension points in `src/platform/extensions/extension-point.ts`
+4. Write tests
 
-### 如何修改设计令牌？
+### How to modify design tokens?
 
-编辑 `src/gui/design-tokens.ts`，修改后调用 `injectGUITokens()` 会自动更新所有 CSS 变量。所有组件通过 `var(--gui-*)` 消费令牌值。
+Edit `src/gui/design-tokens.ts`. After modification, calling `injectGUITokens()` will automatically update all CSS variables. All components consume token values via `var(--gui-*)`.
 
 ---
 
-## 更多帮助
+## More Help
 
-如果你的问题未在此列表中找到答案，可以：
+If your question is not answered in this list, you can:
 
-1. 搜索 [GitHub Issues](https://github.com/LemonStudio-hub/scp-os/issues)
-2. 提交新的 Issue
-3. 在聊天系统中与其他用户交流
+1. Search [GitHub Issues](https://github.com/LemonStudio-hub/scp-os/issues)
+2. Submit a new Issue
+3. Chat with other users in the chat system

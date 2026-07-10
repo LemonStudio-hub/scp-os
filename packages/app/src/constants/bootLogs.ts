@@ -3,12 +3,11 @@ import { config } from '../config'
 import { isNarrowTerminal, createBorderLine } from '../utils/terminalResponsive'
 
 /**
- * 系统启动日志配置
+ * Boot and shutdown log sequences shown in the terminal
+ * to simulate a Linux-style SCP Foundation system startup.
  */
 export const BOOT_LOGS_CONFIG = {
-  /**
-   * 快速模式 - 显示响应式信息
-   */
+  /** Fast mode skips most log lines to reduce perceived boot time */
   get fastMode(): string[] {
     const isNarrow = isNarrowTerminal()
     const borderChar = '█'
@@ -42,9 +41,7 @@ export const BOOT_LOGS_CONFIG = {
     ]
   },
 
-  /**
-   * 正常模式 - 完整的启动日志
-   */
+  /** Full boot sequence with realistic kernel-style log output */
   normalMode: [
     // ASCII Art Header
     `${ANSICode.green}`,
@@ -145,21 +142,19 @@ export const BOOT_LOGS_CONFIG = {
 }
 
 /**
- * 获取启动日志
- * @param fastMode 是否使用快速模式
- * @returns 启动日志数组
+ * Returns boot logs based on the configured boot speed.
+ * @param fastMode - When true, returns abbreviated logs for faster perceived startup
+ * @returns Array of ANSI-colored log lines
  */
 export function getBootLogs(fastMode: boolean = false): string[] {
   return fastMode ? BOOT_LOGS_CONFIG.fastMode : BOOT_LOGS_CONFIG.normalMode
 }
 
 /**
- * 系统关机日志配置
+ * Shutdown log sequences shown when the user issues the shutdown command.
  */
 export const SHUTDOWN_LOGS_CONFIG = {
-  /**
-   * 快速模式 - 只显示关键信息
-   */
+  /** Fast mode shows only key shutdown milestones */
   fastMode: [
     `${ANSICode.yellow}[  0.000000] Initiating system shutdown...${ANSICode.reset}`,
     `${ANSICode.green}[  0.000100] Stopping SCP Foundation Operating System...${ANSICode.reset}`,
@@ -172,9 +167,7 @@ export const SHUTDOWN_LOGS_CONFIG = {
     '',
   ],
 
-  /**
-   * 正常模式 - 完整的关机日志
-   */
+  /** Full shutdown sequence mirroring a real Linux halt */
   normalMode: [
     `${ANSICode.yellow}[  0.000000] System is going down for halt NOW!${ANSICode.reset}`,
     `${ANSICode.white}[  0.000100] Stopping Systemd target paths...${ANSICode.reset}`,
@@ -230,9 +223,9 @@ export const SHUTDOWN_LOGS_CONFIG = {
 }
 
 /**
- * 获取关机日志
- * @param fastMode 是否使用快速模式
- * @returns 关机日志数组
+ * Returns shutdown logs based on the configured boot speed.
+ * @param fastMode - When true, returns abbreviated logs for faster shutdown animation
+ * @returns Array of ANSI-colored log lines
  */
 export function getShutdownLogs(fastMode: boolean = false): string[] {
   return fastMode ? SHUTDOWN_LOGS_CONFIG.fastMode : SHUTDOWN_LOGS_CONFIG.normalMode

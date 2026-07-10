@@ -1,494 +1,494 @@
-# 使用教程
+# Usage Guide
 
-本教程将引导你从零开始使用 SCP-OS 系统，涵盖桌面操作、命令行终端、SCP 数据查询、GUI 工具使用、主题个性化等核心功能模块。
+This tutorial will guide you through using the SCP-OS system from scratch, covering desktop operations, command-line terminal, SCP data queries, GUI tools, theme personalization, and other core feature modules.
 
 ---
 
-## 目录
+## Table of Contents
 
-- [首次启动](#首次启动)
-- [终端操作](#终端操作)
-- [SCP 数据查询](#scp-数据查询)
-- [文件系统操作](#文件系统操作)
-- [GUI 工具使用](#gui-工具使用)
+- [First Launch](#first-launch)
+- [Terminal Operations](#terminal-operations)
+- [SCP Data Queries](#scp-data-queries)
+- [File System Operations](#file-system-operations)
+- [GUI Tools](#gui-tools)
 - [Docs](#docs)
-- [主题与个性化](#主题与个性化)
-- [聊天系统](#聊天系统)
-- [反馈系统](#反馈系统)
-- [键盘快捷键](#键盘快捷键)
-- [移动端操作](#移动端操作)
+- [Themes & Personalization](#themes--personalization)
+- [Chat System](#chat-system)
+- [Feedback System](#feedback-system)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Mobile Operations](#mobile-operations)
 
 ---
 
-## 首次启动
+## First Launch
 
-### 登录
+### Login
 
-1. 启动应用后，你会看到 SCP 基金会风格的加载界面
-2. 加载完成后进入登录界面
-3. 输入你的昵称（2-30 个字符，需全局唯一）
-4. 点击登录，系统将自动为你分配 UUID 并同步至服务器
+1. After launching the application, you will see an SCP Foundation-style loading screen
+2. After loading completes, you will enter the login screen
+3. Enter your nickname (2-30 characters, must be globally unique)
+4. Click login — the system will automatically assign you a UUID and sync it to the server
 
-> **桌面端**：登录界面显示 SCP 基金会 Logo 和输入框
-> **移动端**：登录界面采用全屏设计，底部输入区域
+> **Desktop**: The login screen displays the SCP Foundation logo and an input field
+> **Mobile**: The login screen uses a fullscreen design with a bottom input area
 
-### 系统初始化
+### System Initialization
 
-首次进入系统后，终端会显示启动日志和欢迎信息。你可以输入 `start` 命令完成首次系统初始化。
+After entering the system for the first time, the terminal will display boot logs and welcome messages. You can enter the `start` command to complete first-time system initialization.
 
 ---
 
-## 终端操作
+## Terminal Operations
 
-### 基础命令
+### Basic Commands
 
 ```bash
-# 查看可用命令
+# View available commands
 help
 
-# 查看系统状态
+# View system status
 status
 
-# 清屏
+# Clear screen
 clear
 
-# 查看版本
+# View version
 version
 
-# 查看系统信息
+# View system information
 about
 ```
 
-### 命令历史
+### Command History
 
-- 按 `↑` 键浏览上一条命令
-- 按 `↓` 键浏览下一条命令
-- 命令历史自动去重，最多保存 500 条
+- Press `↑` to browse the previous command
+- Press `↓` to browse the next command
+- Command history is automatically deduplicated, with a maximum of 500 entries
 
-### 命令自动补全
+### Command Auto-Completion
 
-- 输入命令前缀后按 `Tab` 键触发自动补全
-- 支持模糊匹配（子序列匹配）
-- 多个匹配结果时，连续按 `Tab` 循环选择
-- 输入 `info ` 后按 `Tab` 可补全 SCP 编号
+- Enter a command prefix and press `Tab` to trigger auto-completion
+- Supports fuzzy matching (subsequence matching)
+- When there are multiple matches, press `Tab` repeatedly to cycle through options
+- Enter `info ` and press `Tab` to auto-complete SCP numbers
 
-### 命令格式
+### Command Format
 
 ```
-SCP-OS:~$ <命令> [参数]
+SCP-OS:~$ <command> [arguments]
 ```
 
-- 绿色文本表示有效指令
-- 白色文本表示无效输入
-- 红色提示符表示需要特别注意
+- Green text indicates a valid command
+- White text indicates invalid input
+- Red prompt indicates special attention needed
 
 ---
 
-## SCP 数据查询
+## SCP Data Queries
 
-### 查询 SCP 信息
+### Query SCP Information
 
 ```bash
-# 查询英文分部 SCP
+# Query English branch SCP
 info 173
 
-# 查询中文分部 SCP
+# Query Chinese branch SCP
 info CN-173
 ```
 
-查询结果包含：
+Query results include:
 
-- **项目编号**：如 SCP-173
-- **项目等级**：Safe / Euclid / Keter / Thaumiel / Neutralized / Pending / Unknown
-- **收容程序**：特殊收容程序的详细内容
-- **描述**：SCP 对象的描述信息
-- **附录**：附加文档、实验记录、访谈记录等
+- **Object Number**: e.g., SCP-173
+- **Object Class**: Safe / Euclid / Keter / Thaumiel / Neutralized / Pending / Unknown
+- **Containment Procedures**: Detailed special containment procedures
+- **Description**: SCP object description
+- **Appendix**: Additional documentation, experiment logs, interview records, etc.
 
-### 搜索 SCP
+### Search SCP
 
 ```bash
-# 按关键词搜索
+# Search by keyword
 search 雕像
 search statue
 
-# 搜索结果会返回最匹配的 SCP 对象
+# Search results return the most matching SCP objects
 ```
 
-### 列出 SCP
+### List SCP
 
 ```bash
-# 列出已知 SCP 对象
+# List known SCP objects
 scp-list
 ```
 
-### 收容协议
+### Containment Protocols
 
 ```bash
-# 查看收容协议分类
+# View containment protocol categories
 containment
 
-# 查看安全协议和特遣队
+# View security protocols and task forces
 protocol
 
-# 查看紧急联系信息
+# View emergency contact information
 emergency
 ```
 
-### 项目等级说明
+### Object Class Descriptions
 
-| 等级 | 颜色 | 说明 |
-|------|------|------|
-| Safe | 🟢 绿色 | 已完全理解，可可靠收容 |
-| Euclid | 🟡 黄色 | 未能完全理解，收容不可靠 |
-| Keter | 🔴 红色 | 难以可靠收容，收容成本高 |
-| Thaumiel | 🟣 紫色 | 可用于收容或对抗其他 SCP |
-| Neutralized | ⚪ 灰色 | 因各种原因不再异常 |
-| Pending | 🔵 蓝色 | 尚未分类 |
-| Unknown | ⚫ 暗色 | 无法确定等级 |
+| Class | Color | Description |
+|-------|-------|-------------|
+| Safe | 🟢 Green | Fully understood, reliably containable |
+| Euclid | 🟡 Yellow | Not fully understood, containment unreliable |
+| Keter | 🔴 Red | Difficult to reliably contain, high containment cost |
+| Thaumiel | 🟣 Purple | Used to contain or counteract other SCPs |
+| Neutralized | ⚪ Gray | No longer anomalous due to various reasons |
+| Pending | 🔵 Blue | Not yet classified |
+| Unknown | ⚫ Dark | Class cannot be determined |
 
 ---
 
-## 文件系统操作
+## File System Operations
 
-SCP-OS 内置了一个 Linux 风格的虚拟文件系统，默认目录结构：
+SCP-OS includes a Linux-style virtual file system with the following default directory structure:
 
 ```
 /
 ├── home/
-│   └── scp/          # 用户主目录
+│   └── scp/          # User home directory
 │       ├── documents/
 │       └── reports/
-├── etc/              # 系统配置
+├── etc/              # System configuration
 ├── var/
-│   └── log/          # 系统日志
-├── tmp/              # 临时文件
-└── scp/              # SCP 相关文件
+│   └── log/          # System logs
+├── tmp/              # Temporary files
+└── scp/              # SCP-related files
     ├── containment/
     └── classified/
 ```
 
-### 基础操作
+### Basic Operations
 
 ```bash
-# 查看当前目录
+# View current directory
 pwd
 
-# 列出目录内容
+# List directory contents
 ls
 ls /home/scp
 ls -la
 
-# 切换目录
+# Change directory
 cd /home/scp
 cd ..
 cd ~
 
-# 创建目录
+# Create directory
 mkdir reports
 mkdir -p /home/scp/documents/classified
 
-# 创建文件
+# Create file
 touch report.txt
 
-# 写入内容
-echo "SCP-173 收容报告" > report.txt
-echo "追加内容" >> report.txt
+# Write content
+echo "SCP-173 Containment Report" > report.txt
+echo "Append content" >> report.txt
 
-# 查看文件内容
+# View file contents
 cat report.txt
 
-# 复制文件
+# Copy file
 cp report.txt backup.txt
 
-# 移动/重命名
+# Move/rename
 mv backup.txt archive.txt
 mv archive.txt /home/scp/documents/
 
-# 删除文件
+# Delete file
 rm report.txt
 
-# 查找文件
+# Find files
 find /home -name "*.txt"
 
-# 搜索文件内容
-grep "收容" report.txt
+# Search file contents
+grep "containment" report.txt
 ```
 
-### 权限管理
+### Permission Management
 
 ```bash
-# 修改权限
+# Change permissions
 chmod 755 script.sh
 
-# 修改所有者
+# Change ownership
 chown scp:staff report.txt
 ```
 
-文件系统支持 user/group/others 三级权限检查。
+The file system supports user/group/others three-level permission checks.
 
 ---
 
-## GUI 工具使用
+## GUI Tools
 
-### 打开工具
+### Opening Tools
 
-**桌面端**：
-- 双击桌面图标
-- 点击任务栏 → 开始菜单 → 选择工具
-- 使用键盘快捷键（如 `Ctrl+Shift+T` 打开终端）
+**Desktop**:
+- Double-click a desktop icon
+- Click taskbar → Start menu → Select tool
+- Use keyboard shortcuts (e.g., `Ctrl+Shift+T` opens terminal)
 
-**移动端**：
-- 点击主屏应用图标
-- 底部 Dock 快捷访问
+**Mobile**:
+- Tap app icon on home screen
+- Bottom Dock quick access
 
-### 终端（Terminal）
+### Terminal
 
-- 多标签页管理，支持创建/切换/关闭/锁定/重命名
-- 命令自动补全和历史导航
-- 响应式字体大小
-- SCP 主题配色
+- Multi-tab management with create/switch/close/lock/rename support
+- Command auto-completion and history navigation
+- Responsive font size
+- SCP theme color scheme
 
-### 文件管理器（FileManager）
+### File Manager
 
-- 图形化文件浏览
-- 支持多种文件预览：
-  - 📷 图片查看器
-  - 🎵 音频播放器
-  - 🎬 视频播放器
-  - 📝 文本编辑器
-- 右键上下文菜单
-- 面包屑导航
+- Graphical file browsing
+- Supports multiple file previews:
+  - 📷 Image viewer
+  - 🎵 Audio player
+  - 🎬 Video player
+  - 📝 Text editor
+- Right-click context menu
+- Breadcrumb navigation
 
-### 代码编辑器（Editor）
+### Code Editor
 
-- 基于 CodeMirror 6
-- 支持语法高亮：CSS、HTML、JavaScript、JSON、Markdown、Python、SQL
-- 代码搜索功能
-- 行号显示
+- Based on CodeMirror 6
+- Supports syntax highlighting: CSS, HTML, JavaScript, JSON, Markdown, Python, SQL
+- Code search functionality
+- Line number display
 
-### 设置（Settings）
+### Settings
 
-- 主题切换（8 种强调色）
-- 壁纸管理
-- 终端配置
-- 系统信息
+- Theme switching (8 accent colors)
+- Wallpaper management
+- Terminal configuration
+- System information
 
-### 性能仪表盘（Dashboard）
+### Performance Dashboard
 
-- 性能评分
-- 指标卡片
-- 问题列表
-- 优化建议
+- Performance score
+- Metric cards
+- Issue list
+- Optimization suggestions
 
-### 聊天（Chat）
+### Chat
 
-- 多房间聊天
-- 昵称显示
-- 消息历史
-- 频率限制（10 条/分钟）
+- Multi-room chat
+- Nickname display
+- Message history
+- Rate limiting (10 messages/minute)
 
-### 反馈（Feedback）
+### Feedback
 
-- 提交反馈（Bug/Feature/Improvement/Other）
-- 点赞/踩
-- 评论
-- 分类筛选
+- Submit feedback (Bug/Feature/Improvement/Other)
+- Upvote/downvote
+- Comments
+- Category filtering
 
-### SCP 阅读器（Docs）
+### SCP Reader (Docs)
 
-Docs 是 SCP-OS 内置的离线阅读器，提供完整的 SCP 基金会文档阅读体验。
+Docs is SCP-OS's built-in offline reader, providing a complete SCP Foundation document reading experience.
 
-**打开 Docs**：双击桌面 "Docs" 图标（书形图标）。
+**Open Docs**: Double-click the "Docs" desktop icon (book-shaped icon).
 
-**桌面端**：
-- 左侧边栏：SCP 条目列表，支持搜索、系列筛选、等级筛选
-- 右侧内容区：文章正文渲染、目录导航、字体/主题调节
-- 点击条目加载内容，支持阅读进度记忆
+**Desktop**:
+- Left sidebar: SCP entry list with search, series filter, and class filter
+- Right content area: Article content rendering, table of contents navigation, font/theme adjustment
+- Click an entry to load content, with reading progress memory
 
-**移动端**：
-- 卡片列表视图，点击进入全屏阅读
-- 左滑手势返回列表
-- 底部工具栏：目录、字体大小调节、返回顶部
-- 下拉刷新获取列表
+**Mobile**:
+- Card list view, tap to enter fullscreen reading
+- Swipe left gesture to return to list
+- Bottom toolbar: Table of contents, font size adjustment, return to top
+- Pull down to refresh the list
 
-**离线阅读**：
-- 已加载的文章内容自动存入 IndexedDB，断网后可阅读
-- 缓存状态指示器显示当前条目是否为本地缓存
+**Offline Reading**:
+- Loaded article content is automatically stored in IndexedDB, readable offline
+- Cache status indicator shows whether the current entry is from local cache
 
-**内容来源**：
-- 优先从 Cloudflare KV 缓存加载（<50ms）
-- KV 未命中时从 GitHub Raw API 回退获取并写入 KV 缓存
-
----
-
-## 窗口管理（桌面端）
-
-### 基本操作
-
-| 操作 | 方法 |
-|------|------|
-| 打开窗口 | 双击桌面图标 / 开始菜单 |
-| 关闭窗口 | 点击关闭按钮 / `Ctrl+W` |
-| 最小化 | 点击最小化按钮 |
-| 最大化 | 点击最大化按钮 / 双击标题栏 |
-| 还原 | 再次双击标题栏 |
-| 移动窗口 | 拖拽标题栏 |
-| 调整大小 | 拖拽窗口边缘或角落（支持 8 个方向） |
-| 聚焦窗口 | 点击窗口任意位置 |
-
-### 窗口层级
-
-- 点击窗口自动提升到最前
-- z-index 自动管理，确保正确的窗口堆叠顺序
-- 最小化的窗口从桌面隐藏，可通过任务栏恢复
-
-### 任务栏
-
-- 显示所有打开的窗口
-- 点击切换/最小化/恢复窗口
-- 系统托盘区域显示时间和系统状态
-
-### 开始菜单
-
-- 列出所有可用工具
-- 点击启动对应工具
-
-### 右键菜单
-
-- 桌面右键弹出上下文菜单
-- 选项包含：新建文件夹、视图切换、排序方式、个性化设置
+**Content Source**:
+- Prioritizes loading from Cloudflare KV cache (<50ms)
+- Falls back to GitHub Raw API on KV miss, then writes to KV cache
 
 ---
 
-## 主题与个性化
+## Window Management (Desktop)
 
-### 主题切换
+### Basic Operations
 
-1. 打开 **设置** 工具
-2. 在主题区域选择强调色
-3. 可选颜色：红、橙、黄、绿、蓝、紫、粉、灰
+| Operation | Method |
+|-----------|--------|
+| Open window | Double-click desktop icon / Start menu |
+| Close window | Click close button / `Ctrl+W` |
+| Minimize | Click minimize button |
+| Maximize | Click maximize button / Double-click title bar |
+| Restore | Double-click title bar again |
+| Move window | Drag title bar |
+| Resize | Drag window edge or corner (supports 8 directions) |
+| Focus window | Click anywhere on the window |
 
-主题切换会同步影响：
-- GUI 组件强调色
-- 终端光标颜色
-- 窗口边框高亮
-- 按钮和交互元素
+### Window Stacking
 
-### 壁纸设置
+- Clicking a window brings it to the front
+- z-index is automatically managed to ensure correct window stacking order
+- Minimized windows are hidden from the desktop and can be restored via the taskbar
 
-1. 打开 **设置** 工具
-2. 进入壁纸管理
-3. 选择预设壁纸或上传自定义图片
-4. 壁纸自动保存到 IndexedDB
+### Taskbar
 
----
+- Displays all open windows
+- Click to switch/minimize/restore windows
+- System tray area shows time and system status
 
-## 聊天系统
+### Start Menu
 
-### 发送消息
+- Lists all available tools
+- Click to launch the corresponding tool
 
-1. 打开 **聊天** 工具
-2. 选择聊天室
-3. 在输入框输入消息
-4. 按 Enter 发送
+### Context Menu
 
-### 频率限制
-
-- 每分钟最多发送 10 条消息
-- 超出限制会收到提示，需等待冷却
-
-### 昵称
-
-- 首次登录时设置的昵称会自动用于聊天
-- 可在设置中修改昵称
-- 昵称最长 30 个字符
-
-### 聊天室
-
-- 默认提供公共聊天室
-- 用户可创建自定义聊天室（每人最多 5 个）
-- 支持公开/私密房间
+- Right-click on the desktop to show a context menu
+- Options include: New folder, View switching, Sort order, Personalization settings
 
 ---
 
-## 反馈系统
+## Themes & Personalization
 
-### 提交反馈
+### Theme Switching
 
-1. 打开 **反馈** 工具
-2. 点击"新建反馈"
-3. 填写标题、内容、选择分类
-4. 提交
+1. Open the **Settings** tool
+2. Select an accent color in the theme area
+3. Available colors: Red, Orange, Yellow, Green, Blue, Purple, Pink, Gray
 
-### 反馈分类
+Theme switching synchronously affects:
+- GUI component accent colors
+- Terminal cursor color
+- Window border highlights
+- Buttons and interactive elements
 
-| 分类 | 说明 |
-|------|------|
-| Bug | 报告缺陷 |
-| Feature | 功能建议 |
-| Improvement | 改进建议 |
-| Other | 其他 |
+### Wallpaper Settings
 
-### 互动
-
-- **点赞**：对有价值的反馈点赞
-- **投票**：支持赞成/反对投票
-- **评论**：对反馈发表评论
+1. Open the **Settings** tool
+2. Enter wallpaper management
+3. Select a preset wallpaper or upload a custom image
+4. Wallpaper is automatically saved to IndexedDB
 
 ---
 
-## 键盘快捷键
+## Chat System
 
-### 全局快捷键
+### Sending Messages
 
-| 快捷键 | 功能 |
-|--------|------|
-| `Ctrl+Shift+T` | 打开新终端窗口 |
-| `Ctrl+W` | 关闭当前窗口 |
-| `Ctrl+Shift+P` | 切换性能面板 |
-| `F11` | 切换全屏 |
+1. Open the **Chat** tool
+2. Select a chat room
+3. Type your message in the input field
+4. Press Enter to send
 
-### 终端快捷键
+### Rate Limiting
 
-| 快捷键 | 功能 |
-|--------|------|
-| `Enter` | 执行命令 |
-| `↑` / `↓` | 浏览命令历史 |
-| `Tab` | 自动补全 |
-| `Ctrl+C` | 取消当前输入 |
-| `Backspace` | 删除前一个字符 |
+- Maximum 10 messages per minute
+- Exceeding the limit will show a prompt; wait for the cooldown
 
-> **Mac 用户**：`Ctrl` 键对应 `Cmd` 键（系统自动适配）
+### Nickname
+
+- The nickname set during first login is automatically used for chat
+- Nickname can be changed in settings
+- Maximum 30 characters
+
+### Chat Rooms
+
+- A public chat room is provided by default
+- Users can create custom chat rooms (maximum 5 per person)
+- Supports public/private rooms
 
 ---
 
-## 移动端操作
+## Feedback System
 
-### 手势
+### Submitting Feedback
 
-| 手势 | 操作 |
-|------|------|
-| 点击 | 打开应用 |
-| 长按 | 上下文菜单 |
-| 左右滑动 | 切换标签页 |
-| 下拉 | 刷新 |
+1. Open the **Feedback** tool
+2. Click "New Feedback"
+3. Fill in the title, content, and select a category
+4. Submit
 
-### 触觉反馈
+### Feedback Categories
 
-- 点击应用图标时触发轻微振动（15ms）
-- 需要设备支持 Vibration API
+| Category | Description |
+|----------|-------------|
+| Bug | Report a defect |
+| Feature | Feature suggestion |
+| Improvement | Improvement suggestion |
+| Other | Other |
 
-### 安全区域
+### Interaction
 
-- 自动适配刘海屏和底部安全区域
-- 横竖屏切换自动调整布局
+- **Like**: Upvote valuable feedback
+- **Vote**: Support up/down voting
+- **Comment**: Leave comments on feedback
 
-### 底部 Dock
+---
 
-- 固定在底部的快捷访问栏
-- 显示常用工具
+## Keyboard Shortcuts
+
+### Global Shortcuts
+
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl+Shift+T` | Open new terminal window |
+| `Ctrl+W` | Close current window |
+| `Ctrl+Shift+P` | Toggle performance panel |
+| `F11` | Toggle fullscreen |
+
+### Terminal Shortcuts
+
+| Shortcut | Function |
+|----------|----------|
+| `Enter` | Execute command |
+| `↑` / `↓` | Browse command history |
+| `Tab` | Auto-completion |
+| `Ctrl+C` | Cancel current input |
+| `Backspace` | Delete previous character |
+
+> **Mac Users**: The `Ctrl` key corresponds to the `Cmd` key (system auto-adapts)
+
+---
+
+## Mobile Operations
+
+### Gestures
+
+| Gesture | Action |
+|---------|--------|
+| Tap | Open app |
+| Long press | Context menu |
+| Swipe left/right | Switch tabs |
+| Pull down | Refresh |
+
+### Haptic Feedback
+
+- Triggers a slight vibration (15ms) when tapping app icons
+- Requires device support for the Vibration API
+
+### Safe Areas
+
+- Automatically adapts to notch screens and bottom safe areas
+- Automatically adjusts layout on portrait/landscape rotation
+
+### Bottom Dock
+
+- Fixed quick access bar at the bottom
+- Displays frequently used tools
 
 ### Home Indicator
 
-- 底部横条指示器
-- 点击返回主屏
+- Bottom bar indicator
+- Tap to return to home screen

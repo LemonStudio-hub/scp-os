@@ -8,20 +8,20 @@ describe('useCommandHistory', () => {
     callback = vi.fn()
   })
 
-  describe('初始状态', () => {
-    it('应该初始化为空历史记录', () => {
+  describe('initial state', () => {
+    it('should start with empty history', () => {
       const { history } = useCommandHistory()
       expect(history.value).toEqual([])
     })
 
-    it('应该初始化索引为 -1', () => {
+    it('should initialize index to -1', () => {
       const { currentIndex } = useCommandHistory()
       expect(currentIndex.value).toBe(-1)
     })
   })
 
   describe('addToHistory', () => {
-    it('应该添加命令到历史记录', () => {
+    it('should append a command to history', () => {
       const { history, addToHistory } = useCommandHistory()
 
       addToHistory('help')
@@ -29,7 +29,7 @@ describe('useCommandHistory', () => {
       expect(history.value).toEqual(['help'])
     })
 
-    it('应该添加多个命令', () => {
+    it('should preserve insertion order for multiple commands', () => {
       const { history, addToHistory } = useCommandHistory()
 
       addToHistory('help')
@@ -39,7 +39,7 @@ describe('useCommandHistory', () => {
       expect(history.value).toEqual(['help', 'status', 'clear'])
     })
 
-    it('应该重置索引为 -1', () => {
+    it('should reset index to -1 after adding a command', () => {
       const { currentIndex, addToHistory } = useCommandHistory()
 
       addToHistory('help')
@@ -47,18 +47,18 @@ describe('useCommandHistory', () => {
       expect(currentIndex.value).toBe(-1)
     })
 
-    it('应该添加空字符串', () => {
+    it('should reject empty strings to keep history clean', () => {
       const { history, addToHistory } = useCommandHistory()
 
-      // 空字符串现在被视为无效输入，不会添加到历史记录
+      // Empty input is treated as invalid and should not pollute the history
       addToHistory('')
 
       expect(history.value).toEqual([])
     })
   })
 
-  describe('navigateHistory - 向上导航 (direction = -1)', () => {
-    it('应该在空历史记录时不执行任何操作', () => {
+  describe('navigateHistory - upward (direction = -1)', () => {
+    it('should no-op when history is empty', () => {
       const { navigateHistory } = useCommandHistory()
 
       navigateHistory(-1, callback)
@@ -66,7 +66,7 @@ describe('useCommandHistory', () => {
       expect(callback).not.toHaveBeenCalled()
     })
 
-    it('应该返回最后一个命令', () => {
+    it('should return the most recent command on first upward press', () => {
       const { addToHistory, navigateHistory } = useCommandHistory()
 
       addToHistory('help')
@@ -77,7 +77,7 @@ describe('useCommandHistory', () => {
       expect(callback).toHaveBeenCalledWith('status')
     })
 
-    it('应该正确返回上一个命令', () => {
+    it('should walk backward through history in reverse insertion order', () => {
       const { addToHistory, navigateHistory, currentIndex: _currentIndex } = useCommandHistory()
 
       addToHistory('help')
@@ -94,7 +94,7 @@ describe('useCommandHistory', () => {
       expect(callback).toHaveBeenLastCalledWith('help')
     })
 
-    it('应该在到达历史记录开头时停止', () => {
+    it('should clamp at the oldest entry and not go further back', () => {
       const { addToHistory, navigateHistory } = useCommandHistory()
 
       addToHistory('help')
@@ -103,11 +103,11 @@ describe('useCommandHistory', () => {
       expect(callback).toHaveBeenCalledWith('help')
 
       navigateHistory(-1, callback)
-      // 应该不再调用，因为已经到了开头
+      // At the start of history, further up navigation should be a no-op
       expect(callback).toHaveBeenCalledTimes(1)
     })
 
-    it('应该更新 currentIndex', () => {
+    it('should update currentIndex to reflect position in history', () => {
       const { addToHistory, navigateHistory, currentIndex } = useCommandHistory()
 
       addToHistory('help')
@@ -121,8 +121,8 @@ describe('useCommandHistory', () => {
     })
   })
 
-  describe('navigateHistory - 向下导航 (direction = 1)', () => {
-    it('应该在空历史记录时不执行任何操作', () => {
+  describe('navigateHistory - downward (direction = 1)', () => {
+    it('should no-op when history is empty', () => {
       const { navigateHistory } = useCommandHistory()
 
       navigateHistory(1, callback)
@@ -130,77 +130,77 @@ describe('useCommandHistory', () => {
       expect(callback).not.toHaveBeenCalled()
     })
 
-    it('应该返回空字符串当从底部开始', () => {
+    it('should return empty string when navigating past the end', () => {
       const { addToHistory, navigateHistory } = useCommandHistory()
 
       addToHistory('help')
       addToHistory('status')
 
-      // 先向上导航
+      // Navigate up first to enter the history traversal state
       navigateHistory(-1, callback)
       callback.mockClear()
 
-      // 再向下导航
+      // Navigate down should cycle past the end and return empty string
       navigateHistory(1, callback)
 
       expect(callback).toHaveBeenCalledWith('')
     })
 
-    it('应该正确返回下一个命令', () => {
+    it('should walk forward through history in insertion order', () => {
       const { addToHistory, navigateHistory } = useCommandHistory()
 
       addToHistory('help')
       addToHistory('status')
       addToHistory('clear')
 
-      // 向上导航两次
+      // Move two steps back into history
       navigateHistory(-1, callback)
       navigateHistory(-1, callback)
       callback.mockClear()
 
-      // 向下导航一次
+      // Walk forward one step to verify correct next entry
       navigateHistory(1, callback)
       expect(callback).toHaveBeenCalledWith('clear')
     })
 
-    it('应该在到达历史记录底部时停止', () => {
+    it('should stop at the end of history and not fire callback again', () => {
       const { addToHistory, navigateHistory } = useCommandHistory()
 
       addToHistory('help')
       addToHistory('status')
 
-      // 向上导航一次
+      // Move up once so we have room to navigate down
       navigateHistory(-1, callback)
       callback.mockClear()
 
-      // 向下导航一次（返回空字符串）
+      // Navigate down past the last entry (should return empty string)
       navigateHistory(1, callback)
       callback.mockClear()
 
-      // 再向下导航（应该不调用）
+      // Further down navigation should be a no-op at the boundary
       navigateHistory(1, callback)
 
       expect(callback).not.toHaveBeenCalled()
     })
 
-    it('应该更新 currentIndex', () => {
+    it('should reset currentIndex to -1 when navigating past the end', () => {
       const { addToHistory, navigateHistory, currentIndex } = useCommandHistory()
 
       addToHistory('help')
       addToHistory('status')
 
-      // 向上导航
+      // Move up to enter history traversal
       navigateHistory(-1, callback)
       expect(currentIndex.value).toBe(0)
 
-      // 向下导航
+      // Move down past the end resets to "not browsing" state
       navigateHistory(1, callback)
       expect(currentIndex.value).toBe(-1)
     })
   })
 
   describe('resetIndex', () => {
-    it('应该重置索引为 -1', () => {
+    it('should reset index to -1 regardless of current position', () => {
       const { addToHistory, navigateHistory, currentIndex, resetIndex } = useCommandHistory()
 
       addToHistory('help')
@@ -213,7 +213,7 @@ describe('useCommandHistory', () => {
       expect(currentIndex.value).toBe(-1)
     })
 
-    it('应该不影响历史记录', () => {
+    it('should preserve history entries when resetting index', () => {
       const { addToHistory, history, resetIndex } = useCommandHistory()
 
       addToHistory('help')
@@ -225,15 +225,15 @@ describe('useCommandHistory', () => {
     })
   })
 
-  describe('复杂场景', () => {
-    it('应该正确处理多次上下导航', () => {
+  describe('complex scenarios', () => {
+    it('should handle multiple up/down navigations in sequence', () => {
       const { addToHistory, navigateHistory } = useCommandHistory()
 
       addToHistory('help')
       addToHistory('status')
       addToHistory('clear')
 
-      // 上上上下下上
+      // Up, up, up, down, down, down — exercises boundary clamping in both directions
       navigateHistory(-1, callback) // clear
       navigateHistory(-1, callback) // status
       navigateHistory(-1, callback) // help
@@ -244,7 +244,7 @@ describe('useCommandHistory', () => {
       expect(callback).toHaveBeenLastCalledWith('')
     })
 
-    it('应该在添加新命令后重置导航', () => {
+    it('should reset navigation state when a new command is added mid-browse', () => {
       const { addToHistory, navigateHistory, currentIndex } = useCommandHistory()
 
       addToHistory('help')
@@ -253,12 +253,12 @@ describe('useCommandHistory', () => {
       navigateHistory(-1, callback)
       expect(currentIndex.value).toBe(0)
 
-      // 添加新命令应该重置索引
+      // Adding a new command should reset the browse index so the user exits history mode
       addToHistory('clear')
       expect(currentIndex.value).toBe(-1)
     })
 
-    it('应该处理包含相同命令的历史记录', () => {
+    it('should allow duplicate commands in history', () => {
       const { addToHistory, navigateHistory } = useCommandHistory()
 
       addToHistory('help')

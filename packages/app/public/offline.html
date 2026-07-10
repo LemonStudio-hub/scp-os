@@ -143,13 +143,13 @@
     </div>
 
     <script>
-      // 检查网络连接状态
+      // Reload immediately when the browser detects connectivity is back
       window.addEventListener('online', () => {
         console.log('[Offline Page] Network restored, reloading...')
         window.location.reload()
       })
 
-      // 每30秒检查一次网络状态
+      // Poll as a fallback because the 'online' event can fire prematurely
       setInterval(() => {
         if (navigator.onLine) {
           console.log('[Offline Page] Network restored, reloading...')
