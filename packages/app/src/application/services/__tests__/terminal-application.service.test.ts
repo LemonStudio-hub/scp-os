@@ -42,7 +42,9 @@ describe('TerminalApplicationService', () => {
     clear: vi.fn(),
   })
 
-  const createSampleTab = (overrides?: Partial<ConstructorParameters<typeof TabEntity>[0]>): TabEntity => {
+  const createSampleTab = (
+    overrides?: Partial<ConstructorParameters<typeof TabEntity>[0]>
+  ): TabEntity => {
     return new TabEntity({
       id: 'mock-uuid-1234',
       title: 'Terminal',
