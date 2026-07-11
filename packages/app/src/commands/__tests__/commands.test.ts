@@ -50,14 +50,10 @@ vi.mock('../../stores/tabs', () => ({
 vi.mock('../../utils/terminalResponsive', () => ({
   createBorderLine: vi
     .fn()
-    .mockReturnValue(
-      '═════════════════════════════════════════════════════════════'
-    ),
+    .mockReturnValue('═════════════════════════════════════════════════════════════'),
   createBorderedTitle: vi
     .fn()
-    .mockReturnValue(
-      '═════════════════════════════════════════════════════════════'
-    ),
+    .mockReturnValue('═════════════════════════════════════════════════════════════'),
   isNarrowTerminal: vi.fn().mockReturnValue(false),
 }))
 
@@ -75,10 +71,7 @@ vi.mock('../../utils/securityCheckLogs', () => ({
 
 // Mock network test logs
 vi.mock('../../utils/networkTestLogs', () => ({
-  generateNetworkTestLogs: vi.fn().mockResolvedValue([
-    '[PHASE 1] Starting...',
-    'NETWORK HEALTHY',
-  ]),
+  generateNetworkTestLogs: vi.fn().mockResolvedValue(['[PHASE 1] Starting...', 'NETWORK HEALTHY']),
 }))
 
 // Mock penetration handler
@@ -166,12 +159,44 @@ describe('Command Handlers', () => {
 
     it('returns handlers for all expected commands', () => {
       const expectedCommands = [
-        'start', 'restart', 'shutdown', 'help', 'status', 'clear', 'cls',
-        'containment', 'scp-list', 'info', 'protocol', 'emergency', 'logout',
-        'version', 'about', 'search', 'network', 'performance', 'check',
-        'ls', 'cd', 'pwd', 'mkdir', 'rm', 'cat', 'echo', 'touch', 'cp',
-        'mv', 'uname', 'df', 'free', 'uptime', 'find', 'grep', 'chmod',
-        'chown', 'penetration',
+        'start',
+        'restart',
+        'shutdown',
+        'help',
+        'status',
+        'clear',
+        'cls',
+        'containment',
+        'scp-list',
+        'info',
+        'protocol',
+        'emergency',
+        'logout',
+        'version',
+        'about',
+        'search',
+        'network',
+        'performance',
+        'check',
+        'ls',
+        'cd',
+        'pwd',
+        'mkdir',
+        'rm',
+        'cat',
+        'echo',
+        'touch',
+        'cp',
+        'mv',
+        'uname',
+        'df',
+        'free',
+        'uptime',
+        'find',
+        'grep',
+        'chmod',
+        'chown',
+        'penetration',
       ]
       for (const cmd of expectedCommands) {
         expect(commandHandlers[cmd as keyof typeof commandHandlers]).toBeDefined()
@@ -298,9 +323,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('ls')!
         handler(['/nonexistent'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('displays files when present', () => {
@@ -358,9 +381,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('cd')!
         handler(['/nonexistent'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error for file path', () => {
@@ -422,9 +443,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('mkdir')!
         handler(['/nonexistent/dir'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error when createDirectory fails', () => {
@@ -451,9 +470,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('cat')!
         handler(['/nonexistent.txt'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes file content successfully', () => {
@@ -513,9 +530,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('rm')!
         handler(['/nonexistent'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('refuses to remove non-empty directory without -r', () => {
@@ -642,10 +657,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('echo')!
         handler(['new', '>>', '/tmp/file.txt'], write, writeln)
-        expect(mockedFilesystem.writeFile).toHaveBeenCalledWith(
-          '/tmp/file.txt',
-          'existing\nnew',
-        )
+        expect(mockedFilesystem.writeFile).toHaveBeenCalledWith('/tmp/file.txt', 'existing\nnew')
       })
 
       it('writes error when redirect file missing', () => {
@@ -680,10 +692,7 @@ describe('Command Handlers', () => {
         const handler = getCommandHandler('echo')!
         handler(['new', '>>', '/tmp/file.txt'], write, writeln)
         // Should not double the newline
-        expect(mockedFilesystem.writeFile).toHaveBeenCalledWith(
-          '/tmp/file.txt',
-          'existing\nnew',
-        )
+        expect(mockedFilesystem.writeFile).toHaveBeenCalledWith('/tmp/file.txt', 'existing\nnew')
       })
     })
 
@@ -727,9 +736,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('find')!
         handler(['/bad', '-name', '*.txt'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('validates path is a directory', () => {
@@ -748,9 +755,7 @@ describe('Command Handlers', () => {
         const handler = getCommandHandler('find')!
         handler(['-name', '*.txt'], write, writeln)
         // The first arg '-name' becomes the path, and getNodeByPath returns null
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
     })
 
@@ -795,9 +800,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('grep')!
         handler(['pattern', '/nonexistent'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error for directory target', () => {
@@ -839,9 +842,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('chmod')!
         handler(['755', '/nonexistent'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error when changePermissions fails', () => {
@@ -875,11 +876,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('chown')!
         handler(['scp:scp', '/tmp/file.txt'], write, writeln)
-        expect(mockedFilesystem.changeOwner).toHaveBeenCalledWith(
-          '/tmp/file.txt',
-          'scp',
-          'scp',
-        )
+        expect(mockedFilesystem.changeOwner).toHaveBeenCalledWith('/tmp/file.txt', 'scp', 'scp')
         expect(writeln).toHaveBeenCalledWith(expect.stringContaining('Changed owner'))
       })
 
@@ -888,9 +885,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('chown')!
         handler(['scp:scp', '/nonexistent'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error when changeOwner fails', () => {
@@ -951,7 +946,7 @@ describe('Command Handlers', () => {
         const handler = getCommandHandler('shutdown')!
         await handler(['now'], write, writeln)
         expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('Terminal controller not available'),
+          expect.stringContaining('Terminal controller not available')
         )
       })
     })
@@ -981,7 +976,7 @@ describe('Command Handlers', () => {
         const handler = getCommandHandler('start')!
         await handler([], write, writeln)
         expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('Terminal controller not available'),
+          expect.stringContaining('Terminal controller not available')
         )
       })
     })
@@ -1012,7 +1007,7 @@ describe('Command Handlers', () => {
         const handler = getCommandHandler('restart')!
         await handler([], write, writeln)
         expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('Terminal controller not available'),
+          expect.stringContaining('Terminal controller not available')
         )
       })
     })
@@ -1084,9 +1079,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('cp')!
         handler(['/nonexistent', '/dst'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error when destination exists', () => {
@@ -1110,9 +1103,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('cp')!
         handler(['/src.txt', '/bad/dst.txt'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error when dest parent is not directory', () => {
@@ -1155,9 +1146,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('mv')!
         handler(['/nonexistent', '/dst'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error when dest parent missing', () => {
@@ -1168,9 +1157,7 @@ describe('Command Handlers', () => {
         const { write, writeln } = createIO()
         const handler = getCommandHandler('mv')!
         handler(['/src.txt', '/bad/dst.txt'], write, writeln)
-        expect(writeln).toHaveBeenCalledWith(
-          expect.stringContaining('No such file or directory'),
-        )
+        expect(writeln).toHaveBeenCalledWith(expect.stringContaining('No such file or directory'))
       })
 
       it('writes error when dest parent is not directory', () => {
