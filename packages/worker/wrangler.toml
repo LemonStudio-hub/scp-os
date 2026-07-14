@@ -68,6 +68,10 @@ id = "4e9c713528b1479ea7abd2082f184ed1"
 binding = "SCP_FILES"
 bucket_name = "scp-os-files"
 
+[[env.production.r2_buckets]]
+binding = "SCP_FILES"
+bucket_name = "scp-os-files"
+
 # ─── Development (local testing) ────────────────────────────────
 # wrangler dev --env development
 [env.development]
