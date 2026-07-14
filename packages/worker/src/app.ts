@@ -32,7 +32,12 @@ export function createApp(): Hono<AppEnv> {
     version: '3.0.0',
     status: 'online',
     endpoints: {
-      '/api/auth/token': 'Get JWT token',
+      '/api/auth/token': 'Refresh guest JWT token',
+      '/api/auth/guest': 'Guest login',
+      '/api/auth/register': 'Email registration with verification code',
+      '/api/auth/login': 'Email/password login',
+      '/api/auth/send-code': 'Send email verification code',
+      '/api/auth/email-domains': 'List allowed email domains',
       '/scrape?number={number}': 'Get SCP data',
       '/search?keyword={keyword}&clearance_level={level}': 'Search SCP data',
       '/list?limit={limit}&offset={offset}&clearance_level={level}': 'List SCP records',

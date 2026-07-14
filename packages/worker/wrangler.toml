@@ -6,6 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "production"
 API_DOMAIN = "os1api.daum.pw"
+EMAIL_FROM = "SCP OS <auth@daum.pw>"
 
 [[durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
@@ -37,7 +38,7 @@ crons = ["*/10 * * * *"]
 # ─── Production (deployed to Cloudflare) ────────────────────────
 # wrangler deploy --env production
 [env.production]
-vars = { ENVIRONMENT = "production", API_DOMAIN = "os1api.daum.pw" }
+vars = { ENVIRONMENT = "production", API_DOMAIN = "os1api.daum.pw", EMAIL_FROM = "SCP OS <auth@daum.pw>" }
 
 [[env.production.durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
@@ -62,7 +63,7 @@ id = "40f0d23a05e14f7484232bc1960e217f"
 # ─── Development (local testing) ────────────────────────────────
 # wrangler dev --env development
 [env.development]
-vars = { ENVIRONMENT = "development", API_DOMAIN = "api.scpos.site" }
+vars = { ENVIRONMENT = "development", API_DOMAIN = "api.scpos.site", EMAIL_FROM = "SCP OS <auth@daum.pw>" }
 
 [[env.development.durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
