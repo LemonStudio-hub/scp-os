@@ -1,4 +1,4 @@
-import type { AdminRole, AdminSession, JwtAdminPayload, JwtUserPayload } from './types'
+import type { AdminRole, AdminSession, JwtAdminPayload, JwtUserPayload, UserSession } from './types'
 
 function encodeBase64Url(bytes: ArrayBuffer | Uint8Array): string {
   const view = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
@@ -50,11 +50,17 @@ export async function verifyJwt<T extends JwtUserPayload | JwtAdminPayload>(toke
   }
 }
 
-export async function userFromRequest(request: Request, secret?: string): Promise<string | null> {
+export async function userSessionFromRequest(request: Request, secret?: string): Promise<UserSession | null> {
   const token = bearer(request)
   if (!token || !secret) return null
   const payload = await verifyJwt<JwtUserPayload>(token, secret)
-  return payload?.userId || null
+  if (!payload?.userId) return null
+  const accountType = payload.accountType === 'registered' ? 'registered' : 'guest'
+  return { userId: payload.userId, accountType, email: payload.email }
+}
+
+export async function userFromRequest(request: Request, secret?: string): Promise<string | null> {
+  return (await userSessionFromRequest(request, secret))?.userId || null
 }
 
 export async function adminFromRequest(request: Request, secret?: string): Promise<AdminSession | null> {
@@ -84,11 +90,30 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return equalBytes(new Uint8Array(derived), decodePlainBase64(hashText))
 }
 
+export async function hashPassword(password: string): Promise<string> {
+  const rounds = 100_000
+  const salt = new Uint8Array(16)
+  crypto.getRandomValues(salt)
+  const key = await crypto.subtle.importKey('raw', bytes(password), 'PBKDF2', false, ['deriveBits'])
+  const derived = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', hash: 'SHA-256', salt, iterations: rounds },
+    key,
+    32 * 8
+  )
+  return `PBKDF2$${rounds}$${plainBase64(salt)}$${plainBase64(new Uint8Array(derived))}`
+}
+
 function decodePlainBase64(value: string): Uint8Array {
   const raw = atob(value)
   const out = new Uint8Array(raw.length)
   for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i)
   return out
+}
+
+function plainBase64(value: Uint8Array): string {
+  let raw = ''
+  for (const byte of value) raw += String.fromCharCode(byte)
+  return btoa(raw)
 }
 
 function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
