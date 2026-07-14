@@ -13,6 +13,7 @@ import { registerDocs } from './routes/docs'
 import { registerNotifications } from './routes/notifications'
 import { registerAdmin } from './routes/admin'
 import { registerFiles } from './routes/files'
+import { registerSync } from './routes/sync'
 
 type AppEnv = { Bindings: Env }
 
@@ -38,6 +39,9 @@ export function createApp(): Hono<AppEnv> {
       '/api/auth/login': 'Email/password login',
       '/api/auth/send-code': 'Send email verification code',
       '/api/auth/email-domains': 'List allowed email domains',
+      '/files': 'Cloud file list/upload/quota (registered users, R2)',
+      '/api/sync/data': 'Full JSON data sync (registered users, R2)',
+      '/api/sync/quota': 'Cloud sync quota (registered users)',
       '/scrape?number={number}': 'Get SCP data',
       '/search?keyword={keyword}&clearance_level={level}': 'Search SCP data',
       '/list?limit={limit}&offset={offset}&clearance_level={level}': 'List SCP records',
@@ -136,6 +140,7 @@ export function createApp(): Hono<AppEnv> {
   registerNotifications(app)
   registerAdmin(app)
   registerFiles(app)
+  registerSync(app)
 
   app.notFound(() => json({ code: 'INTERNAL_ERROR', message: 'Not found' }, 404))
   app.onError((error) => {

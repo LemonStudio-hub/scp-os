@@ -4,6 +4,8 @@ export type SecretBinding = string | { get: () => Promise<string> }
 export interface Env {
   SCP_DB: D1Database
   SCP_READER_DB: D1Database
+  /** R2 bucket for registered-user cloud files and full-data sync */
+  SCP_FILES: R2Bucket
   CHAT_ROOM_DO: DurableObjectNamespace
   JWT_SECRET?: string
   ADMIN_JWT_SECRET?: string

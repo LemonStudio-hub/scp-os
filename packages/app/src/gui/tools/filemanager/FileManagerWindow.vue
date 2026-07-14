@@ -51,6 +51,14 @@
             :title="t('fm.upload')"
             @click="fileInputRef?.click()"
           />
+          <SCPButton
+            variant="ghost"
+            size="sm"
+            icon="refresh"
+            :title="t('fm.syncCloud')"
+            :disabled="cloudSyncing"
+            @click="onSyncFromCloud"
+          />
           <div class="file-manager__toolbar-divider" />
           <SCPButton
             :variant="fmStore.viewMode === 'grid' ? 'primary' : 'ghost'"
@@ -471,8 +479,10 @@ const {
   t,
   fmStore,
   fileInputRef,
+  cloudSyncing,
   formatSize,
   onFileUpload: baseOnFileUpload,
+  syncFromCloud,
   createFile,
   createFolder,
   renameFile,
@@ -740,9 +750,23 @@ promptDelete
 
 async function onFileUpload(event: Event): Promise<void> {
   const result = await baseOnFileUpload(event)
-  if (result.fail > 0) {
-    alert(`Stored ${result.success} file(s) locally, ${result.fail} failed.`)
+  const messages: string[] = []
+  if (result.success > 0) messages.push(`Local ${result.success}`)
+  if (result.fail > 0) messages.push(`Local failed ${result.fail}`)
+  if (result.cloudSuccess > 0) messages.push(`Cloud ${result.cloudSuccess}`)
+  if (result.cloudFail > 0) messages.push(`Cloud failed ${result.cloudFail}`)
+  if (messages.length > 0 && (result.fail > 0 || result.cloudFail > 0 || result.cloudSuccess > 0)) {
+    alert(messages.join(', '))
   }
+}
+
+async function onSyncFromCloud(): Promise<void> {
+  const result = await syncFromCloud()
+  if (result.error) {
+    alert(result.error)
+    return
+  }
+  alert(`Synced ${result.success} file(s)${result.fail ? `, ${result.fail} failed` : ''}`)
 }
 
 // ── File open with type detection ───────────────────────────────────

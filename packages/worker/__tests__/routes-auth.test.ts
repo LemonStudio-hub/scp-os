@@ -43,6 +43,7 @@ function makeEnv(firstResult: unknown = { account_type: 'guest' }): Env {
   return {
     SCP_DB: db(firstResult),
     SCP_READER_DB: db(null),
+    SCP_FILES: {} as R2Bucket,
     CHAT_ROOM_DO: {} as DurableObjectNamespace,
     JWT_SECRET: 'test-secret',
     ADMIN_JWT_SECRET: 'admin-secret',

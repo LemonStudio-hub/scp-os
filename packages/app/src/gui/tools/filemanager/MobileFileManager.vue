@@ -479,8 +479,13 @@ function onFileTap(file: any) {
 
 async function onFileUpload(event: Event) {
   const result = await baseOnFileUpload(event)
-  if (result.fail > 0) {
-    alert(`Stored ${result.success} file(s) locally, ${result.fail} failed.`)
+  const messages: string[] = []
+  if (result.success > 0) messages.push(`Local ${result.success}`)
+  if (result.fail > 0) messages.push(`Local failed ${result.fail}`)
+  if (result.cloudSuccess > 0) messages.push(`Cloud ${result.cloudSuccess}`)
+  if (result.cloudFail > 0) messages.push(`Cloud failed ${result.cloudFail}`)
+  if (messages.length > 0 && (result.fail > 0 || result.cloudFail > 0 || result.cloudSuccess > 0)) {
+    alert(messages.join(', '))
   }
 }
 
