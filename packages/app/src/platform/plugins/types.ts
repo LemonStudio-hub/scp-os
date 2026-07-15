@@ -131,6 +131,12 @@ export interface Plugin {
   dependencies?: string[]
   /** Plugin configuration */
   config?: PluginConfig
+  /** Plugin data sync descriptor */
+  syncDescriptor?: {
+    localStorageKeys?: string[]
+    idbSettingsKey?: string
+    defaults?: Record<string, unknown>
+  }
 
   /**
    * Called when plugin is loaded

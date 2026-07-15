@@ -1,9 +1,9 @@
-import { AVAILABLE_COMMANDS, COMMAND_DESCRIPTIONS } from '../constants/commands'
-import type { CommandType } from '../types/command'
 import { ANSICode } from '../constants/theme'
+import { commandRegistry } from '../commands/commandRegistry'
+import { registerBuiltinCommands } from '../commands'
 
 /**
- * A single autocomplete suggestion returned to the terminal
+ * 补全结果接口
  */
 export interface AutocompleteSuggestion {
   text: string
@@ -13,21 +13,21 @@ export interface AutocompleteSuggestion {
 }
 
 /**
- * Tracks past autocomplete selections to rank frequently-used suggestions higher
+ * 补全历史记录
  */
 class CompletionHistory {
   private history: Map<string, number> = new Map()
   private maxHistory: number = 100
 
   /**
-   * Record a user selection to boost its ranking in future suggestions
+   * 记录补全选择
    */
   recordChoice(input: string, choice: string): void {
     const key = `${input}|${choice}`
     const count = this.history.get(key) || 0
     this.history.set(key, count + 1)
 
-    // Evict least-used entries when history exceeds the cap
+    // 限制历史记录大小
     if (this.history.size > this.maxHistory) {
       const sorted = Array.from(this.history.entries())
         .sort((a, b) => b[1] - a[1])
@@ -37,7 +37,7 @@ class CompletionHistory {
   }
 
   /**
-   * Return a bonus score based on how often this suggestion was chosen before
+   * 获取建议的排序分数
    */
   getScore(input: string, suggestion: string): number {
     const key = `${input}|${suggestion}`
@@ -46,14 +46,19 @@ class CompletionHistory {
 }
 
 /**
- * Provides tab-completion for terminal commands and their arguments
+ * 命令补全服务
  */
 export class CommandAutocompleteService {
   private history: CompletionHistory = new CompletionHistory()
   private maxSuggestions: number = 8
 
+  constructor() {
+    registerBuiltinCommands()
+  }
+
   /**
-   * Subsequence-based fuzzy match -- characters don't need to be contiguous
+   * 模糊匹配算法
+   * 使用子序列匹配，允许字符不连续
    */
   private fuzzyMatch(pattern: string, text: string): boolean {
     pattern = pattern.toLowerCase()
@@ -70,21 +75,22 @@ export class CommandAutocompleteService {
   }
 
   /**
-   * Score a candidate against the input (higher = better match)
+   * 计算匹配分数
+   * 分数越高表示匹配度越好
    */
   private calculateMatchScore(pattern: string, text: string): number {
     pattern = pattern.toLowerCase()
     text = text.toLowerCase()
 
-    // Exact match gets the highest score
+    // 完全匹配
     if (text === pattern) return 100
 
-    // Prefix match scores second-highest
+    // 前缀匹配
     if (text.startsWith(pattern)) return 80
 
-    // Fuzzy subsequence match
+    // 模糊匹配
     if (this.fuzzyMatch(pattern, text)) {
-      // Scale score by how much of the total text was matched
+      // 根据匹配字符数计算分数
       const matchedChars = pattern.length
       const totalChars = text.length
       const ratio = matchedChars / totalChars
@@ -95,24 +101,36 @@ export class CommandAutocompleteService {
   }
 
   /**
-   * Score and rank all matching commands
+   * 获取命令补全建议
    */
   private getCommandSuggestions(input: string): AutocompleteSuggestion[] {
     const suggestions: AutocompleteSuggestion[] = []
 
-    for (const command of AVAILABLE_COMMANDS) {
-      const score = this.calculateMatchScore(input, command)
+    for (const command of commandRegistry.getSummaries()) {
+      const score = this.calculateMatchScore(input, command.name)
       if (score > 0) {
         suggestions.push({
-          text: command,
-          displayText: command,
-          description: COMMAND_DESCRIPTIONS[command],
+          text: command.name,
+          displayText: command.name,
+          description: command.description,
           type: 'command',
         })
       }
+
+      for (const alias of command.aliases) {
+        const aliasScore = this.calculateMatchScore(input, alias)
+        if (aliasScore > 0) {
+          suggestions.push({
+            text: alias,
+            displayText: `${alias} -> ${command.name}`,
+            description: command.description,
+            type: 'command',
+          })
+        }
+      }
     }
 
-    // Boost score for frequently-chosen suggestions
+    // 添加历史记录分数
     return suggestions
       .map((s) => ({
         ...s,
@@ -124,7 +142,7 @@ export class CommandAutocompleteService {
   }
 
   /**
-   * Suggest arguments for the shutdown command
+   * 获取 shutdown 命令参数补全
    */
   private getShutdownSuggestions(args: string[]): AutocompleteSuggestion[] {
     if (args.length === 0) {
@@ -132,7 +150,7 @@ export class CommandAutocompleteService {
         {
           text: 'now',
           displayText: 'now',
-          description: 'Shut down the system immediately',
+          description: '立即关闭系统',
           type: 'argument',
         },
       ]
@@ -141,7 +159,8 @@ export class CommandAutocompleteService {
   }
 
   /**
-   * Suggest SCP numbers and CN- prefixed entries for the info command
+   * 获取 info 命令参数补全
+   * 支持 SCP 编号补全和 CN- 前缀补全
    */
   private getInfoSuggestions(args: string[]): AutocompleteSuggestion[] {
     if (args.length === 0) {
@@ -149,7 +168,7 @@ export class CommandAutocompleteService {
         {
           text: 'CN-',
           displayText: 'CN-<number>',
-          description: 'Query Chinese Branch SCP',
+          description: '查询中文分部 SCP',
           type: 'argument',
         },
         {
@@ -180,7 +199,7 @@ export class CommandAutocompleteService {
       ]
     }
 
-    // Suggest well-known CN branch SCPs when user starts typing CN-
+    // 如果用户输入了 CN-，建议一些常见的中文 SCP
     if (args[0].toLowerCase().startsWith('cn-')) {
       const cnNumbers = ['001', '002', '003', '009', '173', '994']
       const suggestions: AutocompleteSuggestion[] = []
@@ -191,7 +210,7 @@ export class CommandAutocompleteService {
           suggestions.push({
             text: fullNum,
             displayText: fullNum,
-            description: `Chinese Branch SCP-${num}`,
+            description: `中文分部 SCP-${num}`,
             type: 'argument',
           })
         }
@@ -204,9 +223,9 @@ export class CommandAutocompleteService {
   }
 
   /**
-   * Dispatch to the appropriate argument completer for a given command
+   * 获取命令参数补全建议
    */
-  private getArgumentSuggestions(command: CommandType, args: string[]): AutocompleteSuggestion[] {
+  private getArgumentSuggestions(command: string, args: string[]): AutocompleteSuggestion[] {
     switch (command) {
       case 'shutdown':
         return this.getShutdownSuggestions(args)
@@ -218,35 +237,38 @@ export class CommandAutocompleteService {
   }
 
   /**
-   * Main entry point: return suggestions for the current terminal input
+   * 获取补全建议
    */
   getSuggestions(input: string): AutocompleteSuggestion[] {
     const trimmed = input.trim()
 
     if (!trimmed) {
-      // Empty input: list all available commands
-      return AVAILABLE_COMMANDS.map((cmd) => ({
-        text: cmd,
-        displayText: cmd,
-        description: COMMAND_DESCRIPTIONS[cmd],
-        type: 'command' as const,
-      })).slice(0, this.maxSuggestions)
+      // 空输入，返回所有命令
+      return commandRegistry
+        .getSummaries()
+        .map((cmd) => ({
+          text: cmd.name,
+          displayText: cmd.name,
+          description: cmd.description,
+          type: 'command' as const,
+        }))
+        .slice(0, this.maxSuggestions)
     }
 
-    // Split input into command and arguments
+    // 解析输入
     const parts = trimmed.split(/\s+/)
-    const command = parts[0] as CommandType
+    const command = parts[0]
     const args = parts.slice(1)
 
-    // Determine whether the first word is a known command
-    const knownCommand = AVAILABLE_COMMANDS.includes(command)
+    // 检查是否是已知命令
+    const knownCommand = commandRegistry.has(command)
 
     if (!knownCommand) {
-      // Unknown command: try to complete the command name itself
+      // 未知命令，尝试补全命令名
       return this.getCommandSuggestions(command)
     }
 
-    // Known command: try to complete its arguments
+    // 已知命令，尝试补全参数
     if (args.length === 0 || (args.length === 1 && parts[parts.length - 1] !== '')) {
       return this.getArgumentSuggestions(command, args)
     }
@@ -255,7 +277,7 @@ export class CommandAutocompleteService {
   }
 
   /**
-   * Render suggestions as formatted terminal lines for display
+   * 格式化补全建议显示
    */
   formatSuggestions(suggestions: AutocompleteSuggestion[]): string[] {
     if (suggestions.length === 0) {
@@ -265,12 +287,12 @@ export class CommandAutocompleteService {
     const lines: string[] = []
 
     if (suggestions.length === 1) {
-      // Single match: return it directly for inline completion
+      // 单个匹配，直接返回
       return [suggestions[0].text]
     }
 
-    // Multiple matches: display a formatted list
-    lines.push(`${ANSICode.cyan}Possible completions:${ANSICode.reset}`)
+    // 多个匹配，格式化显示
+    lines.push(`${ANSICode.cyan}可能的补全:${ANSICode.reset}`)
     lines.push('')
 
     const maxTextLength = Math.max(...suggestions.map((s) => s.text.length))
@@ -291,27 +313,27 @@ export class CommandAutocompleteService {
     }
 
     lines.push('')
-    lines.push(`${ANSICode.gray}Press Tab to cycle through suggestions${ANSICode.reset}`)
+    lines.push(`${ANSICode.gray}按 Tab 键循环选择${ANSICode.reset}`)
 
     return lines
   }
 
   /**
-   * Record a selection to improve future suggestion ranking
+   * 记录补全选择
    */
   recordChoice(input: string, choice: string): void {
     this.history.recordChoice(input, choice)
   }
 
   /**
-   * Advance to the next suggestion index (wraps around)
+   * 循环选择建议
    */
   cycleSuggestions(suggestions: AutocompleteSuggestion[], currentIndex: number): number {
     return (currentIndex + 1) % suggestions.length
   }
 
   /**
-   * Return the suggestion text at a given index (wraps around)
+   * 根据索引获取建议文本
    */
   getSuggestionAt(suggestions: AutocompleteSuggestion[], index: number): string | null {
     if (suggestions.length === 0) return null
@@ -319,5 +341,5 @@ export class CommandAutocompleteService {
   }
 }
 
-// Export singleton instance for use across the terminal
+// 导出单例
 export const autocompleteService = new CommandAutocompleteService()

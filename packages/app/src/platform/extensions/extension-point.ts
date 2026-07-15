@@ -313,6 +313,13 @@ export class ExtensionRegistry {
    */
   unregisterCommand(command: any): void {
     this.unregisterExtension('command', command.name)
+    if (command.aliases && Array.isArray(command.aliases)) {
+      for (const alias of command.aliases) {
+        if (this.getExtensionPoint('command')?.has(alias)) {
+          this.unregisterExtension('command', alias)
+        }
+      }
+    }
   }
 
   /**

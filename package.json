@@ -23,7 +23,8 @@
                     "typecheck": "pnpm --filter @scp-os/app typecheck && pnpm --filter scp-os-worker run typecheck",
                     "lint:check": "pnpm --filter @scp-os/app lint:check",
                     "lint": "eslint . --ext .ts,.vue",
-                    "format": "prettier --write ."
+                    "format": "prettier --write .",
+                    "validate:local-app": "node scripts/validate-local-app.mjs"
           },
           "devDependencies": {
                     "@cloudflare/workers-types": "^4.20260411.1",

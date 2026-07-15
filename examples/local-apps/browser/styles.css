@@ -1,0 +1,245 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #101114;
+  color: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.browser-shell {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 170px),
+    #101114;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: auto 36px 36px 36px minmax(160px, 1fr) 36px;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(17, 18, 22, 0.92);
+}
+
+.traffic {
+  display: flex;
+  gap: 6px;
+  padding: 0 6px;
+}
+
+.traffic span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.traffic span:nth-child(1) {
+  background: #ff6159;
+}
+
+.traffic span:nth-child(2) {
+  background: #ffbd2e;
+}
+
+.traffic span:nth-child(3) {
+  background: #28c840;
+}
+
+.icon-button,
+.address-form button,
+.search-panel button,
+.quick-links button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5f7fb;
+  cursor: pointer;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.icon-button:disabled {
+  cursor: default;
+  opacity: 0.38;
+}
+
+.address-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.address-form input,
+.search-panel input {
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f5f7fb;
+  outline: none;
+}
+
+.address-form input {
+  height: 36px;
+  padding: 0 12px;
+}
+
+.address-form button,
+.search-panel button,
+.quick-links button {
+  border-radius: 8px;
+  padding: 0 14px;
+  font-weight: 700;
+}
+
+.start-page {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 22px;
+  padding: 48px 24px;
+}
+
+.start-page.is-hidden {
+  display: none;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  background: linear-gradient(135deg, #39d0ff, #ffda6a);
+  color: #101114;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 32px;
+  line-height: 1.1;
+}
+
+.brand p,
+.hint,
+.status-bar {
+  color: rgba(245, 247, 251, 0.66);
+}
+
+.search-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  width: min(680px, 100%);
+}
+
+.search-panel input {
+  height: 48px;
+  padding: 0 16px;
+  font-size: 16px;
+}
+
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.quick-links button {
+  min-height: 36px;
+}
+
+.hint {
+  max-width: 680px;
+  text-align: center;
+  font-size: 13px;
+}
+
+#pageFrame {
+  display: none;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #ffffff;
+}
+
+#pageFrame.is-visible {
+  display: block;
+}
+
+.status-bar {
+  min-height: 28px;
+  padding: 6px 12px;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .toolbar {
+    grid-template-columns: 36px 36px 36px minmax(0, 1fr) 36px;
+  }
+
+  .traffic {
+    display: none;
+  }
+
+  .brand {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 26px;
+  }
+}

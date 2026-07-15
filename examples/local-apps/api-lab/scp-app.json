@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "local.api-lab",
+  "name": "API Lab",
+  "version": "1.0.0",
+  "runtime": "iframe-app",
+  "entry": "index.html",
+  "description": "Demonstrates SCP-OS third-party app APIs and permission checks.",
+  "author": "SCP-OS",
+  "icon": "settings",
+  "permissions": [
+    "storage",
+    "notifications",
+    "window.control",
+    "ui.cursor",
+    "theme.read",
+    "theme.write"
+  ],
+  "window": {
+    "width": 760,
+    "height": 560,
+    "minWidth": 520,
+    "minHeight": 380,
+    "resizable": true
+  }
+}

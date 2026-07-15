@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <p class="eyebrow">SCP-OS Local App</p>
+        <h1>API Lab</h1>
+      </header>
+
+      <section class="panel">
+        <h2>Window</h2>
+        <div class="row">
+          <input id="titleInput" value="API Lab - controlled by third-party app" />
+          <button id="setTitleButton" type="button">Set title</button>
+        </div>
+        <div class="row">
+          <button id="resizeSmallButton" type="button">Resize 640x460</button>
+          <button id="resizeLargeButton" type="button">Resize 900x620</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Cursor</h2>
+        <div class="row">
+          <button data-cursor="crosshair" type="button">Crosshair</button>
+          <button data-cursor="grab" type="button">Grab</button>
+          <button data-cursor="wait" type="button">Wait</button>
+          <button id="resetCursorButton" type="button">Reset</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Theme</h2>
+        <div class="row">
+          <button id="readThemeButton" type="button">Read current</button>
+          <button data-accent="#39d0ff" type="button">Blue accent</button>
+          <button data-accent="#ff5c7a" type="button">Rose accent</button>
+          <button id="resetAccentButton" type="button">Reset accent</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Storage & Notify</h2>
+        <div class="row">
+          <input id="noteInput" placeholder="Write a small note" />
+          <button id="saveNoteButton" type="button">Save</button>
+          <button id="loadNoteButton" type="button">Load</button>
+          <button id="notifyButton" type="button">Notify</button>
+        </div>
+      </section>
+
+      <pre id="log" class="log">Ready</pre>
+    </main>
+    <script src="main.js"></script>
+  </body>
+</html>

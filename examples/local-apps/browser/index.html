@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Browser</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="browser-shell">
+      <header class="toolbar">
+        <div class="traffic" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <button id="backButton" class="icon-button" type="button" title="后退" aria-label="后退">
+          &lt;
+        </button>
+        <button id="forwardButton" class="icon-button" type="button" title="前进" aria-label="前进">
+          &gt;
+        </button>
+        <button id="reloadButton" class="icon-button" type="button" title="刷新" aria-label="刷新">
+          R
+        </button>
+        <form id="addressForm" class="address-form">
+          <input
+            id="addressInput"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="输入 URL 或搜索内容"
+          />
+          <button type="submit">Go</button>
+        </form>
+        <button id="homeButton" class="icon-button" type="button" title="主页" aria-label="主页">
+          H
+        </button>
+      </header>
+
+      <section id="startPage" class="start-page">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div>
+            <h1>SCP Browser</h1>
+            <p>本地导入的 sandbox iframe App</p>
+          </div>
+        </div>
+        <form id="startForm" class="search-panel">
+          <input id="startInput" autocomplete="off" spellcheck="false" placeholder="搜索或输入网址" />
+          <button type="submit">打开</button>
+        </form>
+        <div class="quick-links">
+          <button type="button" data-url="https://www.wikipedia.org/">Wikipedia</button>
+          <button type="button" data-url="https://developer.mozilla.org/">MDN</button>
+          <button type="button" data-url="https://www.bing.com/">Bing</button>
+        </div>
+        <p class="hint">
+          部分网站会因为自身安全策略拒绝被嵌入 iframe，这是浏览器和网站的正常限制。
+        </p>
+      </section>
+
+      <iframe
+        id="pageFrame"
+        title="Browser page"
+        referrerpolicy="no-referrer"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
+      ></iframe>
+      <footer id="statusBar" class="status-bar">Ready</footer>
+    </main>
+    <script src="main.js"></script>
+  </body>
+</html>

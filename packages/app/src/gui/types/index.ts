@@ -2,21 +2,21 @@
  * GUI Window Management Types
  */
 
-export * from './chat'
-export * from './feedback'
-export * from './settings'
-
-export type ToolType =
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type BuiltInToolType =
   | 'filemanager'
   | 'editor'
   | 'terminal'
   | 'settings'
+  | 'appmanager'
   | 'chat'
   | 'dash'
   | 'feedback'
   | 'docs'
   | 'notification'
   | 'admin'
+
+export type ToolType = BuiltInToolType | (string & {})
 
 export type WindowState = 'normal' | 'minimized' | 'maximized' | 'fullscreen'
 
@@ -205,6 +205,12 @@ export interface ContextMenuItem {
   icon?: ContextMenuIcon
   disabled?: boolean
   divider?: boolean
+  /** Non-interactive header row, usually shown at the top with a larger icon */
+  header?: boolean
+  /** Secondary text rendered under `label`. Only used by header rows today. */
+  sublabel?: string
+  /** Show this item visually as "checked" (leading checkmark). */
+  checked?: boolean
   action?: () => void
   children?: ContextMenuItem[]
 }
@@ -226,3 +232,7 @@ export interface ToolbarItem {
   badge?: number
   disabled?: boolean
 }
+
+export * from './feedback'
+export * from './settings'
+export * from './chat'

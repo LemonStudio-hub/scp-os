@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import PerformanceDashboard from './components/PerformanceDashboard.vue'
 import PCNotification from './gui/components/PCNotification.vue'
+import ErrorBoundary from './gui/components/ErrorBoundary.vue'
 import MobileApp from './gui/mobile/MobileApp.vue'
 import LoginScreen from './gui/mobile/LoginScreen.vue'
 import PCLoginScreen from './gui/desktop/PCLoginScreen.vue'
@@ -23,6 +24,7 @@ import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
 import logger from './utils/logger'
 import indexedDBService from './utils/indexedDB'
+import { localAppManager } from './platform/apps/local-app-manager'
 
 const tabsStore = useTabsStore()
 const wmStore = useWindowManagerStore()
@@ -54,15 +56,15 @@ onMounted(() => {
 
   ;(async () => {
     try {
-      // Step 1: Initialize theme store
-      loadingStep.value = 'loading.steps.themes'
-      loadingProgress.value = 10
-      themeStore.init()
-
-      // Step 2: Inject GUI design tokens
+      // Step 1: Inject GUI design tokens (inject baseline design system variables first)
       loadingStep.value = 'loading.steps.ui'
-      loadingProgress.value = 20
+      loadingProgress.value = 10
       injectGUITokens()
+
+      // Step 2: Initialize theme store (so active theme colors correctly override baseline variables)
+      loadingStep.value = 'loading.steps.themes'
+      loadingProgress.value = 20
+      themeStore.init()
 
       // Step 3: Register all GUI tools
       loadingStep.value = 'loading.steps.components'
@@ -77,6 +79,7 @@ onMounted(() => {
       // Step 5: Load tabs, window states, and filesystem in parallel
       loadingProgress.value = 50
       await Promise.all([tabsStore.initialize(), wmStore.loadWindowStates(), filesystem.init()])
+      await localAppManager.loadInstalledApps()
       loadingProgress.value = 90
 
       // Step 6: Auth initialization
@@ -110,16 +113,30 @@ onMounted(() => {
       if (terminal) {
         import('./gui/registry/ToolRegistry')
           .then(({ openTool }) => {
-            openTool('terminal', (config) => {
-              wmStore.openWindow({
-                id: config.id,
-                tool: config.tool,
-                title: config.title,
-                iconName: config.iconName,
-                width: config.width,
-                height: config.height,
-              })
-            })
+            openTool(
+              'terminal',
+              (config) => {
+                wmStore.openWindow({
+                  id: config.id,
+                  tool: config.tool,
+                  title: config.title,
+                  iconName: config.iconName,
+                  width: config.width,
+                  height: config.height,
+                  minWidth: config.minWidth,
+                  minHeight: config.minHeight,
+                  resizable: config.resizable,
+                  draggable: config.draggable,
+                  closable: config.closable,
+                  minimizable: config.minimizable,
+                  maximizable: config.maximizable,
+                  isFullscreen: config.isFullscreen,
+                  data: config.data,
+                })
+              },
+              undefined,
+              wmStore.openWindows.map((win) => win.config.id)
+            )
           })
           .catch((err) => {
             logger.warn('[App] Failed to import ToolRegistry:', err)
@@ -260,11 +277,13 @@ function handleLoginSuccess(): void {
           />
 
           <template v-for="win in wmStore.openWindows" :key="win.config.id">
-            <component
-              :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
-              :window-instance="win"
-              :window-id="win.config.id"
-            />
+            <ErrorBoundary :label="win.config.tool">
+              <component
+                :is="ToolRegistry.get(win.config.tool)?.desktopComponent"
+                :window-instance="win"
+                :window-id="win.config.id"
+              />
+            </ErrorBoundary>
           </template>
         </template>
 

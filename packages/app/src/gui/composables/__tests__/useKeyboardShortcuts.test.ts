@@ -479,18 +479,54 @@ describe('useKeyboardShortcuts', () => {
 
   describe('getShortcuts - filtering', () => {
     it('should return all shortcuts when no category provided', () => {
-      registerShortcut({ id: 'a1', keys: 'Ctrl+1', description: 'A1', category: 'catA', handler: vi.fn() })
-      registerShortcut({ id: 'a2', keys: 'Ctrl+2', description: 'A2', category: 'catB', handler: vi.fn() })
-      registerShortcut({ id: 'a3', keys: 'Ctrl+3', description: 'A3', category: 'catA', handler: vi.fn() })
+      registerShortcut({
+        id: 'a1',
+        keys: 'Ctrl+1',
+        description: 'A1',
+        category: 'catA',
+        handler: vi.fn(),
+      })
+      registerShortcut({
+        id: 'a2',
+        keys: 'Ctrl+2',
+        description: 'A2',
+        category: 'catB',
+        handler: vi.fn(),
+      })
+      registerShortcut({
+        id: 'a3',
+        keys: 'Ctrl+3',
+        description: 'A3',
+        category: 'catA',
+        handler: vi.fn(),
+      })
 
       const all = getShortcuts()
       expect(all.length).toBeGreaterThanOrEqual(3)
     })
 
     it('should filter by category when provided', () => {
-      registerShortcut({ id: 'b1', keys: 'Ctrl+4', description: 'B1', category: 'filterA', handler: vi.fn() })
-      registerShortcut({ id: 'b2', keys: 'Ctrl+5', description: 'B2', category: 'filterB', handler: vi.fn() })
-      registerShortcut({ id: 'b3', keys: 'Ctrl+6', description: 'B3', category: 'filterA', handler: vi.fn() })
+      registerShortcut({
+        id: 'b1',
+        keys: 'Ctrl+4',
+        description: 'B1',
+        category: 'filterA',
+        handler: vi.fn(),
+      })
+      registerShortcut({
+        id: 'b2',
+        keys: 'Ctrl+5',
+        description: 'B2',
+        category: 'filterB',
+        handler: vi.fn(),
+      })
+      registerShortcut({
+        id: 'b3',
+        keys: 'Ctrl+6',
+        description: 'B3',
+        category: 'filterA',
+        handler: vi.fn(),
+      })
 
       const filtered = getShortcuts('filterA')
       expect(filtered).toHaveLength(2)
