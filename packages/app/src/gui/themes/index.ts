@@ -479,12 +479,43 @@ export const hackerTheme: Theme = {
   },
 }
 
+// ── Claude Theme (warm light + coral accent; fixes mobile home bleed CSS) ─
+// Accent matches Claude product coral used in HomeScreen/DesktopScreen overrides.
+export const claudeTheme: Theme = {
+  id: 'claude',
+  name: 'Claude',
+  icon: 'Sparkles',
+  description: 'Warm light surfaces with Claude coral accents',
+  i18nKey: 'claude',
+  isDark: false,
+  colors: {
+    ...lightTheme.colors,
+    accent: '#D97757',
+    accentHover: '#C45F3F',
+    accentMuted: '#E8A88F',
+    accentGlow: 'rgba(217, 119, 87, 0.28)',
+    accentSoft: 'rgba(217, 119, 87, 0.12)',
+    info: '#D97757',
+    terminalBlue: '#D97757',
+    terminalBrightBlue: '#E08A6E',
+    dockItemActive: 'rgba(217, 119, 87, 0.18)',
+    windowBorderActive: 'rgba(217, 119, 87, 0.45)',
+    appIconFrom: '#F4E6E0',
+    appIconTo: '#E8D0C6',
+    wallpaperGradient1: 'rgba(217, 119, 87, 0.1)',
+    wallpaperGradient2: 'rgba(217, 119, 87, 0.06)',
+    wallpaperGradient3: 'rgba(180, 120, 100, 0.04)',
+    fileSelected: 'rgba(217, 119, 87, 0.12)',
+  },
+}
+
 // ── Theme Registry ───────────────────────────────────────────────────
 export const themes: Record<string, Theme> = {
   dark: darkTheme,
   light: lightTheme,
   scp: scpTheme,
   hacker: hackerTheme,
+  claude: claudeTheme,
 }
 
-export const availableThemes: Theme[] = [darkTheme, lightTheme, scpTheme, hackerTheme]
+export const availableThemes: Theme[] = [darkTheme, lightTheme, scpTheme, hackerTheme, claudeTheme]

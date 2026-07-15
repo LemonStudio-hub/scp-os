@@ -543,6 +543,8 @@ export const en = {
   'theme.scpRedDesc': 'SCP Foundation theme with red accents',
   'theme.hacker': 'Hacker',
   'theme.hackerDesc': 'Matrix-style green on black',
+  'theme.claude': 'Claude',
+  'theme.claudeDesc': 'Warm light surfaces with Claude coral accents',
 
   // ── Docs ────────────────────────────────────────────────────────────
   'docs.favorite': 'Favorite',
@@ -1100,6 +1102,8 @@ export const zhCN: Record<string, string> = {
   'theme.scpRedDesc': 'SCP 基金会红色主题',
   'theme.hacker': '黑客',
   'theme.hackerDesc': '矩阵风格绿黑配色',
+  'theme.claude': 'Claude',
+  'theme.claudeDesc': '暖浅色表面配 Claude 珊瑚色强调',
 
   // ── Docs ────────────────────────────────────────────────────────────
   'docs.favorite': '收藏',
