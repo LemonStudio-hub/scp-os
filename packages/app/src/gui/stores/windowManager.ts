@@ -36,18 +36,12 @@ function getViewportLimit(): { width: number; height: number } {
   }
 }
 
+/** Trust registry/config min sizes — do not hardcode per-tool overrides. */
 function getEffectiveMinSize(config: WindowConfig): { minWidth: number; minHeight: number } {
-  const minWidth = config.minWidth ?? 320
-  const minHeight = config.minHeight ?? 240
-
-  if (config.tool === 'chat') {
-    return {
-      minWidth: Math.max(minWidth, 760),
-      minHeight: Math.max(minHeight, 480),
-    }
+  return {
+    minWidth: config.minWidth ?? 320,
+    minHeight: config.minHeight ?? 240,
   }
-
-  return { minWidth, minHeight }
 }
 
 function clampWindowSize(
@@ -162,6 +156,9 @@ function computeRightRegionPosition(
   size: { width: number; height: number },
   openCount: number
 ): { x: number; y: number } {
+  if (typeof window === 'undefined') {
+    return { x: WINDOW_MARGIN, y: WINDOW_MARGIN }
+  }
   const availW = window.innerWidth
   const availH = Math.max(0, window.innerHeight - TASKBAR_HEIGHT)
   const cascadeIndex = openCount % 5

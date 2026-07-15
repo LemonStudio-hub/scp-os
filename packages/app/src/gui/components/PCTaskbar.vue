@@ -4,7 +4,6 @@
   <div
     ref="taskbarRef"
     class="pc-taskbar fixed bottom-0 left-0 right-0"
-    style="z-index: 800"
     @contextmenu.prevent
   >
     <div class="pc-taskbar__container">
@@ -480,6 +479,7 @@ onUnmounted(() => {
 <style scoped>
 /* ── PC Taskbar - iOS Frosted Glass Style ──────────────────────────── */
 .pc-taskbar {
+  z-index: var(--gui-z-taskbar, 800);
   font-family: var(--gui-font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   background: var(--gui-glass-bg, rgba(44, 44, 46, 0.85));
   backdrop-filter: blur(20px) saturate(180%);
