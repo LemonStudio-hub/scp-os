@@ -46,17 +46,9 @@ const loadingProgress = ref(0)
 const loadingStep = ref('loading.steps.initializing')
 
 onMounted(() => {
-  window.alert = (msg) => {
-    void dialogService.alert(String(msg ?? ''))
-  }
-  window.confirm = (msg) => {
-    void dialogService.confirm(String(msg ?? ''))
-    return false
-  }
-  window.prompt = (msg, def) => {
-    void dialogService.prompt(String(msg ?? ''), String(def ?? ''))
-    return null
-  }
+  // Do not override window.confirm/prompt — they are synchronous and cannot return
+  // Promise results from dialogService (would always return false/null and break callers).
+  // Use dialogService.confirm() / dialogService.alert() directly in app code.
 
   // Safety timeout: force show app after 3s even if init hangs
   const forceReady = setTimeout(() => {

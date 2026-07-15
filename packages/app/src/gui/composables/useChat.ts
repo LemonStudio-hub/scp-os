@@ -335,12 +335,79 @@ export function useChat(options: UseChatOptions = {}) {
     sending.value = false
   }
 
-  function editMessage(messageId: number, content: string): boolean {
-    return ws.editMessage(messageId, content)
+  /**
+   * Persist edit via REST (DO is broadcast-only and does not write to D1).
+   * Optimistically updates local message list; reverts on failure.
+   */
+  async function editMessage(
+    messageId: number,
+    content: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const trimmed = content.trim()
+    if (!trimmed) return { success: false, error: t('chat.emptyMessage') }
+    if (trimmed.length > 1000) return { success: false, error: t('chat.messageTooLong') }
+
+    const idx = messages.findIndex((m) => m.id === messageId)
+    const previous = idx !== -1 ? { ...messages[idx] } : null
+    if (idx !== -1) {
+      messages.splice(idx, 1, { ...messages[idx], content: trimmed })
+    }
+
+    try {
+      const response = await authStore.authFetch(`${API_BASE}/chat/messages/${messageId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: trimmed }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || data.success === false) {
+        if (idx !== -1 && previous) messages.splice(idx, 1, previous)
+        const err = data.error || data.message || t('chat.sendFailed')
+        rateLimitWarning.value = err
+        return { success: false, error: err }
+      }
+      if (data.data && idx !== -1) {
+        messages.splice(idx, 1, { ...messages[idx], ...data.data, content: trimmed })
+      }
+      // Best-effort realtime fan-out (not required for persistence).
+      ws.editMessage(messageId, trimmed)
+      return { success: true }
+    } catch (error) {
+      if (idx !== -1 && previous) messages.splice(idx, 1, previous)
+      const err = (error as Error).message || t('chat.networkError')
+      rateLimitWarning.value = err
+      return { success: false, error: err }
+    }
   }
 
-  async function deleteMessage(messageId: number): Promise<void> {
-    if (await dialogService.confirm(t('chat.confirmDelete'))) ws.deleteMessage(messageId)
+  async function deleteMessage(messageId: number): Promise<{ success: boolean; error?: string }> {
+    if (!(await dialogService.confirm(t('chat.confirmDelete')))) {
+      return { success: false, error: 'cancelled' }
+    }
+
+    const idx = messages.findIndex((m) => m.id === messageId)
+    const previous = idx !== -1 ? { ...messages[idx] } : null
+    if (idx !== -1) messages.splice(idx, 1)
+
+    try {
+      const response = await authStore.authFetch(`${API_BASE}/chat/messages/${messageId}`, {
+        method: 'DELETE',
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok || data.success === false) {
+        if (idx !== -1 && previous) messages.splice(idx, 0, previous)
+        const err = data.error || data.message || t('chat.sendFailed')
+        rateLimitWarning.value = err
+        return { success: false, error: err }
+      }
+      ws.deleteMessage(messageId)
+      return { success: true }
+    } catch (error) {
+      if (idx !== -1 && previous) messages.splice(idx, 0, previous)
+      const err = (error as Error).message || t('chat.networkError')
+      rateLimitWarning.value = err
+      return { success: false, error: err }
+    }
   }
 
   async function retryMessage(msg: ChatMessage): Promise<void> {

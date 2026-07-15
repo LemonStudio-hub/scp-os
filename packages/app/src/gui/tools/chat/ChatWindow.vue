@@ -503,12 +503,12 @@ function cancelEdit() {
   void nextTick(autoResizeInput)
 }
 
-function confirmEdit() {
+async function confirmEdit() {
   if (!editingMessageId.value) return
   const content = inputContent.value.trim()
   if (!content) return
-  const sent = editMessage(editingMessageId.value, content)
-  if (sent) cancelEdit()
+  const result = await editMessage(editingMessageId.value, content)
+  if (result.success) cancelEdit()
 }
 
 async function startDelete(msg: ChatMessage | null) {
