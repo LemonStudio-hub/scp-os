@@ -4,6 +4,7 @@ import { json, readJson, requestInfo } from '../http';
 import { first, run } from '../db';
 import { allowedEmailDomains, isAllowedEmailDomain, normalizeEmail } from '../email-domains';
 import { hashPassword, signJwt, verifyPassword } from '../security';
+import { requireJwtSecret } from '../helpers';
 import type { SecretBinding } from '../types';
 
 type AppEnv = { Bindings: Env };
@@ -25,7 +26,7 @@ const VERIFICATION_CODE_MAX_ATTEMPTS = 5;
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 function jwtSecret(env: Env): string {
-  return env.JWT_SECRET || 'scp-os-default-secret';
+  return requireJwtSecret(env);
 }
 
 function cleanNickname(value: string | null | undefined, fallback: string): string {
@@ -46,7 +47,16 @@ function normalizeVerificationCode(code: unknown): string | null {
 }
 
 function createVerificationCode(): string {
-  return String(Math.floor(Math.random() * 10 ** VERIFICATION_CODE_LENGTH)).padStart(VERIFICATION_CODE_LENGTH, '0');
+  // Cryptographically secure; rejection sampling avoids modulo bias.
+  const max = 10 ** VERIFICATION_CODE_LENGTH;
+  const limit = Math.floor(0x100000000 / max) * max;
+  const buf = new Uint32Array(1);
+  let value: number;
+  do {
+    crypto.getRandomValues(buf);
+    value = buf[0]!;
+  } while (value >= limit);
+  return String(value % max).padStart(VERIFICATION_CODE_LENGTH, '0');
 }
 
 async function sha256Hex(value: string): Promise<string> {

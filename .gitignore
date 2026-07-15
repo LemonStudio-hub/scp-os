@@ -56,12 +56,18 @@ tauri.conf.json.bak
 .worker-meta/
 wrangler.toml.bak
 
-# Environment files
+# Environment files (never commit real secrets)
 .env
 .env.local
 .env.*.local
 .env.production
 .env.development
+**/.env
+**/.env.local
+**/.env.production
+**/.env.development
+!.env.example
+!**/.env.example
 
 # TypeScript
 *.tsbuildinfo

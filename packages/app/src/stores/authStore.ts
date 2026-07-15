@@ -95,6 +95,25 @@ export const useAuthStore = defineStore('auth', () => {
         email.value = null
         accountType.value = 'guest'
         isLoggedIn.value = true
+        // Guest JWT is 7 days; re-issue on boot so long-lived sessions stay valid.
+        if (savedUserId) {
+          try {
+            const tokenRes = await fetch(`${API_BASE}/api/auth/token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: savedUserId }),
+            })
+            const tokenData = await tokenRes.json().catch(() => ({}))
+            if (tokenRes.ok && tokenData.success && tokenData.token) {
+              setAuthToken(tokenData.token, savedUserId)
+              await indexedDBService.saveSetting('auth_token', tokenData.token)
+            } else if (savedToken) {
+              setAuthToken(savedToken, savedUserId)
+            }
+          } catch {
+            if (savedToken) setAuthToken(savedToken, savedUserId)
+          }
+        }
         logger.info('[Auth] Auto-login guest:', { userId: savedUserId, nickname: savedNickname })
       } else {
         isLoggedIn.value = false

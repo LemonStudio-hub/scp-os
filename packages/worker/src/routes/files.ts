@@ -2,18 +2,9 @@ import { Hono } from 'hono'
 import type { Env } from '../types'
 import { json, readJson } from '../http'
 import { requiredRegisteredUser } from '../helpers'
+import { CLOUD_QUOTA_BYTES, cloudUsage, listAllObjects } from '../r2-usage'
 
 type AppEnv = { Bindings: Env }
-const CLOUD_QUOTA_BYTES = 512 * 1024 * 1024
-
-async function cloudUsage(bucket: R2Bucket, userId: string): Promise<{ used: number; count: number }> {
-  const prefix = `users/${userId}/`
-  const listResult = await bucket.list({ prefix, limit: 1000 })
-  return {
-    used: listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0),
-    count: listResult.objects.length,
-  }
-}
 
 function normalizePath(path: string): string {
   return path
@@ -75,8 +66,8 @@ export function registerFiles(app: Hono<AppEnv>): void {
     const queryPrefix = normalizePath(c.req.query('prefix') || '')
     const basePrefix = `users/${userId}/files/`
     const listPrefix = queryPrefix ? `${basePrefix}${queryPrefix}/` : basePrefix
-    const listResult = await c.env.SCP_FILES.list({ prefix: listPrefix, limit: 1000 })
-    const files = listResult.objects.map((obj: R2Object) => {
+    const objects = await listAllObjects(c.env.SCP_FILES, listPrefix)
+    const files = objects.map((obj: R2Object) => {
       const key = obj.key.replace(basePrefix, '')
       return filePayload(
         c.req.url,

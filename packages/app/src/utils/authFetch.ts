@@ -37,6 +37,11 @@ export async function getAuthHeaders(userId: string): Promise<{ Authorization: s
   return { Authorization: `Bearer ${cachedToken}` }
 }
 
+/**
+ * Fetch with Bearer auth. On 401, clears the cached token and retries **once**
+ * with a freshly issued token. Never loops: a second 401 is returned as-is.
+ * If token refresh itself fails, the original 401 response is returned.
+ */
 export async function authenticatedFetch(
   url: string,
   userId: string,
@@ -48,17 +53,22 @@ export async function authenticatedFetch(
     headers: { ...options.headers, ...authHeader },
   })
 
-  if (response.status === 401) {
-    // Token expired — clear cache and retry once with a fresh token
-    clearAuthToken()
+  if (response.status !== 401) {
+    return response
+  }
+
+  // Single retry only — no recursive call into authenticatedFetch.
+  clearAuthToken()
+  try {
     const freshHeader = await getAuthHeaders(userId)
-    return fetch(url, {
+    return await fetch(url, {
       ...options,
       headers: { ...options.headers, ...freshHeader },
     })
+  } catch {
+    // Refresh failed (network / guest-only endpoint / invalid user) — surface original 401.
+    return response
   }
-
-  return response
 }
 
 export { config }
