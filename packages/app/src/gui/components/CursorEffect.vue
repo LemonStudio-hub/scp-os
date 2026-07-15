@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 type CursorState =
   | 'default'
@@ -15,13 +15,40 @@ type CursorState =
   | 'resize-nesw'
   | 'resize-nwse'
 
+const STORAGE_KEY = 'scp-os-custom-cursor'
+
 const x = ref(-200)
 const y = ref(-200)
 const state = ref<CursorState>('default')
+const enabled = ref(loadEnabled())
+const finePointer = ref(true)
 
 const wrapStyle = computed(() => ({
   transform: `translate(${x.value}px, ${y.value}px)`,
 }))
+
+function loadEnabled(): boolean {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw === null) return true
+    return raw !== 'false'
+  } catch {
+    return true
+  }
+}
+
+function persistEnabled(value: boolean): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, value ? 'true' : 'false')
+  } catch {
+    /* ignore */
+  }
+}
+
+function applyRootClass(on: boolean): void {
+  if (typeof document === 'undefined') return
+  document.documentElement.classList.toggle('custom-cursor-enabled', on)
+}
 
 function resolveState(el: Element): CursorState {
   let cur: Element | null = el
@@ -29,7 +56,6 @@ function resolveState(el: Element): CursorState {
     const cl = cur.classList
     const h = cur as HTMLElement
 
-    // Resize handles
     if (
       cl.contains('pc-window__resize--n') ||
       cl.contains('scp-window__resize--n') ||
@@ -59,30 +85,23 @@ function resolveState(el: Element): CursorState {
     )
       return 'resize-nwse'
 
-    // Dragging state
     if (cl.contains('pc-window__header--dragging') || cl.contains('scp-window__header--dragging'))
       return 'grabbing'
-
-    // Title bar (grab)
     if (cl.contains('pc-window__header') || cl.contains('scp-window__header')) return 'grab'
 
-    // Desktop icon drag
     if (cl.contains('desktop-screen__icon')) {
       return cl.contains('is-dragging') ? 'grabbing' : 'grab'
     }
 
-    // Inline cursor hints (desktop drag, color picker, etc.)
     const ic = h.style?.cursor
     if (ic === 'grabbing') return 'grabbing'
     if (ic === 'grab') return 'grab'
     if (ic === 'move') return 'move'
     if (ic === 'crosshair') return 'crosshair'
 
-    // Disabled
     if (h.matches?.(':disabled') || h.getAttribute?.('aria-disabled') === 'true')
       return 'not-allowed'
 
-    // Text
     if (
       h.matches?.(
         'input[type="text"],input[type="search"],input[type="email"],input[type="password"],input[type="url"],input[type="number"],textarea,[contenteditable="true"]'
@@ -90,7 +109,6 @@ function resolveState(el: Element): CursorState {
     )
       return 'text'
 
-    // Pointer
     if (
       h.matches?.(
         'a[href],button:not(:disabled),[role="button"],[role="link"],label,summary,select,[tabindex]:not([tabindex="-1"])'
@@ -103,16 +121,16 @@ function resolveState(el: Element): CursorState {
   return 'default'
 }
 
-// 拖拽时锁定 cursor，防止快速移动移出元素后状态重置
-// 不用 mousedown 监听（resize handle 有 .stop 阻止冒泡），直接在 mousemove 里用 e.buttons 判断
+// Lock cursor state while buttons are held (resize handles stop mousedown bubbling).
 let lockedState: CursorState | null = null
+let rafId = 0
+let pendingEvent: MouseEvent | null = null
 
-function onMouseMove(e: MouseEvent) {
+function processMove(e: MouseEvent): void {
   x.value = e.clientX
   y.value = e.clientY
 
   if (e.buttons !== 0) {
-    // 第一帧按下时锁定当前状态
     if (lockedState === null) lockedState = state.value
     state.value = lockedState
   } else {
@@ -121,30 +139,111 @@ function onMouseMove(e: MouseEvent) {
   }
 }
 
-function onLeave() {
+function onMouseMove(e: MouseEvent): void {
+  pendingEvent = e
+  if (rafId) return
+  rafId = window.requestAnimationFrame(() => {
+    rafId = 0
+    if (pendingEvent) processMove(pendingEvent)
+    pendingEvent = null
+  })
+}
+
+function onLeave(): void {
   x.value = -200
   y.value = -200
 }
 
-// pointer:fine = mouse/trackpad (PC), pointer:coarse = touch-only (phone/tablet)
-const isTouch =
-  typeof window !== 'undefined' ? !window.matchMedia('(pointer: fine)').matches : false
+const reduceMotion = ref(false)
+
+function updateFinePointer(): void {
+  if (typeof window === 'undefined') {
+    finePointer.value = true
+    reduceMotion.value = false
+    return
+  }
+  finePointer.value = window.matchMedia('(pointer: fine)').matches
+  reduceMotion.value = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function bindListeners(): void {
+  document.addEventListener('mousemove', onMouseMove, { passive: true })
+  document.documentElement.addEventListener('mouseleave', onLeave)
+}
+
+function unbindListeners(): void {
+  document.removeEventListener('mousemove', onMouseMove)
+  document.documentElement.removeEventListener('mouseleave', onLeave)
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = 0
+  }
+}
+
+let mq: MediaQueryList | null = null
+function onMqChange(): void {
+  updateFinePointer()
+}
+
+function isActive(): boolean {
+  return enabled.value && finePointer.value && !reduceMotion.value
+}
+
+watch(
+  [enabled, finePointer, reduceMotion],
+  () => {
+    const active = isActive()
+    applyRootClass(active)
+    unbindListeners()
+    if (active) bindListeners()
+  },
+  { immediate: false }
+)
+
+let mqMotion: MediaQueryList | null = null
 
 onMounted(() => {
-  if (isTouch) return
-  document.addEventListener('mousemove', onMouseMove)
-  document.documentElement.addEventListener('mouseleave', onLeave)
+  updateFinePointer()
+  applyRootClass(isActive())
+  if (isActive()) bindListeners()
+
+  mq = window.matchMedia('(pointer: fine)')
+  mq.addEventListener('change', onMqChange)
+  mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+  mqMotion.addEventListener('change', onMqChange)
 })
 
 onUnmounted(() => {
-  if (isTouch) return
-  document.removeEventListener('mousemove', onMouseMove)
-  document.documentElement.removeEventListener('mouseleave', onLeave)
+  unbindListeners()
+  applyRootClass(false)
+  mq?.removeEventListener('change', onMqChange)
+  mqMotion?.removeEventListener('change', onMqChange)
 })
+
+// Expose for settings toggle without a Pinia store.
+function setCustomCursorEnabled(value: boolean): void {
+  enabled.value = value
+  persistEnabled(value)
+  applyRootClass(isActive())
+  unbindListeners()
+  if (isActive()) bindListeners()
+}
+
+defineExpose({ setCustomCursorEnabled, enabled })
+
+// Also listen for global settings events.
+function onToggleEvent(e: Event): void {
+  const detail = (e as CustomEvent).detail as { enabled?: boolean } | undefined
+  if (typeof detail?.enabled === 'boolean') setCustomCursorEnabled(detail.enabled)
+}
+onMounted(() => window.addEventListener('scp-custom-cursor-toggle', onToggleEvent as EventListener))
+onUnmounted(() =>
+  window.removeEventListener('scp-custom-cursor-toggle', onToggleEvent as EventListener)
+)
 </script>
 
 <template>
-  <div class="cur-wrap" :style="wrapStyle" aria-hidden="true">
+  <div v-if="isActive()" class="cur-wrap" :style="wrapStyle" aria-hidden="true">
     <span class="cur-dot" :class="'cur-dot--' + state" />
   </div>
 </template>
@@ -156,7 +255,7 @@ onUnmounted(() => {
   left: 0;
   margin: -3.5px 0 0 -3.5px;
   pointer-events: none;
-  z-index: 2147483647;
+  z-index: var(--gui-z-cursor, 99999);
   will-change: transform;
 }
 
@@ -175,7 +274,6 @@ onUnmounted(() => {
     background 0.3s ease;
 }
 
-/* 伪元素公共：以父中心为原点居中 */
 .cur-dot::before,
 .cur-dot::after {
   content: '';
@@ -190,37 +288,26 @@ onUnmounted(() => {
     background 0.3s ease;
 }
 
-/* ── pointer ──────────────────────────────────────────── */
 .cur-dot--pointer {
   transform: scale(1.43);
 }
-
-/* ── text (I-beam) ────────────────────────────────────── */
 .cur-dot--text {
   transform: scaleX(0.29) scaleY(2.29);
   border-radius: 2px;
 }
-
-/* ── not-allowed：圆 + 斜线 ───────────────────────────── */
 .cur-dot--not-allowed::after {
   opacity: 1;
   width: 1.5px;
   height: 10px;
   transform: translate(-50%, -50%) rotate(45deg);
 }
-
-/* ── grab：略微放大的圆 ─────────────────────────────────── */
 .cur-dot--grab {
   transform: scale(1.6);
   opacity: 0.7;
 }
-
-/* ── grabbing：缩小实心圆 ──────────────────────────────── */
 .cur-dot--grabbing {
   transform: scale(0.8);
 }
-
-/* ── move：圆 + 粗十字 ─────────────────────────────────── */
 .cur-dot--move::before {
   opacity: 1;
   width: 14px;
@@ -233,8 +320,6 @@ onUnmounted(() => {
   height: 14px;
   transform: translate(-50%, -50%);
 }
-
-/* ── crosshair：圆 + 细十字 ────────────────────────────── */
 .cur-dot--crosshair::before {
   opacity: 1;
   width: 12px;
@@ -247,28 +332,28 @@ onUnmounted(() => {
   height: 12px;
   transform: translate(-50%, -50%);
 }
-
-/* ── resize-ns（竖向胶囊） ─────────────────────────────── */
 .cur-dot--resize-ns {
   transform: scaleX(0.35) scaleY(3);
   border-radius: 2px;
 }
-
-/* ── resize-ew（横向胶囊） ─────────────────────────────── */
 .cur-dot--resize-ew {
   transform: scaleX(3) scaleY(0.35);
   border-radius: 2px;
 }
-
-/* ── resize-nesw（斜 ╱） ───────────────────────────────── */
 .cur-dot--resize-nesw {
   transform: rotate(-45deg) scaleX(3) scaleY(0.35);
   border-radius: 2px;
 }
-
-/* ── resize-nwse（斜 ╲） ───────────────────────────────── */
 .cur-dot--resize-nwse {
   transform: rotate(45deg) scaleX(3) scaleY(0.35);
   border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cur-dot,
+  .cur-dot::before,
+  .cur-dot::after {
+    transition: none !important;
+  }
 }
 </style>
