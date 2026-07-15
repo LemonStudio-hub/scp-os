@@ -238,7 +238,7 @@ export class PerformanceOptimizerService {
       'high-memory-usage': ['memory-optimization'],
       'slow-page-load': ['code-splitting', 'bundle-analysis'],
       'slow-resource-loading': ['image-optimization', 'caching-strategy'],
-      'resource-errors': ['caching-strategy']
+      'resource-errors': ['caching-strategy'],
     }
 
     // Calculate baseline score (0 steps completed)
@@ -255,7 +255,7 @@ export class PerformanceOptimizerService {
     issues.forEach((issue) => {
       const penalty = severityPenalty[issue.severity] ?? 10
       const resolvingStrategies = issueToStrategyMap[issue.id] || []
-      
+
       let resolvedProgress = 0
       if (resolvingStrategies.length > 0) {
         let sumRatio = 0

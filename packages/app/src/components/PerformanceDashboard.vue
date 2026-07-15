@@ -219,11 +219,11 @@ const generateReport = () => {
   if (!monitorService.value || !optimizerService.value) return
 
   const report = monitorService.value.generateReport()
-  
+
   // Use createOptimizationPlan to compute the dynamic currentScore and strategies
   const plan = optimizerService.value.createOptimizationPlan(report.issues || [])
   report.score = plan.currentScore
-  
+
   latestReport.value = report
   issues.value = report.issues || []
   recommendations.value = plan.strategies
@@ -310,14 +310,14 @@ const initCompletedSteps = () => {
 
 const handleToggleStep = (strategyId: string, stepIndex: number) => {
   if (!optimizerService.value) return
-  
+
   const currentCompleted = completedSteps.value[strategyId] || []
   if (currentCompleted.includes(stepIndex)) {
     optimizerService.value.markStepNotImplemented(strategyId, stepIndex)
   } else {
     optimizerService.value.markStepImplemented(strategyId, stepIndex)
   }
-  
+
   initCompletedSteps()
   refreshData()
 }
@@ -351,7 +351,7 @@ onMounted(() => {
         if (apiService.value && newUserId) {
           apiService.value.setUserId(newUserId)
         }
-      },
+      }
     )
 
     monitorService.value.startMonitoring(5000)
@@ -512,7 +512,9 @@ onUnmounted(() => {
                       :class="`vital-${getVitalStatus('lcp', webVitals.lcp)}`"
                     />
                   </div>
-                  <div class="vital-thresholds"><span>0</span><span>2.5s</span><span>4s+</span></div>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>2.5s</span><span>4s+</span>
+                  </div>
                 </div>
 
                 <!-- CLS -->
@@ -541,7 +543,9 @@ onUnmounted(() => {
                       :class="`vital-${getVitalStatus('cls', webVitals.cls)}`"
                     />
                   </div>
-                  <div class="vital-thresholds"><span>0</span><span>0.1</span><span>0.25+</span></div>
+                  <div class="vital-thresholds">
+                    <span>0</span><span>0.1</span><span>0.25+</span>
+                  </div>
                 </div>
 
                 <!-- INP -->
@@ -627,7 +631,9 @@ onUnmounted(() => {
                     <div class="info-row">
                       <span>{{ t('perf.type') }}</span
                       ><span class="info-val"
-                        >{{ networkInfo.effectiveType.toUpperCase() }} ({{ networkInfo.type }})</span
+                        >{{ networkInfo.effectiveType.toUpperCase() }} ({{
+                          networkInfo.type
+                        }})</span
                       >
                     </div>
                     <div class="info-row">
