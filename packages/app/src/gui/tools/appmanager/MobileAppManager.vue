@@ -119,6 +119,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import GUIIcon from '../../components/ui/GUIIcon.vue'
 import { useI18n } from '../../composables/useI18n'
+import { dialogService } from '../../composables/useDialog'
 import { useWindowManagerStore } from '../../stores/windowManager'
 import type { ToolType } from '../../types'
 import {

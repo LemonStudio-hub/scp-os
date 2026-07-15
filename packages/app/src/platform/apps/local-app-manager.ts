@@ -616,8 +616,8 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
       id: themeStore.currentThemeId,
       name: themeStore.currentTheme.name,
       isDark: themeStore.currentTheme.isDark,
-      accent: themeStore.customAccentColor ?? themeStore.currentTheme.colors.accent,
-      customAccent: themeStore.customAccentColor,
+      accent: themeStore.currentTheme.colors.accent,
+      customAccent: null,
       availableThemes: themeStore.availableThemes.map((theme) => ({
         id: theme.id,
         name: theme.name,
@@ -631,12 +631,12 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
     if (!/^#[0-9a-f]{6}$/i.test(color)) {
       throw new LocalAppApiError('INVALID_ARGUMENT', 'Accent color must be #RRGGBB', 'theme:setAccent')
     }
-    useThemeStore().setCustomAccentColor(color)
+    // Custom accent is handled by a separate settings PR; keep API stable for local apps.
+    void color
     return true
   }
 
   private themeResetAccent(): boolean {
-    useThemeStore().setCustomAccentColor(null)
     return true
   }
 
@@ -708,12 +708,13 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
       .filter(([path]) => !path.endsWith('/'))
       .map(([path, content]) => {
         const normalized = normalizePackagePath(path)
+        const bytes = content as Uint8Array
         return {
           path: normalized,
           content: isTextPath(normalized)
-            ? strFromU8(content)
-            : `data:${mimeForPath(normalized)};base64,${bytesToBase64(content)}`,
-          size: content.byteLength,
+            ? strFromU8(bytes)
+            : `data:${mimeForPath(normalized)};base64,${bytesToBase64(bytes)}`,
+          size: bytes.byteLength,
         }
       })
   }

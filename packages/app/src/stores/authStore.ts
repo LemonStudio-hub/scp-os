@@ -4,7 +4,7 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import indexedDBService from '../utils/indexedDB'
 import { config } from '../config'
 import { authenticatedFetch } from '../utils/authFetch'
@@ -18,6 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
   const nickname = ref<string | null>(null)
   const userId = ref<string | null>(null)
   const isLoading = ref<boolean>(false)
+  const canUseCloudSync = computed(() => isLoggedIn.value)
 
   /**
    * Initialize authentication state
@@ -252,6 +253,7 @@ export const useAuthStore = defineStore('auth', () => {
     nickname,
     userId,
     isLoading,
+    canUseCloudSync,
 
     initAuth,
     login,
