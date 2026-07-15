@@ -115,10 +115,6 @@ export const en = {
   'settings.enableCustomAccentDesc': "Override the theme's default accent color",
   'settings.pickAccentColor': 'Choose Accent Color',
   'settings.fontPreview': 'Aa 123',
-  'settings.customAccentColor': 'Custom Accent Color',
-  'settings.enableCustomAccent': 'Enable Custom Accent',
-  'settings.enableCustomAccentDesc': "Override the theme's default accent color",
-  'settings.pickAccentColor': 'Choose Accent Color',
 
   // App Manager
   'appManager.title': 'App Manager',
@@ -161,34 +157,6 @@ export const en = {
   'appManager.riskMedium': 'Medium risk',
   'appManager.riskHigh': 'High risk',
   'appManager.permissionPlanned': 'planned',
-
-  // App Manager
-  'appManager.title': 'App Manager',
-  'appManager.subtitle': '{installed} of {total} apps installed',
-  'appManager.allApps': 'All',
-  'appManager.installed': 'Installed',
-  'appManager.available': 'Available',
-  'appManager.statusInstalled': 'Installed',
-  'appManager.statusAvailable': 'Available',
-  'appManager.install': 'Install',
-  'appManager.uninstall': 'Uninstall',
-  'appManager.uninstallNow': 'Uninstall now',
-  'appManager.protectedHint': 'System app cannot be uninstalled',
-  'appManager.uninstallTitle': 'Uninstall app?',
-  'appManager.finalUninstallTitle': 'Final confirmation',
-  'appManager.uninstallMsg':
-    'Remove {app} from the desktop and taskbar? Open windows will be closed.',
-  'appManager.finalUninstallMsg':
-    'This will uninstall {app} from the desktop. Confirm again to continue.',
-  'appManager.desc.terminal': 'Command-line workspace for local system tasks.',
-  'appManager.desc.filemanager': 'Browse, open, and manage local SCP OS files.',
-  'appManager.desc.editor': 'Edit text files and quick notes.',
-  'appManager.desc.chat': 'Open the integrated chat workspace.',
-  'appManager.desc.dash': 'View the dashboard overview.',
-  'appManager.desc.feedback': 'Submit feedback and issue reports.',
-  'appManager.desc.docs': 'Read bundled documentation.',
-  'appManager.desc.settings': 'Adjust system appearance and behavior.',
-  'appManager.desc.appmanager': 'Install and uninstall desktop apps.',
 
   // ── File Manager ────────────────────────────────────────────────────
   'fm.dropFiles': 'Drop files to upload',
@@ -776,10 +744,6 @@ export const zhCN: Record<string, string> = {
   'settings.enableCustomAccentDesc': '覆盖当前系统主题的默认强调色',
   'settings.pickAccentColor': '选择强调色',
   'settings.fontPreview': 'Aa 123 字体',
-  'settings.customAccentColor': '自定义主题色',
-  'settings.enableCustomAccent': '启用自定义主题色',
-  'settings.enableCustomAccentDesc': '覆盖当前系统主题的默认强调色',
-  'settings.pickAccentColor': '选择强调色',
 
   // App Manager
   'appManager.title': '应用管理',
@@ -819,32 +783,6 @@ export const zhCN: Record<string, string> = {
   'appManager.riskMedium': '中风险',
   'appManager.riskHigh': '高风险',
   'appManager.permissionPlanned': '计划中',
-
-  // App Manager
-  'appManager.title': '应用管理',
-  'appManager.subtitle': '已安装 {installed} / {total} 个应用',
-  'appManager.allApps': '全部',
-  'appManager.installed': '已安装',
-  'appManager.available': '可安装',
-  'appManager.statusInstalled': '已安装',
-  'appManager.statusAvailable': '未安装',
-  'appManager.install': '安装',
-  'appManager.uninstall': '卸载',
-  'appManager.uninstallNow': '立即卸载',
-  'appManager.protectedHint': '系统应用不能卸载',
-  'appManager.uninstallTitle': '卸载应用？',
-  'appManager.finalUninstallTitle': '最终确认',
-  'appManager.uninstallMsg': '将从桌面和任务栏移除 {app}，并关闭已打开的窗口。',
-  'appManager.finalUninstallMsg': '这会卸载桌面上的 {app}。再次确认后继续。',
-  'appManager.desc.terminal': '用于本地系统任务的命令行工作区。',
-  'appManager.desc.filemanager': '浏览、打开和管理 SCP OS 文件。',
-  'appManager.desc.editor': '编辑文本文件和临时笔记。',
-  'appManager.desc.chat': '打开内置聊天工作区。',
-  'appManager.desc.dash': '查看仪表盘概览。',
-  'appManager.desc.feedback': '提交反馈和问题报告。',
-  'appManager.desc.docs': '阅读内置文档。',
-  'appManager.desc.settings': '调整系统外观和行为。',
-  'appManager.desc.appmanager': '安装和卸载桌面应用。',
 
   // ── File Manager ────────────────────────────────────────────────────
   'fm.dropFiles': '释放文件以上传',

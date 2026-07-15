@@ -6,6 +6,7 @@ export interface Env {
   SCP_FILES: R2Bucket;
   CHAT_ROOM_DO: DurableObjectNamespace;
   JWT_SECRET?: string;
+  ADMIN_JWT_SECRET?: string;
   KEY_RESEND?: SecretBinding;
   RESEND_API_KEY?: SecretBinding;
   EMAIL_FROM?: string;
