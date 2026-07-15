@@ -93,7 +93,8 @@
               <span
                 class="pc-settings__font-preview"
                 :style="{ fontSize: `${settings.fontSize}px` }"
-              >{{ t('settings.fontPreview') }}</span>
+                >{{ t('settings.fontPreview') }}</span
+              >
             </div>
             <div class="pc-settings__font-control">
               <button
@@ -101,7 +102,15 @@
                 :disabled="settings.fontSize <= 10"
                 @click="settings.fontSize = Math.max(10, settings.fontSize - 1)"
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
                   <line x1="2" y1="7" x2="12" y2="7" />
                 </svg>
               </button>
@@ -122,7 +131,15 @@
                 :disabled="settings.fontSize >= 22"
                 @click="settings.fontSize = Math.min(22, settings.fontSize + 1)"
               >
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
                   <line x1="7" y1="2" x2="7" y2="12" />
                   <line x1="2" y1="7" x2="12" y2="7" />
                 </svg>
@@ -346,7 +363,10 @@
                 <div class="pc-settings__row-label">工作代号</div>
                 <div class="pc-settings__row-description">{{ authStore.nickname }}</div>
               </div>
-              <span class="pc-settings__badge" :class="{ 'pc-settings__badge--guest': !authStore.canUseCloudSync }">
+              <span
+                class="pc-settings__badge"
+                :class="{ 'pc-settings__badge--guest': !authStore.canUseCloudSync }"
+              >
                 {{ authStore.canUseCloudSync ? '普通用户' : '游客' }}
               </span>
             </div>
@@ -360,7 +380,15 @@
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">修改工作代号</div>
               </div>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+              >
                 <path d="M3 4.5L6 7.5L9 4.5" />
               </svg>
             </div>
@@ -375,10 +403,16 @@
                 @keyup.enter="submitNicknameEdit"
                 @keyup.escape="cancelNicknameEdit"
               />
-              <div v-if="nicknameEditError" class="pc-settings__nickname-error">{{ nicknameEditError }}</div>
+              <div v-if="nicknameEditError" class="pc-settings__nickname-error">
+                {{ nicknameEditError }}
+              </div>
               <div class="pc-settings__nickname-actions">
                 <button class="pc-settings__nickname-btn" @click="cancelNicknameEdit">取消</button>
-                <button class="pc-settings__nickname-btn pc-settings__nickname-btn--primary" :disabled="authStore.isLoading" @click="submitNicknameEdit">
+                <button
+                  class="pc-settings__nickname-btn pc-settings__nickname-btn--primary"
+                  :disabled="authStore.isLoading"
+                  @click="submitNicknameEdit"
+                >
                   {{ authStore.isLoading ? '保存中...' : '保存' }}
                 </button>
               </div>
@@ -389,7 +423,15 @@
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">退出登录</div>
               </div>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+              >
                 <path d="M3 4.5L6 7.5L9 4.5" />
               </svg>
             </div>
@@ -1005,7 +1047,9 @@ const buildDate = computed(() => '2026-04-06')
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  transition: transform var(--gui-transition-fast, 120ms ease), box-shadow var(--gui-transition-fast, 120ms ease);
+  transition:
+    transform var(--gui-transition-fast, 120ms ease),
+    box-shadow var(--gui-transition-fast, 120ms ease);
 }
 
 .pc-settings__slider::-webkit-slider-thumb:hover {

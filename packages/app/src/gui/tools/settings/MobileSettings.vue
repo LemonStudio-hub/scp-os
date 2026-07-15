@@ -29,8 +29,20 @@
                 </div>
               </div>
               <div class="k-ios-list__item-right">
-                <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                <svg
+                  class="k-ios-list__item-chevron"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                >
+                  <path
+                    d="M4 2L8 6L4 10"
+                    stroke="currentColor"
+                    stroke-width="1.3"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </div>
             </div>
@@ -48,10 +60,16 @@
                   @keyup.enter="submitNicknameEdit"
                   @keyup.escape="cancelNicknameEdit"
                 />
-                <div v-if="nicknameEditError" class="settings-nickname-error">{{ nicknameEditError }}</div>
+                <div v-if="nicknameEditError" class="settings-nickname-error">
+                  {{ nicknameEditError }}
+                </div>
                 <div class="settings-nickname-actions">
                   <button class="settings-nickname-btn" @click="cancelNicknameEdit">取消</button>
-                  <button class="settings-nickname-btn settings-nickname-btn--primary" :disabled="authStore.isLoading" @click="submitNicknameEdit">
+                  <button
+                    class="settings-nickname-btn settings-nickname-btn--primary"
+                    :disabled="authStore.isLoading"
+                    @click="submitNicknameEdit"
+                  >
                     {{ authStore.isLoading ? '保存中...' : '保存' }}
                   </button>
                 </div>
@@ -63,12 +81,26 @@
           <div class="k-ios-list__item" @click="handleLogout">
             <div class="k-ios-list__item-left">
               <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">退出登录</div>
+                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">
+                  退出登录
+                </div>
               </div>
             </div>
             <div class="k-ios-list__item-right">
-              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+              <svg
+                class="k-ios-list__item-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+              >
+                <path
+                  d="M4 2L8 6L4 10"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
               </svg>
             </div>
           </div>
@@ -315,7 +347,6 @@
               </svg>
             </div>
           </div>
-
         </div>
 
         <!-- Storage Section -->
@@ -499,7 +530,10 @@
             <span class="settings-slider-sheet__title">{{ t('settings.fontSize') }}</span>
             <button
               class="settings-slider-sheet__close"
-              @click="onFontSizeChange(); sliderSheets.fontSize = false"
+              @click="
+                onFontSizeChange()
+                sliderSheets.fontSize = false
+              "
             >
               完成
             </button>
