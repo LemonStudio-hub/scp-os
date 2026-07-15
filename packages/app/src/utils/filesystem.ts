@@ -226,6 +226,21 @@ export class FileSystem {
                       content:
                         '[Desktop Entry]\nName=Settings\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
                     },
+                    'appmanager.desktop': {
+                      name: 'appmanager.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 78,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=App Manager\nType=Application\nTool=appmanager\nIcon=grid\nX=180\nY=310',
+                    },
                     'editor.desktop': {
                       name: 'editor.desktop',
                       type: 'file',

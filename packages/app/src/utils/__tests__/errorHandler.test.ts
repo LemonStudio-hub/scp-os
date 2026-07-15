@@ -21,9 +21,8 @@ import logger from '../logger'
 vi.unmock('../errorHandler')
 
 // Re-import after unmocking
-const { ErrorHandler, createError, withErrorHandling, withSyncErrorHandling } = await import(
-  '../errorHandler'
-)
+const { ErrorHandler, createError, withErrorHandling, withSyncErrorHandling } =
+  await import('../errorHandler')
 
 describe('ErrorHandler', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -200,8 +199,16 @@ describe('ErrorHandler', () => {
 
   describe('clearErrorLogs', () => {
     it('should empty the error logs', () => {
-      handler.handleError({ type: ErrorType.DATA_NOT_FOUND, severity: ErrorSeverity.LOW, message: 'A' })
-      handler.handleError({ type: ErrorType.NETWORK_ERROR, severity: ErrorSeverity.HIGH, message: 'B' })
+      handler.handleError({
+        type: ErrorType.DATA_NOT_FOUND,
+        severity: ErrorSeverity.LOW,
+        message: 'A',
+      })
+      handler.handleError({
+        type: ErrorType.NETWORK_ERROR,
+        severity: ErrorSeverity.HIGH,
+        message: 'B',
+      })
 
       expect(handler.getErrorLogs()).toHaveLength(2)
 
@@ -240,9 +247,21 @@ describe('ErrorHandler', () => {
 
   describe('getErrorsByType', () => {
     it('should filter errors by type', () => {
-      handler.handleError({ type: ErrorType.NETWORK_ERROR, severity: ErrorSeverity.HIGH, message: 'Net' })
-      handler.handleError({ type: ErrorType.DATA_NOT_FOUND, severity: ErrorSeverity.LOW, message: 'Data' })
-      handler.handleError({ type: ErrorType.NETWORK_ERROR, severity: ErrorSeverity.MEDIUM, message: 'Net2' })
+      handler.handleError({
+        type: ErrorType.NETWORK_ERROR,
+        severity: ErrorSeverity.HIGH,
+        message: 'Net',
+      })
+      handler.handleError({
+        type: ErrorType.DATA_NOT_FOUND,
+        severity: ErrorSeverity.LOW,
+        message: 'Data',
+      })
+      handler.handleError({
+        type: ErrorType.NETWORK_ERROR,
+        severity: ErrorSeverity.MEDIUM,
+        message: 'Net2',
+      })
 
       const networkErrors = handler.getErrorsByType(ErrorType.NETWORK_ERROR)
       expect(networkErrors).toHaveLength(2)
@@ -252,9 +271,21 @@ describe('ErrorHandler', () => {
 
   describe('getErrorsBySeverity', () => {
     it('should filter errors by severity', () => {
-      handler.handleError({ type: ErrorType.NETWORK_ERROR, severity: ErrorSeverity.HIGH, message: 'High' })
-      handler.handleError({ type: ErrorType.DATA_NOT_FOUND, severity: ErrorSeverity.LOW, message: 'Low' })
-      handler.handleError({ type: ErrorType.UNKNOWN_ERROR, severity: ErrorSeverity.HIGH, message: 'High2' })
+      handler.handleError({
+        type: ErrorType.NETWORK_ERROR,
+        severity: ErrorSeverity.HIGH,
+        message: 'High',
+      })
+      handler.handleError({
+        type: ErrorType.DATA_NOT_FOUND,
+        severity: ErrorSeverity.LOW,
+        message: 'Low',
+      })
+      handler.handleError({
+        type: ErrorType.UNKNOWN_ERROR,
+        severity: ErrorSeverity.HIGH,
+        message: 'High2',
+      })
 
       const highErrors = handler.getErrorsBySeverity(ErrorSeverity.HIGH)
       expect(highErrors).toHaveLength(2)

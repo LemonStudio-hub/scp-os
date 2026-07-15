@@ -89,7 +89,10 @@ describe('FetchHttpClient', () => {
 
       const response = await client.get('https://example.com/api')
 
-      expect(fetchSpy).toHaveBeenCalledWith('https://example.com/api', expect.objectContaining({ method: 'GET' }))
+      expect(fetchSpy).toHaveBeenCalledWith(
+        'https://example.com/api',
+        expect.objectContaining({ method: 'GET' })
+      )
       expect(response.data).toEqual({ id: 1 })
       expect(response.status).toBe(200)
       expect(response.statusText).toBe('OK')
@@ -102,7 +105,9 @@ describe('FetchHttpClient', () => {
 
       expect(fetchSpy).toHaveBeenCalledWith(
         'https://example.com',
-        expect.objectContaining({ headers: { 'Content-Type': 'application/json', 'X-Custom': 'value' } })
+        expect.objectContaining({
+          headers: { 'Content-Type': 'application/json', 'X-Custom': 'value' },
+        })
       )
     })
   })

@@ -141,6 +141,23 @@
               />
             </svg>
           </template>
+          <template v-else-if="app.id === 'appmanager'">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </template>
           <template v-else-if="app.id === 'chat'">
             <svg
               width="24"
@@ -233,31 +250,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useHammer } from '../composables/useHammer'
 import { useThemeStore } from '../stores/themeStore'
 import { useI18n } from '../composables/useI18n'
 import { wallpaperService } from '../../utils/wallpaperService'
+import type { ToolType } from '../types'
+import { APP_CATALOG, getInstalledAppTools } from '../utils/appCatalog'
 
 export interface HomeApp {
   id: string
   label: string
-  tool: string
+  tool: ToolType
   color: string
 }
 
 const { t } = useI18n()
+const installedTools = ref<Set<ToolType>>(new Set())
 
-const apps = computed<HomeApp[]>(() => [
-  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', color: 'var(--gui-accent)' },
-  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', color: 'var(--gui-accent)' },
-  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)' },
-  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)' },
-  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)' },
-  { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)' },
-  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)' },
-  { id: 'editor', label: t('home.apps.editor'), tool: 'editor', color: 'var(--gui-accent)' },
-])
+const homeAppLabelKeys: Partial<Record<ToolType, string>> = {
+  terminal: 'home.apps.terminal',
+  filemanager: 'home.apps.files',
+  chat: 'home.apps.chat',
+  dash: 'home.apps.dash',
+  feedback: 'home.apps.feedback',
+  docs: 'home.apps.docs',
+  settings: 'home.apps.settings',
+  appmanager: 'home.apps.appManager',
+  editor: 'home.apps.editor',
+}
+
+const apps = computed<HomeApp[]>(() =>
+  APP_CATALOG.filter((app) => installedTools.value.has(app.tool)).map((app) => ({
+    id: app.id,
+    label: t(homeAppLabelKeys[app.tool] ?? app.labelKey),
+    tool: app.tool,
+    color: 'var(--gui-accent)',
+  }))
+)
+
+function refreshInstalledApps(): void {
+  installedTools.value = getInstalledAppTools()
+}
 
 const emit = defineEmits<{
   launch: [app: HomeApp]
@@ -309,6 +343,7 @@ function onAppTap(app: HomeApp): void {
 }
 
 onMounted(async () => {
+  refreshInstalledApps()
   updateTime()
   setInterval(updateTime, 10000)
 
@@ -335,6 +370,11 @@ onMounted(async () => {
       // Silently fail
     }
   })
+  window.addEventListener('app-catalog-changed', refreshInstalledApps)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('app-catalog-changed', refreshInstalledApps)
 })
 </script>
 

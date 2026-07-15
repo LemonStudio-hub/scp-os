@@ -215,6 +215,68 @@
             </div>
           </div>
 
+          <!-- Custom Accent Color Selection -->
+          <div class="pc-settings__card" style="overflow: visible">
+            <div
+              class="pc-settings__row"
+              style="
+                cursor: default;
+                background: transparent;
+                border-bottom: 0.5px solid var(--gui-border-subtle);
+                padding-bottom: 4px;
+                padding-top: 8px;
+              "
+            >
+              <span
+                style="
+                  font-size: 11px;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                  color: var(--gui-text-secondary);
+                "
+              >
+                {{ t('settings.customAccentColor') || 'Custom Accent Color' }}
+              </span>
+            </div>
+
+            <div class="pc-settings__row" @click="toggleCustomAccent">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">
+                  {{ t('settings.enableCustomAccent') || 'Enable Custom Accent' }}
+                </div>
+                <div class="pc-settings__row-description">
+                  {{
+                    t('settings.enableCustomAccentDesc') ||
+                    "Override the theme's default accent color"
+                  }}
+                </div>
+              </div>
+              <div
+                class="pc-settings__toggle"
+                :class="{ 'pc-settings__toggle--on': !!themeStore.customAccentColor }"
+              />
+            </div>
+
+            <div
+              v-if="!!themeStore.customAccentColor"
+              class="pc-settings__row"
+              style="cursor: default"
+            >
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">
+                  {{ t('settings.pickAccentColor') || 'Choose Color' }}
+                </div>
+                <div class="pc-settings__row-description">{{ themeStore.customAccentColor }}</div>
+              </div>
+              <CustomAccentPicker
+                :model-value="themeStore.customAccentColor"
+                :presets="presetAccents"
+                @update:model-value="themeStore.setCustomAccentColor"
+              />
+            </div>
+          </div>
+
           <!-- Haptic Feedback -->
           <div class="pc-settings__card">
             <div class="pc-settings__row" @click="settings.haptic = !settings.haptic">
@@ -375,6 +437,7 @@ import { ref, computed } from 'vue'
 import { localeNames } from '../../../locales'
 import PCWindow from '../../components/PCWindow.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
+import CustomAccentPicker from './CustomAccentPicker.vue'
 import { useSettings } from '../../composables/useSettings'
 import type { WindowInstance } from '../../types'
 
@@ -406,6 +469,16 @@ const {
   confirmClearData,
   confirmResetSettings,
 } = useSettings()
+
+const presetAccents = ['#0063D1', '#E94560', '#34C759', '#AF52DE', '#FF9500', '#00FF00']
+
+function toggleCustomAccent() {
+  if (themeStore.customAccentColor) {
+    themeStore.setCustomAccentColor(null)
+  } else {
+    themeStore.setCustomAccentColor('#0063D1')
+  }
+}
 
 const sections = computed(() => [
   {
