@@ -395,6 +395,7 @@ function getAppLabel(app: DesktopApp): string {
     feedback: 'app.feedback',
     docs: 'app.docs',
     settings: 'app.settings',
+    notification: 'app.notification',
   }
   const key = toolToKey[app.tool]
   if (key) {
