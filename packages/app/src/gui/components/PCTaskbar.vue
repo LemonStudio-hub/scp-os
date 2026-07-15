@@ -447,7 +447,7 @@ function openNotifications() {
     closable: tool.windowConfig.closable,
     minimizable: tool.windowConfig.minimizable,
     maximizable: tool.windowConfig.maximizable,
-    isFullscreen: tool.windowConfig.isFullscreen ?? false,
+    isFullscreen: tool.windowConfig.isFullscreen ?? true,
   })
 }
 

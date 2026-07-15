@@ -177,7 +177,8 @@ export function openTool(
     closable: tool.windowConfig.closable,
     minimizable: tool.windowConfig.minimizable,
     maximizable: tool.windowConfig.maximizable,
-    isFullscreen: tool.windowConfig.isFullscreen ?? false,
+    // Default maximized (legacy); tools can opt into normal windows via windowConfig.
+    isFullscreen: tool.windowConfig.isFullscreen ?? true,
     data,
   })
 }

@@ -18,9 +18,29 @@ export const TEXT_EXTS = [
   'yaml',
   'js',
   'ts',
+  'tsx',
+  'jsx',
   'css',
+  'scss',
   'html',
   'vue',
+  'py',
+  'sh',
+  'bash',
+  'desktop',
+  'sql',
+  'csv',
+  'tsv',
+  'ini',
+  'toml',
+  'env',
+  'rs',
+  'go',
+  'java',
+  'c',
+  'cpp',
+  'h',
+  'hpp',
 ]
 
 export interface LocalUploadResult {
@@ -31,6 +51,11 @@ export interface LocalUploadResult {
 
 function getExtension(name: string): string {
   return name.split('.').pop()?.toLowerCase() || ''
+}
+
+/** Public alias — consumers historically called this `getFileExtension`. */
+export function getFileExtension(name: string): string {
+  return getExtension(name)
 }
 
 export function formatSize(bytes: number): string {
