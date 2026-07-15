@@ -108,6 +108,10 @@ export const en = {
   'settings.resetFinalMsg':
     'This will overwrite your current settings with defaults. Confirm one more time to reset.',
   'settings.reset': 'Reset',
+  'settings.customAccentColor': 'Custom Accent Color',
+  'settings.enableCustomAccent': 'Enable Custom Accent',
+  'settings.enableCustomAccentDesc': "Override the theme's default accent color",
+  'settings.pickAccentColor': 'Choose Accent Color',
   'settings.fontPreview': 'Aa 123',
 
   // App Manager
@@ -664,6 +668,10 @@ export const zhCN: Record<string, string> = {
   'settings.resetFinalTitle': '最终确认重置',
   'settings.resetFinalMsg': '这会用默认值覆盖当前设置。再次确认后才会重置。',
   'settings.reset': '重置',
+  'settings.customAccentColor': '自定义主题色',
+  'settings.enableCustomAccent': '启用自定义主题色',
+  'settings.enableCustomAccentDesc': '覆盖当前系统主题的默认强调色',
+  'settings.pickAccentColor': '选择强调色',
   'settings.fontPreview': 'Aa 123 字体',
 
   // App Manager
