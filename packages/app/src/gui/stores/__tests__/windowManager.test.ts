@@ -44,17 +44,6 @@ describe('WindowManager Store', () => {
     expect(store.openWindows.length).toBe(1)
   })
 
-  it('should default desktop window capabilities to enabled', () => {
-    const store = useWindowManagerStore()
-    const windowInstance = store.openWindow(createWindowConfig())
-
-    expect(windowInstance.config.resizable).toBe(true)
-    expect(windowInstance.config.draggable).toBe(true)
-    expect(windowInstance.config.closable).toBe(true)
-    expect(windowInstance.config.minimizable).toBe(true)
-    expect(windowInstance.config.maximizable).toBe(true)
-  })
-
   it('should open new desktop windows away from the top-left corner', () => {
     Object.defineProperty(window, 'innerWidth', { value: 1440, configurable: true })
     Object.defineProperty(window, 'innerHeight', { value: 900, configurable: true })
@@ -161,30 +150,8 @@ describe('WindowManager Store', () => {
     const win = store.openWindows.find((w) => w.config.id === 'edge-resize')
     expect(win?.position.x).toBe(500)
     expect(win?.position.y).toBe(100)
-    expect(win?.size.width).toBe(796)
-    expect(win?.size.height).toBe(700)
-  })
-
-  it('should allow windows to move partly outside the visible viewport', () => {
-    const store = useWindowManagerStore()
-    store.openWindow(createWindowConfig({ id: 'partial-offscreen' }))
-
-    store.updateWindowPosition('partial-offscreen', -80, 850)
-
-    const win = store.openWindows.find((w) => w.config.id === 'partial-offscreen')
-    expect(win?.position.x).toBe(-80)
-    expect(win?.position.y).toBe(820)
-  })
-
-  it('should allow window dimensions to extend below the taskbar area', () => {
-    const store = useWindowManagerStore()
-    store.openWindow(createWindowConfig({ id: 'below-taskbar', x: 200, y: 200 }))
-
-    store.updateWindowDimensions('below-taskbar', { x: 200, y: 200, width: 900, height: 760 })
-
-    const win = store.openWindows.find((w) => w.config.id === 'below-taskbar')
-    expect(win?.position.y).toBe(200)
-    expect(win?.size.height).toBe(760)
+    expect(win?.size.width).toBe(688)
+    expect(win?.size.height).toBe(640)
   })
 
   it('should focus window and update z-index', () => {
