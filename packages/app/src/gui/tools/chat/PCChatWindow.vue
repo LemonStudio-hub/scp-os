@@ -616,8 +616,13 @@ function sendOrEditMessage() {
 function onMessageRightClick(event: MouseEvent, msg: ChatMessage) {
   if (!msg.isSelf || msg.sending || !msg.id) return
   contextMenuMsg.value = msg
-  contextMenuX.value = event.clientX
-  contextMenuY.value = event.clientY
+  // Keep menu inside the viewport (approx menu size 160x96).
+  const menuW = 160
+  const menuH = 96
+  contextMenuX.value = Math.min(event.clientX, window.innerWidth - menuW - 8)
+  contextMenuY.value = Math.min(event.clientY, window.innerHeight - menuH - 8)
+  contextMenuX.value = Math.max(8, contextMenuX.value)
+  contextMenuY.value = Math.max(8, contextMenuY.value)
   showContextMenu.value = true
 }
 
