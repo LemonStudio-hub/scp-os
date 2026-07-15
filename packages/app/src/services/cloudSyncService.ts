@@ -7,6 +7,21 @@ import { pluginSyncRegistry } from './pluginSyncRegistry'
 
 const API_BASE = config.api.workerUrl
 
+/** Reject cloud snapshots larger than this to avoid crashing the tab. */
+export const MAX_SNAPSHOT_BYTES = 50 * 1024 * 1024
+
+/** Settings keys that must never leave the device in a sync payload. */
+const SENSITIVE_SETTING_KEYS = new Set(['auth_token'])
+
+/** Auth-related settings preserved across cloud restore (not replaced by cloud data). */
+const PRESERVE_LOCAL_SETTING_KEYS = [
+  'auth_token',
+  'auth_email',
+  'account_type',
+  'nickname',
+  'user_id',
+] as const
+
 export interface CloudSyncSnapshot {
   version: 1 | 2
   exportedAt: string
@@ -82,20 +97,50 @@ function collectPreferencesFromLocalStorage(): UserPreferences {
   }
 }
 
+/** Strip auth tokens and other secrets from exported IndexedDB data. */
+export function sanitizeStoresForSync(
+  stores: Record<string, unknown[]>
+): Record<string, unknown[]> {
+  const result: Record<string, unknown[]> = { ...stores }
+  const userSettings = result['user_settings']
+  if (Array.isArray(userSettings)) {
+    result['user_settings'] = userSettings.filter((record) => {
+      if (!record || typeof record !== 'object') return true
+      const key = (record as { key?: unknown }).key
+      return typeof key !== 'string' || !SENSITIVE_SETTING_KEYS.has(key)
+    })
+  }
+  return result
+}
+
+function parseSnapshotSizeBytes(response: Response, bodyText: string): number {
+  const header = response.headers.get('Content-Length')
+  if (header) {
+    const n = Number(header)
+    if (Number.isFinite(n) && n >= 0) return n
+  }
+  // Fallback: UTF-16 JS string length ≈ 2 bytes/char; use UTF-8 byte length when available.
+  if (typeof TextEncoder !== 'undefined') {
+    return new TextEncoder().encode(bodyText).length
+  }
+  return bodyText.length * 2
+}
+
 export async function uploadAllLocalData(): Promise<{ success: boolean; error?: string }> {
   const authStore = useAuthStore()
   if (!authStore.canUseCloudSync) {
-    return { success: false, error: '游客不能使用云同步' }
+    return { success: false, error: 'sync.guestOnly' }
   }
 
   const preferences = collectPreferencesFromLocalStorage()
   await indexedDBService.saveSetting('ui_preferences', preferences)
   const pluginData = pluginSyncRegistry.collectAll()
 
+  const rawStores = await indexedDBService.exportAllData()
   const snapshot: CloudSyncSnapshot = {
     version: 2,
     exportedAt: new Date().toISOString(),
-    stores: await indexedDBService.exportAllData(),
+    stores: sanitizeStoresForSync(rawStores),
     preferences,
     pluginData: Object.keys(pluginData).length > 0 ? pluginData : undefined,
   }
@@ -115,7 +160,7 @@ export async function uploadAllLocalData(): Promise<{ success: boolean; error?: 
 export async function downloadCloudData(): Promise<{ success: boolean; error?: string }> {
   const authStore = useAuthStore()
   if (!authStore.canUseCloudSync) {
-    return { success: false, error: '游客不能使用云同步' }
+    return { success: false, error: 'sync.guestOnly' }
   }
 
   const response = await authStore.authFetch(`${API_BASE}/api/sync/data`)
@@ -124,15 +169,42 @@ export async function downloadCloudData(): Promise<{ success: boolean; error?: s
     return { success: false, error: data.error || data.message || `HTTP ${response.status}` }
   }
 
-  const snapshot = (await response.json()) as CloudSyncSnapshot | { success: boolean; data: null }
-  if ('success' in snapshot && snapshot.data === null) {
-    return { success: false, error: '云端暂无同步数据' }
-  }
-  if (!('stores' in snapshot) || (snapshot.version !== 1 && snapshot.version !== 2)) {
-    return { success: false, error: '云端同步数据格式无效' }
+  const bodyText = await response.text()
+  const sizeBytes = parseSnapshotSizeBytes(response, bodyText)
+  if (sizeBytes > MAX_SNAPSHOT_BYTES) {
+    return { success: false, error: 'sync.snapshotTooLarge' }
   }
 
-  await indexedDBService.importAllData(snapshot.stores)
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(bodyText)
+  } catch {
+    return { success: false, error: 'sync.invalidFormat' }
+  }
+
+  const snapshot = parsed as CloudSyncSnapshot | { success: boolean; data: null }
+  if ('success' in snapshot && snapshot.data === null) {
+    return { success: false, error: 'sync.noData' }
+  }
+  if (!('stores' in snapshot) || (snapshot.version !== 1 && snapshot.version !== 2)) {
+    return { success: false, error: 'sync.invalidFormat' }
+  }
+
+  // Preserve local session so cloud restore cannot log the user out or leak foreign tokens.
+  const preserved: Array<[string, unknown]> = []
+  for (const key of PRESERVE_LOCAL_SETTING_KEYS) {
+    const value = await indexedDBService.loadSetting(key)
+    if (value !== null && value !== undefined) {
+      preserved.push([key, value])
+    }
+  }
+
+  const stores = sanitizeStoresForSync(snapshot.stores)
+  await indexedDBService.importAllData(stores)
+
+  for (const [key, value] of preserved) {
+    await indexedDBService.saveSetting(key, value)
+  }
 
   const prefs = extractPreferences(snapshot)
   if (prefs) {

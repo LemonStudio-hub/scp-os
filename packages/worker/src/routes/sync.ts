@@ -2,20 +2,11 @@ import { Hono } from 'hono'
 import type { Env } from '../types'
 import { json } from '../http'
 import { requiredRegisteredUser } from '../helpers'
+import { CLOUD_QUOTA_BYTES, cloudUsage } from '../r2-usage'
 
 type AppEnv = { Bindings: Env }
 
-const CLOUD_QUOTA_BYTES = 512 * 1024 * 1024
 const SYNC_KEY = 'sync/all-data.json'
-
-async function cloudUsage(bucket: R2Bucket, userId: string): Promise<{ used: number; count: number }> {
-  const prefix = `users/${userId}/`
-  const listResult = await bucket.list({ prefix, limit: 1000 })
-  return {
-    used: listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0),
-    count: listResult.objects.length,
-  }
-}
 
 export function registerSync(app: Hono<AppEnv>): void {
   app.get('/api/sync/quota', async (c) => {

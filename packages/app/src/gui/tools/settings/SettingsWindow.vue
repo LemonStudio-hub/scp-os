@@ -300,11 +300,19 @@
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.cloudStorage') }}</div>
                 <div class="pc-settings__row-description">
-                  {{ authStore.canUseCloudSync ? formatCloudFiles(cloudQuota) : '仅普通用户开放' }}
+                  {{
+                    authStore.canUseCloudSync
+                      ? formatCloudFiles(cloudQuota)
+                      : t('settings.cloudRegisteredOnly')
+                  }}
                 </div>
               </div>
               <div class="pc-settings__row-value">
-                {{ authStore.canUseCloudSync ? formatCloudQuota(cloudQuota) : '游客不可用' }}
+                {{
+                  authStore.canUseCloudSync
+                    ? formatCloudQuota(cloudQuota)
+                    : t('settings.cloudGuestUnavailable')
+                }}
               </div>
             </div>
             <div
@@ -313,21 +321,23 @@
               @click="handleCloudUpload"
             >
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">上传全部数据到云端</div>
+                <div class="pc-settings__row-label">{{ t('settings.cloudUpload') }}</div>
                 <div class="pc-settings__row-description">{{ syncMessage }}</div>
               </div>
-              <div class="pc-settings__row-value">{{ syncBusy ? '同步中' : '最新覆盖' }}</div>
+              <div class="pc-settings__row-value">
+                {{ syncBusy ? t('settings.cloudSyncing') : t('settings.cloudLatestWins') }}
+              </div>
             </div>
             <div
               class="pc-settings__row"
               :class="{ 'pc-settings__row--disabled': !authStore.canUseCloudSync || syncBusy }"
-              @click="handleCloudDownload"
+              @click="confirmCloudDownload"
             >
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">从云端恢复全部数据</div>
-                <div class="pc-settings__row-description">云端较新的数据会覆盖本地</div>
+                <div class="pc-settings__row-label">{{ t('settings.cloudDownload') }}</div>
+                <div class="pc-settings__row-description">{{ t('settings.cloudDownloadDesc') }}</div>
               </div>
-              <div class="pc-settings__row-value">下载</div>
+              <div class="pc-settings__row-value">{{ t('mdash.download') }}</div>
             </div>
             <div class="pc-settings__row">
               <div class="pc-settings__row-info">
@@ -356,29 +366,33 @@
 
         <!-- Account Section -->
         <template v-if="activeSection === 'account'">
-          <div class="pc-settings__section-title">账户</div>
+          <div class="pc-settings__section-title">{{ t('settings.account') }}</div>
           <div class="pc-settings__card">
             <div class="pc-settings__row">
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">工作代号</div>
+                <div class="pc-settings__row-label">{{ t('settings.workCode') }}</div>
                 <div class="pc-settings__row-description">{{ authStore.nickname }}</div>
               </div>
               <span
                 class="pc-settings__badge"
                 :class="{ 'pc-settings__badge--guest': !authStore.canUseCloudSync }"
               >
-                {{ authStore.canUseCloudSync ? '普通用户' : '游客' }}
+                {{
+                  authStore.canUseCloudSync
+                    ? t('settings.registeredUser')
+                    : t('settings.guestUser')
+                }}
               </span>
             </div>
             <div v-if="authStore.email" class="pc-settings__row">
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">邮箱</div>
+                <div class="pc-settings__row-label">{{ t('settings.email') }}</div>
                 <div class="pc-settings__row-description">{{ authStore.email }}</div>
               </div>
             </div>
             <div v-if="!showNicknameEdit" class="pc-settings__row" @click="openNicknameEdit">
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">修改工作代号</div>
+                <div class="pc-settings__row-label">{{ t('settings.editWorkCode') }}</div>
               </div>
               <svg
                 width="12"
@@ -398,7 +412,7 @@
                 v-model="nicknameEditValue"
                 class="pc-settings__nickname-input"
                 type="text"
-                placeholder="输入新的工作代号"
+                :placeholder="t('settings.editWorkCodePlaceholder')"
                 maxlength="20"
                 @keyup.enter="submitNicknameEdit"
                 @keyup.escape="cancelNicknameEdit"
@@ -407,13 +421,15 @@
                 {{ nicknameEditError }}
               </div>
               <div class="pc-settings__nickname-actions">
-                <button class="pc-settings__nickname-btn" @click="cancelNicknameEdit">取消</button>
+                <button class="pc-settings__nickname-btn" @click="cancelNicknameEdit">
+                  {{ t('common.cancel') }}
+                </button>
                 <button
                   class="pc-settings__nickname-btn pc-settings__nickname-btn--primary"
                   :disabled="authStore.isLoading"
                   @click="submitNicknameEdit"
                 >
-                  {{ authStore.isLoading ? '保存中...' : '保存' }}
+                  {{ authStore.isLoading ? t('settings.saving') : t('common.save') }}
                 </button>
               </div>
             </div>
@@ -421,7 +437,7 @@
           <div class="pc-settings__card">
             <div class="pc-settings__row pc-settings__row--destructive" @click="handleLogout">
               <div class="pc-settings__row-info">
-                <div class="pc-settings__row-label">退出登录</div>
+                <div class="pc-settings__row-label">{{ t('settings.logout') }}</div>
               </div>
               <svg
                 width="12"
@@ -558,7 +574,19 @@ const nicknameEditValue = ref('')
 const nicknameEditError = ref('')
 const nicknameInputRef = ref<HTMLInputElement | null>(null)
 const syncBusy = ref(false)
-const syncMessage = ref('普通用户可用，最大 512MB')
+const syncMessage = ref(t('settings.cloudHint'))
+
+function resolveSyncError(error: string | undefined, fallbackKey: string): string {
+  if (!error) return t(fallbackKey)
+  const keyMap: Record<string, string> = {
+    'sync.guestOnly': 'settings.syncGuestOnly',
+    'sync.noData': 'settings.syncNoData',
+    'sync.invalidFormat': 'settings.syncInvalidFormat',
+    'sync.snapshotTooLarge': 'settings.syncSnapshotTooLarge',
+  }
+  const i18nKey = keyMap[error]
+  return i18nKey ? t(i18nKey) : error
+}
 
 function openNicknameEdit(): void {
   nicknameEditValue.value = authStore.nickname ?? ''
@@ -578,7 +606,7 @@ async function submitNicknameEdit(): Promise<void> {
   if (result.success) {
     showNicknameEdit.value = false
   } else {
-    nicknameEditError.value = result.error || '更新失败'
+    nicknameEditError.value = result.error || t('settings.updateFailed')
   }
 }
 
@@ -589,22 +617,37 @@ async function handleLogout(): Promise<void> {
 async function handleCloudUpload(): Promise<void> {
   if (!authStore.canUseCloudSync || syncBusy.value) return
   syncBusy.value = true
-  syncMessage.value = '正在上传...'
+  syncMessage.value = t('settings.cloudUploading')
   const result = await uploadAllLocalData()
-  syncMessage.value = result.success ? '已上传，冲突策略为最新覆盖' : result.error || '上传失败'
+  syncMessage.value = result.success
+    ? t('settings.cloudUploaded')
+    : resolveSyncError(result.error, 'settings.cloudUploadFailed')
   syncBusy.value = false
+}
+
+function confirmCloudDownload(): void {
+  if (!authStore.canUseCloudSync || syncBusy.value) return
+  confirmDialog.value = {
+    title: t('settings.cloudDownloadConfirmTitle'),
+    text: t('settings.cloudDownloadConfirmMsg'),
+    confirmText: t('settings.cloudDownloadConfirm'),
+    action: () => {
+      confirmDialog.value = null
+      void handleCloudDownload()
+    },
+  }
 }
 
 async function handleCloudDownload(): Promise<void> {
   if (!authStore.canUseCloudSync || syncBusy.value) return
   syncBusy.value = true
-  syncMessage.value = '正在下载...'
+  syncMessage.value = t('settings.cloudDownloading')
   const result = await downloadCloudData()
   if (result.success) {
-    syncMessage.value = '已恢复云端数据，即将重启...'
+    syncMessage.value = t('settings.cloudRestored')
     setTimeout(() => location.reload(), 1200)
   } else {
-    syncMessage.value = result.error || '下载失败'
+    syncMessage.value = resolveSyncError(result.error, 'settings.cloudDownloadFailed')
     syncBusy.value = false
   }
 }
@@ -613,7 +656,7 @@ async function handleCloudDownload(): Promise<void> {
 const sections = computed(() => [
   {
     id: 'account',
-    label: '账户',
+    label: t('settings.account'),
     icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
   },
   {

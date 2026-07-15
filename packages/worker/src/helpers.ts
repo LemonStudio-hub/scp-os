@@ -10,18 +10,46 @@ type RouteHandler = (c: Ctx) => Response | Promise<Response>
 
 export type { AppEnv, Ctx, RouteHandler }
 
+/**
+ * JWT signing secret — never falls back to a hardcoded default.
+ * Missing secret is a hard failure so tokens cannot be forged with a known value.
+ */
+export function requireJwtSecret(env: Env): string {
+  const secret = env.JWT_SECRET?.trim()
+  if (!secret) {
+    throw new Error('JWT_SECRET is not configured')
+  }
+  return secret
+}
+
 export function adminSecret(env: Env): string {
-  return env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+  const secret = env.ADMIN_JWT_SECRET?.trim() || env.JWT_SECRET?.trim()
+  if (!secret) {
+    throw new Error('ADMIN_JWT_SECRET/JWT_SECRET is not configured')
+  }
+  return secret
 }
 
 export async function requiredUser(c: Ctx): Promise<string | Response> {
-  const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+  let secret: string
+  try {
+    secret = requireJwtSecret(c.env)
+  } catch {
+    return json({ code: 'MISCONFIGURED', message: 'JWT_SECRET is not configured' }, 503)
+  }
+  const id = await userFromRequest(c.req.raw, secret)
   return id || json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
 }
 
 /** Registered email accounts only (cloud files / full-data sync). */
 export async function requiredRegisteredUser(c: Ctx): Promise<UserSession | Response> {
-  const session = await userSessionFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+  let secret: string
+  try {
+    secret = requireJwtSecret(c.env)
+  } catch {
+    return json({ code: 'MISCONFIGURED', message: 'JWT_SECRET is not configured' }, 503)
+  }
+  const session = await userSessionFromRequest(c.req.raw, secret)
   if (!session) return json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
   if (session.accountType !== 'registered' || !session.email) {
     return json({ code: 'FORBIDDEN', message: 'Cloud storage is available to registered users only' }, 403)
