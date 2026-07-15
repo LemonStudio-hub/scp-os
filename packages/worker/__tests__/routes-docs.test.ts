@@ -60,6 +60,7 @@ function makeDb() {
 const baseEnv: Env = {
   SCP_DB: makeDb(),
   SCP_READER_DB: makeDb(),
+  SCP_FILES: {} as R2Bucket,
   CHAT_ROOM_DO: {} as DurableObjectNamespace,
   JWT_SECRET: 'test-secret',
   ADMIN_JWT_SECRET: 'admin-secret',

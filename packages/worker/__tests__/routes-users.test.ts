@@ -39,6 +39,7 @@ function makeDb(mockRows: Record<string, unknown>[] = [], mockRow: Record<string
 const baseEnv: Env = {
   SCP_DB: makeDb(),
   SCP_READER_DB: makeDb(),
+  SCP_FILES: {} as R2Bucket,
   CHAT_ROOM_DO: {} as DurableObjectNamespace,
   JWT_SECRET: 'test-secret',
   ADMIN_JWT_SECRET: 'admin-secret',
@@ -100,19 +101,20 @@ describe('POST /api/user/register', () => {
     expect(body.success).toBe(true)
   })
 
-  it('returns 409 when nickname is taken', async () => {
+  it('allows shared guest nicknames (no 409 for display-name collisions)', async () => {
     mockUserId = 'user-123'
-    const mockDb = makeDb([], { id: 2 })
+    // first() returns existing guest row; guests may share nicknames
+    const mockDb = makeDb([], { account_type: 'guest' })
     const env = { ...baseEnv, SCP_DB: mockDb }
     const app = createApp()
     const res = await app.request('/api/user/register', {
       method: 'POST',
-      body: JSON.stringify({ nickname: 'TakenName' }),
+      body: JSON.stringify({ nickname: 'SharedGuest' }),
       headers: { 'Content-Type': 'application/json' },
     }, env)
-    expect(res.status).toBe(409)
-    const body = await res.json<{ success: boolean; error: string }>()
-    expect(body.error).toBe('Nickname already taken')
+    expect(res.status).toBe(200)
+    const body = await res.json<{ success: boolean }>()
+    expect(body.success).toBe(true)
   })
 })
 
@@ -128,14 +130,15 @@ describe('GET /api/user/check-nickname', () => {
     expect(body.available).toBe(true)
   })
 
-  it('returns available false when nickname is taken', async () => {
+  it('returns available true for guests even if nickname already used as display name', async () => {
+    // Registered uniqueness is enforced at /api/auth/register; guest display names may collide
     const mockDb = makeDb([], { id: 1 })
     const env = { ...baseEnv, SCP_DB: mockDb }
     const app = createApp()
     const res = await app.request('/api/user/check-nickname?nickname=TakenName', {} , env)
     expect(res.status).toBe(200)
     const body = await res.json<{ success: boolean; available: boolean }>()
-    expect(body.available).toBe(false)
+    expect(body.available).toBe(true)
   })
 
   it('returns 400 for missing nickname', async () => {
