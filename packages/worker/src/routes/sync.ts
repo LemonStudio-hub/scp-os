@@ -2,27 +2,26 @@ import { Hono } from 'hono'
 import type { Env } from '../types'
 import { json } from '../http'
 import { requiredRegisteredUser } from '../helpers'
+import { CLOUD_QUOTA_BYTES, cloudUsage } from '../r2-usage'
 
 type AppEnv = { Bindings: Env }
 
-const CLOUD_QUOTA_BYTES = 512 * 1024 * 1024
 const SYNC_KEY = 'sync/all-data.json'
-
-async function cloudUsage(bucket: R2Bucket, userId: string): Promise<{ used: number; count: number }> {
-  const prefix = `users/${userId}/`
-  const listResult = await bucket.list({ prefix, limit: 1000 })
-  return {
-    used: listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0),
-    count: listResult.objects.length,
-  }
-}
 
 export function registerSync(app: Hono<AppEnv>): void {
   app.get('/api/sync/quota', async (c) => {
     const session = await requiredRegisteredUser(c)
     if (session instanceof Response) return session
     const usage = await cloudUsage(c.env.SCP_FILES, session.userId)
-    return json({ success: true, data: { used: usage.used, max: CLOUD_QUOTA_BYTES, percent: Math.round((usage.used / CLOUD_QUOTA_BYTES) * 100), count: usage.count } })
+    return json({
+      success: true,
+      data: {
+        used: usage.used,
+        max: CLOUD_QUOTA_BYTES,
+        percent: Math.round((usage.used / CLOUD_QUOTA_BYTES) * 100),
+        count: usage.count,
+      },
+    })
   })
 
   app.get('/api/sync/data', async (c) => {
@@ -31,12 +30,12 @@ export function registerSync(app: Hono<AppEnv>): void {
     const key = `users/${session.userId}/${SYNC_KEY}`
     const obj = await c.env.SCP_FILES.get(key)
     if (!obj) return json({ success: true, data: null })
+    // Do not set Access-Control-Allow-Origin here — global CORS middleware handles it.
     return new Response(obj.body, {
       headers: {
         'Content-Type': 'application/json',
         'Content-Length': String(obj.size),
         'X-Sync-Updated-At': obj.customMetadata?.updatedAt || '',
-        'Access-Control-Allow-Origin': '*',
       },
     })
   })
