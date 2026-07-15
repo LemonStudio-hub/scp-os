@@ -104,7 +104,7 @@ describe('ToolRegistry', () => {
       expect(config.iconName).toBe('term')
       expect(config.width).toBe(800)
       expect(config.height).toBe(600)
-      expect(config.isFullscreen).toBe(false)
+      expect(config.isFullscreen).toBe(true)
       expect(config.id).toMatch(/^terminal-/)
     })
 
