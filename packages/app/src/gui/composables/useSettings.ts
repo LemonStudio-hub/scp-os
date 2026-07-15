@@ -104,6 +104,7 @@ export function useSettings() {
   const settings = reactive<AppSettings>(loadSettings())
 
   let prevFontSize = settings.fontSize
+  applySettings()
 
   watch(
     settings,
@@ -119,6 +120,15 @@ export function useSettings() {
   }
 
   function applySettings(): void {
+    const scale = settings.fontSize / defaultSettings.fontSize
+    const root = document.documentElement
+    root.style.setProperty('--gui-font-xs', `${Math.round(11 * scale)}px`)
+    root.style.setProperty('--gui-font-sm', `${Math.round(12 * scale)}px`)
+    root.style.setProperty('--gui-font-base', `${Math.round(13 * scale)}px`)
+    root.style.setProperty('--gui-font-md', `${Math.round(14 * scale)}px`)
+    root.style.setProperty('--gui-font-lg', `${Math.round(15 * scale)}px`)
+    root.style.setProperty('--gui-font-xl', `${Math.round(17 * scale)}px`)
+
     const terminal = getActiveTerminal()
 
     if (settings.fontSize !== prevFontSize && terminal) {

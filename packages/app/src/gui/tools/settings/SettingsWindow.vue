@@ -86,38 +86,65 @@
           <div class="pc-settings__section-title">{{ t('settings.terminal') }}</div>
           <div class="pc-settings__card">
             <!-- Font Size -->
-            <div class="pc-settings__row" @click="showFontSizeSlider = !showFontSizeSlider">
+            <div class="pc-settings__row pc-settings__row--static">
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.fontSize') }}</div>
-                <div class="pc-settings__row-value">{{ settings.fontSize }}px</div>
               </div>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.3"
-                stroke-linecap="round"
-              >
-                <path d="M3 4.5L6 7.5L9 4.5" />
-              </svg>
-            </div>
-            <div v-if="showFontSizeSlider" class="pc-settings__slider-row">
-              <input
-                v-model.number="settings.fontSize"
-                type="range"
-                min="10"
-                max="22"
-                step="1"
-                class="k-ios-slider"
-              />
-              <div
-                class="pc-settings__slider-preview"
+              <span
+                class="pc-settings__font-preview"
                 :style="{ fontSize: `${settings.fontSize}px` }"
+                >{{ t('settings.fontPreview') }}</span
               >
-                {{ t('settings.fontPreview') }}
+            </div>
+            <div class="pc-settings__font-control">
+              <button
+                class="pc-settings__step-btn"
+                :disabled="settings.fontSize <= 10"
+                @click="settings.fontSize = Math.max(10, settings.fontSize - 1)"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <line x1="2" y1="7" x2="12" y2="7" />
+                </svg>
+              </button>
+              <div class="pc-settings__slider-wrap">
+                <span class="pc-settings__slider-bound">10</span>
+                <input
+                  v-model.number="settings.fontSize"
+                  type="range"
+                  min="10"
+                  max="22"
+                  step="1"
+                  class="pc-settings__slider"
+                />
+                <span class="pc-settings__slider-bound">22</span>
               </div>
+              <button
+                class="pc-settings__step-btn"
+                :disabled="settings.fontSize >= 22"
+                @click="settings.fontSize = Math.min(22, settings.fontSize + 1)"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <line x1="7" y1="2" x2="7" y2="12" />
+                  <line x1="2" y1="7" x2="12" y2="7" />
+                </svg>
+              </button>
+              <span class="pc-settings__font-value">{{ settings.fontSize }}px</span>
             </div>
 
             <!-- Cursor Blink -->
@@ -432,7 +459,6 @@ const sections = computed(() => [
 
 const activeSection = ref('terminal')
 const showLanguageDropdown = ref(false)
-const showFontSizeSlider = ref(false)
 </script>
 
 <style scoped>
@@ -645,6 +671,88 @@ const showFontSizeSlider = ref(false)
   font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   color: var(--gui-text-primary, #ffffff);
   transition: font-size var(--gui-transition-base, 200ms ease);
+}
+
+.pc-settings__row--static {
+  cursor: default;
+  pointer-events: none;
+}
+
+.pc-settings__row--static:hover {
+  background: transparent;
+}
+
+.pc-settings__font-preview {
+  font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
+  color: var(--gui-text-secondary, #8e8e93);
+  transition: font-size var(--gui-transition-base, 200ms ease);
+  flex-shrink: 0;
+}
+
+.pc-settings__font-control {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px) var(--gui-spacing-md, 12px);
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
+}
+
+.pc-settings__step-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-md, 8px);
+  color: var(--gui-text-primary, #fff);
+  cursor: pointer;
+  transition: all var(--gui-transition-fast, 150ms ease);
+}
+
+.pc-settings__step-btn:hover:not(:disabled) {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.15));
+}
+
+.pc-settings__step-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.pc-settings__step-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pc-settings__slider-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-xs, 4px);
+}
+
+.pc-settings__slider {
+  flex: 1;
+  accent-color: var(--gui-accent, #8e8e93);
+}
+
+.pc-settings__slider-bound {
+  font-size: 10px;
+  color: var(--gui-text-tertiary, #636366);
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.pc-settings__font-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gui-accent, #8e8e93);
+  min-width: 36px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Language Dropdown ─────────────────────────────────────────────── */
