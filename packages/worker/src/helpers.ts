@@ -10,12 +10,20 @@ type RouteHandler = (c: Ctx) => Response | Promise<Response>
 
 export type { AppEnv, Ctx, RouteHandler }
 
+export function requireJwtSecret(env: Env): string {
+  const secret = env.JWT_SECRET?.trim()
+  if (!secret) throw new Error('JWT_SECRET is not configured')
+  return secret
+}
+
 export function adminSecret(env: Env): string {
-  return env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+  const secret = env.ADMIN_JWT_SECRET?.trim() || env.JWT_SECRET?.trim()
+  if (!secret) throw new Error('ADMIN_JWT_SECRET/JWT_SECRET is not configured')
+  return secret
 }
 
 export async function requiredUser(c: Ctx): Promise<string | Response> {
-  const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+  const id = await userFromRequest(c.req.raw, requireJwtSecret(c.env))
   return id || json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
 }
 
@@ -96,12 +104,21 @@ export function scpUrl(number: string, branch: string): string {
 
 function parseScp(html: string, number: string, url: string): SCPData {
   const text = stripHtml(html)
-  const objectClassMatch = /Object\s+Class[:\s]+([A-Za-z]+)/i.exec(text) || /项目等级[：:\s]+([^\s,，]+)/i.exec(text)
+  const objectClassMatch =
+    /Object\s+Class[:\s]+([A-Za-z]+)/i.exec(text) ||
+    /\u9879\u76ee\u7b49\u7ea7[:\s\uff1a]+([^\s,\uff0c]+)/i.exec(text)
   const objectClass = objectClassMatch?.[1]?.toUpperCase() || 'UNKNOWN'
-  const parts = text.split(/Special\s+Containment\s+Procedures:?|Description:?|特殊收容措施[：:]?|描述[：:]?/i).map((part) => part.trim()).filter(Boolean)
+  const parts = text
+    .split(
+      /Special\s+Containment\s+Procedures:?|Description:?|\u7279\u6b8a\u6536\u5bb9\u63aa\u65bd[:\uff1a]?|\u63cf\u8ff0[:\uff1a]?/i,
+    )
+    .map((part) => part.trim())
+    .filter(Boolean)
   return {
     id: `SCP-${number}`,
-    name: /<title>(.*?)<\/title>/i.exec(html)?.[1]?.replace(/\s*-\s*SCP Foundation.*$/i, '').replace(/\s*-\s*SCP基金会.*$/i, '') || `SCP-${number}`,
+    name:
+      /<title>(.*?)<\/title>/i.exec(html)?.[1]?.replace(/\s*-\s*SCP Foundation.*$/i, '').replace(/\s*-\s*SCP\u57fa\u91d1\u4f1a.*$/i, '') ||
+      `SCP-${number}`,
     objectClass,
     containment: parts[1] ? [parts[1].slice(0, 2000)] : [],
     description: parts[2] ? [parts[2].slice(0, 3000)] : [],
@@ -181,12 +198,63 @@ export async function itemById(c: Ctx, table: string): Promise<Response> {
   return row ? json({ success: true, data: row }) : json({ success: false, error: 'Not found' }, 404)
 }
 
+const CSV_BOM = '\uFEFF'
+const D1_BATCH_LIMIT = 100
+const IMPORT_MAX_ROWS = 1000
+
+function csvCell(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  let text: string
+  if (typeof value === 'object') {
+    try {
+      text = JSON.stringify(value)
+    } catch {
+      text = ''
+    }
+  } else {
+    text = String(value)
+  }
+  if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`
+  return text
+}
+
+/** Union headers across all rows; nested objects serialize as JSON. */
+export function convertToCsv(rows: Record<string, unknown>[]): string {
+  if (!rows.length) return CSV_BOM
+  const headerSet = new Set<string>()
+  for (const row of rows) {
+    for (const key of Object.keys(row)) headerSet.add(key)
+  }
+  const headers = Array.from(headerSet)
+  const lines = [
+    headers.join(','),
+    ...rows.map((row) => headers.map((h) => csvCell(row[h])).join(',')),
+  ]
+  return CSV_BOM + lines.join('\n')
+}
+
 export async function adminExport(c: Ctx, table: string): Promise<Response> {
+  const format = c.req.query('format') || 'json'
+  if (format !== 'json' && format !== 'csv') {
+    return json({ success: false, error: 'Invalid format. Use json or csv' }, 400)
+  }
   const limit = intValue(c.req.query('limit'), 500, 500)
   const offset = intValue(c.req.query('offset'), 0)
   const data = await all(c.env.SCP_DB, `SELECT * FROM ${safeTable(table)} LIMIT ? OFFSET ?`, [limit, offset])
   const total = await count(c.env.SCP_DB, safeTable(table))
-  return json({ success: true, data, total, pagination: { limit, offset, has_more: offset + limit < total }, format: c.req.query('format') || 'json' })
+  if (format === 'csv') {
+    const csv = convertToCsv(data as Record<string, unknown>[])
+    const filename = `${safeTable(table)}-export.csv`
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-store',
+      },
+    })
+  }
+  return json({ success: true, data, total, pagination: { limit, offset, has_more: offset + limit < total }, format: 'json' })
 }
 
 export async function updateById(c: Ctx, table: string): Promise<Response> {
@@ -213,21 +281,174 @@ export async function batchUsers(c: Ctx): Promise<Response> {
 }
 
 export async function batchContent(c: Ctx, table: string): Promise<Response> {
-  const body = await readJson<{ action?: string; ids?: number[] }>(c.req.raw)
-  if (body?.action === 'delete') for (const id of body.ids || []) await run(c.env.SCP_DB, `DELETE FROM ${safeTable(table)} WHERE id = ?`, [id])
-  return json({ success: true })
+  const body = await readJson<{ action?: string; ids?: number[]; status?: string; category?: string }>(c.req.raw)
+  const action = body?.action
+  const ids = (body?.ids || []).map(Number).filter((id) => Number.isFinite(id))
+  const supportedActions = ['delete', 'update_status', 'move_category']
+
+  if (!action || !supportedActions.includes(action)) {
+    return json({ success: false, error: `Unsupported action. Supported: ${supportedActions.join(', ')}` }, 400)
+  }
+  if (!ids.length) {
+    return json({ success: false, error: 'No IDs provided' }, 400)
+  }
+
+  const safe = safeTable(table)
+  try {
+    // Chunk to stay under D1 batch statement limits (~100).
+    for (let i = 0; i < ids.length; i += D1_BATCH_LIMIT) {
+      const chunk = ids.slice(i, i + D1_BATCH_LIMIT)
+      const placeholders = chunk.map(() => '?').join(', ')
+      if (action === 'delete') {
+        await run(c.env.SCP_DB, `DELETE FROM ${safe} WHERE id IN (${placeholders})`, chunk)
+      } else if (action === 'update_status') {
+        const status = body?.status
+        if (!status) return json({ success: false, error: 'Missing status parameter' }, 400)
+        await run(c.env.SCP_DB, `UPDATE ${safe} SET status = ? WHERE id IN (${placeholders})`, [status, ...chunk])
+      } else if (action === 'move_category') {
+        const category = body?.category
+        if (!category) return json({ success: false, error: 'Missing category parameter' }, 400)
+        await run(c.env.SCP_DB, `UPDATE ${safe} SET category = ? WHERE id IN (${placeholders})`, [category, ...chunk])
+      }
+    }
+    return json({ success: true })
+  } catch (error) {
+    const msg = (error as Error).message || ''
+    if (msg.includes('no such column')) {
+      return json({ success: false, error: `Table ${safe} does not support ${action}` }, 400)
+    }
+    return json({ success: false, error: msg }, 500)
+  }
+}
+
+interface ImportSchema {
+  required: string[]
+  uniqueField?: string
+}
+
+const importSchemas: Record<string, ImportSchema> = {
+  scp_items: { required: ['scp_number', 'title'], uniqueField: 'scp_number' },
+  scp_tales: { required: ['link', 'title'], uniqueField: 'link' },
+  scp_goi: { required: ['link', 'title'], uniqueField: 'link' },
+  scp_hubs: { required: ['link', 'title'], uniqueField: 'link' },
+  feedbacks: { required: ['user_id', 'title', 'content'] },
+}
+
+function validateImportRow(row: Record<string, unknown>, schema: ImportSchema): { valid: boolean; error?: string } {
+  for (const field of schema.required) {
+    const value = row[field]
+    if (value === undefined || value === null || value === '') {
+      return { valid: false, error: `Missing required field: ${field}` }
+    }
+  }
+  const illegalKeys = Object.keys(row).filter((key) => !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+  if (illegalKeys.length) {
+    return { valid: false, error: `Illegal field names: ${illegalKeys.join(', ')}` }
+  }
+  return { valid: true }
 }
 
 export async function importContent(c: Ctx, table: string): Promise<Response> {
   const body = await readJson<{ data?: Record<string, unknown>[] }>(c.req.raw)
-  let imported = 0
-  for (const row of body?.data || []) {
-    const entries = Object.entries(row).filter(([key]) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
-    if (!entries.length) continue
-    await run(c.env.SCP_DB, `INSERT INTO ${safeTable(table)} (${entries.map(([key]) => key).join(', ')}) VALUES (${entries.map(() => '?').join(', ')})`, entries.map(([, value]) => value))
-    imported++
+  const rows = body?.data || []
+
+  if (!rows.length) {
+    return json({ success: false, error: 'No data provided' }, 400)
   }
-  return json({ success: true, imported })
+  if (rows.length > IMPORT_MAX_ROWS) {
+    return json(
+      {
+        success: false,
+        error: `Import payload too large (max ${IMPORT_MAX_ROWS} rows, got ${rows.length})`,
+      },
+      400,
+    )
+  }
+
+  const safe = safeTable(table)
+  const schema = importSchemas[safe] || { required: [] }
+  const results: { success: boolean; error?: string }[] = new Array(rows.length)
+  const validRows: { index: number; row: Record<string, unknown> }[] = []
+
+  for (let i = 0; i < rows.length; i++) {
+    const validation = validateImportRow(rows[i], schema)
+    if (!validation.valid) {
+      results[i] = { success: false, error: validation.error }
+    } else {
+      validRows.push({ index: i, row: rows[i] })
+    }
+  }
+
+  if (schema.uniqueField && validRows.length) {
+    const values = validRows.map((r) => r.row[schema.uniqueField!]).filter((v) => v !== undefined && v !== null)
+    if (values.length) {
+      // Chunk unique-field lookups under D1 bind/IN limits.
+      const existingSet = new Set<unknown>()
+      for (let i = 0; i < values.length; i += D1_BATCH_LIMIT) {
+        const chunk = values.slice(i, i + D1_BATCH_LIMIT)
+        const placeholders = chunk.map(() => '?').join(', ')
+        const existing = await all<Record<string, unknown>>(
+          c.env.SCP_DB,
+          `SELECT ${schema.uniqueField} FROM ${safe} WHERE ${schema.uniqueField} IN (${placeholders})`,
+          chunk,
+        )
+        for (const r of existing) existingSet.add(r[schema.uniqueField!])
+      }
+      const duplicates = new Set<unknown>()
+      for (let i = validRows.length - 1; i >= 0; i--) {
+        const value = validRows[i].row[schema.uniqueField!]
+        if (existingSet.has(value) || duplicates.has(value)) {
+          results[validRows[i].index] = { success: false, error: `${schema.uniqueField} "${value}" already exists` }
+          duplicates.add(value)
+          validRows.splice(i, 1)
+        } else {
+          duplicates.add(value)
+        }
+      }
+    }
+  }
+
+  let inserted = 0
+  if (validRows.length) {
+    try {
+      // D1 batch() hard-limits ~100 statements �?chunk inserts.
+      for (let i = 0; i < validRows.length; i += D1_BATCH_LIMIT) {
+        const chunk = validRows.slice(i, i + D1_BATCH_LIMIT)
+        const statements = chunk.map(({ row }) => {
+          const entries = Object.entries(row).filter(([key]) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+          return c.env.SCP_DB
+            .prepare(
+              `INSERT INTO ${safe} (${entries.map(([key]) => key).join(', ')}) VALUES (${entries.map(() => '?').join(', ')})`,
+            )
+            .bind(...entries.map(([, value]) => value))
+        })
+        await c.env.SCP_DB.batch(statements)
+        inserted += chunk.length
+      }
+    } catch (error) {
+      const msg = (error as Error).message || 'Batch insert failed'
+      for (const { index } of validRows) {
+        results[index] = { success: false, error: msg }
+      }
+      validRows.length = 0
+      inserted = 0
+    }
+  }
+
+  for (const { index } of validRows) {
+    if (!results[index]) results[index] = { success: true }
+  }
+
+  const successCount = results.filter((r) => r.success).length
+  const failCount = results.filter((r) => !r.success).length
+
+  return json({
+    success: failCount === 0,
+    imported: successCount,
+    failed: failCount,
+    total: rows.length,
+    details: results.map((r, i) => ({ index: i, ...r })).filter((r) => !r.success),
+  })
 }
 
 export async function setUserBan(c: Ctx, banned: boolean): Promise<Response> {

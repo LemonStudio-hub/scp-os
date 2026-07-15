@@ -42,4 +42,20 @@ export function registerDocs(app: Hono<AppEnv>): void {
   })
   listDocTable(app, '/docs/tales', 'scp_tales', 'created_at DESC')
   listDocTable(app, '/docs/hubs', 'scp_hubs', 'title ASC')
+
+  app.get('/docs/goi', async (c) => {
+    const limit = intValue(c.req.query('limit'), 50, 200)
+    const offset = intValue(c.req.query('offset'), 0)
+    const filters: string[] = ['1=1']
+    const params: unknown[] = []
+    const q = c.req.query('q')
+    if (q) {
+      filters.push('(title LIKE ? OR tags LIKE ? OR creator LIKE ?)')
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`)
+    }
+    const where = filters.join(' AND ')
+    const data = await all(c.env.SCP_READER_DB, `SELECT * FROM scp_goi WHERE ${where} ORDER BY title ASC LIMIT ? OFFSET ?`, [...params, limit, offset])
+    const total = await count(c.env.SCP_READER_DB, 'scp_goi', where, params)
+    return json({ success: true, data, pagination: { total, limit, offset, has_more: offset + limit < total } })
+  })
 }

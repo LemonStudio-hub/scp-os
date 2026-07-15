@@ -21,7 +21,8 @@ export function createApp(): Hono<AppEnv> {
   app.use('*', cors)
 
   app.use('*', async (c, next) => {
-    const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+    const secret = c.env.JWT_SECRET?.trim()
+    const id = secret ? await userFromRequest(c.req.raw, secret) : null
     const ok = await rateLimit(c.env, id || requestInfo(c.req.raw).ip)
     if (!ok) return json({ code: 'RATE_LIMITED', message: 'Rate limit exceeded' }, 429)
     await next()
@@ -70,7 +71,7 @@ export function createApp(): Hono<AppEnv> {
     if (numberMatch) {
       return json(await scrape(c.env, keyword.replace(/^SCP-/i, ''), c.req.query('branch') || 'en'))
     }
-    return json({ success: false, error: `未找到包含 "${keyword}" 的SCP对象` })
+    return json({ success: false, error: `未找到包�?"${keyword}" 的SCP对象` })
   })
 
   app.get('/list', async (c) => {
