@@ -81,20 +81,23 @@ describe('desktop window shells', () => {
   it.each([
     ['PCWindow', PCWindow, { header: '.pc-window__header', resize: '.pc-window__resize--se' }],
     ['SCPWindow', SCPWindow, { header: '.scp-window__header', resize: '.scp-window__resize--se' }],
-  ])('%s keeps the moved origin when resizing immediately after a drag', async (name, component, selectors) => {
-    const store = useWindowManagerStore()
-    const windowInstance = openShellWindow(`${name}-drag-resize`)
-    const wrapper = mount(component, {
-      props: { windowInstance },
-      global: { plugins: [pinia] },
-    })
+  ])(
+    '%s keeps the moved origin when resizing immediately after a drag',
+    async (name, component, selectors) => {
+      const store = useWindowManagerStore()
+      const windowInstance = openShellWindow(`${name}-drag-resize`)
+      const wrapper = mount(component, {
+        props: { windowInstance },
+        global: { plugins: [pinia] },
+      })
 
-    await dragThenResizeFromBottomRight(wrapper, selectors)
+      await dragThenResizeFromBottomRight(wrapper, selectors)
 
-    const win = store.getWindow(`${name}-drag-resize`)
-    expect(win?.position).toEqual({ x: 280, y: 160 })
-    expect(win?.size).toEqual({ width: 540, height: 360 })
-  })
+      const win = store.getWindow(`${name}-drag-resize`)
+      expect(win?.position).toEqual({ x: 280, y: 160 })
+      expect(win?.size).toEqual({ width: 540, height: 360 })
+    }
+  )
 
   it('keeps close buttons as the rightmost caption button without their own corner radius', () => {
     for (const source of [PCWindowSource, SCPWindowSource]) {
