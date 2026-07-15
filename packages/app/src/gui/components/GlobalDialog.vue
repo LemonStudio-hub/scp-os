@@ -28,9 +28,11 @@
               class="g-dialog__btn g-dialog__btn--cancel"
               @click="onCancel"
             >
-              取消
+              {{ t('common.cancel') }}
             </button>
-            <button class="g-dialog__btn g-dialog__btn--confirm" @click="onConfirm">确定</button>
+            <button class="g-dialog__btn g-dialog__btn--confirm" @click="onConfirm">
+              {{ t('common.confirm') }}
+            </button>
           </div>
         </div>
       </div>
@@ -41,7 +43,9 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { dialogService } from '../composables/useDialog'
+import { useI18n } from '../composables/useI18n'
 
+const { t } = useI18n()
 const promptValue = ref('')
 const promptInput = ref<HTMLInputElement | null>(null)
 

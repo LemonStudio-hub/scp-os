@@ -94,5 +94,8 @@ export function useNotificationCenter() {
     deleteNotification,
     togglePref,
     handleNotificationClick,
+    /** @deprecated alias — prefer handleNotificationClick */
+    handleClick: handleNotificationClick,
+    t,
   }
 }

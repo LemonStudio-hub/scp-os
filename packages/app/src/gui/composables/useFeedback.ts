@@ -58,6 +58,7 @@ function normalizeComment(raw: Record<string, unknown>): Comment {
 export function useFeedback() {
   const { t } = useI18n()
   const authStore = useAuthStore()
+  // `t` is returned for callers that still destructure it from useFeedback.
 
   const tabs = computed(() => [
     { id: 'list', label: t('fb.tabAll') },
@@ -335,6 +336,7 @@ export function useFeedback() {
   }
 
   return {
+    t,
     tabs,
     activeTab,
     form,
