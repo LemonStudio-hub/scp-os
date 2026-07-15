@@ -101,6 +101,12 @@ export const en = {
   'settings.resetTitle': 'Reset Settings',
   'settings.resetMsg': 'Reset all settings to their default values?',
   'settings.reset': 'Reset',
+  'settings.resetContinue': 'Continue',
+  'settings.resetFinalTitle': 'Final Reset Confirmation',
+  'settings.resetFinalMsg':
+    'This will overwrite your current settings with defaults. Confirm again to proceed.',
+  'settings.cloudStorage': 'Cloud Storage',
+  'settings.cloudFiles': 'Cloud Files',
   'settings.fontPreview': 'Aa 123',
 
   // ── File Manager ────────────────────────────────────────────────────
@@ -619,6 +625,11 @@ export const zhCN: Record<string, string> = {
   'settings.resetTitle': '重置设置',
   'settings.resetMsg': '将所有设置恢复为默认值？',
   'settings.reset': '重置',
+  'settings.resetContinue': '继续',
+  'settings.resetFinalTitle': '最终确认重置',
+  'settings.resetFinalMsg': '这会用默认值覆盖当前设置。再次确认后才会重置。',
+  'settings.cloudStorage': '云存储',
+  'settings.cloudFiles': '云端文件数',
   'settings.fontPreview': 'Aa 123 字体',
 
   // ── File Manager ────────────────────────────────────────────────────

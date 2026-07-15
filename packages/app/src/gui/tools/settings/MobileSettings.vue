@@ -7,6 +7,73 @@
   >
     <div class="settings-app k-ios-page k-ios-page--dark">
       <div class="settings-app__content gui-scrollable">
+        <!-- Account Section -->
+        <div class="k-ios-block__title">账户</div>
+        <div class="k-ios-list">
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">工作代号</div>
+                <div class="k-ios-list__item-description">{{ authStore.nickname }}</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="settings-badge settings-badge--guest">游客</span>
+            </div>
+          </div>
+          <template v-if="!showNicknameEdit">
+            <div class="k-ios-list__item" @click="openNicknameEdit">
+              <div class="k-ios-list__item-left">
+                <div class="k-ios-list__item-content">
+                  <div class="k-ios-list__item-label">修改工作代号</div>
+                </div>
+              </div>
+              <div class="k-ios-list__item-right">
+                <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <div class="k-ios-list__item settings-nickname-edit-item">
+              <div class="settings-nickname-edit">
+                <input
+                  ref="nicknameInputRef"
+                  v-model="nicknameEditValue"
+                  class="settings-nickname-input"
+                  type="text"
+                  placeholder="输入新的工作代号"
+                  maxlength="20"
+                  @keyup.enter="submitNicknameEdit"
+                  @keyup.escape="cancelNicknameEdit"
+                />
+                <div v-if="nicknameEditError" class="settings-nickname-error">{{ nicknameEditError }}</div>
+                <div class="settings-nickname-actions">
+                  <button class="settings-nickname-btn" @click="cancelNicknameEdit">取消</button>
+                  <button class="settings-nickname-btn settings-nickname-btn--primary" :disabled="authStore.isLoading" @click="submitNicknameEdit">
+                    {{ authStore.isLoading ? '保存中...' : '保存' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="k-ios-list">
+          <div class="k-ios-list__item" @click="handleLogout">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label k-ios-list__item-label--destructive">退出登录</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <svg class="k-ios-list__item-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
         <!-- Terminal Section -->
         <div class="k-ios-block__title">{{ t('settings.terminal') }}</div>
         <div class="k-ios-list">
@@ -134,6 +201,31 @@
                   <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
                 </svg>
                 <svg
+                  v-else-if="theme.id === 'claude'"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="none"
+                >
+                  <rect
+                    x="1"
+                    y="1"
+                    width="22"
+                    height="22"
+                    rx="5.5"
+                    fill="#FAF9F5"
+                    stroke="#D97757"
+                    stroke-width="1.5"
+                  />
+                  <g transform="translate(3.5, 3.6) scale(0.033)" fill="#D97757">
+                    <path
+                      fill-rule="nonzero"
+                      d="M142.27 316.619l73.655-41.326 1.238-3.589-1.238-1.996-3.589-.001-12.31-.759-42.084-1.138-36.498-1.516-35.361-1.896-8.897-1.895-8.34-10.995.859-5.484 7.482-5.03 10.717.935 23.683 1.617 35.537 2.452 25.782 1.517 38.193 3.968h6.064l.86-2.451-2.073-1.517-1.618-1.517-36.776-24.922-39.81-26.338-20.852-15.166-11.273-7.683-5.687-7.204-2.451-15.721 10.237-11.273 13.75.935 3.513.936 13.928 10.716 29.749 23.027 38.848 28.612 5.687 4.727 2.275-1.617.278-1.138-2.553-4.271-21.13-38.193-22.546-38.848-10.035-16.101-2.654-9.655c-.935-3.968-1.617-7.304-1.617-11.374l11.652-15.823 6.445-2.073 15.545 2.073 6.547 5.687 9.655 22.092 15.646 34.78 24.265 47.291 7.103 14.028 3.791 12.992 1.416 3.968 2.449-.001v-2.275l1.997-26.641 3.69-32.707 3.589-42.084 1.239-11.854 5.863-14.206 11.652-7.683 9.099 4.348 7.482 10.716-1.036 6.926-4.449 28.915-8.72 45.294-5.687 30.331h3.313l3.792-3.791 15.342-20.372 25.782-32.227 11.374-12.789 13.27-14.129 8.517-6.724 16.1-.001 11.854 17.617-5.307 18.199-16.581 21.029-13.75 17.819-19.716 26.54-12.309 21.231 1.138 1.694 2.932-.278 44.536-9.479 24.062-4.347 28.714-4.928 12.992 6.066 1.416 6.167-5.106 12.613-30.71 7.583-36.018 7.204-53.636 12.689-.657.48.758.935 24.164 2.275 10.337.556h25.301l47.114 3.514 12.309 8.139 7.381 9.959-1.238 7.583-18.957 9.655-25.579-6.066-59.702-14.205-20.474-5.106-2.83-.001v1.694l17.061 16.682 31.266 28.233 39.152 36.397 1.997 8.999-5.03 7.102-5.307-.758-34.401-25.883-13.27-11.651-30.053-25.302-1.996-.001v2.654l6.926 10.136 36.574 54.975 1.895 16.859-2.653 5.485-9.479 3.311-10.414-1.895-21.408-30.054-22.092-33.844-17.819-30.331-2.173 1.238-10.515 113.261-4.929 5.788-11.374 4.348-9.478-7.204-5.03-11.652 5.03-23.027 6.066-30.052 4.928-23.886 4.449-29.674 2.654-9.858-.177-.657-2.173.278-22.37 30.71-34.021 45.977-26.919 28.815-6.445 2.553-11.173-5.789 1.037-10.337 6.243-9.2 37.257-47.392 22.47-29.371 14.508-16.961-.101-2.451h-.859l-98.954 64.251-17.618 2.275-7.583-7.103.936-11.652 3.589-3.791 29.749-20.474-.101.102.024.101z"
+                    />
+                  </g>
+                </svg>
+                <svg
                   v-else-if="theme.id === 'scp'"
                   width="20"
                   height="20"
@@ -223,6 +315,7 @@
               </svg>
             </div>
           </div>
+
         </div>
 
         <!-- Storage Section -->
@@ -236,6 +329,17 @@
             </div>
             <div class="k-ios-list__item-right">
               <span class="k-ios-list__item-value">{{ storageUsed }}</span>
+            </div>
+          </div>
+          <div class="k-ios-list__item">
+            <div class="k-ios-list__item-left">
+              <div class="k-ios-list__item-content">
+                <div class="k-ios-list__item-label">{{ t('settings.cloudStorage') }}</div>
+                <div class="k-ios-list__item-description">{{ formatCloudFiles(cloudQuota) }}</div>
+              </div>
+            </div>
+            <div class="k-ios-list__item-right">
+              <span class="k-ios-list__item-value">{{ formatCloudQuota(cloudQuota) }}</span>
             </div>
           </div>
           <div class="k-ios-list__item">
@@ -390,6 +494,16 @@
       <!-- Font Size Slider Sheet -->
       <Sheet v-model:visible="sliderSheets.fontSize">
         <div class="settings-slider-sheet">
+          <div class="settings-slider-sheet__header">
+            <span class="settings-slider-sheet__spacer" />
+            <span class="settings-slider-sheet__title">{{ t('settings.fontSize') }}</span>
+            <button
+              class="settings-slider-sheet__close"
+              @click="onFontSizeChange(); sliderSheets.fontSize = false"
+            >
+              完成
+            </button>
+          </div>
           <div
             class="settings-slider-sheet__preview"
             :style="{ fontSize: `${sliderValues.fontSize}px` }"
@@ -448,12 +562,18 @@
 </template>
 
 <script setup lang="ts">
+import { ref, reactive, computed, nextTick } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useSettings } from '../../composables/useSettings'
+import { localeNames } from '../../../locales'
 import MobileWindow from '../../components/MobileWindow.vue'
 import Sheet from '../../konsta/Sheet.vue'
 import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
-import { useSettings } from '../../composables/useSettings'
-import { localeNames } from '../../../locales'
+import { useThemeStore } from '../../stores/themeStore'
+import { useAuthStore } from '../../../stores/authStore'
+
+const { t, locale, availableLocales } = useI18n()
 
 interface Props {
   visible: boolean
@@ -465,30 +585,121 @@ defineEmits<{
 }>()
 
 const {
-  t,
-  locale,
-  availableLocales,
-  themeStore,
   settings,
-  userId,
-  wallpaperPickerVisible,
-  currentWallpaperName,
-  currentLanguageName,
-  sliderSheets,
-  sliderValues,
   confirmDialog,
   storageUsed,
+  cloudQuota,
+  userId,
   terminalStateCount,
-  buildDate,
-  openLanguagePicker,
-  selectLanguage,
-  onWallpaperChange,
-  openSlider,
-  onFontSizeChange,
+  formatCloudQuota,
+  formatCloudFiles,
   toggleSetting,
+  triggerHaptic,
   confirmClearData,
   confirmResetSettings,
 } = useSettings()
+const themeStore = useThemeStore()
+const authStore = useAuthStore()
+
+// Initialize theme store
+themeStore.init()
+
+// Account section state
+const showNicknameEdit = ref(false)
+const nicknameEditValue = ref('')
+const nicknameEditError = ref('')
+const nicknameInputRef = ref<HTMLInputElement | null>(null)
+
+function openNicknameEdit(): void {
+  nicknameEditValue.value = authStore.nickname ?? ''
+  nicknameEditError.value = ''
+  showNicknameEdit.value = true
+  nextTick(() => nicknameInputRef.value?.focus())
+}
+
+function cancelNicknameEdit(): void {
+  showNicknameEdit.value = false
+  nicknameEditError.value = ''
+}
+
+async function submitNicknameEdit(): Promise<void> {
+  nicknameEditError.value = ''
+  const result = await authStore.updateNickname(nicknameEditValue.value)
+  if (result.success) {
+    showNicknameEdit.value = false
+  } else {
+    nicknameEditError.value = result.error || '更新失败'
+  }
+}
+
+async function handleLogout(): Promise<void> {
+  await authStore.logout()
+}
+
+// Wallpaper picker
+const wallpaperPickerVisible = ref(false)
+const currentWallpaperName = ref<string>('None')
+
+// Load current wallpaper name
+async function loadWallpaperName() {
+  try {
+    const { wallpaperService } = await import('../../../utils/wallpaperService')
+    await wallpaperService.init()
+    const id = wallpaperService.getCurrentWallpaperId()
+    if (id) {
+      const wp = await wallpaperService.getWallpaper(id)
+      currentWallpaperName.value = wp?.name || t('common.none')
+    } else {
+      currentWallpaperName.value = t('common.none')
+    }
+  } catch {
+    // Silently fail
+  }
+}
+
+// Load on mount
+loadWallpaperName()
+
+// Current language display name
+const currentLanguageName = computed(() => localeNames[locale.value] || 'English')
+
+function openLanguagePicker() {
+  triggerHaptic()
+  sliderSheets.language = true
+}
+
+function selectLanguage(loc: 'en' | 'zh-CN') {
+  locale.value = loc
+  triggerHaptic()
+  sliderSheets.language = false
+  // Reload to apply language
+  setTimeout(() => {
+    loadWallpaperName()
+  }, 100)
+}
+
+function onWallpaperChange(wallpaperId: string | null) {
+  // Reload home screen wallpaper by dispatching event
+  window.dispatchEvent(new CustomEvent('wallpaper-changed', { detail: { wallpaperId } }))
+  // Update the displayed name
+  loadWallpaperName()
+}
+
+const sliderSheets = reactive({ fontSize: false, language: false })
+const sliderValues = reactive({ fontSize: settings.fontSize })
+
+function openSlider(type: 'fontSize'): void {
+  if (type === 'fontSize') {
+    sliderValues.fontSize = settings.fontSize
+    sliderSheets.fontSize = true
+  }
+}
+
+function onFontSizeChange(): void {
+  settings.fontSize = sliderValues.fontSize
+}
+
+const buildDate = computed(() => '2026-04-04')
 </script>
 
 <style scoped>
@@ -637,6 +848,44 @@ const {
   gap: var(--gui-spacing-md, 12px);
 }
 
+.settings-slider-sheet__header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: var(--gui-spacing-lg, 20px);
+}
+
+.settings-slider-sheet__spacer {
+  flex: 1;
+}
+
+.settings-slider-sheet__title {
+  flex: 0;
+  font-size: var(--gui-font-base, 13px);
+  font-weight: 600;
+  color: var(--gui-text-primary, #ffffff);
+  white-space: nowrap;
+}
+
+.settings-slider-sheet__close {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--gui-font-base, 13px);
+  font-weight: 500;
+  color: var(--gui-accent, #0a84ff);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 100ms ease;
+}
+
+.settings-slider-sheet__close:active {
+  opacity: 0.5;
+}
+
 .settings-slider-sheet__preview {
   font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
   color: var(--gui-text-primary, #ffffff);
@@ -739,5 +988,86 @@ const {
   background: var(--gui-accent-soft, rgba(99, 99, 102, 0.15));
   border-color: var(--gui-accent, #636366);
   box-shadow: inset 0 0 0 3px var(--gui-bg-surface-raised, #f2f2f7);
+}
+
+/* ── Account Section ─────────────────────────────────────────────── */
+.settings-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.settings-badge--guest {
+  background: rgba(255, 159, 10, 0.15);
+  color: var(--gui-warning, #ff9f0a);
+  border: 1px solid rgba(255, 159, 10, 0.3);
+}
+
+.settings-nickname-edit-item {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+}
+
+.settings-nickname-edit {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.settings-nickname-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 10px;
+  font-size: 14px;
+  color: var(--gui-text-primary, #fff);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.1));
+  border-radius: 10px;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-nickname-input:focus {
+  border-color: var(--gui-accent, #8e8e93);
+}
+
+.settings-nickname-error {
+  font-size: 11px;
+  color: var(--gui-error, #ff3b30);
+}
+
+.settings-nickname-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.settings-nickname-btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-secondary, #8e8e93);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-nickname-btn--primary {
+  background: var(--gui-accent, #8e8e93);
+  color: var(--gui-text-inverse, #000);
+}
+
+.settings-nickname-btn:disabled {
+  opacity: 0.5;
 }
 </style>
