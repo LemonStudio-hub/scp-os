@@ -10,41 +10,10 @@ import { ref } from 'vue'
 import { themes, availableThemes, darkTheme, type Theme } from '../themes'
 import { usePreferencesStore } from './preferencesStore'
 
+import { adjustColorBrightness, hexToRgbA, loadCustomAccent as loadAccent } from '../utils/accentColor'
+
 const THEME_STORAGE_KEY = 'scp-os-selected-theme'
 const CUSTOM_ACCENT_KEY = 'scp-os-custom-accent'
-
-// Helper to adjust hex color brightness
-function adjustColorBrightness(hex: string, percent: number): string {
-  let c = hex.substring(1)
-  if (c.length === 3) {
-    c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2]
-  }
-  let r = parseInt(c.substring(0, 2), 16)
-  let g = parseInt(c.substring(2, 4), 16)
-  let b = parseInt(c.substring(4, 6), 16)
-
-  r = Math.min(255, Math.max(0, r + (r * percent) / 100))
-  g = Math.min(255, Math.max(0, g + (g * percent) / 100))
-  b = Math.min(255, Math.max(0, b + (b * percent) / 100))
-
-  const rr = Math.round(r).toString(16).padStart(2, '0')
-  const gg = Math.round(g).toString(16).padStart(2, '0')
-  const bb = Math.round(b).toString(16).padStart(2, '0')
-
-  return `#${rr}${gg}${bb}`
-}
-
-// Helper to convert hex to rgba
-function hexToRgbA(hex: string, alpha: number): string {
-  let c = hex.substring(1)
-  if (c.length === 3) {
-    c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2]
-  }
-  const r = parseInt(c.substring(0, 2), 16)
-  const g = parseInt(c.substring(2, 4), 16)
-  const b = parseInt(c.substring(4, 6), 16)
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
 
 export const useThemeStore = defineStore('theme', () => {
   const currentThemeId = ref<string>(loadSavedTheme())
@@ -61,11 +30,7 @@ export const useThemeStore = defineStore('theme', () => {
   }
 
   function loadCustomAccent(): string | null {
-    try {
-      return localStorage.getItem(CUSTOM_ACCENT_KEY)
-    } catch {
-      return null
-    }
+    return loadAccent(CUSTOM_ACCENT_KEY)
   }
 
   const currentTheme = ref<Theme>(themes[currentThemeId.value] || darkTheme)
