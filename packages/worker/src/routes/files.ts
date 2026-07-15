@@ -2,18 +2,9 @@ import { Hono } from 'hono'
 import type { Env } from '../types'
 import { json, readJson } from '../http'
 import { requiredRegisteredUser } from '../helpers'
+import { CLOUD_QUOTA_BYTES, cloudUsage, listAllObjects } from '../r2-usage'
 
 type AppEnv = { Bindings: Env }
-const CLOUD_QUOTA_BYTES = 512 * 1024 * 1024
-
-async function cloudUsage(bucket: R2Bucket, userId: string): Promise<{ used: number; count: number }> {
-  const prefix = `users/${userId}/`
-  const listResult = await bucket.list({ prefix, limit: 1000 })
-  return {
-    used: listResult.objects.reduce((sum: number, obj: R2Object) => sum + obj.size, 0),
-    count: listResult.objects.length,
-  }
-}
 
 function normalizePath(path: string): string {
   return path
@@ -75,8 +66,8 @@ export function registerFiles(app: Hono<AppEnv>): void {
     const queryPrefix = normalizePath(c.req.query('prefix') || '')
     const basePrefix = `users/${userId}/files/`
     const listPrefix = queryPrefix ? `${basePrefix}${queryPrefix}/` : basePrefix
-    const listResult = await c.env.SCP_FILES.list({ prefix: listPrefix, limit: 1000 })
-    const files = listResult.objects.map((obj: R2Object) => {
+    const objects = await listAllObjects(c.env.SCP_FILES, listPrefix)
+    const files = objects.map((obj: R2Object) => {
       const key = obj.key.replace(basePrefix, '')
       return filePayload(
         c.req.url,
@@ -93,7 +84,15 @@ export function registerFiles(app: Hono<AppEnv>): void {
     const session = await requiredRegisteredUser(c)
     if (session instanceof Response) return session
     const usage = await cloudUsage(c.env.SCP_FILES, session.userId)
-    return json({ success: true, data: { used: usage.used, max: CLOUD_QUOTA_BYTES, percent: Math.round((usage.used / CLOUD_QUOTA_BYTES) * 100), count: usage.count } })
+    return json({
+      success: true,
+      data: {
+        used: usage.used,
+        max: CLOUD_QUOTA_BYTES,
+        percent: Math.round((usage.used / CLOUD_QUOTA_BYTES) * 100),
+        count: usage.count,
+      },
+    })
   })
 
   app.get('/files/:key', async (c) => {
@@ -121,11 +120,34 @@ export function registerFiles(app: Hono<AppEnv>): void {
     const obj = await c.env.SCP_FILES.get(oldKey)
     if (!obj) return json({ code: 'NOT_FOUND', message: 'File not found' }, 404)
 
+    // Rename (JSON body with { path })
     if ((c.req.header('Content-Type') || '').includes('application/json')) {
       const body = await readJson<{ path?: string }>(c.req.raw)
       const newPath = normalizePath(body?.path || '')
       if (!newPath) return json({ code: 'VALIDATION_ERROR', message: 'Missing path' }, 400)
       const newKey = `users/${userId}/files/${newPath}`
+      if (newKey === oldKey) {
+        return json({
+          success: true,
+          data: filePayload(
+            c.req.url,
+            newPath,
+            obj.size,
+            obj.httpMetadata?.contentType || 'application/octet-stream',
+            obj.customMetadata?.uploadedAt || obj.uploaded?.toISOString()
+          ),
+        })
+      }
+      // Prevent silent overwrite of an existing destination.
+      const dest = await c.env.SCP_FILES.get(newKey)
+      if (dest) {
+        return json({ success: false, error: 'Destination path already exists' }, 409)
+      }
+      // Rename keeps same size — quota unchanged, but still verify usage for consistency.
+      const usage = await cloudUsage(c.env.SCP_FILES, userId)
+      if (usage.used > CLOUD_QUOTA_BYTES) {
+        return json({ success: false, error: 'Storage quota exceeded (max 512MB)' }, 413)
+      }
       await c.env.SCP_FILES.put(newKey, obj.body, {
         httpMetadata: obj.httpMetadata,
         customMetadata: { ...(obj.customMetadata || {}), path: newPath },
@@ -143,15 +165,24 @@ export function registerFiles(app: Hono<AppEnv>): void {
       })
     }
 
-    const content = await c.req.text()
-    const size = new TextEncoder().encode(content).length
+    // Content update — stream when possible; fall back to text for small edits.
+    const contentType = c.req.header('Content-Type') || obj.httpMetadata?.contentType || 'text/plain'
+    const contentLengthHeader = c.req.header('Content-Length')
+    let size = contentLengthHeader ? Number(contentLengthHeader) : NaN
+    let body: ReadableStream | string
+    if (c.req.raw.body && Number.isFinite(size) && size >= 0) {
+      body = c.req.raw.body
+    } else {
+      const text = await c.req.text()
+      size = new TextEncoder().encode(text).length
+      body = text
+    }
     const usage = await cloudUsage(c.env.SCP_FILES, userId)
     if (usage.used - obj.size + size > CLOUD_QUOTA_BYTES) {
       return json({ success: false, error: 'Storage quota exceeded (max 512MB)' }, 413)
     }
-    const contentType = c.req.header('Content-Type') || obj.httpMetadata?.contentType || 'text/plain'
     const uploadedAt = obj.customMetadata?.uploadedAt || obj.uploaded?.toISOString()
-    await c.env.SCP_FILES.put(oldKey, content, {
+    await c.env.SCP_FILES.put(oldKey, body, {
       httpMetadata: { contentType },
       customMetadata: {
         ...(obj.customMetadata || {}),
