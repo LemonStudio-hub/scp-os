@@ -1,12 +1,9 @@
-import logger from './logger'
-import {
-  createStorageAdapter,
-  migrateToOPFS,
-  type FilesystemStorageAdapter,
-} from './filesystemAdapter'
+import indexedDBService from './indexedDB'
 
+// 文件系统节点类型
 export type FileSystemNodeType = 'file' | 'directory'
 
+// 文件权限接口
 export interface FilePermissions {
   user: {
     read: boolean
@@ -25,6 +22,7 @@ export interface FilePermissions {
   }
 }
 
+// 文件系统节点接口
 export interface FileSystemNode {
   name: string
   type: FileSystemNodeType
@@ -33,27 +31,26 @@ export interface FileSystemNode {
   group: string
   size: number
   mtime: number
-  content?: string
-  children?: Record<string, FileSystemNode>
+  content?: string // 仅文件有
+  children?: Record<string, FileSystemNode> // 仅目录有
 }
 
+// 文件系统类
 export class FileSystem {
   private root: FileSystemNode
   private currentPath: string[] = ['']
   private isInitialized = false
-  private storageAdapter: FilesystemStorageAdapter
 
   constructor() {
+    // 初始化根目录
     this.root = this.createDefaultFilesystem()
-    this.storageAdapter = createStorageAdapter()
   }
 
   async init(): Promise<void> {
-    await migrateToOPFS()
-    this.storageAdapter = createStorageAdapter()
     await this.loadFromStorage()
   }
 
+  // 创建默认文件系统
   private createDefaultFilesystem(): FileSystemNode {
     return {
       name: '',
@@ -134,7 +131,7 @@ export class FileSystem {
                       size: 70,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Terminal\nType=Application\nTool=terminal\nIcon=terminal\nX=50\nY=50',
+                        '[Desktop Entry]\nName=终端\nType=Application\nTool=terminal\nIcon=terminal\nX=50\nY=50',
                     },
                     'files.desktop': {
                       name: 'files.desktop',
@@ -149,7 +146,7 @@ export class FileSystem {
                       size: 62,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Files\nType=Application\nTool=filemanager\nIcon=folder\nX=180\nY=50',
+                        '[Desktop Entry]\nName=文件\nType=Application\nTool=filemanager\nIcon=folder\nX=180\nY=50',
                     },
                     'chat.desktop': {
                       name: 'chat.desktop',
@@ -164,7 +161,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Chat\nType=Application\nTool=chat\nIcon=chat\nX=310\nY=50',
+                        '[Desktop Entry]\nName=聊天\nType=Application\nTool=chat\nIcon=chat\nX=310\nY=50',
                     },
                     'dash.desktop': {
                       name: 'dash.desktop',
@@ -179,7 +176,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Dash\nType=Application\nTool=dash\nIcon=grid\nX=50\nY=180',
+                        '[Desktop Entry]\nName=仪表盘\nType=Application\nTool=dash\nIcon=grid\nX=50\nY=180',
                     },
                     'feedback.desktop': {
                       name: 'feedback.desktop',
@@ -194,7 +191,7 @@ export class FileSystem {
                       size: 70,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Feedback\nType=Application\nTool=feedback\nIcon=feedback\nX=180\nY=180',
+                        '[Desktop Entry]\nName=反馈\nType=Application\nTool=feedback\nIcon=feedback\nX=180\nY=180',
                     },
                     'docs.desktop': {
                       name: 'docs.desktop',
@@ -209,7 +206,7 @@ export class FileSystem {
                       size: 58,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Docs\nType=Application\nTool=docs\nIcon=document\nX=310\nY=180',
+                        '[Desktop Entry]\nName=文档\nType=Application\nTool=docs\nIcon=document\nX=310\nY=180',
                     },
                     'settings.desktop': {
                       name: 'settings.desktop',
@@ -224,7 +221,22 @@ export class FileSystem {
                       size: 72,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Settings\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
+                        '[Desktop Entry]\nName=设置\nType=Application\nTool=settings\nIcon=settings\nX=50\nY=310',
+                    },
+                    'appmanager.desktop': {
+                      name: 'appmanager.desktop',
+                      type: 'file',
+                      permissions: {
+                        user: { read: true, write: true, execute: false },
+                        group: { read: true, write: false, execute: false },
+                        others: { read: true, write: false, execute: false },
+                      },
+                      owner: 'scp',
+                      group: 'foundation',
+                      size: 78,
+                      mtime: Date.now(),
+                      content:
+                        '[Desktop Entry]\nName=App Manager\nType=Application\nTool=appmanager\nIcon=grid\nX=180\nY=310',
                     },
                     'editor.desktop': {
                       name: 'editor.desktop',
@@ -239,7 +251,7 @@ export class FileSystem {
                       size: 62,
                       mtime: Date.now(),
                       content:
-                        '[Desktop Entry]\nName=Editor\nType=Application\nTool=editor\nIcon=edit\nX=310\nY=310',
+                        '[Desktop Entry]\nName=编辑器\nType=Application\nTool=editor\nIcon=edit\nX=310\nY=310',
                     },
                   },
                 },
@@ -382,37 +394,38 @@ export class FileSystem {
     }
   }
 
+  // 从存储加载文件系统
   private async loadFromStorage(): Promise<void> {
     try {
-      const data = await this.storageAdapter.load()
+      const data = await indexedDBService.loadFilesystem()
       if (data) {
-        this.root = data.root as FileSystemNode
+        this.root = data.root
         this.currentPath = data.currentPath
+        // Migrate: ensure new default directories exist
         this.ensureDefaultDirs()
-        logger.info(`[Filesystem] Loaded from ${this.storageAdapter.getBackendName()}`)
       }
       this.isInitialized = true
     } catch (error) {
-      logger.error('[Filesystem] Failed to load from storage:', error)
+      console.error('[Filesystem] Failed to load from storage:', error)
       this.isInitialized = true
     }
   }
 
+  // 保存到存储
   private async saveToStorage(): Promise<void> {
     if (!this.isInitialized) return
     try {
-      await this.storageAdapter.save({
-        root: this.root,
-        currentPath: this.currentPath,
-      })
+      await indexedDBService.saveFilesystem(this.root, this.currentPath)
     } catch (error) {
-      logger.error('[Filesystem] Failed to save to storage:', error)
+      console.error('[Filesystem] Failed to save to storage:', error)
     }
   }
 
+  // 确保默认目录和桌面快捷方式存在（迁移旧数据）
   private ensureDefaultDirs(): void {
     const defaults = this.createDefaultFilesystem()
 
+    // Helper: recursively ensure a node exists in the live tree
     const ensureNode = (path: string[], template: FileSystemNode) => {
       const parent = this.getNode(path.slice(0, -1))
       const name = path[path.length - 1]
@@ -420,18 +433,28 @@ export class FileSystem {
       if (!(name in parent.children)) {
         parent.children[name] = JSON.parse(JSON.stringify(template))
       } else if (template.type === 'directory' && template.children) {
+        if (path.join('/') === '/home/scp/desktop') {
+          const appManagerShortcut = template.children['appmanager.desktop']
+          if (appManagerShortcut) {
+            ensureNode([...path, 'appmanager.desktop'], appManagerShortcut)
+          }
+          return
+        }
+        // Recurse into children for directories that already exist
         for (const [childName, childTemplate] of Object.entries(template.children)) {
           ensureNode([...path, childName], childTemplate)
         }
       }
     }
 
+    // Ensure top-level dirs
     if (defaults.children) {
       for (const [name, template] of Object.entries(defaults.children)) {
         ensureNode(['', name], template)
       }
     }
 
+    // Ensure /home/scp subdirs
     const home = defaults.children?.home?.children?.scp
     if (home?.children) {
       for (const [name, template] of Object.entries(home.children)) {
@@ -442,10 +465,12 @@ export class FileSystem {
     this.saveToStorage()
   }
 
+  // 获取当前工作目录
   getCurrentDirectory(): string {
     return this.currentPath.join('/') || '/'
   }
 
+  // 更改当前目录
   changeDirectory(path: string): boolean {
     if (path === '~') {
       this.currentPath = ['', 'home', 'scp']
@@ -469,13 +494,13 @@ export class FileSystem {
           newPath.pop()
         }
       } else if (part === '.') {
-        // current dir, skip
+        // 当前目录，跳过
       } else {
         const node = this.getNode(newPath)
         if (node && node.type === 'directory' && node.children && part in node.children) {
           newPath.push(part)
         } else {
-          return false
+          return false // 目录不存在
         }
       }
     }
@@ -485,6 +510,7 @@ export class FileSystem {
     return true
   }
 
+  // 获取指定路径的节点
   private getNode(path: string[]): FileSystemNode | null {
     let current = this.root
     for (let i = 1; i < path.length; i++) {
@@ -498,6 +524,7 @@ export class FileSystem {
     return current
   }
 
+  // 根据路径字符串获取节点
   getNodeByPath(path: string): FileSystemNode | null {
     let targetPath: string[]
     if (path.startsWith('/')) {
@@ -514,7 +541,7 @@ export class FileSystem {
           targetPath.pop()
         }
       } else if (part === '.') {
-        // current dir, skip
+        // 当前目录，跳过
       } else {
         const node = this.getNode(targetPath)
         if (node && node.type === 'directory' && node.children && part in node.children) {
@@ -528,6 +555,7 @@ export class FileSystem {
     return this.getNode(targetPath)
   }
 
+  // 列出目录内容
   listDirectory(path?: string): FileSystemNode[] {
     const targetPath = path ? this.resolvePath(path) : this.currentPath
     const node = this.getNode(targetPath)
@@ -539,6 +567,7 @@ export class FileSystem {
     return Object.values(node.children)
   }
 
+  // 解析路径
   private resolvePath(path: string): string[] {
     let resolvedPath: string[]
     if (path.startsWith('/')) {
@@ -555,7 +584,7 @@ export class FileSystem {
           resolvedPath.pop()
         }
       } else if (part === '.') {
-        // current dir, skip
+        // 当前目录，跳过
       } else {
         resolvedPath.push(part)
       }
@@ -564,24 +593,27 @@ export class FileSystem {
     return resolvedPath
   }
 
+  // 创建目录
   createDirectory(path: string): boolean {
     const parts = this.resolvePath(path)
     const dirName = parts.pop()
     if (!dirName) return false
 
-    const parentNode = this.getNode(parts)
+    const parentPath = parts
+    const parentNode = this.getNode(parentPath)
 
     if (!parentNode || parentNode.type !== 'directory' || !parentNode.children) {
       return false
     }
 
+    // 检查父目录的写入权限
     if (!this.hasWritePermission(parentNode)) {
-      logger.warn(`[Filesystem] Permission denied: cannot create directory '${path}'`)
+      console.warn(`[Filesystem] Permission denied: cannot create directory '${path}'`)
       return false
     }
 
     if (dirName in parentNode.children) {
-      return false
+      return false // 目录已存在
     }
 
     parentNode.children[dirName] = {
@@ -601,22 +633,28 @@ export class FileSystem {
 
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
+  // 创建文件
   createFile(path: string, content: string = ''): boolean {
     const parts = this.resolvePath(path)
     const fileName = parts.pop()
     if (!fileName) return false
 
-    const parentNode = this.getNode(parts)
+    const parentPath = parts
+    const parentNode = this.getNode(parentPath)
 
     if (!parentNode || parentNode.type !== 'directory' || !parentNode.children) {
       return false
     }
 
+    // 检查父目录的写入权限
     if (!this.hasWritePermission(parentNode)) {
-      logger.warn(`[Filesystem] Permission denied: cannot create file '${path}'`)
+      console.warn(`[Filesystem] Permission denied: cannot create file '${path}'`)
       return false
     }
 
@@ -637,75 +675,84 @@ export class FileSystem {
 
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
+  // 删除文件或目录
   deleteNode(path: string): boolean {
     const parts = this.resolvePath(path)
     const nodeName = parts.pop()
     if (!nodeName) return false
 
-    const parentNode = this.getNode(parts)
+    const parentPath = parts
+    const parentNode = this.getNode(parentPath)
 
     if (!parentNode || parentNode.type !== 'directory' || !parentNode.children) {
       return false
     }
 
     if (!(nodeName in parentNode.children)) {
-      return false
+      return false // 节点不存在
     }
 
+    // 检查父目录的写入权限（需要父目录的写入权限才能删除子项）
     if (!this.hasWritePermission(parentNode)) {
-      logger.warn(`[Filesystem] Permission denied: cannot delete '${path}'`)
+      console.warn(`[Filesystem] Permission denied: cannot delete '${path}'`)
       return false
     }
 
     delete parentNode.children[nodeName]
     parentNode.mtime = Date.now()
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
-  remove(path: string): boolean {
-    return this.deleteNode(path)
-  }
-
-  rename(oldPath: string, newPath: string): boolean {
-    return this.moveNode(oldPath, newPath)
-  }
-
+  // 检查读取权限
   private hasReadPermission(node: FileSystemNode): boolean {
+    // 简化的权限检查，假设当前用户是 scp
     return node.permissions.user.read || node.permissions.group.read || node.permissions.others.read
   }
 
+  // 检查写入权限
   private hasWritePermission(node: FileSystemNode): boolean {
+    // 简化的权限检查，假设当前用户是 scp
     return (
       node.permissions.user.write || node.permissions.group.write || node.permissions.others.write
     )
   }
 
+  // 读取文件内容
   readFile(path: string): string | null {
     const node = this.getNodeByPath(path)
     if (!node || node.type !== 'file') {
       return null
     }
 
+    // 检查读取权限
     if (!this.hasReadPermission(node)) {
-      logger.warn(`[Filesystem] Permission denied: cannot read '${path}'`)
+      console.warn(`[Filesystem] Permission denied: cannot read '${path}'`)
       return null
     }
 
     return node.content || ''
   }
 
+  // 写入文件内容
   writeFile(path: string, content: string): boolean {
     const node = this.getNodeByPath(path)
     if (!node || node.type !== 'file') {
       return false
     }
 
+    // 检查写入权限
     if (!this.hasWritePermission(node)) {
-      logger.warn(`[Filesystem] Permission denied: cannot write '${path}'`)
+      console.warn(`[Filesystem] Permission denied: cannot write '${path}'`)
       return false
     }
 
@@ -713,8 +760,9 @@ export class FileSystem {
     node.size = content.length
     node.mtime = Date.now()
 
+    // 更新父目录的修改时间
     const parts = this.resolvePath(path)
-    parts.pop()
+    parts.pop() // 移除文件名
     let current = this.root
     for (let i = 1; i < parts.length; i++) {
       const part = parts[i]
@@ -725,15 +773,20 @@ export class FileSystem {
     }
 
     this.saveToStorage()
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('filesystem-changed'))
+    }
     return true
   }
 
+  // 复制文件或目录
   copyNode(sourcePath: string, destinationPath: string): boolean {
     const sourceNode = this.getNodeByPath(sourcePath)
     if (!sourceNode) return false
 
+    // 检查源文件的读取权限
     if (!this.hasReadPermission(sourceNode)) {
-      logger.warn(`[Filesystem] Permission denied: cannot read source '${sourcePath}'`)
+      console.warn(`[Filesystem] Permission denied: cannot read source '${sourcePath}'`)
       return false
     }
 
@@ -741,24 +794,27 @@ export class FileSystem {
     const destName = destParts.pop()
     if (!destName) return false
 
-    const destParentNode = this.getNode(destParts)
+    const destParentPath = destParts
+    const destParentNode = this.getNode(destParentPath)
 
     if (!destParentNode || destParentNode.type !== 'directory' || !destParentNode.children) {
       return false
     }
 
+    // 检查目标父目录的写入权限
     if (!this.hasWritePermission(destParentNode)) {
-      logger.warn(
+      console.warn(
         `[Filesystem] Permission denied: cannot write to destination '${destinationPath}'`
       )
       return false
     }
 
     if (destName in destParentNode.children) {
-      return false
+      return false // 目标已存在
     }
 
-    const copyNodeRecursive = (node: FileSystemNode): FileSystemNode => {
+    // 递归复制
+    const copyNode = (node: FileSystemNode): FileSystemNode => {
       const newNode: FileSystemNode = {
         ...node,
         mtime: Date.now(),
@@ -767,50 +823,58 @@ export class FileSystem {
       if (node.type === 'directory' && node.children) {
         newNode.children = {}
         for (const [name, child] of Object.entries(node.children)) {
-          newNode.children[name] = copyNodeRecursive(child)
+          newNode.children[name] = copyNode(child)
         }
       }
 
       return newNode
     }
 
-    destParentNode.children[destName] = copyNodeRecursive(sourceNode)
+    destParentNode.children[destName] = copyNode(sourceNode)
     destParentNode.mtime = Date.now()
     this.saveToStorage()
     return true
   }
 
+  // 移动文件或目录
   moveNode(sourcePath: string, destinationPath: string): boolean {
     const sourceNode = this.getNodeByPath(sourcePath)
     if (!sourceNode) return false
 
+    // 检查源文件的读取权限
     if (!this.hasReadPermission(sourceNode)) {
-      logger.warn(`[Filesystem] Permission denied: cannot read source '${sourcePath}'`)
+      console.warn(`[Filesystem] Permission denied: cannot read source '${sourcePath}'`)
       return false
     }
 
+    // 获取源文件的父目录
     const sourceParts = this.resolvePath(sourcePath)
     sourceParts.pop()
     const sourceParentNode = this.getNode(sourceParts)
 
+    // 检查源父目录的写入权限（需要写入权限才能删除）
     if (sourceParentNode && !this.hasWritePermission(sourceParentNode)) {
-      logger.warn(`[Filesystem] Permission denied: cannot delete source '${sourcePath}'`)
+      console.warn(`[Filesystem] Permission denied: cannot delete source '${sourcePath}'`)
       return false
     }
 
+    // 先复制
     if (!this.copyNode(sourcePath, destinationPath)) {
       return false
     }
 
+    // 再删除原文件
     return this.deleteNode(sourcePath)
   }
 
+  // 更改文件权限
   changePermissions(path: string, permissions: FilePermissions): boolean {
     const node = this.getNodeByPath(path)
     if (!node) return false
 
+    // 检查是否有权限修改权限（简化为检查写入权限）
     if (!this.hasWritePermission(node)) {
-      logger.warn(`[Filesystem] Permission denied: cannot change permissions of '${path}'`)
+      console.warn(`[Filesystem] Permission denied: cannot change permissions of '${path}'`)
       return false
     }
 
@@ -820,12 +884,14 @@ export class FileSystem {
     return true
   }
 
+  // 更改文件所有者
   changeOwner(path: string, owner: string, group: string): boolean {
     const node = this.getNodeByPath(path)
     if (!node) return false
 
+    // 检查是否有权限修改所有者（简化为检查写入权限）
     if (!this.hasWritePermission(node)) {
-      logger.warn(`[Filesystem] Permission denied: cannot change owner of '${path}'`)
+      console.warn(`[Filesystem] Permission denied: cannot change owner of '${path}'`)
       return false
     }
 
@@ -836,6 +902,7 @@ export class FileSystem {
     return true
   }
 
+  // 查找文件
   findFiles(pattern: string, startPath: string = ''): string[] {
     const results: string[] = []
     const startNode = this.getNodeByPath(startPath) || this.root
@@ -856,6 +923,7 @@ export class FileSystem {
     return results
   }
 
+  // 搜索文件内容
   grepContent(pattern: string, files: string[]): { file: string; lines: string[] }[] {
     const results: { file: string; lines: string[] }[] = []
 
@@ -872,15 +940,7 @@ export class FileSystem {
 
     return results
   }
-
-  getStorageBackend(): string {
-    return this.storageAdapter.getBackendName()
-  }
-
-  async forceFlush(): Promise<void> {
-    const opfsStorage = (await import('./opfsStorage')).default
-    await opfsStorage.forceFlush()
-  }
 }
 
+// 导出单例实例
 export const filesystem = new FileSystem()
