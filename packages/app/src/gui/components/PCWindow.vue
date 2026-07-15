@@ -22,20 +22,68 @@
       <div class="pc-window__header-title">
         <span class="pc-window__title">{{ win.config.title }}</span>
       </div>
-      <WindowCaptionControls
-        :minimizable="win.config.minimizable !== false"
-        :maximizable="win.config.maximizable !== false"
-        :closable="win.config.closable !== false"
-        :maximized="win.maximized"
-        :minimize-title="t('pc.minimize')"
-        :maximize-title="t('pc.maximize')"
-        :restore-title="t('pc.restore')"
-        :close-title="t('pc.close')"
-        with-left-margin
-        @minimize="onMinimize"
-        @maximize="onMaximize"
-        @close="onClose"
-      />
+      <div class="pc-window__header-actions" @mousedown.stop>
+        <button
+          v-if="win.config.minimizable"
+          class="pc-window__btn pc-window__btn--icon pc-window__btn--minimize"
+          :title="t('pc.minimize')"
+          @click.stop="onMinimize"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect x="2" y="6" width="8" height="1.5" rx="0.75" />
+          </svg>
+        </button>
+        <button
+          v-if="win.config.maximizable"
+          class="pc-window__btn pc-window__btn--icon pc-window__btn--maximize"
+          :title="win.maximized ? t('pc.restore') : t('pc.maximize')"
+          @click.stop="onMaximize"
+        >
+          <svg v-if="!win.maximized" width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect
+              x="2"
+              y="2"
+              width="8"
+              height="8"
+              rx="1.5"
+              stroke="currentColor"
+              stroke-width="1.2"
+            />
+          </svg>
+          <svg v-else width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect
+              x="1"
+              y="3"
+              width="8"
+              height="8"
+              rx="1.5"
+              stroke="currentColor"
+              stroke-width="1.2"
+            />
+            <path
+              d="M3 3V2C3 1.45 3.45 1 4 1H11V4L10 3"
+              stroke="currentColor"
+              stroke-width="1.2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+        <button
+          v-if="win.config.closable !== false"
+          class="pc-window__btn pc-window__btn--icon pc-window__btn--close"
+          :title="t('pc.close')"
+          @click.stop="onClose"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M3 3L9 9M9 3L3 9"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Content Area -->
@@ -89,7 +137,6 @@ import { useI18n } from '../composables/useI18n'
 import type { WindowInstance } from '../types'
 import { useWindowManagerStore } from '../stores/windowManager'
 import { useThemeStore } from '../stores/themeStore'
-import WindowCaptionControls from './WindowCaptionControls.vue'
 
 const { t } = useI18n()
 const themeStore = useThemeStore()
@@ -132,16 +179,17 @@ const windowManager = useWindowManagerStore()
 
 const windowRef = ref<HTMLElement>()
 const TASKBAR_HEIGHT = 48
-const EDGE_SLOP = 96
-const MIN_VISIBLE = 80
+const WINDOW_MARGIN = 12
 
 // ── Screen Boundaries (reactive) ──────────────────────────────────────
 const getScreenBounds = () => {
+  const { width, height } = win.value.size
+
   return {
-    minX: -EDGE_SLOP,
-    minY: -EDGE_SLOP,
-    maxX: Math.max(-EDGE_SLOP, window.innerWidth - MIN_VISIBLE),
-    maxY: Math.max(-EDGE_SLOP, window.innerHeight - MIN_VISIBLE),
+    minX: WINDOW_MARGIN,
+    minY: WINDOW_MARGIN,
+    maxX: Math.max(WINDOW_MARGIN, window.innerWidth - width - WINDOW_MARGIN),
+    maxY: Math.max(WINDOW_MARGIN, window.innerHeight - TASKBAR_HEIGHT - height - WINDOW_MARGIN),
   }
 }
 
@@ -169,8 +217,8 @@ const {
 } = useResizable(windowRef, {
   minWidth: win.value.config.minWidth ?? 320,
   minHeight: win.value.config.minHeight ?? 240,
-  maxWidth: Math.max(320, window.innerWidth + EDGE_SLOP),
-  maxHeight: Math.max(240, window.innerHeight + EDGE_SLOP),
+  maxWidth: Math.max(320, window.innerWidth - WINDOW_MARGIN * 2),
+  maxHeight: Math.max(240, window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN * 2),
   onResize: (width: number, height: number, x: number, y: number) => {
     windowManager.updateWindowDimensions(win.value.config.id, {
       x: Math.round(x),
@@ -205,8 +253,8 @@ const windowStyle = computed(() => {
     top: `${position.y}px`,
     width: `${size.width}px`,
     height: `${size.height}px`,
-    maxWidth: `calc(100vw + ${EDGE_SLOP}px)`,
-    maxHeight: `calc(100vh + ${EDGE_SLOP}px)`,
+    maxWidth: `calc(100vw - ${WINDOW_MARGIN * 2}px)`,
+    maxHeight: `calc(100vh - ${TASKBAR_HEIGHT + WINDOW_MARGIN * 2}px)`,
     zIndex,
   }
 })
@@ -421,6 +469,59 @@ function handleWindowResize() {
 .pc-window[data-theme='light'] .pc-window__title,
 .pc-window[data-theme='claude'] .pc-window__title {
   color: var(--gui-text-primary, #000000);
+}
+
+/* ── Header Actions - Windows Caption Buttons ──────────────────────── */
+.pc-window__header-actions {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 0;
+  margin-left: var(--gui-spacing-sm, 8px);
+  margin-top: -1px;
+  margin-right: -1px;
+}
+
+.pc-window__btn--icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: calc(100% + 1px);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--gui-text-secondary, #8e8e93);
+  cursor: pointer;
+  transition:
+    background var(--gui-transition-fast, 120ms ease),
+    color var(--gui-transition-fast, 120ms ease);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pc-window__btn--icon:hover {
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-primary, #ffffff);
+}
+
+.pc-window__btn--icon:active {
+  background: var(--gui-bg-surface-raised, rgba(255, 255, 255, 0.12));
+}
+
+.pc-window__btn--close:hover {
+  background: #e81123;
+  color: #ffffff;
+}
+
+.pc-window__btn--close:active {
+  background: #c50f1f;
+  color: #ffffff;
+}
+
+.pc-window__btn--icon svg {
+  width: 12px;
+  height: 12px;
+  opacity: 1;
 }
 
 /* ── Content Area ──────────────────────────────────────────────────── */
