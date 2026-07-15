@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, type WatchStopHandle } from 'vue'
 import { PerformanceMonitorService } from '../platform/performance/performance-monitor.service'
 import type {
   PerformanceIssue,
@@ -87,6 +87,7 @@ const memoryLimit = ref(0)
 const pageLoadTime = ref(0)
 const resourceCount = ref(0)
 const refreshTimer = ref<number | null>(null)
+let stopUserIdWatch: WatchStopHandle | null = null
 
 // Computed
 const memoryPercentage = computed(() => {
@@ -308,6 +309,7 @@ const initCompletedSteps = () => {
   completedSteps.value = stepsMap
 }
 
+let toggleStepTimer: number | null = null
 const handleToggleStep = (strategyId: string, stepIndex: number) => {
   if (!optimizerService.value) return
 
@@ -318,8 +320,13 @@ const handleToggleStep = (strategyId: string, stepIndex: number) => {
     optimizerService.value.markStepImplemented(strategyId, stepIndex)
   }
 
-  initCompletedSteps()
-  refreshData()
+  // Debounce re-init so rapid toggles do not thrash scoring.
+  if (toggleStepTimer !== null) window.clearTimeout(toggleStepTimer)
+  toggleStepTimer = window.setTimeout(() => {
+    initCompletedSteps()
+    refreshData()
+    toggleStepTimer = null
+  }, 150)
 }
 
 watch(
@@ -345,7 +352,7 @@ onMounted(() => {
       apiService.value.setUserId(authStore.userId)
     }
 
-    watch(
+    stopUserIdWatch = watch(
       () => authStore.userId,
       (newUserId) => {
         if (apiService.value && newUserId) {
@@ -386,6 +393,14 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (stopUserIdWatch) {
+    stopUserIdWatch()
+    stopUserIdWatch = null
+  }
+  if (toggleStepTimer !== null) {
+    window.clearTimeout(toggleStepTimer)
+    toggleStepTimer = null
+  }
   if (monitorService.value) monitorService.value.stopMonitoring()
   if (apiService.value) apiService.value.stopAutoSend()
   if (refreshTimer.value) clearInterval(refreshTimer.value)

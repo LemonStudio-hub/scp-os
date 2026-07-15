@@ -341,6 +341,7 @@ export class PerformanceMonitorService {
         let errorCount = 0
 
         for (const entry of resourceEntries) {
+          // responseStatus is Chromium-only on PerformanceResourceTiming; other browsers omit it.
           const res = entry as PerformanceResourceTiming & { responseStatus?: number }
           totalDuration += res.duration
           totalSize += res.transferSize || 0

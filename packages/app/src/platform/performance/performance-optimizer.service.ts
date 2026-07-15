@@ -279,10 +279,9 @@ export class PerformanceOptimizerService {
 
     const currentScore = Math.max(0, Math.min(100, Math.round(100 - totalPenalty)))
 
-    // Calculate projected target score (base current score + average expected improvement)
-    const avgImprovement =
-      recommended.length > 0 ? estimatedTotalImprovement / recommended.length : 0
-    const score = Math.min(100, Math.round(baseCurrentScore + avgImprovement))
+    // Projected score = baseline + combined strategy improvements (sum, not average).
+    // Cap at 100 so stacked % improvements cannot exceed a perfect score.
+    const score = Math.min(100, Math.round(baseCurrentScore + estimatedTotalImprovement))
 
     return {
       score,
@@ -293,11 +292,6 @@ export class PerformanceOptimizerService {
     }
   }
 
-  /**
-   * Validate optimization strategy implementation
-   * @param strategyId Strategy ID
-   * @returns Validation result
-   */
   /**
    * Mark a strategy step as implemented (persisted in localStorage)
    */

@@ -332,17 +332,45 @@ const scoreStatus = computed(() => {
   color: #1c1c1e;
 }
 
-/* Ensure original neon colors are active on colored elements */
+/* Darker shades for light backgrounds (AAA-ish contrast vs neon-on-white). */
+:global(.light) .score-value.score-good,
 :global(.light) .detail-value.score-good {
-  color: #00ff00;
+  color: #006400;
+  text-shadow: none;
 }
 
+:global(.light) .score-value.score-medium,
 :global(.light) .detail-value.score-medium {
-  color: #ffff00;
+  color: #b8860b;
+  text-shadow: none;
 }
 
+:global(.light) .score-value.score-poor,
 :global(.light) .detail-value.score-poor {
-  color: #ff4444;
+  color: #b00020;
+  text-shadow: none;
+}
+
+:global(.light) .score-badge.score-good {
+  background: rgba(0, 100, 0, 0.12);
+  color: #006400;
+  border-color: rgba(0, 100, 0, 0.35);
+}
+
+:global(.light) .score-badge.score-medium {
+  background: rgba(184, 134, 11, 0.12);
+  color: #b8860b;
+  border-color: rgba(184, 134, 11, 0.35);
+}
+
+:global(.light) .score-bar-fill.score-good {
+  background: linear-gradient(90deg, #006400, #228b22);
+  box-shadow: none;
+}
+
+:global(.light) .score-bar-fill.score-medium {
+  background: linear-gradient(90deg, #b8860b, #daa520);
+  box-shadow: none;
 }
 
 :global(.light) .score-marks .mark {
