@@ -25,7 +25,9 @@ const VERIFICATION_CODE_MAX_ATTEMPTS = 5;
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 function jwtSecret(env: Env): string {
-  return env.JWT_SECRET || 'scp-os-default-secret';
+  const secret = env.JWT_SECRET?.trim();
+  if (!secret) throw new Error('JWT_SECRET is not configured');
+  return secret;
 }
 
 function cleanNickname(value: string | null | undefined, fallback: string): string {
