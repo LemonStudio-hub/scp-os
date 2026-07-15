@@ -22,7 +22,6 @@ import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
 import GlobalDialog from './gui/components/GlobalDialog.vue'
-import { dialogService } from './gui/composables/useDialog'
 import logger from './utils/logger'
 import indexedDBService from './utils/indexedDB'
 
