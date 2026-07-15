@@ -258,10 +258,13 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     }
     const size = clampWindowSize(requestedSize, config)
     const defaultPos = computeDefaultPosition(config.tool, size, openWindowCount)
-    const position = clampWindowPosition({
-      x: config.x ?? defaultPos.x,
-      y: config.y ?? defaultPos.y,
-    }, size)
+    const position = clampWindowPosition(
+      {
+        x: config.x ?? defaultPos.x,
+        y: config.y ?? defaultPos.y,
+      },
+      size
+    )
     const normalizedConfig = normalizeWindowConfig(config, size)
 
     const isFullscreen = config.tool === 'settings' ? false : (config.isFullscreen ?? false)
