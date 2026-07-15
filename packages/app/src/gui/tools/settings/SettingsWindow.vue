@@ -335,7 +335,9 @@
             >
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.cloudDownload') }}</div>
-                <div class="pc-settings__row-description">{{ t('settings.cloudDownloadDesc') }}</div>
+                <div class="pc-settings__row-description">
+                  {{ t('settings.cloudDownloadDesc') }}
+                </div>
               </div>
               <div class="pc-settings__row-value">{{ t('mdash.download') }}</div>
             </div>
@@ -378,9 +380,7 @@
                 :class="{ 'pc-settings__badge--guest': !authStore.canUseCloudSync }"
               >
                 {{
-                  authStore.canUseCloudSync
-                    ? t('settings.registeredUser')
-                    : t('settings.guestUser')
+                  authStore.canUseCloudSync ? t('settings.registeredUser') : t('settings.guestUser')
                 }}
               </span>
             </div>

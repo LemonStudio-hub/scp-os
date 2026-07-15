@@ -53,7 +53,10 @@ vi.mock('../gui/stores/preferencesStore', () => ({
   },
 }))
 
-function mockJsonResponse(body: unknown, init: { ok?: boolean; status?: number; headers?: Record<string, string> } = {}) {
+function mockJsonResponse(
+  body: unknown,
+  init: { ok?: boolean; status?: number; headers?: Record<string, string> } = {}
+) {
   const text = typeof body === 'string' ? body : JSON.stringify(body)
   return {
     ok: init.ok ?? true,
