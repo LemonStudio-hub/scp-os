@@ -447,6 +447,7 @@ import SCPStatusBar from '../../components/ui/SCPStatusBar.vue'
 import DialogModal from './DialogModal.vue'
 import { setI18n as setFileManagerI18n } from '../../stores/fileManager'
 import { useWindowManagerStore } from '../../stores/windowManager'
+import { ToolRegistry } from '../../registry/ToolRegistry'
 import type { WindowInstance, FileItem, ContextMenuItem } from '../../types'
 import type { IconName } from '../../icons'
 import type { ToolType } from '../../types'
@@ -581,14 +582,24 @@ function openInEditor(file: FileItem): void {
     wmStore.focusWindow(existingEditor.config.id)
     return
   }
+  const editorTool = ToolRegistry.get('editor')
+  const editorConfig = editorTool?.windowConfig
 
   wmStore.openWindow({
     id: `editor-${Date.now()}`,
     tool: 'editor',
     title: file.name,
     iconName: 'edit',
-    width: 700,
-    height: 450,
+    width: editorConfig?.width ?? 700,
+    height: editorConfig?.height ?? 450,
+    minWidth: editorConfig?.minWidth,
+    minHeight: editorConfig?.minHeight,
+    resizable: editorConfig?.resizable,
+    draggable: editorConfig?.draggable,
+    closable: editorConfig?.closable,
+    minimizable: editorConfig?.minimizable,
+    maximizable: editorConfig?.maximizable,
+    isFullscreen: editorConfig?.isFullscreen ?? false,
     data: { filePath: file.path },
   })
 }
@@ -761,10 +772,23 @@ function openFile(file: FileItem): void {
       const shortcut = parseDesktopFile(content)
       if (shortcut) {
         const wmStore = useWindowManagerStore()
+        const shortcutTool = ToolRegistry.get(shortcut.tool as ToolType)
+        const shortcutConfig = shortcutTool?.windowConfig
         wmStore.openWindow({
           id: `${shortcut.tool}-${Date.now()}`,
           tool: shortcut.tool as ToolType,
           title: shortcut.name,
+          iconName: shortcutTool?.icon,
+          width: shortcutConfig?.width,
+          height: shortcutConfig?.height,
+          minWidth: shortcutConfig?.minWidth,
+          minHeight: shortcutConfig?.minHeight,
+          resizable: shortcutConfig?.resizable,
+          draggable: shortcutConfig?.draggable,
+          closable: shortcutConfig?.closable,
+          minimizable: shortcutConfig?.minimizable,
+          maximizable: shortcutConfig?.maximizable,
+          isFullscreen: shortcutConfig?.isFullscreen ?? false,
         })
         return
       }
