@@ -537,12 +537,7 @@
           <div class="settings-slider-sheet__header">
             <span class="settings-slider-sheet__spacer" />
             <span class="settings-slider-sheet__title">{{ t('settings.fontSize') }}</span>
-            <button
-              class="settings-slider-sheet__close"
-              @click="onFontSizeChange(); sliderSheets.fontSize = false"
-            >
-              完成
-            </button>
+            <button class="settings-slider-sheet__close" @click="closeFontSizeSlider">完成</button>
           </div>
           <div
             class="settings-slider-sheet__preview"
@@ -755,6 +750,11 @@ function openSlider(type: 'fontSize'): void {
 
 function onFontSizeChange(): void {
   settings.fontSize = sliderValues.fontSize
+}
+
+function closeFontSizeSlider(): void {
+  onFontSizeChange()
+  sliderSheets.fontSize = false
 }
 
 const buildDate = computed(() => '2026-04-04')
