@@ -659,7 +659,7 @@ The `.github/workflows/` directory contains automated workflows (specific conten
 | `VITE_APP_VERSION` | `0.2.0` | Application version |
 | `VITE_APP_NAME` | `SCP-OS` | Application name |
 | `VITE_FAST_BOOT` | `false` | Fast boot (skip animations) |
-| `VITE_JWT_SECRET` | - | JWT signing secret (must be configured) |
+| ~~`VITE_JWT_SECRET`~~ | - | **Removed** — JWT must only be set as Worker secret `JWT_SECRET` (never a `VITE_*` client var) |
 | `VITE_DOWNLOAD_MAX_FILE_SIZE` | `524288000` | Maximum download file size (500MB) |
 | `VITE_DOWNLOAD_DEFAULT_RATE_LIMIT` | `0` | Download rate limit (KB/s, 0=unlimited) |
 | `VITE_DOWNLOAD_STREAM_BUFFER_SIZE` | `65536` | Download stream buffer size |

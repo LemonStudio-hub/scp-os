@@ -86,38 +86,65 @@
           <div class="pc-settings__section-title">{{ t('settings.terminal') }}</div>
           <div class="pc-settings__card">
             <!-- Font Size -->
-            <div class="pc-settings__row" @click="showFontSizeSlider = !showFontSizeSlider">
+            <div class="pc-settings__row pc-settings__row--static">
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.fontSize') }}</div>
-                <div class="pc-settings__row-value">{{ settings.fontSize }}px</div>
               </div>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.3"
-                stroke-linecap="round"
-              >
-                <path d="M3 4.5L6 7.5L9 4.5" />
-              </svg>
-            </div>
-            <div v-if="showFontSizeSlider" class="pc-settings__slider-row">
-              <input
-                v-model.number="settings.fontSize"
-                type="range"
-                min="10"
-                max="22"
-                step="1"
-                class="k-ios-slider"
-              />
-              <div
-                class="pc-settings__slider-preview"
+              <span
+                class="pc-settings__font-preview"
                 :style="{ fontSize: `${settings.fontSize}px` }"
+                >{{ t('settings.fontPreview') }}</span
               >
-                {{ t('settings.fontPreview') }}
+            </div>
+            <div class="pc-settings__font-control">
+              <button
+                class="pc-settings__step-btn"
+                :disabled="settings.fontSize <= 10"
+                @click="settings.fontSize = Math.max(10, settings.fontSize - 1)"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <line x1="2" y1="7" x2="12" y2="7" />
+                </svg>
+              </button>
+              <div class="pc-settings__slider-wrap">
+                <span class="pc-settings__slider-bound">10</span>
+                <input
+                  v-model.number="settings.fontSize"
+                  type="range"
+                  min="10"
+                  max="22"
+                  step="1"
+                  class="pc-settings__slider"
+                />
+                <span class="pc-settings__slider-bound">22</span>
               </div>
+              <button
+                class="pc-settings__step-btn"
+                :disabled="settings.fontSize >= 22"
+                @click="settings.fontSize = Math.min(22, settings.fontSize + 1)"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <line x1="7" y1="2" x2="7" y2="12" />
+                  <line x1="2" y1="7" x2="12" y2="7" />
+                </svg>
+              </button>
+              <span class="pc-settings__font-value">{{ settings.fontSize }}px</span>
             </div>
 
             <!-- Cursor Blink -->
@@ -271,6 +298,51 @@
             </div>
             <div class="pc-settings__row">
               <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.cloudStorage') }}</div>
+                <div class="pc-settings__row-description">
+                  {{
+                    authStore.canUseCloudSync
+                      ? formatCloudFiles(cloudQuota)
+                      : t('settings.cloudRegisteredOnly')
+                  }}
+                </div>
+              </div>
+              <div class="pc-settings__row-value">
+                {{
+                  authStore.canUseCloudSync
+                    ? formatCloudQuota(cloudQuota)
+                    : t('settings.cloudGuestUnavailable')
+                }}
+              </div>
+            </div>
+            <div
+              class="pc-settings__row"
+              :class="{ 'pc-settings__row--disabled': !authStore.canUseCloudSync || syncBusy }"
+              @click="handleCloudUpload"
+            >
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.cloudUpload') }}</div>
+                <div class="pc-settings__row-description">{{ syncMessage }}</div>
+              </div>
+              <div class="pc-settings__row-value">
+                {{ syncBusy ? t('settings.cloudSyncing') : t('settings.cloudLatestWins') }}
+              </div>
+            </div>
+            <div
+              class="pc-settings__row"
+              :class="{ 'pc-settings__row--disabled': !authStore.canUseCloudSync || syncBusy }"
+              @click="confirmCloudDownload"
+            >
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.cloudDownload') }}</div>
+                <div class="pc-settings__row-description">
+                  {{ t('settings.cloudDownloadDesc') }}
+                </div>
+              </div>
+              <div class="pc-settings__row-value">{{ t('mdash.download') }}</div>
+            </div>
+            <div class="pc-settings__row">
+              <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.terminalStates') }}</div>
               </div>
               <div class="pc-settings__row-value">{{ terminalStateCount }}</div>
@@ -278,6 +350,94 @@
             <div class="pc-settings__row pc-settings__row--destructive" @click="confirmClearData">
               <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.clearAllData') }}</div>
+              </div>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+              >
+                <path d="M3 4.5L6 7.5L9 4.5" />
+              </svg>
+            </div>
+          </div>
+        </template>
+
+        <!-- Account Section -->
+        <template v-if="activeSection === 'account'">
+          <div class="pc-settings__section-title">{{ t('settings.account') }}</div>
+          <div class="pc-settings__card">
+            <div class="pc-settings__row">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.workCode') }}</div>
+                <div class="pc-settings__row-description">{{ authStore.nickname }}</div>
+              </div>
+              <span
+                class="pc-settings__badge"
+                :class="{ 'pc-settings__badge--guest': !authStore.canUseCloudSync }"
+              >
+                {{
+                  authStore.canUseCloudSync ? t('settings.registeredUser') : t('settings.guestUser')
+                }}
+              </span>
+            </div>
+            <div v-if="authStore.email" class="pc-settings__row">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.email') }}</div>
+                <div class="pc-settings__row-description">{{ authStore.email }}</div>
+              </div>
+            </div>
+            <div v-if="!showNicknameEdit" class="pc-settings__row" @click="openNicknameEdit">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.editWorkCode') }}</div>
+              </div>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+              >
+                <path d="M3 4.5L6 7.5L9 4.5" />
+              </svg>
+            </div>
+            <div v-else class="pc-settings__nickname-edit">
+              <input
+                ref="nicknameInputRef"
+                v-model="nicknameEditValue"
+                class="pc-settings__nickname-input"
+                type="text"
+                :placeholder="t('settings.editWorkCodePlaceholder')"
+                maxlength="20"
+                @keyup.enter="submitNicknameEdit"
+                @keyup.escape="cancelNicknameEdit"
+              />
+              <div v-if="nicknameEditError" class="pc-settings__nickname-error">
+                {{ nicknameEditError }}
+              </div>
+              <div class="pc-settings__nickname-actions">
+                <button class="pc-settings__nickname-btn" @click="cancelNicknameEdit">
+                  {{ t('common.cancel') }}
+                </button>
+                <button
+                  class="pc-settings__nickname-btn pc-settings__nickname-btn--primary"
+                  :disabled="authStore.isLoading"
+                  @click="submitNicknameEdit"
+                >
+                  {{ authStore.isLoading ? t('settings.saving') : t('common.save') }}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="pc-settings__card">
+            <div class="pc-settings__row pc-settings__row--destructive" @click="handleLogout">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.logout') }}</div>
               </div>
               <svg
                 width="12"
@@ -371,11 +531,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useSettings } from '../../composables/useSettings'
 import { localeNames } from '../../../locales'
 import PCWindow from '../../components/PCWindow.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
-import { useSettings } from '../../composables/useSettings'
+import { useThemeStore } from '../../stores/themeStore'
+import { useAuthStore } from '../../../stores/authStore'
+import { downloadCloudData, uploadAllLocalData } from '../../../services/cloudSyncService'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -387,27 +551,114 @@ defineEmits<{
   (e: 'close'): void
 }>()
 
+const { t, locale, availableLocales } = useI18n()
 const {
-  t,
-  locale,
-  availableLocales,
-  themeStore,
   settings,
-  userId,
-  wallpaperPickerVisible,
-  currentWallpaperName,
-  currentLanguageName,
   confirmDialog,
   storageUsed,
+  cloudQuota,
+  userId,
   terminalStateCount,
-  buildDate,
-  selectLanguage,
-  onWallpaperChange,
   confirmClearData,
   confirmResetSettings,
+  formatCloudQuota,
+  formatCloudFiles,
 } = useSettings()
+const themeStore = useThemeStore()
+themeStore.init()
+const authStore = useAuthStore()
 
+// Account section state
+const showNicknameEdit = ref(false)
+const nicknameEditValue = ref('')
+const nicknameEditError = ref('')
+const nicknameInputRef = ref<HTMLInputElement | null>(null)
+const syncBusy = ref(false)
+const syncMessage = ref(t('settings.cloudHint'))
+
+function resolveSyncError(error: string | undefined, fallbackKey: string): string {
+  if (!error) return t(fallbackKey)
+  const keyMap: Record<string, string> = {
+    'sync.guestOnly': 'settings.syncGuestOnly',
+    'sync.noData': 'settings.syncNoData',
+    'sync.invalidFormat': 'settings.syncInvalidFormat',
+    'sync.snapshotTooLarge': 'settings.syncSnapshotTooLarge',
+  }
+  const i18nKey = keyMap[error]
+  return i18nKey ? t(i18nKey) : error
+}
+
+function openNicknameEdit(): void {
+  nicknameEditValue.value = authStore.nickname ?? ''
+  nicknameEditError.value = ''
+  showNicknameEdit.value = true
+  nextTick(() => nicknameInputRef.value?.focus())
+}
+
+function cancelNicknameEdit(): void {
+  showNicknameEdit.value = false
+  nicknameEditError.value = ''
+}
+
+async function submitNicknameEdit(): Promise<void> {
+  nicknameEditError.value = ''
+  const result = await authStore.updateNickname(nicknameEditValue.value)
+  if (result.success) {
+    showNicknameEdit.value = false
+  } else {
+    nicknameEditError.value = result.error || t('settings.updateFailed')
+  }
+}
+
+async function handleLogout(): Promise<void> {
+  await authStore.logout()
+}
+
+async function handleCloudUpload(): Promise<void> {
+  if (!authStore.canUseCloudSync || syncBusy.value) return
+  syncBusy.value = true
+  syncMessage.value = t('settings.cloudUploading')
+  const result = await uploadAllLocalData()
+  syncMessage.value = result.success
+    ? t('settings.cloudUploaded')
+    : resolveSyncError(result.error, 'settings.cloudUploadFailed')
+  syncBusy.value = false
+}
+
+function confirmCloudDownload(): void {
+  if (!authStore.canUseCloudSync || syncBusy.value) return
+  confirmDialog.value = {
+    title: t('settings.cloudDownloadConfirmTitle'),
+    text: t('settings.cloudDownloadConfirmMsg'),
+    confirmText: t('settings.cloudDownloadConfirm'),
+    action: () => {
+      confirmDialog.value = null
+      void handleCloudDownload()
+    },
+  }
+}
+
+async function handleCloudDownload(): Promise<void> {
+  if (!authStore.canUseCloudSync || syncBusy.value) return
+  syncBusy.value = true
+  syncMessage.value = t('settings.cloudDownloading')
+  const result = await downloadCloudData()
+  if (result.success) {
+    syncMessage.value = t('settings.cloudRestored')
+    setTimeout(() => location.reload(), 1200)
+  } else {
+    syncMessage.value = resolveSyncError(result.error, 'settings.cloudDownloadFailed')
+    syncBusy.value = false
+  }
+}
+
+// Navigation sections
 const sections = computed(() => [
+  {
+    id: 'account',
+    label: t('settings.account'),
+    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  },
   {
     id: 'terminal',
     label: t('settings.terminal'),
@@ -431,11 +682,131 @@ const sections = computed(() => [
 ])
 
 const activeSection = ref('terminal')
+
+// Language
 const showLanguageDropdown = ref(false)
-const showFontSizeSlider = ref(false)
+const currentLanguageName = computed(() => localeNames[locale.value] || t('common.english'))
+
+function selectLanguage(loc: 'en' | 'zh-CN') {
+  locale.value = loc
+  showLanguageDropdown.value = false
+  loadWallpaperName()
+}
+
+// Wallpaper
+const wallpaperPickerVisible = ref(false)
+const currentWallpaperName = ref<string>('None')
+
+async function loadWallpaperName() {
+  try {
+    const { wallpaperService } = await import('../../../utils/wallpaperService')
+    await wallpaperService.init()
+    const id = wallpaperService.getCurrentWallpaperId()
+    if (id) {
+      const wp = await wallpaperService.getWallpaper(id)
+      currentWallpaperName.value = wp?.name || t('common.none')
+    } else {
+      currentWallpaperName.value = t('common.none')
+    }
+  } catch {
+    /* silently fail */
+  }
+}
+loadWallpaperName()
+
+function onWallpaperChange(_wallpaperId: string | null) {
+  window.dispatchEvent(
+    new CustomEvent('wallpaper-changed', { detail: { wallpaperId: _wallpaperId } })
+  )
+  loadWallpaperName()
+}
+
+const buildDate = computed(() => '2026-04-06')
 </script>
 
 <style scoped>
+/* ── Account Section ───────────────────────────────────────────────── */
+.pc-settings__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.pc-settings__badge--guest {
+  background: rgba(255, 159, 10, 0.15);
+  color: var(--gui-warning, #ff9f0a);
+  border: 1px solid rgba(255, 159, 10, 0.3);
+}
+
+.pc-settings__nickname-edit {
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px) var(--gui-spacing-base, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gui-spacing-xs, 4px);
+}
+
+.pc-settings__nickname-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--gui-spacing-sm, 8px);
+  font-size: 13px;
+  color: var(--gui-text-primary, #fff);
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--gui-border-default, rgba(255, 255, 255, 0.1));
+  border-radius: var(--gui-radius-base, 8px);
+  outline: none;
+}
+
+.pc-settings__nickname-input:focus {
+  border-color: var(--gui-accent, #8e8e93);
+}
+
+.pc-settings__nickname-error {
+  font-size: 11px;
+  color: var(--gui-error, #ff3b30);
+}
+
+.pc-settings__nickname-actions {
+  display: flex;
+  gap: var(--gui-spacing-xs, 4px);
+  justify-content: flex-end;
+}
+
+.pc-settings__nickname-btn {
+  padding: 4px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--gui-radius-base, 8px);
+  cursor: pointer;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.08));
+  color: var(--gui-text-secondary, #8e8e93);
+  transition: background 120ms ease;
+}
+
+.pc-settings__nickname-btn:hover {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+}
+
+.pc-settings__nickname-btn--primary {
+  background: var(--gui-accent, #8e8e93);
+  color: var(--gui-text-inverse, #000);
+}
+
+.pc-settings__nickname-btn--primary:hover:not(:disabled) {
+  background: var(--gui-accent-hover, #aeaeb2);
+}
+
+.pc-settings__nickname-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Layout ────────────────────────────────────────────────────────── */
 .pc-settings {
   display: flex;
@@ -542,6 +913,15 @@ const showFontSizeSlider = ref(false)
   background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.04));
 }
 
+.pc-settings__row--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pc-settings__row--disabled:hover {
+  background: transparent;
+}
+
 .pc-settings__row:active {
   opacity: 0.8;
 }
@@ -618,33 +998,130 @@ const showFontSizeSlider = ref(false)
   box-shadow: inset 0 0 0 2px var(--gui-bg-surface, #2c2c2e);
 }
 
-/* ── Slider Row ────────────────────────────────────────────────────── */
-.pc-settings__slider-row {
-  padding: var(--gui-spacing-base, 16px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--gui-spacing-md, 12px);
-  background: var(--gui-bg-surface-raised, #2c2c2e);
-  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  animation: sliderFadeIn 0.2s ease both;
+/* ── Font Size Control ─────────────────────────────────────────────── */
+.pc-settings__row--static {
+  cursor: default;
+  pointer-events: none;
 }
 
-@keyframes sliderFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.pc-settings__row--static:hover {
+  background: transparent;
 }
 
-.pc-settings__slider-preview {
+.pc-settings__font-preview {
   font-family: var(--gui-font-mono, 'JetBrains Mono', monospace);
-  color: var(--gui-text-primary, #ffffff);
+  color: var(--gui-text-secondary, #8e8e93);
   transition: font-size var(--gui-transition-base, 200ms ease);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.pc-settings__font-control {
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-sm, 8px);
+  padding: var(--gui-spacing-sm, 8px) var(--gui-spacing-base, 16px) var(--gui-spacing-md, 12px);
+  border-top: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.04));
+}
+
+.pc-settings__step-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
+  border: 0.5px solid var(--gui-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: var(--gui-radius-base, 8px);
+  color: var(--gui-text-primary, #ffffff);
+  cursor: pointer;
+  transition: all var(--gui-transition-fast, 120ms ease);
+}
+
+.pc-settings__step-btn:hover:not(:disabled) {
+  background: var(--gui-bg-surface-active, rgba(255, 255, 255, 0.12));
+  border-color: var(--gui-border-strong, rgba(255, 255, 255, 0.15));
+}
+
+.pc-settings__step-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+
+.pc-settings__step-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pc-settings__slider-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--gui-spacing-xs, 4px);
+}
+
+.pc-settings__slider-bound {
+  font-size: 10px;
+  color: var(--gui-text-tertiary, #636366);
+  flex-shrink: 0;
+  width: 18px;
+  text-align: center;
+  user-select: none;
+}
+
+.pc-settings__slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  background: var(--gui-border-strong, rgba(255, 255, 255, 0.12));
+  border-radius: 99px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.pc-settings__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--gui-text-primary, #ffffff);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition:
+    transform var(--gui-transition-fast, 120ms ease),
+    box-shadow var(--gui-transition-fast, 120ms ease);
+}
+
+.pc-settings__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.pc-settings__slider::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+}
+
+.pc-settings__slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--gui-text-primary, #ffffff);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.pc-settings__font-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gui-accent, #8e8e93);
+  flex-shrink: 0;
+  width: 30px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Language Dropdown ─────────────────────────────────────────────── */

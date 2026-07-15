@@ -1,8 +1,8 @@
 import type { Context } from 'hono'
-import type { AdminSession, Env, SCPData } from './types'
+import type { AdminSession, Env, SCPData, UserSession } from './types'
 import { all, count, first, run } from './db'
 import { cleanText, intValue, json, readJson, requestInfo } from './http'
-import { adminFromRequest, userFromRequest } from './security'
+import { adminFromRequest, userFromRequest, userSessionFromRequest } from './security'
 
 type AppEnv = { Bindings: Env }
 type Ctx = Context<AppEnv>
@@ -10,13 +10,58 @@ type RouteHandler = (c: Ctx) => Response | Promise<Response>
 
 export type { AppEnv, Ctx, RouteHandler }
 
+/**
+ * JWT signing secret — never falls back to a hardcoded default.
+ * Missing secret is a hard failure so tokens cannot be forged with a known value.
+ */
+export function requireJwtSecret(env: Env): string {
+  const secret = env.JWT_SECRET?.trim()
+  if (!secret) {
+    throw new Error('JWT_SECRET is not configured')
+  }
+  return secret
+}
+
 export function adminSecret(env: Env): string {
-  return env.ADMIN_JWT_SECRET || env.JWT_SECRET || 'admin-secret-key'
+  const secret = env.ADMIN_JWT_SECRET?.trim() || env.JWT_SECRET?.trim()
+  if (!secret) {
+    throw new Error('ADMIN_JWT_SECRET/JWT_SECRET is not configured')
+  }
+  return secret
 }
 
 export async function requiredUser(c: Ctx): Promise<string | Response> {
-  const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+  let secret: string
+  try {
+    secret = requireJwtSecret(c.env)
+  } catch {
+    return json({ code: 'MISCONFIGURED', message: 'JWT_SECRET is not configured' }, 503)
+  }
+  const id = await userFromRequest(c.req.raw, secret)
   return id || json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
+}
+
+/** Registered email accounts only (cloud files / full-data sync). */
+export async function requiredRegisteredUser(c: Ctx): Promise<UserSession | Response> {
+  let secret: string
+  try {
+    secret = requireJwtSecret(c.env)
+  } catch {
+    return json({ code: 'MISCONFIGURED', message: 'JWT_SECRET is not configured' }, 503)
+  }
+  const session = await userSessionFromRequest(c.req.raw, secret)
+  if (!session) return json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
+  if (session.accountType !== 'registered' || !session.email) {
+    return json({ code: 'FORBIDDEN', message: 'Cloud storage is available to registered users only' }, 403)
+  }
+  const row = await first<{ user_id: string; email: string; is_banned: number }>(
+    c.env.SCP_DB,
+    'SELECT user_id, email, is_banned FROM users WHERE email = ? AND account_type = ?',
+    [session.email, 'registered']
+  )
+  if (!row) return json({ code: 'UNAUTHORIZED', message: 'Registered account no longer exists' }, 401)
+  if (row.is_banned) return json({ code: 'FORBIDDEN', message: 'Account disabled' }, 403)
+  return { userId: row.user_id, email: row.email, accountType: 'registered' }
 }
 
 export async function requiredAdmin(c: Ctx): Promise<AdminSession | Response> {

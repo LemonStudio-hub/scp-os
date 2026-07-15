@@ -100,10 +100,9 @@ describe('DataSourceManagerService', () => {
       await manager.registerPlugin(plugin)
       await manager.unregisterPlugin('test-plugin')
 
-      expect(eventBus.emit).toHaveBeenCalledWith(
-        'datasource:plugin:unregistered',
-        { pluginName: 'test-plugin' }
-      )
+      expect(eventBus.emit).toHaveBeenCalledWith('datasource:plugin:unregistered', {
+        pluginName: 'test-plugin',
+      })
     })
 
     it('does nothing when plugin is not found', async () => {
@@ -136,7 +135,9 @@ describe('DataSourceManagerService', () => {
     it('emits datasource:unregistered event', () => {
       manager.registerDataSource(createDataSourceDef('src1'))
       manager.unregisterDataSource('src1')
-      expect(eventBus.emit).toHaveBeenCalledWith('datasource:unregistered', { dataSourceId: 'src1' })
+      expect(eventBus.emit).toHaveBeenCalledWith('datasource:unregistered', {
+        dataSourceId: 'src1',
+      })
     })
   })
 
