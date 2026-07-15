@@ -8,7 +8,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { themes, availableThemes, darkTheme, type Theme } from '../themes'
-import { usePreferencesStore } from './preferencesStore'
 
 const THEME_STORAGE_KEY = 'scp-os-selected-theme'
 const CUSTOM_ACCENT_KEY = 'scp-os-custom-accent'
@@ -273,9 +272,6 @@ export const useThemeStore = defineStore('theme', () => {
       /* ignore */
     }
 
-    const prefsStore = usePreferencesStore()
-    prefsStore.set('themeId', themeId).catch(() => {})
-
     applyTheme(theme)
   }
 
@@ -293,9 +289,6 @@ export const useThemeStore = defineStore('theme', () => {
     } catch {
       /* ignore */
     }
-
-    const prefsStore = usePreferencesStore()
-    prefsStore.set('customAccent', color).catch(() => {})
 
     applyTheme(currentTheme.value)
   }
