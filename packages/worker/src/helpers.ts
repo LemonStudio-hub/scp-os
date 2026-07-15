@@ -10,13 +10,25 @@ type RouteHandler = (c: Ctx) => Response | Promise<Response>
 
 export type { AppEnv, Ctx, RouteHandler }
 
+export function requireJwtSecret(env: Env): string {
+  const secret = env.JWT_SECRET?.trim()
+  if (!secret) throw new Error('JWT_SECRET is not configured')
+  return secret
+}
+
+export function adminSecret(env: Env): string {
+  const secret = env.ADMIN_JWT_SECRET?.trim() || env.JWT_SECRET?.trim()
+  if (!secret) throw new Error('ADMIN_JWT_SECRET/JWT_SECRET is not configured')
+  return secret
+}
+
 export async function requiredUser(c: Ctx): Promise<string | Response> {
-  const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+  const id = await userFromRequest(c.req.raw, requireJwtSecret(c.env))
   return id || json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
 }
 
 export async function requiredRegisteredUser(c: Ctx): Promise<UserSession | Response> {
-  const session = await userSessionFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+  const session = await userSessionFromRequest(c.req.raw, requireJwtSecret(c.env))
   if (!session) return json({ code: 'UNAUTHORIZED', message: 'Missing or invalid Authorization header' }, 401)
   if (session.accountType !== 'registered' || !session.email) {
     return json({ code: 'FORBIDDEN', message: 'Cloud sync is available to registered users only' }, 403)
@@ -95,12 +107,12 @@ export function scpUrl(number: string, branch: string): string {
 
 function parseScp(html: string, number: string, url: string): SCPData {
   const text = stripHtml(html)
-  const objectClassMatch = /Object\s+Class[:\s]+([A-Za-z]+)/i.exec(text) || /项目等级[：:\s]+([^\s,，]+)/i.exec(text)
+  const objectClassMatch = /Object\s+Class[:\s]+([A-Za-z]+)/i.exec(text) || /项目等级[�?\s]+([^\s,，]+)/i.exec(text)
   const objectClass = objectClassMatch?.[1]?.toUpperCase() || 'UNKNOWN'
-  const parts = text.split(/Special\s+Containment\s+Procedures:?|Description:?|特殊收容措施[：:]?|描述[：:]?/i).map((part) => part.trim()).filter(Boolean)
+  const parts = text.split(/Special\s+Containment\s+Procedures:?|Description:?|特殊收容措施[�?]?|描述[�?]?/i).map((part) => part.trim()).filter(Boolean)
   return {
     id: `SCP-${number}`,
-    name: /<title>(.*?)<\/title>/i.exec(html)?.[1]?.replace(/\s*-\s*SCP Foundation.*$/i, '').replace(/\s*-\s*SCP基金会.*$/i, '') || `SCP-${number}`,
+    name: /<title>(.*?)<\/title>/i.exec(html)?.[1]?.replace(/\s*-\s*SCP Foundation.*$/i, '').replace(/\s*-\s*SCP基金�?*$/i, '') || `SCP-${number}`,
     objectClass,
     containment: parts[1] ? [parts[1].slice(0, 2000)] : [],
     description: parts[2] ? [parts[2].slice(0, 3000)] : [],
