@@ -10,6 +10,7 @@ export interface ChatMessage {
   error?: string
   room_id?: number
   retryCount?: number
+  edited?: boolean
 }
 
 export interface ChatRoom {
@@ -23,11 +24,4 @@ export interface ChatRoom {
   last_message?: string
   last_message_sender?: string
   last_message_time?: string
-}
-
-export interface CreateRoomPayload {
-  name: string
-  description: string
-  created_by: string
-  is_public: number
 }

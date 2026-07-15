@@ -21,6 +21,8 @@ import { filesystem } from './utils/filesystem'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
+import GlobalDialog from './gui/components/GlobalDialog.vue'
+import { dialogService } from './gui/composables/useDialog'
 import logger from './utils/logger'
 import indexedDBService from './utils/indexedDB'
 
@@ -44,6 +46,18 @@ const loadingProgress = ref(0)
 const loadingStep = ref('loading.steps.initializing')
 
 onMounted(() => {
+  window.alert = (msg) => {
+    void dialogService.alert(String(msg ?? ''))
+  }
+  window.confirm = (msg) => {
+    void dialogService.confirm(String(msg ?? ''))
+    return false
+  }
+  window.prompt = (msg, def) => {
+    void dialogService.prompt(String(msg ?? ''), String(def ?? ''))
+    return null
+  }
+
   // Safety timeout: force show app after 3s even if init hangs
   const forceReady = setTimeout(() => {
     if (!isAppReady.value) {
@@ -194,6 +208,8 @@ function handleLoginSuccess(): void {
 </script>
 
 <template>
+  <GlobalDialog />
+
   <!-- App Loading Overlay -->
   <div
     v-show="!isAppReady"

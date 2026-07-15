@@ -211,6 +211,11 @@ export const en = {
   'chat.serverUnavailableDev':
     'Chat server unavailable. Run pnpm worker:dev to start local worker.',
   'chat.serverUnavailable': 'Chat server unavailable. Please try again later.',
+  'chat.edit': 'Edit',
+  'chat.delete': 'Delete',
+  'chat.editing': 'Editing',
+  'chat.edited': 'edited',
+  'chat.confirmDelete': 'Delete this message?',
 
   // ── Dashboard ───────────────────────────────────────────────────────
   'dash.allHealthy': 'All Systems Healthy',
@@ -727,6 +732,11 @@ export const zhCN: Record<string, string> = {
   'chat.sendFailed': '发送消息失败',
   'chat.serverUnavailableDev': '聊天服务器不可用。请运行 pnpm worker:dev 启动本地 worker。',
   'chat.serverUnavailable': '聊天服务器不可用。请稍后再试。',
+  'chat.edit': '编辑',
+  'chat.delete': '删除',
+  'chat.editing': '正在编辑',
+  'chat.edited': '已编辑',
+  'chat.confirmDelete': '删除这条消息？',
 
   // ── Dashboard ───────────────────────────────────────────────────────
   'dash.allHealthy': '所有系统正常',
