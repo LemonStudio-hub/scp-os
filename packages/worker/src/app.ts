@@ -22,7 +22,8 @@ export function createApp(): Hono<AppEnv> {
   app.use('*', cors)
 
   app.use('*', async (c, next) => {
-    const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+    const secret = c.env.JWT_SECRET?.trim()
+    const id = secret ? await userFromRequest(c.req.raw, secret) : null
     const ok = await rateLimit(c.env, id || requestInfo(c.req.raw).ip)
     if (!ok) return json({ code: 'RATE_LIMITED', message: 'Rate limit exceeded' }, 429)
     await next()
