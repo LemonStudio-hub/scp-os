@@ -1,4 +1,4 @@
--- 聊天室表
+-- Chat rooms table
 CREATE TABLE IF NOT EXISTS chat_rooms (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
@@ -9,16 +9,14 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
   message_count INTEGER DEFAULT 0
 );
 
--- room_id 列已在 0004_chat_messages.sql 中添加
+-- room_id column already added in 0004_chat_messages.sql
 -- ALTER TABLE chat_messages ADD COLUMN room_id INTEGER DEFAULT 1;
 
--- 创建外键索引（如果尚未存在）
+-- Indexes
 CREATE INDEX IF NOT EXISTS idx_chat_room_id ON chat_messages(room_id);
-
--- 创建聊天室名称索引
 CREATE INDEX IF NOT EXISTS idx_chat_rooms_name ON chat_rooms(name);
 
--- 插入默认聊天室
+-- Default rooms
 INSERT OR IGNORE INTO chat_rooms (id, name, description, created_by, is_public) VALUES
   (1, 'General', 'General discussion', 'system', 1),
   (2, 'Random', 'Random chat', 'system', 1),
