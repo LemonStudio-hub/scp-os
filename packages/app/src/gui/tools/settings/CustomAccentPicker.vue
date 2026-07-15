@@ -54,8 +54,15 @@
         <div
           ref="tonePlane"
           class="accent-picker-panel__tone-plane"
+          role="slider"
+          tabindex="0"
+          :aria-valuemin="0"
+          :aria-valuemax="100"
+          :aria-valuenow="Math.round(internalHsv.s * 100)"
+          aria-label="Saturation and brightness"
           :style="{ '--hue-color': hueColor }"
           @pointerdown="startToneDrag"
+          @keydown="onToneKeydown"
         >
           <span
             class="accent-picker-panel__tone-thumb"
@@ -69,14 +76,28 @@
             :value="hexInput"
             maxlength="7"
             spellcheck="false"
+            :class="{ 'accent-picker-panel__input--invalid': hexInputInvalid }"
+            :aria-invalid="hexInputInvalid"
             @input="onHexInput"
-            @blur="hexInput = normalizedColor.toUpperCase()"
+            @blur="onHexBlur"
           />
+          <span v-if="hexInputInvalid" class="accent-picker-panel__error">Invalid hex color</span>
         </label>
 
         <div class="accent-picker-panel__hue">
           <span>Hue</span>
-          <div ref="hueTrack" class="accent-picker-panel__hue-track" @pointerdown="startHueDrag">
+          <div
+            ref="hueTrack"
+            class="accent-picker-panel__hue-track"
+            role="slider"
+            tabindex="0"
+            :aria-valuemin="0"
+            :aria-valuemax="360"
+            :aria-valuenow="internalHsv.h"
+            aria-label="Hue"
+            @pointerdown="startHueDrag"
+            @keydown="onHueKeydown"
+          >
             <div
               class="accent-picker-panel__hue-thumb"
               :style="{ left: `${(internalHsv.h / 360) * 100}%`, background: hueColor }"
@@ -107,6 +128,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { normalizeHex, hexToRgb, rgbToHex } from '../../utils/accentColor'
 
 const props = defineProps<{
   modelValue: string | null
@@ -132,16 +154,17 @@ const panelStyle = ref<Record<string, string>>({})
 const normalizedColor = computed(() => normalizeHex(props.modelValue) || fallbackColor)
 const rgb = computed(() => hexToRgb(normalizedColor.value))
 
-// 独立维护 HSV 状态，避免拖拽时 RGB→HSV 反推造成信息丢失
+// Keep HSV independent so drag does not lose precision via RGB round-trips.
 const internalHsv = ref({ h: 0, s: 0, v: 1 })
 const hexInput = ref(normalizedColor.value.toUpperCase())
+const hexInputInvalid = ref(false)
 
 function syncHsvFromColor(color: string) {
   const c = hexToRgb(color)
   internalHsv.value = rgbToHsv(c.r, c.g, c.b)
 }
 
-// 只有外部 modelValue 变化（非拖拽触发）时才同步
+// Sync HSV only from external modelValue (not while dragging).
 watch(
   normalizedColor,
   (color) => {
@@ -160,7 +183,7 @@ const rgbChannels = computed(() => [
 ])
 
 const PANEL_WIDTH = 280
-const PANEL_HEIGHT = 320 // 估算高度，用于判断是否需要向上弹出
+const PANEL_HEIGHT = 320 // estimated height for flip-up placement
 
 function computePanelStyle() {
   if (!triggerRef.value) return
@@ -168,11 +191,11 @@ function computePanelStyle() {
   const vw = window.innerWidth
   const vh = window.innerHeight
 
-  // 水平：优先右对齐触发按钮，若超出左边界则左对齐
+  // Prefer right-align; fall back to left if clipped.
   let right = vw - rect.right
   if (rect.right - PANEL_WIDTH < 0) right = vw - rect.left - PANEL_WIDTH
 
-  // 垂直：优先向下，若下方空间不足则向上弹出
+  // Prefer below trigger; flip above when space is tight.
   const spaceBelow = vh - rect.bottom - 10
   let top: string
   if (spaceBelow >= PANEL_HEIGHT) {
@@ -226,10 +249,46 @@ function onHexInput(event: Event) {
   const value = (event.target as HTMLInputElement).value.trim()
   hexInput.value = value
   const nextColor = normalizeHex(value)
+  hexInputInvalid.value = !nextColor
   if (nextColor) {
     syncHsvFromColor(nextColor)
     emit('update:modelValue', nextColor)
   }
+}
+
+function onHexBlur() {
+  const nextColor = normalizeHex(hexInput.value)
+  if (nextColor) {
+    hexInput.value = nextColor.toUpperCase()
+    hexInputInvalid.value = false
+  } else {
+    hexInput.value = normalizedColor.value.toUpperCase()
+    hexInputInvalid.value = false
+  }
+}
+
+function onToneKeydown(event: KeyboardEvent) {
+  const step = event.shiftKey ? 0.05 : 0.02
+  let { s, v, h } = internalHsv.value
+  if (event.key === 'ArrowRight') s = clamp(s + step, 0, 1)
+  else if (event.key === 'ArrowLeft') s = clamp(s - step, 0, 1)
+  else if (event.key === 'ArrowUp') v = clamp(v + step, 0, 1)
+  else if (event.key === 'ArrowDown') v = clamp(v - step, 0, 1)
+  else return
+  event.preventDefault()
+  internalHsv.value = { h, s, v }
+  emit('update:modelValue', rgbToHex(hsvToRgb(h, s, v)))
+}
+
+function onHueKeydown(event: KeyboardEvent) {
+  const step = event.shiftKey ? 10 : 2
+  let { h, s, v } = internalHsv.value
+  if (event.key === 'ArrowRight' || event.key === 'ArrowUp') h = (h + step) % 360
+  else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') h = (h - step + 360) % 360
+  else return
+  event.preventDefault()
+  internalHsv.value = { h, s, v }
+  emit('update:modelValue', rgbToHex(hsvToRgb(h, s, v)))
 }
 
 function onRgbInput(channel: RgbChannel, event: Event) {
@@ -293,34 +352,6 @@ function updateToneFromPointer(event: PointerEvent) {
   const v = 1 - clamp((event.clientY - rect.top) / rect.height, 0, 1)
   internalHsv.value = { ...internalHsv.value, s, v }
   emit('update:modelValue', rgbToHex(hsvToRgb(internalHsv.value.h, s, v)))
-}
-
-function normalizeHex(value: string | null | undefined): string | null {
-  if (!value) return null
-  const trimmed = value.trim()
-  const expanded = /^#?[0-9a-fA-F]{3}$/.test(trimmed)
-    ? trimmed
-        .replace('#', '')
-        .split('')
-        .map((c) => c + c)
-        .join('')
-    : trimmed.replace('#', '')
-  return /^[0-9a-fA-F]{6}$/.test(expanded) ? `#${expanded.toLowerCase()}` : null
-}
-
-function hexToRgb(hex: string) {
-  const v = hex.replace('#', '')
-  return {
-    r: parseInt(v.slice(0, 2), 16),
-    g: parseInt(v.slice(2, 4), 16),
-    b: parseInt(v.slice(4, 6), 16),
-  }
-}
-
-function rgbToHex(color: { r: number; g: number; b: number }) {
-  return `#${[color.r, color.g, color.b]
-    .map((v) => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0'))
-    .join('')}`
 }
 
 function rgbToHsv(r: number, g: number, b: number) {
@@ -549,6 +580,18 @@ function clamp(value: number, min: number, max: number) {
 .accent-picker-panel__field input:focus {
   border-color: var(--gui-accent, #8e8e93);
   box-shadow: 0 0 0 3px var(--gui-accent-soft, rgba(142, 142, 147, 0.16));
+}
+
+.accent-picker-panel__input--invalid {
+  border-color: var(--gui-error, #ff3b30) !important;
+  box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.25);
+}
+
+.accent-picker-panel__error {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--gui-error, #ff3b30);
 }
 
 .accent-picker-panel__field--hex {
