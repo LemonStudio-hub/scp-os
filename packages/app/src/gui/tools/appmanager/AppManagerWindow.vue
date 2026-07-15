@@ -83,11 +83,7 @@
       </div>
 
       <Transition name="app-manager-dialog">
-        <div
-          v-if="confirmTarget"
-          class="app-manager__dialog-overlay"
-          @click.self="cancelUninstall"
-        >
+        <div v-if="confirmTarget" class="app-manager__dialog-overlay" @click.self="cancelUninstall">
           <div class="app-manager__dialog">
             <h3 class="app-manager__dialog-title">{{ confirmDialogTitle }}</h3>
             <p class="app-manager__dialog-text">{{ confirmDialogText }}</p>
