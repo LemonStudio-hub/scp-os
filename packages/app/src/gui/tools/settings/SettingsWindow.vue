@@ -145,6 +145,15 @@
                 </svg>
               </button>
               <span class="pc-settings__font-value">{{ settings.fontSize }}px</span>
+              <button
+                type="button"
+                class="pc-settings__step-btn"
+                :title="t('settings.fontSizeReset')"
+                :disabled="settings.fontSize === 14"
+                @click="resetFontSize"
+              >
+                {{ t('settings.fontSizeReset') }}
+              </button>
             </div>
 
             <!-- Cursor Blink -->
@@ -432,6 +441,7 @@ const {
   onWallpaperChange,
   confirmClearData,
   confirmResetSettings,
+  resetFontSize,
 } = useSettings()
 
 const sections = computed(() => [
