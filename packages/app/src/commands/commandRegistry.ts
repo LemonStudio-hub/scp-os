@@ -120,7 +120,9 @@ export class CommandRegistry {
 
   findConflicts(name: string, aliases: string[] = []): string[] {
     const requested = uniqueNames([name, ...aliases])
-    return requested.filter((candidate) => this.commands.has(candidate) || this.aliases.has(candidate))
+    return requested.filter(
+      (candidate) => this.commands.has(candidate) || this.aliases.has(candidate)
+    )
   }
 
   clear(): void {

@@ -132,10 +132,7 @@ import {
 } from '../../utils/appCatalog'
 import { localAppManager } from '../../../platform/apps/local-app-manager'
 import { permissionRegistry } from '../../../platform/apps/permission-registry'
-import type {
-  InstalledLocalApp,
-  PackageDiagnostic,
-} from '../../../platform/apps/local-app.types'
+import type { InstalledLocalApp, PackageDiagnostic } from '../../../platform/apps/local-app.types'
 import type { PermissionSummary } from '../../../platform/apps/permission-registry'
 
 interface Props {
@@ -262,7 +259,9 @@ async function installLocalFiles(files: FileList, source: 'directory' | 'zip'): 
 }
 
 function formatDiagnostics(diagnostics: PackageDiagnostic[]): string {
-  return diagnostics.map((item) => `${item.code}: ${item.message}`).join('\n') || t('common.unknown')
+  return (
+    diagnostics.map((item) => `${item.code}: ${item.message}`).join('\n') || t('common.unknown')
+  )
 }
 
 function permissionSummaries(app: InstalledLocalApp): PermissionSummary[] {
@@ -276,8 +275,7 @@ function permissionRiskLabel(risk: PermissionSummary['risk']): string {
 }
 
 function permissionChipTitle(permission: PermissionSummary): string {
-  const status =
-    permission.status === 'planned' ? ` · ${t('appManager.permissionPlanned')}` : ''
+  const status = permission.status === 'planned' ? ` · ${t('appManager.permissionPlanned')}` : ''
   return `${permission.id} · ${permissionRiskLabel(permission.risk)}${status}\n${permission.description}`
 }
 

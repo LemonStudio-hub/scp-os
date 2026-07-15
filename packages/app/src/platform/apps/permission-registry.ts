@@ -182,7 +182,8 @@ export const permissionRegistry = {
   highestRisk(ids: string[]): PermissionRisk {
     const ranks: Record<PermissionRisk, number> = { low: 1, medium: 2, high: 3 }
     return this.summarize(ids).reduce<PermissionRisk>(
-      (highest, permission) => (ranks[permission.risk] > ranks[highest] ? permission.risk : highest),
+      (highest, permission) =>
+        ranks[permission.risk] > ranks[highest] ? permission.risk : highest,
       'low'
     )
   },

@@ -15,7 +15,11 @@
           <button class="app-manager__action" @click="pickZip">
             {{ t('appManager.importZip') }}
           </button>
-          <button class="app-manager__refresh" :title="t('common.refresh')" @click="refreshInstalled">
+          <button
+            class="app-manager__refresh"
+            :title="t('common.refresh')"
+            @click="refreshInstalled"
+          >
             <GUIIcon name="refresh" :size="18" />
           </button>
         </div>
@@ -41,10 +45,7 @@
         <div
           v-for="diagnostic in importDiagnostics"
           :key="`${diagnostic.severity}:${diagnostic.code}:${diagnostic.message}`"
-          :class="[
-            'app-manager__diagnostic',
-            `app-manager__diagnostic--${diagnostic.severity}`,
-          ]"
+          :class="['app-manager__diagnostic', `app-manager__diagnostic--${diagnostic.severity}`]"
         >
           <span class="app-manager__diagnostic-code">{{ diagnostic.code }}</span>
           <span>{{ diagnostic.message }}</span>
@@ -210,10 +211,7 @@ import {
 } from '../../utils/appCatalog'
 import { localAppManager } from '../../../platform/apps/local-app-manager'
 import { permissionRegistry } from '../../../platform/apps/permission-registry'
-import type {
-  InstalledLocalApp,
-  PackageDiagnostic,
-} from '../../../platform/apps/local-app.types'
+import type { InstalledLocalApp, PackageDiagnostic } from '../../../platform/apps/local-app.types'
 import type { PermissionSummary } from '../../../platform/apps/permission-registry'
 
 interface Props {
@@ -334,7 +332,9 @@ async function installLocalFiles(files: FileList, source: 'directory' | 'zip'): 
 }
 
 function formatDiagnostics(diagnostics: PackageDiagnostic[]): string {
-  return diagnostics.map((item) => `${item.code}: ${item.message}`).join('\n') || t('common.unknown')
+  return (
+    diagnostics.map((item) => `${item.code}: ${item.message}`).join('\n') || t('common.unknown')
+  )
 }
 
 function permissionSummaries(app: InstalledLocalApp): PermissionSummary[] {
@@ -348,8 +348,7 @@ function permissionRiskLabel(risk: PermissionSummary['risk']): string {
 }
 
 function permissionChipTitle(permission: PermissionSummary): string {
-  const status =
-    permission.status === 'planned' ? ` · ${t('appManager.permissionPlanned')}` : ''
+  const status = permission.status === 'planned' ? ` · ${t('appManager.permissionPlanned')}` : ''
   return `${permission.id} · ${permissionRiskLabel(permission.risk)}${status}\n${permission.description}`
 }
 

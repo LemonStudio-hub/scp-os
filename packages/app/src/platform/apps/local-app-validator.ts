@@ -46,11 +46,14 @@ function validateString(
   options: { required?: boolean; max?: number; pattern?: RegExp } = {}
 ): string | undefined {
   if (raw === undefined || raw === null) {
-    if (options.required) errors.push(diagnostic('error', 'MANIFEST_FIELD_REQUIRED', `${field} is required`))
+    if (options.required)
+      errors.push(diagnostic('error', 'MANIFEST_FIELD_REQUIRED', `${field} is required`))
     return undefined
   }
   if (typeof raw !== 'string' || raw.trim() === '') {
-    errors.push(diagnostic('error', 'MANIFEST_FIELD_INVALID', `${field} must be a non-empty string`))
+    errors.push(
+      diagnostic('error', 'MANIFEST_FIELD_INVALID', `${field} must be a non-empty string`)
+    )
     return undefined
   }
   const value = raw.trim()
@@ -63,7 +66,11 @@ function validateString(
   return value
 }
 
-function validateBoolean(raw: unknown, field: string, errors: PackageDiagnostic[]): boolean | undefined {
+function validateBoolean(
+  raw: unknown,
+  field: string,
+  errors: PackageDiagnostic[]
+): boolean | undefined {
   if (raw === undefined) return undefined
   if (typeof raw !== 'boolean') {
     errors.push(diagnostic('error', 'MANIFEST_FIELD_INVALID', `${field} must be boolean`))
@@ -72,7 +79,11 @@ function validateBoolean(raw: unknown, field: string, errors: PackageDiagnostic[
   return raw
 }
 
-function validateNumber(raw: unknown, field: string, errors: PackageDiagnostic[]): number | undefined {
+function validateNumber(
+  raw: unknown,
+  field: string,
+  errors: PackageDiagnostic[]
+): number | undefined {
   if (raw === undefined) return undefined
   if (typeof raw !== 'number' || !Number.isFinite(raw)) {
     errors.push(diagnostic('error', 'MANIFEST_FIELD_INVALID', `${field} must be a finite number`))
@@ -81,7 +92,11 @@ function validateNumber(raw: unknown, field: string, errors: PackageDiagnostic[]
   return raw
 }
 
-function parseManifest(raw: unknown, errors: PackageDiagnostic[], warnings: PackageDiagnostic[]): LocalAppManifest | null {
+function parseManifest(
+  raw: unknown,
+  errors: PackageDiagnostic[],
+  warnings: PackageDiagnostic[]
+): LocalAppManifest | null {
   const manifest = raw as Partial<LocalAppManifest>
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
     errors.push(diagnostic('error', 'MANIFEST_INVALID', 'scp-app.json must contain an object'))
@@ -109,7 +124,9 @@ function parseManifest(raw: unknown, errors: PackageDiagnostic[], warnings: Pack
   const entry = validateString(manifest.entry, 'entry', errors, { required: true, max: 240 })
 
   if (runtime && runtime !== 'command-module' && runtime !== 'iframe-app') {
-    errors.push(diagnostic('error', 'MANIFEST_FIELD_INVALID', 'runtime must be command-module or iframe-app'))
+    errors.push(
+      diagnostic('error', 'MANIFEST_FIELD_INVALID', 'runtime must be command-module or iframe-app')
+    )
   }
   if (entry && !isSafePackagePath(entry)) {
     errors.push(diagnostic('error', 'UNSAFE_PATH', `entry has unsafe path: ${entry}`))
@@ -155,7 +172,9 @@ function validatePermissions(
   const permissions: string[] = []
   for (const item of raw) {
     if (typeof item !== 'string' || item.trim() === '') {
-      errors.push(diagnostic('error', 'MANIFEST_FIELD_INVALID', 'permission id must be a non-empty string'))
+      errors.push(
+        diagnostic('error', 'MANIFEST_FIELD_INVALID', 'permission id must be a non-empty string')
+      )
       continue
     }
     const id = item.trim()
@@ -193,7 +212,9 @@ function validateCommands(raw: unknown, errors: PackageDiagnostic[]): LocalAppMa
         pattern: COMMAND_RE,
       })
       const description =
-        validateString(data.description, `commands[${index}].description`, errors, { required: true }) ?? ''
+        validateString(data.description, `commands[${index}].description`, errors, {
+          required: true,
+        }) ?? ''
       const aliases = Array.isArray(data.aliases)
         ? data.aliases
             .filter((alias): alias is string => typeof alias === 'string')
@@ -202,7 +223,9 @@ function validateCommands(raw: unknown, errors: PackageDiagnostic[]): LocalAppMa
         : []
       const usage = typeof data.usage === 'string' ? data.usage : undefined
       const permissions = Array.isArray(data.permissions)
-        ? data.permissions.filter((permission): permission is string => typeof permission === 'string')
+        ? data.permissions.filter(
+            (permission): permission is string => typeof permission === 'string'
+          )
         : undefined
 
       for (const token of [name, ...aliases]) {
@@ -213,7 +236,9 @@ function validateCommands(raw: unknown, errors: PackageDiagnostic[]): LocalAppMa
         }
         const normalized = token.toLowerCase()
         if (seen.has(normalized)) {
-          errors.push(diagnostic('error', 'COMMAND_DUPLICATE', `Duplicate command or alias: ${token}`))
+          errors.push(
+            diagnostic('error', 'COMMAND_DUPLICATE', `Duplicate command or alias: ${token}`)
+          )
         }
         seen.add(normalized)
       }
@@ -262,7 +287,9 @@ export function validateLocalAppPackage(files: LocalAppPackageFile[]): PackageVa
   const warnings: PackageDiagnostic[] = []
 
   if (files.length > MAX_FILE_COUNT) {
-    errors.push(diagnostic('error', 'PACKAGE_TOO_MANY_FILES', `Package has more than ${MAX_FILE_COUNT} files`))
+    errors.push(
+      diagnostic('error', 'PACKAGE_TOO_MANY_FILES', `Package has more than ${MAX_FILE_COUNT} files`)
+    )
   }
 
   let totalSize = 0
@@ -270,10 +297,14 @@ export function validateLocalAppPackage(files: LocalAppPackageFile[]): PackageVa
     const size = fileSize(file)
     totalSize += size
     if (!isSafePackagePath(file.path)) {
-      errors.push(diagnostic('error', 'UNSAFE_PATH', `Unsafe package path: ${file.path}`, file.path))
+      errors.push(
+        diagnostic('error', 'UNSAFE_PATH', `Unsafe package path: ${file.path}`, file.path)
+      )
     }
     if (size > MAX_FILE_BYTES) {
-      errors.push(diagnostic('error', 'FILE_TOO_LARGE', `File exceeds 10MB: ${file.path}`, file.path))
+      errors.push(
+        diagnostic('error', 'FILE_TOO_LARGE', `File exceeds 10MB: ${file.path}`, file.path)
+      )
     }
   }
   if (totalSize > MAX_PACKAGE_BYTES) {
@@ -286,7 +317,9 @@ export function validateLocalAppPackage(files: LocalAppPackageFile[]): PackageVa
     return buildResult(null, errors, warnings)
   }
   if (manifestFiles.length > 1) {
-    errors.push(diagnostic('error', 'MANIFEST_DUPLICATE', 'Package contains multiple scp-app.json files'))
+    errors.push(
+      diagnostic('error', 'MANIFEST_DUPLICATE', 'Package contains multiple scp-app.json files')
+    )
   }
 
   let manifest: LocalAppManifest | null = null
@@ -315,7 +348,7 @@ function buildResult(
   const permissionIds = manifest?.permissions ?? []
   return {
     ok: errors.length === 0,
-    manifest: errors.length === 0 ? manifest ?? undefined : undefined,
+    manifest: errors.length === 0 ? (manifest ?? undefined) : undefined,
     errors,
     warnings,
     permissions: permissionRegistry.summarize(permissionIds),

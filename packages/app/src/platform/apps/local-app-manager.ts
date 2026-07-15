@@ -219,7 +219,10 @@ export class LocalAppManager {
     }
   }
 
-  async installFromFileList(files: FileList, source: 'directory' | 'zip'): Promise<LocalAppInstallResult> {
+  async installFromFileList(
+    files: FileList,
+    source: 'directory' | 'zip'
+  ): Promise<LocalAppInstallResult> {
     try {
       const packageFiles =
         source === 'zip' ? await this.readZipPackage(files) : await this.readDirectoryPackage(files)
@@ -298,7 +301,9 @@ export class LocalAppManager {
   }
 
   private formatDiagnostics(diagnostics: PackageDiagnostic[]): string {
-    return diagnostics.map((item) => `${item.code}: ${item.message}`).join('\n') || 'Invalid package'
+    return (
+      diagnostics.map((item) => `${item.code}: ${item.message}`).join('\n') || 'Invalid package'
+    )
   }
 
   private snapshotPackage(rootPath: string): LocalAppPackageFile[] {
@@ -552,7 +557,8 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
       )
     }
     const title = String(payload.title ?? '').trim()
-    if (!title) throw new LocalAppApiError('INVALID_ARGUMENT', 'Window title is required', 'window:setTitle')
+    if (!title)
+      throw new LocalAppApiError('INVALID_ARGUMENT', 'Window title is required', 'window:setTitle')
     return useWindowManagerStore().updateWindowTitle(context.windowId, title.slice(0, 80))
   }
 
@@ -591,7 +597,11 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
   private uiSetCursor(context: LocalAppApiContext, payload: Record<string, unknown>): boolean {
     const cursor = String(payload.cursor ?? '').trim()
     if (!this.isAllowedCursor(cursor)) {
-      throw new LocalAppApiError('INVALID_ARGUMENT', `Unsupported cursor: ${cursor}`, 'ui:setCursor')
+      throw new LocalAppApiError(
+        'INVALID_ARGUMENT',
+        `Unsupported cursor: ${cursor}`,
+        'ui:setCursor'
+      )
     }
 
     this.cursorSession = this.sessionId(context.appId, context.windowId)
@@ -629,7 +639,11 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
   private themeSetAccent(payload: Record<string, unknown>): boolean {
     const color = String(payload.color ?? '').trim()
     if (!/^#[0-9a-f]{6}$/i.test(color)) {
-      throw new LocalAppApiError('INVALID_ARGUMENT', 'Accent color must be #RRGGBB', 'theme:setAccent')
+      throw new LocalAppApiError(
+        'INVALID_ARGUMENT',
+        'Accent color must be #RRGGBB',
+        'theme:setAccent'
+      )
     }
     // Custom accent is handled by a separate settings PR; keep API stable for local apps.
     void color
@@ -822,7 +836,8 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
         },
         storage: {
           get: (key) => localStorage.getItem(`${storagePrefix(app.manifest.id)}${key}`),
-          set: (key, value) => localStorage.setItem(`${storagePrefix(app.manifest.id)}${key}`, value),
+          set: (key, value) =>
+            localStorage.setItem(`${storagePrefix(app.manifest.id)}${key}`, value),
           remove: (key) => localStorage.removeItem(`${storagePrefix(app.manifest.id)}${key}`),
         },
         permissions: app.manifest.permissions ?? [],
@@ -860,15 +875,18 @@ parent.postMessage({ channel: 'scp-os', type: 'ready' }, '*');
   }
 
   private inlineLocalAssets(app: InstalledLocalApp, html: string): string {
-    const withStyles = html.replace(/<link\b([^>]*?)\bhref=["']([^"']+)["']([^>]*)>/gi, (full, before, href, after) => {
-      const attrs = `${before} ${after}`
-      if (!/\brel=["'][^"']*\bstylesheet\b[^"']*["']/i.test(attrs)) return full
-      if (this.isExternalAsset(href)) return full
+    const withStyles = html.replace(
+      /<link\b([^>]*?)\bhref=["']([^"']+)["']([^>]*)>/gi,
+      (full, before, href, after) => {
+        const attrs = `${before} ${after}`
+        if (!/\brel=["'][^"']*\bstylesheet\b[^"']*["']/i.test(attrs)) return full
+        if (this.isExternalAsset(href)) return full
 
-      const content = this.readAppAsset(app, href)
-      if (content === null) return full
-      return `<style>${content.replace(/<\/style/gi, '<\\/style')}</style>`
-    })
+        const content = this.readAppAsset(app, href)
+        if (content === null) return full
+        return `<style>${content.replace(/<\/style/gi, '<\\/style')}</style>`
+      }
+    )
 
     return withStyles.replace(
       /<script\b([^>]*?)\bsrc=["']([^"']+)["']([^>]*)>\s*<\/script>/gi,

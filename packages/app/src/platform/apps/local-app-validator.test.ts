@@ -40,7 +40,9 @@ describe('validateLocalAppPackage', () => {
   })
 
   it('rejects missing manifest and missing entry files', () => {
-    expect(errorCodes([{ path: 'index.html', content: 'ok', size: 2 }])).toContain('MANIFEST_MISSING')
+    expect(errorCodes([{ path: 'index.html', content: 'ok', size: 2 }])).toContain(
+      'MANIFEST_MISSING'
+    )
     expect(errorCodes(basePackage({ entry: 'missing.html' }))).toContain('ENTRY_MISSING')
   })
 

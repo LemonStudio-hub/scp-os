@@ -352,7 +352,9 @@
             </svg>
           </template>
           <template v-else>
-            <span class="home-screen__app-icon--fallback">{{ app.label.slice(0, 1).toUpperCase() }}</span>
+            <span class="home-screen__app-icon--fallback">{{
+              app.label.slice(0, 1).toUpperCase()
+            }}</span>
           </template>
         </div>
         <span class="home-screen__app-label">{{ app.label }}</span>
@@ -422,12 +424,14 @@ function isLocalAppTool(tool: ToolType): boolean {
 }
 
 const baseApps = computed<HomeApp[]>(() => {
-  const builtInApps = APP_CATALOG.filter((app) => installedTools.value.has(app.tool)).map((app) => ({
-    id: app.id,
-    label: t(homeAppLabelKeys[app.tool] ?? app.labelKey),
-    tool: app.tool,
-    color: 'var(--gui-accent)',
-  }))
+  const builtInApps = APP_CATALOG.filter((app) => installedTools.value.has(app.tool)).map(
+    (app) => ({
+      id: app.id,
+      label: t(homeAppLabelKeys[app.tool] ?? app.labelKey),
+      tool: app.tool,
+      color: 'var(--gui-accent)',
+    })
+  )
 
   const localApps = localAppManager
     .getInstalledApps()

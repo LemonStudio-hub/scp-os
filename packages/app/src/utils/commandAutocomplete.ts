@@ -244,12 +244,15 @@ export class CommandAutocompleteService {
 
     if (!trimmed) {
       // 空输入，返回所有命令
-      return commandRegistry.getSummaries().map((cmd) => ({
-        text: cmd.name,
-        displayText: cmd.name,
-        description: cmd.description,
-        type: 'command' as const,
-      })).slice(0, this.maxSuggestions)
+      return commandRegistry
+        .getSummaries()
+        .map((cmd) => ({
+          text: cmd.name,
+          displayText: cmd.name,
+          description: cmd.description,
+          type: 'command' as const,
+        }))
+        .slice(0, this.maxSuggestions)
     }
 
     // 解析输入
