@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  adjustColorBrightness,
-  hexToRgb,
-  hexToRgbA,
-  normalizeHex,
-  rgbToHex,
-} from '../accentColor'
+import { adjustColorBrightness, hexToRgb, hexToRgbA, normalizeHex, rgbToHex } from '../accentColor'
 
 describe('accentColor helpers', () => {
   it('normalizeHex accepts 3 and 6 digit forms', () => {
