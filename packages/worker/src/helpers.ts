@@ -121,12 +121,22 @@ export function scpUrl(number: string, branch: string): string {
 
 function parseScp(html: string, number: string, url: string): SCPData {
   const text = stripHtml(html)
-  const objectClassMatch = /Object\s+Class[:\s]+([A-Za-z]+)/i.exec(text) || /项目等级[�?\s]+([^\s,，]+)/i.exec(text)
+  const objectClassMatch =
+    /Object\s+Class[:\s]+([A-Za-z]+)/i.exec(text) ||
+    /\u9879\u76ee\u7b49\u7ea7[:\s\uff1a]+([^\s,\uff0c]+)/i.exec(text)
   const objectClass = objectClassMatch?.[1]?.toUpperCase() || 'UNKNOWN'
-  const parts = text.split(/Special\s+Containment\s+Procedures:?|Description:?|特殊收容措施[�?]?|描述[�?]?/i).map((part) => part.trim()).filter(Boolean)
+  const parts = text
+    .split(
+      /Special\s+Containment\s+Procedures:?|Description:?|\u7279\u6b8a\u6536\u5bb9\u63aa\u65bd[:\uff1a]?|\u63cf\u8ff0[:\uff1a]?/i,
+    )
+    .map((part) => part.trim())
+    .filter(Boolean)
   return {
     id: `SCP-${number}`,
-    name: /<title>(.*?)<\/title>/i.exec(html)?.[1]?.replace(/\s*-\s*SCP Foundation.*$/i, '').replace(/\s*-\s*SCP基金�?*$/i, '') || `SCP-${number}`,
+    name:
+      /<title>(.*?)<\/title>/i.exec(html)?.[1]
+        ?.replace(/\s*-\s*SCP Foundation.*$/i, '')
+        ?.replace(/\s*-\s*SCP\u57fa\u91d1\u4f1a.*$/i, '') || `SCP-${number}`,
     objectClass,
     containment: parts[1] ? [parts[1].slice(0, 2000)] : [],
     description: parts[2] ? [parts[2].slice(0, 3000)] : [],
