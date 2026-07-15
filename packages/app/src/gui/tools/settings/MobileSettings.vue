@@ -431,7 +431,10 @@
             <span class="settings-slider-sheet__title">{{ t('settings.fontSize') }}</span>
             <button
               class="settings-slider-sheet__close"
-              @click="onFontSizeChange(); sliderSheets.fontSize = false"
+              @click="
+                onFontSizeChange()
+                sliderSheets.fontSize = false
+              "
             >
               完成
             </button>
