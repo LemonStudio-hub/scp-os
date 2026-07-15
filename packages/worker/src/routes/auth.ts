@@ -12,7 +12,11 @@ export function registerAuth(app: Hono<AppEnv>): void {
     if (!userId || typeof userId !== 'string' || userId.length > 128) {
       return json({ code: 'VALIDATION_ERROR', message: 'Missing or invalid userId' }, 400)
     }
-    const token = await signJwt({ userId }, c.(env.JWT_SECRET?.trim() || (() => { throw new Error('JWT_SECRET is not configured') })()), 7 * 24 * 60 * 60)
+    const secret = c.env.JWT_SECRET?.trim()
+    if (!secret) {
+      return json({ code: 'MISCONFIGURED', message: 'JWT_SECRET is not configured' }, 503)
+    }
+    const token = await signJwt({ userId }, secret, 7 * 24 * 60 * 60)
     return json({ success: true, token })
   })
 }
