@@ -316,4 +316,36 @@ const scoreStatus = computed(() => {
     gap: 12px;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+:global(.light) .score-label {
+  color: #1c1c1e;
+  opacity: 0.7;
+}
+
+:global(.light) .detail-label {
+  color: #1c1c1e;
+  opacity: 0.65;
+}
+
+:global(.light) .detail-value {
+  color: #1c1c1e;
+}
+
+/* Ensure original neon colors are active on colored elements */
+:global(.light) .detail-value.score-good {
+  color: #00ff00;
+}
+
+:global(.light) .detail-value.score-medium {
+  color: #ffff00;
+}
+
+:global(.light) .detail-value.score-poor {
+  color: #ff4444;
+}
+
+:global(.light) .score-marks .mark {
+  background: rgba(0, 0, 0, 0.15);
+}
 </style>
