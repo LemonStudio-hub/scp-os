@@ -22,6 +22,7 @@ import { filesystem } from './utils/filesystem'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
+import CursorEffect from './gui/components/CursorEffect.vue'
 import logger from './utils/logger'
 import indexedDBService from './utils/indexedDB'
 
@@ -209,6 +210,8 @@ function handleLoginSuccess(): void {
 </script>
 
 <template>
+  <CursorEffect />
+
   <!-- App Loading Overlay -->
   <div
     v-show="!isAppReady"
