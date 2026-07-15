@@ -129,15 +129,15 @@ describe('GET /api/user/check-nickname', () => {
     expect(body.available).toBe(true)
   })
 
-  it('returns available true for guests even if nickname already used as display name', async () => {
-    // Registered uniqueness is enforced at /api/auth/register; guest display names may collide
+  it('returns available false when nickname is already taken', async () => {
+    // Uniqueness is enforced so registered (and guest) nicknames cannot collide.
     const mockDb = makeDb([], { id: 1 })
     const env = { ...baseEnv, SCP_DB: mockDb }
     const app = createApp()
     const res = await app.request('/api/user/check-nickname?nickname=TakenName', {} , env)
     expect(res.status).toBe(200)
     const body = await res.json<{ success: boolean; available: boolean }>()
-    expect(body.available).toBe(true)
+    expect(body.available).toBe(false)
   })
 
   it('returns 400 for missing nickname', async () => {

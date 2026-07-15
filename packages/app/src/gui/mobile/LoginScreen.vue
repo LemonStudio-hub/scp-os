@@ -698,4 +698,45 @@ onUnmounted(() => {
     grid-template-columns: minmax(0, 1fr) 104px;
   }
 }
+
+/* ── Reduced Motion Support ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .login-screen__input {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
+}
+.light .login-screen__input:hover {
+  background: var(--gui-bg-surface-active, rgba(0, 0, 0, 0.06));
+}
+.light .login-screen__input:focus {
+  background: var(--gui-bg-surface, #fff);
+  border-color: var(--gui-accent, #636366);
+  box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(99, 99, 102, 0.15));
+}
+.light
+  .login-screen__button:hover:not(.login-screen__button--disabled):not(
+    .login-screen__button--loading
+  ) {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.04);
+}
+.light
+  .login-screen__button:active:not(.login-screen__button--disabled):not(
+    .login-screen__button--loading
+  ) {
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.04);
+}
 </style>

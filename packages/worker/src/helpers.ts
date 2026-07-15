@@ -47,11 +47,18 @@ export async function adminMiddleware(c: Ctx, next: () => Promise<void>): Promis
   await next()
 }
 
-export async function rateLimit(env: Env, identifier: string): Promise<boolean> {
+/**
+ * Sliding-window rate limit stored in D1.
+ * @returns true if the request is allowed
+ */
+export async function rateLimit(
+  env: Env,
+  identifier: string,
+  max = 120,
+  windowMs = 60_000,
+): Promise<boolean> {
   if (!env.SCP_DB) return true
   const now = Date.now()
-  const windowMs = 60_000
-  const max = 120
   try {
     const row = await first<{ timestamps: string }>(env.SCP_DB, 'SELECT timestamps FROM rate_limits WHERE identifier = ?', [identifier])
     const timestamps = (row ? safeParse(row.timestamps) : []) as number[]

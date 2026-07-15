@@ -4,6 +4,7 @@ import { json, readJson, requestInfo } from '../http';
 import { first, run } from '../db';
 import { allowedEmailDomains, isAllowedEmailDomain, normalizeEmail } from '../email-domains';
 import { hashPassword, signJwt, verifyPassword } from '../security';
+import { rateLimit, requireJwtSecret } from '../helpers';
 import type { SecretBinding } from '../types';
 
 type AppEnv = { Bindings: Env };
@@ -22,10 +23,16 @@ const VERIFICATION_CODE_LENGTH = 6;
 const VERIFICATION_CODE_TTL_MS = 10 * 60 * 1000;
 const VERIFICATION_CODE_COOLDOWN_MS = 60 * 1000;
 const VERIFICATION_CODE_MAX_ATTEMPTS = 5;
+/** Per-IP: max verification emails per hour (prevents address enumeration). */
+const SEND_CODE_IP_MAX = 10;
+const SEND_CODE_IP_WINDOW_MS = 60 * 60 * 1000;
+/** Per-IP / per-email login attempts. */
+const LOGIN_MAX_ATTEMPTS = 10;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 
 function jwtSecret(env: Env): string {
-  return env.JWT_SECRET || 'scp-os-default-secret';
+  return requireJwtSecret(env);
 }
 
 function cleanNickname(value: string | null | undefined, fallback: string): string {
@@ -45,8 +52,23 @@ function normalizeVerificationCode(code: unknown): string | null {
   return /^\d{6}$/.test(trimmed) ? trimmed : null;
 }
 
+/** Cryptographically secure 6-digit code (rejection sampling avoids modulo bias). */
 function createVerificationCode(): string {
-  return String(Math.floor(Math.random() * 10 ** VERIFICATION_CODE_LENGTH)).padStart(VERIFICATION_CODE_LENGTH, '0');
+  const max = 10 ** VERIFICATION_CODE_LENGTH;
+  const limit = Math.floor(0x100000000 / max) * max;
+  const buf = new Uint32Array(1);
+  let value: number;
+  do {
+    crypto.getRandomValues(buf);
+    value = buf[0]!;
+  } while (value >= limit);
+  return String(value % max).padStart(VERIFICATION_CODE_LENGTH, '0');
+}
+
+function randomSaltHex(bytesLen = 16): string {
+  const buf = new Uint8Array(bytesLen);
+  crypto.getRandomValues(buf);
+  return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 async function sha256Hex(value: string): Promise<string> {
@@ -55,8 +77,30 @@ async function sha256Hex(value: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-async function issueRegisteredToken(env: Env, email: string): Promise<string> {
-  return signJwt({ userId: email, email, accountType: 'registered' }, jwtSecret(env), 7 * 24 * 60 * 60);
+/**
+ * Salted hash for verification codes: `salt$sha256(salt:code)`.
+ * Plain SHA-256 of a 6-digit code is rainbow-tableable; salt blocks offline precomputation.
+ */
+async function hashVerificationCode(code: string, salt?: string): Promise<string> {
+  const s = salt || randomSaltHex(16);
+  const digest = await sha256Hex(`${s}:${code}`);
+  return `${s}$${digest}`;
+}
+
+async function verifyVerificationCode(code: string, stored: string): Promise<boolean> {
+  const sep = stored.indexOf('$');
+  if (sep <= 0) {
+    // Legacy unsalted SHA-256 (pre-fix) — still accept once during rollout.
+    const legacy = await sha256Hex(code);
+    return legacy === stored;
+  }
+  const salt = stored.slice(0, sep);
+  const expected = await hashVerificationCode(code, salt);
+  return expected === stored;
+}
+
+async function issueRegisteredToken(env: Env, email: string, userId: string): Promise<string> {
+  return signJwt({ userId, email, accountType: 'registered' }, jwtSecret(env), 7 * 24 * 60 * 60);
 }
 
 async function resolveSecretValue(secret: SecretBinding | undefined): Promise<string | undefined> {
@@ -103,6 +147,13 @@ export function registerAuth(app: Hono<AppEnv>): void {
   });
 
   app.post('/api/auth/send-code', async (c) => {
+    const ip = requestInfo(c.req.raw).ip || 'unknown';
+    // Per-IP rate limit (email cooldown alone does not stop address enumeration).
+    const ipAllowed = await rateLimit(c.env, `auth:send-code:ip:${ip}`, SEND_CODE_IP_MAX, SEND_CODE_IP_WINDOW_MS);
+    if (!ipAllowed) {
+      return json({ success: false, error: 'Too many verification requests from this network. Try again later.' }, 429);
+    }
+
     const body = await readJson<{ email?: string }>(c.req.raw);
     const email = normalizeEmail(body?.email);
     if (!email) {
@@ -135,7 +186,7 @@ export function registerAuth(app: Hono<AppEnv>): void {
     }
 
     const code = createVerificationCode();
-    const codeHash = await sha256Hex(code);
+    const codeHash = await hashVerificationCode(code);
 
     try {
       await sendVerificationEmail(c.env, email, code);
@@ -155,7 +206,7 @@ export function registerAuth(app: Hono<AppEnv>): void {
     await run(
       c.env.SCP_DB,
       'INSERT INTO email_verification_codes (email, code_hash, expires_at, sent_at, attempt_count, last_attempt_at, request_ip) VALUES (?, ?, ?, ?, 0, NULL, ?) ON CONFLICT(email) DO UPDATE SET code_hash = excluded.code_hash, expires_at = excluded.expires_at, sent_at = excluded.sent_at, attempt_count = 0, last_attempt_at = NULL, request_ip = excluded.request_ip',
-      [email, codeHash, now + VERIFICATION_CODE_TTL_MS, now, requestInfo(c.req.raw).ip],
+      [email, codeHash, now + VERIFICATION_CODE_TTL_MS, now, ip],
     );
 
     return json({ success: true, message: 'Verification code sent' });
@@ -203,8 +254,7 @@ export function registerAuth(app: Hono<AppEnv>): void {
       return json({ success: false, error: 'Too many invalid attempts, request a new code' }, 429);
     }
 
-    const providedHash = await sha256Hex(code);
-    if (providedHash !== verification.code_hash) {
+    if (!(await verifyVerificationCode(code, verification.code_hash))) {
       await run(
         c.env.SCP_DB,
         'UPDATE email_verification_codes SET attempt_count = attempt_count + 1, last_attempt_at = ? WHERE email = ?',
@@ -213,7 +263,16 @@ export function registerAuth(app: Hono<AppEnv>): void {
       return json({ success: false, error: 'Verification code is incorrect' }, 400);
     }
 
-    const nickname = cleanNickname(body?.nickname, email.split('@')[0]);
+    const nickname = cleanNickname(body?.nickname, email.split('@')[0] || 'User');
+    const nickTaken = await first<{ id: number }>(
+      c.env.SCP_DB,
+      'SELECT id FROM users WHERE lower(nickname) = lower(?)',
+      [nickname],
+    );
+    if (nickTaken) {
+      return json({ success: false, error: 'Nickname already taken' }, 409);
+    }
+
     const passwordHash = await hashPassword(password);
     await run(
       c.env.SCP_DB,
@@ -225,14 +284,33 @@ export function registerAuth(app: Hono<AppEnv>): void {
       512 * 1024 * 1024,
     ]);
     await run(c.env.SCP_DB, 'DELETE FROM email_verification_codes WHERE email = ?', [email]);
-    const token = await issueRegisteredToken(c.env, email);
+    const token = await issueRegisteredToken(c.env, email, email);
     return json({ success: true, token, user: { userId: email, email, nickname, accountType: 'registered' } });
   });
 
   app.post('/api/auth/login', async (c) => {
+    const ip = requestInfo(c.req.raw).ip || 'unknown';
     const body = await readJson<{ email?: string; password?: string }>(c.req.raw);
     const email = normalizeEmail(body?.email);
     const password = validatePassword(body?.password);
+
+    // Brute-force protection: per-IP and per-email (when email is valid).
+    const ipAllowed = await rateLimit(c.env, `auth:login:ip:${ip}`, LOGIN_MAX_ATTEMPTS, LOGIN_WINDOW_MS);
+    if (!ipAllowed) {
+      return json({ success: false, error: 'Too many login attempts. Try again later.' }, 429);
+    }
+    if (email) {
+      const emailAllowed = await rateLimit(
+        c.env,
+        `auth:login:email:${email}`,
+        LOGIN_MAX_ATTEMPTS,
+        LOGIN_WINDOW_MS,
+      );
+      if (!emailAllowed) {
+        return json({ success: false, error: 'Too many login attempts for this account. Try again later.' }, 429);
+      }
+    }
+
     if (!email || !password) {
       return json({ code: 'VALIDATION_ERROR', message: 'Invalid email or password' }, 400);
     }
@@ -255,7 +333,7 @@ export function registerAuth(app: Hono<AppEnv>): void {
     }
     if (user.is_banned) return json({ success: false, error: 'Account disabled' }, 403);
     await run(c.env.SCP_DB, 'UPDATE users SET last_active_at = CURRENT_TIMESTAMP WHERE email = ?', [email]);
-    const token = await issueRegisteredToken(c.env, email);
+    const token = await issueRegisteredToken(c.env, email, user.user_id);
     return json({
       success: true,
       token,
@@ -264,6 +342,7 @@ export function registerAuth(app: Hono<AppEnv>): void {
   });
 
   app.post('/api/auth/token', async (c) => {
+    // Guest-only refresh: must never mint registered tokens from userId alone.
     const body = await readJson<{ userId?: string }>(c.req.raw);
     const userId = body?.userId;
     if (!userId || typeof userId !== 'string' || userId.length > 128) {

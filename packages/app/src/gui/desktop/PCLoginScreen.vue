@@ -1219,4 +1219,56 @@ onUnmounted(() => {
     display: none;
   }
 }
+
+/* ── Reduced Motion Support ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+.light .pc-login-screen__card {
+  background: var(--gui-glass-bg, rgba(255, 255, 255, 0.75));
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.04),
+    var(--gui-inner-glow, inset 0 1px 0 rgba(0, 0, 0, 0.04));
+  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
+}
+.light .pc-login-screen__card-glow {
+  background: radial-gradient(ellipse at 50% 30%, rgba(0, 0, 0, 0.02) 0%, transparent 60%);
+}
+.light .pc-login-screen__input {
+  background: var(--gui-bg-surface-hover, rgba(0, 0, 0, 0.04));
+  border-color: var(--gui-border-default, rgba(0, 0, 0, 0.1));
+}
+.light .pc-login-screen__input:hover {
+  background: var(--gui-bg-surface-active, rgba(0, 0, 0, 0.06));
+}
+.light .pc-login-screen__input:focus {
+  background: var(--gui-bg-surface, #fff);
+  border-color: var(--gui-accent, #636366);
+  box-shadow: 0 0 0 3px var(--gui-accent-glow, rgba(99, 99, 102, 0.15));
+}
+.light
+  .pc-login-screen__button:hover:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  ) {
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 6px 12px rgba(0, 0, 0, 0.06);
+}
+.light
+  .pc-login-screen__button:active:not(.pc-login-screen__button--disabled):not(
+    .pc-login-screen__button--loading
+  ) {
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.1),
+    0 3px 6px rgba(0, 0, 0, 0.04);
+}
 </style>

@@ -44,7 +44,12 @@ export function registerUsers(app: Hono<AppEnv>): void {
   app.get('/api/user/check-nickname', async (c) => {
     const nickname = validateNickname(cleanText(c.req.query('nickname'), NICKNAME_MAX))
     if (!nickname) return json({ success: false, available: false, error: 'Invalid nickname' }, 400)
-    return json({ success: true, available: true })
+    const taken = await first<{ id: number }>(
+      c.env.SCP_DB,
+      'SELECT id FROM users WHERE lower(nickname) = lower(?)',
+      [nickname],
+    )
+    return json({ success: true, available: !taken })
   })
 
   app.get('/api/user/:userId', async (c) => {

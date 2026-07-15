@@ -56,11 +56,22 @@ export const useAuthStore = defineStore('auth', () => {
     await indexedDBService.saveNickname(user.nickname)
     await indexedDBService.saveSetting('account_type', user.accountType)
     await indexedDBService.saveSetting('auth_email', user.email || null)
-    await indexedDBService.saveSetting('auth_token', token || null)
+    // Prefer sessionStorage for JWT so tokens are not long-lived in IndexedDB (XSS surface).
+    // Memory cache is authoritative for the tab; sessionStorage restores within the same browser session.
+    if (token) {
+      try {
+        sessionStorage.setItem('scp-os-auth-token', token)
+        sessionStorage.setItem('scp-os-auth-uid', user.userId)
+      } catch {
+        /* private mode */
+      }
+      // Keep a non-token session marker in IDB for account restore after tab close (registered re-login still needed if token gone).
+      await indexedDBService.saveSetting('auth_token', null)
+    }
     if (user.accountType === 'registered') {
       await indexedDBService.saveSetting('user_id', user.userId)
     }
-    if (token) setAuthToken(token, user.userId)
+    if (token) setAuthToken(token, user.userId, { guest: user.accountType === 'guest' })
     userId.value = user.userId
     nickname.value = user.nickname
     email.value = user.email || null
@@ -76,25 +87,65 @@ export const useAuthStore = defineStore('auth', () => {
         'account_type'
       )) as AccountType | null
       const savedEmail = (await indexedDBService.loadSetting('auth_email')) as string | null
-      const savedToken = (await indexedDBService.loadSetting('auth_token')) as string | null
-      const savedUserId = await indexedDBService.getUserId()
+      const savedUserIdSetting = (await indexedDBService.loadSetting('user_id')) as string | null
+      const savedUserId = savedUserIdSetting || (await indexedDBService.getUserId())
+      let sessionToken: string | null = null
+      let sessionUid: string | null = null
+      try {
+        sessionToken = sessionStorage.getItem('scp-os-auth-token')
+        sessionUid = sessionStorage.getItem('scp-os-auth-uid')
+      } catch {
+        /* ignore */
+      }
 
-      if (savedNickname && savedAccountType === 'registered' && savedEmail && savedToken) {
-        setAuthToken(savedToken, savedEmail)
-        userId.value = savedEmail
-        email.value = savedEmail
-        nickname.value = savedNickname
-        accountType.value = 'registered'
-        isLoggedIn.value = true
+      if (savedNickname && savedAccountType === 'registered' && savedEmail) {
+        // Use real user_id from settings, not email-as-id (token refresh must not hit guest endpoint).
+        const uid = savedUserId || savedEmail
+        if (sessionToken && (!sessionUid || sessionUid === uid)) {
+          setAuthToken(sessionToken, uid, { guest: false })
+          userId.value = uid
+          email.value = savedEmail
+          nickname.value = savedNickname
+          accountType.value = 'registered'
+          isLoggedIn.value = true
+        } else {
+          // No in-session JWT — registered users must sign in again (never mint via guest /api/auth/token).
+          isLoggedIn.value = false
+        }
         return
       }
 
-      if (savedNickname) {
+      if (savedNickname && savedUserId) {
         userId.value = savedUserId
         nickname.value = savedNickname
         email.value = null
         accountType.value = 'guest'
         isLoggedIn.value = true
+
+        if (sessionToken && sessionUid === savedUserId) {
+          setAuthToken(sessionToken, savedUserId, { guest: true })
+        } else {
+          // Guest JWT can be re-issued from userId alone.
+          try {
+            const res = await fetch(`${API_BASE}/api/auth/token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: savedUserId }),
+            })
+            const data = await res.json().catch(() => ({}))
+            if (res.ok && data.token) {
+              setAuthToken(data.token as string, savedUserId, { guest: true })
+              try {
+                sessionStorage.setItem('scp-os-auth-token', data.token as string)
+                sessionStorage.setItem('scp-os-auth-uid', savedUserId)
+              } catch {
+                /* ignore */
+              }
+            }
+          } catch {
+            /* offline — guest UI still works locally */
+          }
+        }
         logger.info('[Auth] Auto-login guest:', { userId: savedUserId, nickname: savedNickname })
       } else {
         isLoggedIn.value = false
@@ -211,6 +262,12 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout(): Promise<void> {
     try {
       clearAuthToken()
+      try {
+        sessionStorage.removeItem('scp-os-auth-token')
+        sessionStorage.removeItem('scp-os-auth-uid')
+      } catch {
+        /* ignore */
+      }
       await indexedDBService.deleteSetting('nickname')
       await indexedDBService.deleteSetting('account_type')
       await indexedDBService.deleteSetting('auth_email')
@@ -232,7 +289,17 @@ export const useAuthStore = defineStore('auth', () => {
   ): Promise<{ available: boolean; error?: string }> {
     const validation = validateNickname(nicknameInput)
     if (!validation.valid) return { available: false, error: validation.error }
-    return { available: true }
+    try {
+      const q = encodeURIComponent(nicknameInput.trim())
+      const response = await fetch(`${API_BASE}/api/user/check-nickname?nickname=${q}`)
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        return { available: false, error: data.error || 'Nickname check failed' }
+      }
+      return { available: Boolean(data.available) }
+    } catch (error) {
+      return { available: false, error: (error as Error).message }
+    }
   }
 
   async function updateNickname(
