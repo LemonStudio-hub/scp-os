@@ -21,10 +21,9 @@ import logger from '../../utils/logger'
 const { getNextZIndex, bringToFront, setFocusedWindow, getFocusedWindowId } = useZIndex()
 
 // Default placement keeps new windows away from the desktop icons.
+const TASKBAR_HEIGHT = 48
 const WINDOW_MARGIN = 12
 const RIGHT_REGION_CENTER_RATIO = 0.7
-const EDGE_SLOP = 96
-const MIN_VISIBLE = 80
 
 function getViewportLimit(): { width: number; height: number } {
   if (typeof window === 'undefined') {
@@ -33,7 +32,7 @@ function getViewportLimit(): { width: number; height: number } {
 
   return {
     width: Math.max(320, window.innerWidth - WINDOW_MARGIN * 2),
-    height: Math.max(240, window.innerHeight + EDGE_SLOP),
+    height: Math.max(240, window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN * 2),
   }
 }
 
@@ -67,20 +66,23 @@ function clampWindowSize(
 }
 
 function clampPosition(value: number, max: number): number {
-  return Math.min(max, Math.max(-EDGE_SLOP, value))
+  if (max < WINDOW_MARGIN) return WINDOW_MARGIN
+  return Math.min(max, Math.max(WINDOW_MARGIN, value))
 }
 
 function clampWindowPosition(
   position: { x: number; y: number },
-  _size: { width: number; height: number }
+  size: { width: number; height: number }
 ): { x: number; y: number } {
   if (typeof window === 'undefined') {
     return position
   }
 
+  const availH = Math.max(0, window.innerHeight - TASKBAR_HEIGHT)
+
   return {
-    x: clampPosition(position.x, window.innerWidth - MIN_VISIBLE),
-    y: clampPosition(position.y, window.innerHeight - MIN_VISIBLE),
+    x: clampPosition(position.x, window.innerWidth - size.width - WINDOW_MARGIN),
+    y: clampPosition(position.y, availH - size.height - WINDOW_MARGIN),
   }
 }
 
@@ -100,27 +102,27 @@ function clampWindowDimensions(
   const { minWidth, minHeight } = getEffectiveMinSize(config)
   const safeMinWidth = Math.min(minWidth, viewportLimit.width)
   const safeMinHeight = Math.min(minHeight, viewportLimit.height)
-  const maxRight = window.innerWidth + EDGE_SLOP
-  const maxBottom = window.innerHeight + EDGE_SLOP
+  const maxRight = window.innerWidth - WINDOW_MARGIN
+  const maxBottom = window.innerHeight - TASKBAR_HEIGHT - WINDOW_MARGIN
 
   let left = dimensions.x
   let top = dimensions.y
   let right = dimensions.x + dimensions.width
   let bottom = dimensions.y + dimensions.height
 
-  if (left < -EDGE_SLOP) left = -EDGE_SLOP
-  if (top < -EDGE_SLOP) top = -EDGE_SLOP
+  if (left < WINDOW_MARGIN) left = WINDOW_MARGIN
+  if (top < WINDOW_MARGIN) top = WINDOW_MARGIN
   if (right > maxRight) right = maxRight
   if (bottom > maxBottom) bottom = maxBottom
 
   if (right - left < safeMinWidth) {
     right = Math.min(maxRight, left + safeMinWidth)
-    left = Math.max(-EDGE_SLOP, right - safeMinWidth)
+    left = Math.max(WINDOW_MARGIN, right - safeMinWidth)
   }
 
   if (bottom - top < safeMinHeight) {
     bottom = Math.min(maxBottom, top + safeMinHeight)
-    top = Math.max(-EDGE_SLOP, bottom - safeMinHeight)
+    top = Math.max(WINDOW_MARGIN, bottom - safeMinHeight)
   }
 
   return {
@@ -141,11 +143,6 @@ function normalizeWindowConfig(config: WindowConfig, size: { width: number; heig
     height: size.height,
     minWidth,
     minHeight,
-    resizable: config.resizable ?? true,
-    draggable: config.draggable ?? true,
-    closable: config.closable ?? true,
-    minimizable: config.minimizable ?? true,
-    maximizable: config.maximizable ?? true,
   }
 }
 
@@ -166,7 +163,7 @@ function computeRightRegionPosition(
   openCount: number
 ): { x: number; y: number } {
   const availW = window.innerWidth
-  const availH = Math.max(0, window.innerHeight)
+  const availH = Math.max(0, window.innerHeight - TASKBAR_HEIGHT)
   const cascadeIndex = openCount % 5
   const rawX = Math.round(
     availW * RIGHT_REGION_CENTER_RATIO - size.width / 2 + windowDefaults.xOffset * cascadeIndex
@@ -261,13 +258,10 @@ export const useWindowManagerStore = defineStore('windowManager', () => {
     }
     const size = clampWindowSize(requestedSize, config)
     const defaultPos = computeDefaultPosition(config.tool, size, openWindowCount)
-    const position = clampWindowPosition(
-      {
-        x: config.x ?? defaultPos.x,
-        y: config.y ?? defaultPos.y,
-      },
-      size
-    )
+    const position = clampWindowPosition({
+      x: config.x ?? defaultPos.x,
+      y: config.y ?? defaultPos.y,
+    }, size)
     const normalizedConfig = normalizeWindowConfig(config, size)
 
     const isFullscreen = config.tool === 'settings' ? false : (config.isFullscreen ?? false)
