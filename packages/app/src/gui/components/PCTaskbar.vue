@@ -1,7 +1,7 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 
 <template>
-  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0 z-200" @contextmenu.prevent>
+  <div ref="taskbarRef" class="pc-taskbar fixed bottom-0 left-0 right-0" style="z-index: 800" @contextmenu.prevent>
     <div class="pc-taskbar__container">
       <!-- Start Button -->
       <button class="pc-taskbar__start-btn" @click="$emit('start-click')">
