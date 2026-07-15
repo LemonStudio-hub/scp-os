@@ -180,22 +180,39 @@ export async function itemById(c: Ctx, table: string): Promise<Response> {
   return row ? json({ success: true, data: row }) : json({ success: false, error: 'Not found' }, 404)
 }
 
-function convertToCsv(rows: Record<string, unknown>[]): string {
-  if (!rows.length) return '﻿'
-  const headers = Object.keys(rows[0])
+const CSV_BOM = '\uFEFF'
+const D1_BATCH_LIMIT = 100
+const IMPORT_MAX_ROWS = 1000
+
+function csvCell(value: unknown): string {
+  if (value === null || value === undefined) return ''
+  let text: string
+  if (typeof value === 'object') {
+    try {
+      text = JSON.stringify(value)
+    } catch {
+      text = ''
+    }
+  } else {
+    text = String(value)
+  }
+  if (/[",\n\r]/.test(text)) return `"${text.replace(/"/g, '""')}"`
+  return text
+}
+
+/** Union headers across all rows; nested objects serialize as JSON. */
+export function convertToCsv(rows: Record<string, unknown>[]): string {
+  if (!rows.length) return CSV_BOM
+  const headerSet = new Set<string>()
+  for (const row of rows) {
+    for (const key of Object.keys(row)) headerSet.add(key)
+  }
+  const headers = Array.from(headerSet)
   const lines = [
     headers.join(','),
-    ...rows.map((row) =>
-      headers
-        .map((h) => {
-          const val = String(row[h] ?? '')
-          if (/[",\n\r]/.test(val)) return `"${val.replace(/"/g, '""')}"`
-          return val
-        })
-        .join(','),
-    ),
+    ...rows.map((row) => headers.map((h) => csvCell(row[h])).join(',')),
   ]
-  return '﻿' + lines.join('\n')
+  return CSV_BOM + lines.join('\n')
 }
 
 export async function adminExport(c: Ctx, table: string): Promise<Response> {
@@ -208,7 +225,16 @@ export async function adminExport(c: Ctx, table: string): Promise<Response> {
   const data = await all(c.env.SCP_DB, `SELECT * FROM ${safeTable(table)} LIMIT ? OFFSET ?`, [limit, offset])
   const total = await count(c.env.SCP_DB, safeTable(table))
   if (format === 'csv') {
-    return json({ success: true, data: convertToCsv(data as Record<string, unknown>[]), format: 'csv' })
+    const csv = convertToCsv(data as Record<string, unknown>[])
+    const filename = `${safeTable(table)}-export.csv`
+    return new Response(csv, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'no-store',
+      },
+    })
   }
   return json({ success: true, data, total, pagination: { limit, offset, has_more: offset + limit < total }, format: 'json' })
 }
@@ -239,7 +265,7 @@ export async function batchUsers(c: Ctx): Promise<Response> {
 export async function batchContent(c: Ctx, table: string): Promise<Response> {
   const body = await readJson<{ action?: string; ids?: number[]; status?: string; category?: string }>(c.req.raw)
   const action = body?.action
-  const ids = body?.ids || []
+  const ids = (body?.ids || []).map(Number).filter((id) => Number.isFinite(id))
   const supportedActions = ['delete', 'update_status', 'move_category']
 
   if (!action || !supportedActions.includes(action)) {
@@ -251,16 +277,21 @@ export async function batchContent(c: Ctx, table: string): Promise<Response> {
 
   const safe = safeTable(table)
   try {
-    if (action === 'delete') {
-      for (const id of ids) await run(c.env.SCP_DB, `DELETE FROM ${safe} WHERE id = ?`, [id])
-    } else if (action === 'update_status') {
-      const status = body?.status
-      if (!status) return json({ success: false, error: 'Missing status parameter' }, 400)
-      for (const id of ids) await run(c.env.SCP_DB, `UPDATE ${safe} SET status = ? WHERE id = ?`, [status, id])
-    } else if (action === 'move_category') {
-      const category = body?.category
-      if (!category) return json({ success: false, error: 'Missing category parameter' }, 400)
-      for (const id of ids) await run(c.env.SCP_DB, `UPDATE ${safe} SET category = ? WHERE id = ?`, [category, id])
+    // Chunk to stay under D1 batch statement limits (~100).
+    for (let i = 0; i < ids.length; i += D1_BATCH_LIMIT) {
+      const chunk = ids.slice(i, i + D1_BATCH_LIMIT)
+      const placeholders = chunk.map(() => '?').join(', ')
+      if (action === 'delete') {
+        await run(c.env.SCP_DB, `DELETE FROM ${safe} WHERE id IN (${placeholders})`, chunk)
+      } else if (action === 'update_status') {
+        const status = body?.status
+        if (!status) return json({ success: false, error: 'Missing status parameter' }, 400)
+        await run(c.env.SCP_DB, `UPDATE ${safe} SET status = ? WHERE id IN (${placeholders})`, [status, ...chunk])
+      } else if (action === 'move_category') {
+        const category = body?.category
+        if (!category) return json({ success: false, error: 'Missing category parameter' }, 400)
+        await run(c.env.SCP_DB, `UPDATE ${safe} SET category = ? WHERE id IN (${placeholders})`, [category, ...chunk])
+      }
     }
     return json({ success: true })
   } catch (error) {
@@ -306,6 +337,15 @@ export async function importContent(c: Ctx, table: string): Promise<Response> {
   if (!rows.length) {
     return json({ success: false, error: 'No data provided' }, 400)
   }
+  if (rows.length > IMPORT_MAX_ROWS) {
+    return json(
+      {
+        success: false,
+        error: `Import payload too large (max ${IMPORT_MAX_ROWS} rows, got ${rows.length})`,
+      },
+      400,
+    )
+  }
 
   const safe = safeTable(table)
   const schema = importSchemas[safe] || { required: [] }
@@ -324,13 +364,18 @@ export async function importContent(c: Ctx, table: string): Promise<Response> {
   if (schema.uniqueField && validRows.length) {
     const values = validRows.map((r) => r.row[schema.uniqueField!]).filter((v) => v !== undefined && v !== null)
     if (values.length) {
-      const placeholders = values.map(() => '?').join(', ')
-      const existing = await all<Record<string, unknown>>(
-        c.env.SCP_DB,
-        `SELECT ${schema.uniqueField} FROM ${safe} WHERE ${schema.uniqueField} IN (${placeholders})`,
-        values,
-      )
-      const existingSet = new Set(existing.map((r) => r[schema.uniqueField!]))
+      // Chunk unique-field lookups under D1 bind/IN limits.
+      const existingSet = new Set<unknown>()
+      for (let i = 0; i < values.length; i += D1_BATCH_LIMIT) {
+        const chunk = values.slice(i, i + D1_BATCH_LIMIT)
+        const placeholders = chunk.map(() => '?').join(', ')
+        const existing = await all<Record<string, unknown>>(
+          c.env.SCP_DB,
+          `SELECT ${schema.uniqueField} FROM ${safe} WHERE ${schema.uniqueField} IN (${placeholders})`,
+          chunk,
+        )
+        for (const r of existing) existingSet.add(r[schema.uniqueField!])
+      }
       const duplicates = new Set<unknown>()
       for (let i = validRows.length - 1; i >= 0; i--) {
         const value = validRows[i].row[schema.uniqueField!]
@@ -348,20 +393,27 @@ export async function importContent(c: Ctx, table: string): Promise<Response> {
   let inserted = 0
   if (validRows.length) {
     try {
-      const statements = validRows.map(({ row }) => {
-        const entries = Object.entries(row).filter(([key]) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
-        return c.env.SCP_DB
-          .prepare(`INSERT INTO ${safe} (${entries.map(([key]) => key).join(', ')}) VALUES (${entries.map(() => '?').join(', ')})`)
-          .bind(...entries.map(([, value]) => value))
-      })
-      await c.env.SCP_DB.batch(statements)
-      inserted = validRows.length
+      // D1 batch() hard-limits ~100 statements — chunk inserts.
+      for (let i = 0; i < validRows.length; i += D1_BATCH_LIMIT) {
+        const chunk = validRows.slice(i, i + D1_BATCH_LIMIT)
+        const statements = chunk.map(({ row }) => {
+          const entries = Object.entries(row).filter(([key]) => /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+          return c.env.SCP_DB
+            .prepare(
+              `INSERT INTO ${safe} (${entries.map(([key]) => key).join(', ')}) VALUES (${entries.map(() => '?').join(', ')})`,
+            )
+            .bind(...entries.map(([, value]) => value))
+        })
+        await c.env.SCP_DB.batch(statements)
+        inserted += chunk.length
+      }
     } catch (error) {
       const msg = (error as Error).message || 'Batch insert failed'
       for (const { index } of validRows) {
         results[index] = { success: false, error: msg }
       }
       validRows.length = 0
+      inserted = 0
     }
   }
 

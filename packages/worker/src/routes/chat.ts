@@ -56,6 +56,8 @@ export function registerChat(app: Hono<AppEnv>): void {
   app.put('/chat/rooms/:id', async (c) => {
     const userId = await requiredUser(c)
     if (userId instanceof Response) return userId
+    const limited = await chatRateLimit(c.env.SCP_DB, userId)
+    if (!limited.allowed) return json({ success: false, error: 'Rate limit exceeded. Try again later.' }, 429)
     const roomId = Number(c.req.param('id'))
     const body = await readJson<{ name?: string; description?: string; is_public?: number }>(c.req.raw)
     const name = cleanText(body?.name, 50)
@@ -71,10 +73,14 @@ export function registerChat(app: Hono<AppEnv>): void {
   app.delete('/chat/rooms/:id', async (c) => {
     const userId = await requiredUser(c)
     if (userId instanceof Response) return userId
+    const limited = await chatRateLimit(c.env.SCP_DB, userId)
+    if (!limited.allowed) return json({ success: false, error: 'Rate limit exceeded. Try again later.' }, 429)
     const roomId = Number(c.req.param('id'))
     const room = await first<{ id: number; created_by: string }>(c.env.SCP_DB, 'SELECT id, created_by FROM chat_rooms WHERE id = ?', [roomId])
     if (!room) return json({ success: false, error: 'Room not found' }, 404)
     if (room.created_by !== userId) return json({ success: false, error: 'Permission denied' }, 403)
+    // Delete messages first so room delete does not leave orphans.
+    await run(c.env.SCP_DB, 'DELETE FROM chat_messages WHERE room_id = ?', [roomId])
     await run(c.env.SCP_DB, 'DELETE FROM chat_rooms WHERE id = ?', [roomId])
     return json({ success: true })
   })
@@ -82,6 +88,8 @@ export function registerChat(app: Hono<AppEnv>): void {
   app.put('/chat/messages/:id', async (c) => {
     const userId = await requiredUser(c)
     if (userId instanceof Response) return userId
+    const limited = await chatRateLimit(c.env.SCP_DB, userId)
+    if (!limited.allowed) return json({ success: false, error: 'Rate limit exceeded. Try again later.' }, 429)
     const messageId = Number(c.req.param('id'))
     const body = await readJson<{ content?: string }>(c.req.raw)
     const content = cleanText(body?.content, 1000)
@@ -97,6 +105,8 @@ export function registerChat(app: Hono<AppEnv>): void {
   app.delete('/chat/messages/:id', async (c) => {
     const userId = await requiredUser(c)
     if (userId instanceof Response) return userId
+    const limited = await chatRateLimit(c.env.SCP_DB, userId)
+    if (!limited.allowed) return json({ success: false, error: 'Rate limit exceeded. Try again later.' }, 429)
     const messageId = Number(c.req.param('id'))
     const msg = await first<{ id: number; user_id: string }>(c.env.SCP_DB, 'SELECT id, user_id FROM chat_messages WHERE id = ?', [messageId])
     if (!msg) return json({ success: false, error: 'Message not found' }, 404)
