@@ -17,16 +17,18 @@ export interface DragState {
   currentY: number
 }
 
+export interface DragBoundary {
+  minX?: number
+  minY?: number
+  maxX?: number
+  maxY?: number
+}
+
 export interface UseDraggableOptions {
   disabled?: boolean
   /** Minimum distance in pixels before drag starts (prevents accidental drags on click) */
   dragThreshold?: number
-  boundary?: {
-    minX?: number
-    minY?: number
-    maxX?: number
-    maxY?: number
-  }
+  boundary?: DragBoundary | (() => DragBoundary)
   onMove?: (x: number, y: number) => void
   onStart?: (x: number, y: number) => void
   onEnd?: (x: number, y: number) => void
@@ -58,13 +60,14 @@ export function useDraggable(
   })
 
   function applyBoundary(x: number, y: number): { x: number; y: number } {
+    const currentBoundary = typeof boundary === 'function' ? boundary() : boundary
     let boundedX = x
     let boundedY = y
 
-    if (boundary.minX !== undefined) boundedX = Math.max(boundary.minX, boundedX)
-    if (boundary.minY !== undefined) boundedY = Math.max(boundary.minY, boundedY)
-    if (boundary.maxX !== undefined) boundedX = Math.min(boundary.maxX, boundedX)
-    if (boundary.maxY !== undefined) boundedY = Math.min(boundary.maxY, boundedY)
+    if (currentBoundary.minX !== undefined) boundedX = Math.max(currentBoundary.minX, boundedX)
+    if (currentBoundary.minY !== undefined) boundedY = Math.max(currentBoundary.minY, boundedY)
+    if (currentBoundary.maxX !== undefined) boundedX = Math.min(currentBoundary.maxX, boundedX)
+    if (currentBoundary.maxY !== undefined) boundedY = Math.min(currentBoundary.maxY, boundedY)
 
     return { x: boundedX, y: boundedY }
   }
@@ -156,6 +159,12 @@ export function useDraggable(
     dragState.value.initialY = bounded.y
   }
 
+  function setCurrentPosition(x: number, y: number): void {
+    const bounded = applyBoundary(x, y)
+    dragState.value.currentX = bounded.x
+    dragState.value.currentY = bounded.y
+  }
+
   onUnmounted(() => {
     stop()
   })
@@ -165,5 +174,6 @@ export function useDraggable(
     handleMouseDown,
     stop,
     setInitialPosition,
+    setCurrentPosition,
   }
 }

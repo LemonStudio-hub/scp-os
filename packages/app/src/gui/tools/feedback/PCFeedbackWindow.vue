@@ -1,5 +1,5 @@
 <template>
-  <PCWindow :visible="visible" :title="t('fb.title')" @close="$emit('close')">
+  <PCWindow :window-instance="windowInstance" @close="$emit('close')">
     <div class="pc-feedback">
       <div class="pc-feedback__content">
         <!-- Tab Bar -->
@@ -228,10 +228,13 @@
 
 <script setup lang="ts">
 import PCWindow from '../../components/PCWindow.vue'
+import { useI18n } from '../../composables/useI18n'
 import { useFeedback } from '../../composables/useFeedback'
+import type { WindowInstance } from '../../types'
 
 interface Props {
-  visible: boolean
+  visible?: boolean
+  windowInstance?: WindowInstance
 }
 
 defineProps<Props>()
@@ -239,8 +242,8 @@ defineEmits<{
   close: []
 }>()
 
+const { t } = useI18n()
 const {
-  t,
   tabs,
   activeTab,
   form,

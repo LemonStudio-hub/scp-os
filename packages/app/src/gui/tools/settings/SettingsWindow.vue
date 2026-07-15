@@ -271,6 +271,13 @@
             </div>
             <div class="pc-settings__row">
               <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.cloudStorage') }}</div>
+                <div class="pc-settings__row-description">{{ formatCloudFiles(cloudQuota) }}</div>
+              </div>
+              <div class="pc-settings__row-value">{{ formatCloudQuota(cloudQuota) }}</div>
+            </div>
+            <div class="pc-settings__row">
+              <div class="pc-settings__row-info">
                 <div class="pc-settings__row-label">{{ t('settings.terminalStates') }}</div>
               </div>
               <div class="pc-settings__row-value">{{ terminalStateCount }}</div>
@@ -372,10 +379,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useI18n } from '../../composables/useI18n'
+import { useSettings } from '../../composables/useSettings'
 import { localeNames } from '../../../locales'
 import PCWindow from '../../components/PCWindow.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
-import { useSettings } from '../../composables/useSettings'
+import { useThemeStore } from '../../stores/themeStore'
 import type { WindowInstance } from '../../types'
 
 interface Props {
@@ -387,26 +396,23 @@ defineEmits<{
   (e: 'close'): void
 }>()
 
+const { t, locale, availableLocales } = useI18n()
 const {
-  t,
-  locale,
-  availableLocales,
-  themeStore,
   settings,
-  userId,
-  wallpaperPickerVisible,
-  currentWallpaperName,
-  currentLanguageName,
   confirmDialog,
   storageUsed,
+  cloudQuota,
+  userId,
   terminalStateCount,
-  buildDate,
-  selectLanguage,
-  onWallpaperChange,
   confirmClearData,
   confirmResetSettings,
+  formatCloudQuota,
+  formatCloudFiles,
 } = useSettings()
+const themeStore = useThemeStore()
+themeStore.init()
 
+// Navigation sections
 const sections = computed(() => [
   {
     id: 'terminal',
@@ -431,8 +437,49 @@ const sections = computed(() => [
 ])
 
 const activeSection = ref('terminal')
+
+// Language
 const showLanguageDropdown = ref(false)
+const currentLanguageName = computed(() => localeNames[locale.value] || t('common.english'))
+
+function selectLanguage(loc: 'en' | 'zh-CN') {
+  locale.value = loc
+  showLanguageDropdown.value = false
+  loadWallpaperName()
+}
+
+// Wallpaper
+const wallpaperPickerVisible = ref(false)
+const currentWallpaperName = ref<string>('None')
+
+async function loadWallpaperName() {
+  try {
+    const { wallpaperService } = await import('../../../utils/wallpaperService')
+    await wallpaperService.init()
+    const id = wallpaperService.getCurrentWallpaperId()
+    if (id) {
+      const wp = await wallpaperService.getWallpaper(id)
+      currentWallpaperName.value = wp?.name || t('common.none')
+    } else {
+      currentWallpaperName.value = t('common.none')
+    }
+  } catch {
+    /* silently fail */
+  }
+}
+loadWallpaperName()
+
+function onWallpaperChange(_wallpaperId: string | null) {
+  window.dispatchEvent(
+    new CustomEvent('wallpaper-changed', { detail: { wallpaperId: _wallpaperId } })
+  )
+  loadWallpaperName()
+}
+
+// UI state
 const showFontSizeSlider = ref(false)
+
+const buildDate = computed(() => '2026-04-06')
 </script>
 
 <style scoped>

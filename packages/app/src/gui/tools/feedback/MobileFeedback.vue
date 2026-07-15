@@ -234,6 +234,7 @@
 
 <script setup lang="ts">
 import MobileWindow from '../../components/MobileWindow.vue'
+import { useI18n } from '../../composables/useI18n'
 import { useFeedback } from '../../composables/useFeedback'
 
 interface Props {
@@ -245,8 +246,8 @@ defineEmits<{
   close: []
 }>()
 
+const { t } = useI18n()
 const {
-  t,
   tabs,
   activeTab,
   form,

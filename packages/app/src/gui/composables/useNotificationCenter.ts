@@ -1,7 +1,13 @@
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useNotificationStore } from '../../stores/notificationStore'
 import { useI18n } from './useI18n'
-import type { NotificationType } from '../../stores/notificationStore'
+import type {
+  AppNotification,
+  NotificationPreferences,
+  NotificationType,
+} from '../../stores/notificationStore'
+
+export type NotificationPreferenceKey = keyof NotificationPreferences
 
 export function useNotificationCenter() {
   const store = useNotificationStore()
@@ -38,32 +44,58 @@ export function useNotificationCenter() {
     return t('notif.timeDayAgo', { n: Math.floor(diff / 86400000) })
   }
 
-  async function handleClick(item: any): Promise<void> {
-    if (!item.is_read) await store.markAsRead(item.id)
+  async function loadNotifications(limit = 20, offset = 0): Promise<void> {
+    await store.fetchNotifications(limit, offset)
+  }
+
+  async function loadPreferences(): Promise<void> {
+    await store.fetchPreferences()
+  }
+
+  async function loadNotificationCenter(): Promise<void> {
+    await Promise.all([loadNotifications(), loadPreferences()])
+  }
+
+  async function markAsRead(notificationId?: number): Promise<void> {
+    await store.markAsRead(notificationId)
   }
 
   async function markAllRead(): Promise<void> {
-    await store.markAsRead()
+    await markAsRead()
   }
 
-  async function togglePref(key: keyof typeof store.preferences): Promise<void> {
+  async function deleteNotification(notificationId: number): Promise<void> {
+    await store.deleteNotification(notificationId)
+  }
+
+  async function togglePref(key: NotificationPreferenceKey): Promise<void> {
     await store.updatePreferences({ [key]: store.preferences[key] ? 0 : 1 })
   }
 
+  async function handleNotificationClick(item: AppNotification): Promise<void> {
+    if (!item.is_read) await markAsRead(item.id)
+  }
+
   onMounted(() => {
-    store.fetchNotifications()
-    store.fetchPreferences()
+    void loadNotificationCenter()
   })
 
   return {
-    t,
     store,
     showPrefs,
     prefItems,
     typeLabel,
     formatTimeAgo,
-    handleClick,
+    loadNotifications,
+    loadPreferences,
+    loadNotificationCenter,
+    markAsRead,
     markAllRead,
+    deleteNotification,
     togglePref,
+    handleNotificationClick,
+    /** @deprecated alias — prefer handleNotificationClick */
+    handleClick: handleNotificationClick,
+    t,
   }
 }

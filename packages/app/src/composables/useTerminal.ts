@@ -3,11 +3,7 @@ import type { Ref } from 'vue'
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import type { TerminalInstance } from '../types/terminal'
-import {
-  createTerminalConfig,
-  sleep,
-  isMobileDevice,
-} from '../utils/terminal'
+import { createTerminalConfig, sleep, isMobileDevice } from '../utils/terminal'
 import { ANSICode } from '../constants/theme'
 import { errorHandler, ErrorType, ErrorSeverity } from '../utils/errorHandler'
 import { useTerminalEmulator } from '../gui/composables/useTerminalEmulator'
@@ -95,17 +91,11 @@ export function useTerminal(container: Ref<HTMLElement | undefined>) {
   let resizeHandler: (() => void) | null = null
 
   // Unified input handling — shared with GUI terminal components
-  const {
-    inputBuffer,
-    writePrompt,
-    handleInput,
-    navigateHistory,
-    autocomplete,
-    executeCommand,
-  } = useTerminalEmulator({
-    getTerminal: () => terminalInstance.value.terminal,
-    promptStyle: 'legacy',
-  })
+  const { inputBuffer, writePrompt, handleInput, navigateHistory, autocomplete, executeCommand } =
+    useTerminalEmulator({
+      getTerminal: () => terminalInstance.value.terminal,
+      promptStyle: 'legacy',
+    })
 
   const initTerminal = () => {
     try {

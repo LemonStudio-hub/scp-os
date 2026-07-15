@@ -1,7 +1,7 @@
-import { ref } from 'vue'
-import { useI18n } from './useI18n'
+import { onMounted, ref, watch } from 'vue'
 import { useFileManagerStore } from '../stores/fileManager'
 import { filesystem } from '../../utils/filesystem'
+import type { FileItem } from '../types'
 
 export const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']
 export const AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a']
@@ -16,20 +16,51 @@ export const TEXT_EXTS = [
   'yaml',
   'js',
   'ts',
+  'tsx',
+  'jsx',
   'css',
+  'scss',
   'html',
   'vue',
   'py',
   'sh',
+  'bash',
   'desktop',
+  'sql',
+  'csv',
+  'tsv',
+  'ini',
+  'toml',
+  'env',
+  'rs',
+  'go',
+  'java',
+  'c',
+  'cpp',
+  'h',
+  'hpp',
 ]
+
+export interface LocalUploadResult {
+  localSuccess: number
+  localFail: number
+  files: Array<{ file: File; path: string }>
+}
+
+function getExtension(name: string): string {
+  return name.split('.').pop()?.toLowerCase() || ''
+}
+
+/** Public alias — consumers historically called this `getFileExtension`. */
+export function getFileExtension(name: string): string {
+  return getExtension(name)
+}
 
 export function formatSize(bytes: number): string {
   if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
+  const units = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(1024))
+  return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`
 }
 
 export function formatDate(ts: number): string {
@@ -41,24 +72,40 @@ export function formatDate(ts: number): string {
   })
 }
 
-export function getFileExtension(filename: string): string {
-  return filename.split('.').pop()?.toLowerCase() || ''
+export function sanitizeFileName(name: string): string {
+  return name.replace(/[\\/:*?"<>|]/g, '_').replace(/\.\.+/g, '_')
 }
 
-export function isImageFile(filename: string): boolean {
-  return IMAGE_EXTS.includes(getFileExtension(filename))
+export function isImageFile(name: string): boolean {
+  return IMAGE_EXTS.includes(getExtension(name))
 }
 
-export function isAudioFile(filename: string): boolean {
-  return AUDIO_EXTS.includes(getFileExtension(filename))
+export function isAudioFile(name: string): boolean {
+  return AUDIO_EXTS.includes(getExtension(name))
 }
 
-export function isVideoFile(filename: string): boolean {
-  return VIDEO_EXTS.includes(getFileExtension(filename))
+export function isVideoFile(name: string): boolean {
+  return VIDEO_EXTS.includes(getExtension(name))
 }
 
-export function isTextFile(filename: string): boolean {
-  return TEXT_EXTS.includes(getFileExtension(filename))
+export function isTextFile(name: string): boolean {
+  return TEXT_EXTS.includes(getExtension(name))
+}
+
+export function ensureDirectory(path: string): boolean {
+  const parts = path.split('/').filter(Boolean)
+  let current = ''
+  for (const part of parts) {
+    current += '/' + part
+    const node = filesystem.getNodeByPath(current)
+    if (!node) {
+      const ok = filesystem.createDirectory(current)
+      if (!ok) return false
+    } else if (node.type !== 'directory') {
+      return false
+    }
+  }
+  return true
 }
 
 export function readFileAsLocal(file: File): Promise<string> {
@@ -81,27 +128,70 @@ export function readFileAsLocal(file: File): Promise<string> {
 }
 
 export function useFileManagerOps() {
-  const { t } = useI18n()
   const fmStore = useFileManagerStore()
+  const searchText = ref(fmStore.searchQuery)
 
-  const fileInputRef = ref<HTMLInputElement | null>(null)
+  watch(searchText, (val) => {
+    fmStore.setSearch(val)
+  })
 
-  function triggerUpload() {
-    fileInputRef.value?.click()
+  onMounted(() => {
+    fmStore.loadDirectory(fmStore.currentPath)
+  })
+
+  function currentPathForName(name: string): string {
+    return fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
   }
 
-  async function onFileUpload(event: Event): Promise<{ success: number; fail: number }> {
-    const input = event.target as HTMLInputElement
-    const files = input.files
-    if (!files || files.length === 0) return { success: 0, fail: 0 }
+  function loadFiles(path = fmStore.currentPath): void {
+    fmStore.loadDirectory(path)
+  }
 
-    let successCount = 0
-    let failCount = 0
+  function createFile(name: string, content = ''): boolean {
+    const ok = filesystem.createFile(currentPathForName(name), content)
+    if (ok) loadFiles()
+    return ok
+  }
 
-    for (const file of files) {
-      const path =
-        fmStore.currentPath === '/' ? '/' + file.name : fmStore.currentPath + '/' + file.name
+  function createFolder(name: string): boolean {
+    const ok = filesystem.createDirectory(currentPathForName(name))
+    if (ok) loadFiles()
+    return ok
+  }
 
+  function deleteFile(name: string): boolean {
+    const ok = filesystem.deleteNode(currentPathForName(name))
+    if (ok) loadFiles()
+    return ok
+  }
+
+  function renameFile(oldName: string, newName: string): boolean {
+    if (oldName === newName) return true
+    const ok = filesystem.moveNode(currentPathForName(oldName), currentPathForName(newName))
+    if (ok) loadFiles()
+    return ok
+  }
+
+  function moveFile(oldPath: string, newPath: string): boolean {
+    const ok = filesystem.moveNode(oldPath, newPath)
+    if (ok) loadFiles()
+    return ok
+  }
+
+  function writeFile(path: string, content: string): boolean {
+    const ok = filesystem.writeFile(path, content)
+    if (ok) loadFiles()
+    return ok
+  }
+
+  async function uploadLocalFiles(
+    files: FileList | File[],
+    sanitize = false
+  ): Promise<LocalUploadResult> {
+    const result: LocalUploadResult = { localSuccess: 0, localFail: 0, files: [] }
+    for (const file of Array.from(files)) {
+      const name = sanitize ? sanitizeFileName(file.name) : file.name
+      const path = currentPathForName(name)
       try {
         const content = await readFileAsLocal(file)
         const existingNode = filesystem.getNodeByPath(path)
@@ -110,72 +200,48 @@ export function useFileManagerOps() {
         } else {
           filesystem.createFile(path, content)
         }
-        successCount++
+        result.localSuccess++
+        result.files.push({ file, path })
       } catch (error) {
         console.error('[FileManager] Failed to store file locally:', error)
-        failCount++
+        result.localFail++
       }
     }
-
-    fmStore.loadDirectory(fmStore.currentPath)
-    input.value = ''
-
-    return { success: successCount, fail: failCount }
+    loadFiles()
+    return result
   }
 
-  function createFile(name: string): void {
-    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
-    try {
-      filesystem.createFile(path, '')
-      fmStore.loadDirectory(fmStore.currentPath)
-    } catch (error) {
-      console.error('[FileManager] Failed to create file:', error)
-    }
-  }
-
-  function createFolder(name: string): void {
-    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
-    try {
-      filesystem.createDirectory(path)
-      fmStore.loadDirectory(fmStore.currentPath)
-    } catch (error) {
-      console.error('[FileManager] Failed to create folder:', error)
-    }
-  }
-
-  function renameFile(oldName: string, newName: string): void {
-    const oldPath =
-      fmStore.currentPath === '/' ? '/' + oldName : fmStore.currentPath + '/' + oldName
-    const newPath =
-      fmStore.currentPath === '/' ? '/' + newName : fmStore.currentPath + '/' + newName
-    try {
-      filesystem.rename(oldPath, newPath)
-      fmStore.loadDirectory(fmStore.currentPath)
-    } catch (error) {
-      console.error('[FileManager] Failed to rename:', error)
-    }
-  }
-
-  function deleteFile(name: string): void {
-    const path = fmStore.currentPath === '/' ? '/' + name : fmStore.currentPath + '/' + name
-    try {
-      filesystem.remove(path)
-      fmStore.loadDirectory(fmStore.currentPath)
-    } catch (error) {
-      console.error('[FileManager] Failed to delete:', error)
-    }
+  function openDirectory(file: FileItem): boolean {
+    if (!file.isDirectory) return false
+    fmStore.navigateTo(file.path)
+    return true
   }
 
   return {
-    t,
     fmStore,
-    fileInputRef,
-    formatSize,
-    triggerUpload,
-    onFileUpload,
+    searchText,
+    loadFiles,
     createFile,
     createFolder,
-    renameFile,
     deleteFile,
+    renameFile,
+    moveFile,
+    writeFile,
+    uploadLocalFiles,
+    currentPathForName,
+    openDirectory,
+    formatSize,
+    formatDate,
+    sanitizeFileName,
+    ensureDirectory,
+    readFileAsLocal,
+    isImageFile,
+    isAudioFile,
+    isVideoFile,
+    isTextFile,
+    IMAGE_EXTS,
+    AUDIO_EXTS,
+    VIDEO_EXTS,
+    TEXT_EXTS,
   }
 }
