@@ -110,6 +110,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import GUIIcon from './ui/GUIIcon.vue'
 import type { IconName } from '../icons'
+import type { ToolType } from '../types'
+import { getInstalledAppTools } from '../utils/appCatalog'
 
 const { t } = useI18n()
 
@@ -148,22 +150,35 @@ const emit = defineEmits<{
 
 const searchQuery = ref('')
 const showSearchResults = ref(false)
+const installedTools = ref<Set<ToolType>>(new Set())
 
 // Pinned apps
-const apps: StartMenuApp[] = [
+const pinnedAppDefinitions: StartMenuApp[] = [
   { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', iconName: 'terminal' },
   { id: 'files', label: t('home.apps.files'), tool: 'filemanager', iconName: 'folder' },
   { id: 'editor', label: t('app.editor'), tool: 'editor', iconName: 'edit' },
   { id: 'chat', label: t('home.apps.chat'), tool: 'chat', iconName: 'message-square' },
   { id: 'dash', label: t('home.apps.dash'), tool: 'dash', iconName: 'bar-chart-2' },
   { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', iconName: 'message-circle' },
+  { id: 'appmanager', label: t('home.apps.appManager'), tool: 'appmanager', iconName: 'grid' },
 ]
 
 // All apps (including pinned)
-const allApps: StartMenuApp[] = [
-  ...apps,
+const allAppDefinitions: StartMenuApp[] = [
+  ...pinnedAppDefinitions,
   { id: 'settings', label: t('home.apps.settings'), tool: 'settings', iconName: 'settings' },
 ]
+
+function refreshInstalledApps(): void {
+  installedTools.value = getInstalledAppTools()
+}
+
+function isStartAppInstalled(app: StartMenuApp): boolean {
+  return installedTools.value.has(app.tool as ToolType)
+}
+
+const apps = computed(() => pinnedAppDefinitions.filter(isStartAppInstalled))
+const allApps = computed(() => allAppDefinitions.filter(isStartAppInstalled))
 
 // System options
 const systemOptions: SystemOption[] = [
@@ -181,7 +196,7 @@ const powerOptions: PowerOption[] = [
 ]
 
 // Combined items for search
-const allItems = computed(() => [...apps, ...systemOptions, ...powerOptions])
+const allItems = computed(() => [...allApps.value, ...systemOptions, ...powerOptions])
 
 // Filtered items based on search query
 const filteredItems = computed(() => {
@@ -232,10 +247,13 @@ function handleClickOutside(event: MouseEvent) {
 }
 
 onMounted(() => {
+  refreshInstalledApps()
+  window.addEventListener('app-catalog-changed', refreshInstalledApps)
   document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('app-catalog-changed', refreshInstalledApps)
   document.removeEventListener('click', handleClickOutside)
 })
 </script>

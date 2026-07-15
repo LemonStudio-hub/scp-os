@@ -91,10 +91,34 @@ export function useSettings() {
     loadWallpaperName()
   }
 
+  const FONT_SIZE_MIN = 10
+  const FONT_SIZE_MAX = 22
+  /** Base token sizes (px) at default fontSize=14 — must stay in step. */
+  const FONT_TOKEN_BASE: Record<string, number> = {
+    '--gui-font-xs': 11,
+    '--gui-font-sm': 12,
+    '--gui-font-base': 13,
+    '--gui-font-md': 14,
+    '--gui-font-lg': 15,
+    '--gui-font-xl': 17,
+    '--gui-font-2xl': 22,
+    '--gui-font-3xl': 28,
+  }
+
+  function clampFontSize(value: unknown): number {
+    const n = typeof value === 'number' ? value : Number(value)
+    if (!Number.isFinite(n)) return defaultSettings.fontSize
+    return Math.min(FONT_SIZE_MAX, Math.max(FONT_SIZE_MIN, Math.round(n)))
+  }
+
   function loadSettings(): AppSettings {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
-      if (raw) return { ...defaultSettings, ...JSON.parse(raw) }
+      if (raw) {
+        const parsed = { ...defaultSettings, ...JSON.parse(raw) } as AppSettings
+        parsed.fontSize = clampFontSize(parsed.fontSize)
+        return parsed
+      }
     } catch {
       /* ignore */
     }
@@ -104,10 +128,12 @@ export function useSettings() {
   const settings = reactive<AppSettings>(loadSettings())
 
   let prevFontSize = settings.fontSize
+  applySettings()
 
   watch(
     settings,
     () => {
+      settings.fontSize = clampFontSize(settings.fontSize)
       localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
       applySettings()
     },
@@ -119,6 +145,14 @@ export function useSettings() {
   }
 
   function applySettings(): void {
+    const scale = clampFontSize(settings.fontSize) / defaultSettings.fontSize
+    const root = document.documentElement
+    // Scale all 8 type tokens (including 2xl/3xl). Keep one decimal so adjacent steps stay distinct.
+    for (const [token, base] of Object.entries(FONT_TOKEN_BASE)) {
+      const px = Math.max(1, Math.round(base * scale * 10) / 10)
+      root.style.setProperty(token, `${px}px`)
+    }
+
     const terminal = getActiveTerminal()
 
     if (settings.fontSize !== prevFontSize && terminal) {
@@ -131,6 +165,10 @@ export function useSettings() {
       }
       prevFontSize = settings.fontSize
     }
+  }
+
+  function resetFontSize(): void {
+    settings.fontSize = defaultSettings.fontSize
   }
 
   const sliderSheets = reactive({ fontSize: false, language: false })
@@ -248,6 +286,7 @@ export function useSettings() {
     onWallpaperChange,
     openSlider,
     onFontSizeChange,
+    resetFontSize,
     toggleSetting,
     triggerHaptic,
     confirmClearData,

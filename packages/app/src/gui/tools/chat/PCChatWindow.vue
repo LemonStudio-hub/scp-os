@@ -1,5 +1,5 @@
 <template>
-  <PCWindow :visible="visible" :title="t('chat.title')" @close="$emit('close')">
+  <PCWindow :window-instance="windowInstance" @close="$emit('close')">
     <div class="pc-chat" :style="chatThemeStyles">
       <!-- Sidebar: Room List -->
       <div class="pc-chat__sidebar">
@@ -456,10 +456,12 @@ import PCWindow from '../../components/PCWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
 import { useAuthStore } from '../../../stores/authStore'
+import type { WindowInstance } from '../../types'
 import { useChat } from '../../composables/useChat'
 
 interface Props {
-  visible: boolean
+  visible?: boolean
+  windowInstance?: WindowInstance
 }
 
 defineProps<Props>()

@@ -35,14 +35,14 @@ describe('adminSecret', () => {
     expect(adminSecret(env)).toBe('user-key')
   })
 
-  it('falls back to default when both are empty', () => {
+  it('throws when both are empty (no hardcoded default)', () => {
     const env = { ADMIN_JWT_SECRET: '', JWT_SECRET: '' } as never
-    expect(adminSecret(env)).toBe('admin-secret-key')
+    expect(() => adminSecret(env)).toThrow(/not configured/)
   })
 
-  it('falls back to default when both are undefined', () => {
+  it('throws when both are undefined (no hardcoded default)', () => {
     const env = {} as never
-    expect(adminSecret(env)).toBe('admin-secret-key')
+    expect(() => adminSecret(env)).toThrow(/not configured/)
   })
 })
 

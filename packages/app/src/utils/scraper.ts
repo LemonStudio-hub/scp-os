@@ -1,8 +1,50 @@
-import axios from 'axios'
 import { OBJECT_CLASSES } from '../constants/scraperConfig'
-import type { SCPWikiData, ScraperResult, ObjectClassInfo } from '../types/scraper'
+import type { SCPWikiData, ScraperResult, ObjectClassInfo, ObjectClass } from '../types/scraper'
 import { config } from '../config'
 import logger from './logger'
+
+class ApiResponseError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly data: Record<string, unknown>,
+    public readonly statusText: string
+  ) {
+    super(`HTTP ${status}: ${statusText}`)
+  }
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.map(String) : []
+}
+
+function objectClass(value: unknown): ObjectClass {
+  const key = String(value || 'UNKNOWN').toUpperCase()
+  return key in OBJECT_CLASSES ? (key as ObjectClass) : 'UNKNOWN'
+}
+
+async function apiFetch(
+  url: string,
+  params: Record<string, string | number>,
+  timeout: number
+): Promise<{ status: number; data: Record<string, unknown> }> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeout)
+  const search = new URLSearchParams(Object.entries(params).map(([k, v]) => [k, String(v)]))
+  const fullUrl = search.size > 0 ? `${url}?${search}` : url
+  try {
+    const response = await fetch(fullUrl, {
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+    clearTimeout(timer)
+    const data = (await response.json().catch(() => ({}))) as Record<string, unknown>
+    if (!response.ok) throw new ApiResponseError(response.status, data, response.statusText)
+    return { status: response.status, data }
+  } catch (error) {
+    clearTimeout(timer)
+    throw error
+  }
+}
 
 // Worker config values mirror the backend to ensure consistent timeout/retry behavior
 const WORKER_CONFIG = {
@@ -175,80 +217,47 @@ class SCPScraper {
         )
 
         // Call the Cloudflare Worker API
-        const response = await axios.get(apiUrl, {
-          params: { number: scpNumber, branch },
-          timeout: this.API_TIMEOUT,
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          },
-          withCredentials: false,
-        })
+        const response = await apiFetch(apiUrl, { number: scpNumber, branch }, this.API_TIMEOUT)
 
         logger.info(`API 响应状态: ${response.status}`)
         logger.info(`API 响应数据:`, response.data)
 
-        if (response.data.success && response.data.data) {
-          const data = this.normalizeData(response.data.data)
+        if (response.data['success'] && response.data['data']) {
+          const data = this.normalizeData(response.data['data'])
 
           // Persist to in-memory cache for subsequent requests
           this.saveToCache(cacheKey, data)
-
           return { success: true, data }
         } else {
           return {
             success: false,
-            error: response.data.error || '爬取失败',
+            error: (response.data['error'] as string) || '爬取失败',
           }
         }
       } catch (error) {
         // Classify the error to decide whether to retry
-        if (axios.isAxiosError(error)) {
-          if (error.response) {
-            // Server responded with an error status — don't retry server-side errors blindly
-            logger.error(`API 错误响应:`, {
-              status: error.response.status,
-              data: error.response.data,
-              headers: error.response.headers,
-            })
-
-            // Client errors (4xx) are not retryable — they indicate a bad request
-            if (error.response.status >= 400 && error.response.status < 500) {
-              return {
-                success: false,
-                error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`,
-              }
-            }
-            // Server errors (5xx) are retryable — fall through to retry loop
-          } else if (error.request) {
-            // Request was sent but no response received — retryable
-            logger.error(`无响应:`, {
-              message: error.message,
-              code: error.code,
-              attempt,
-            })
-
-            // On the final attempt, surface the error to the caller
-            if (attempt === WORKER_CONFIG.retryAttempts) {
-              const errorCode = error.code || 'NETWORK_ERROR'
-              return {
-                success: false,
-                error: `网络错误: 无法连接到服务器 (${errorCode})`,
-              }
-            }
-
-            // Back off before retrying
-            await this.sleep(WORKER_CONFIG.retryDelay * attempt)
-          } else {
-            // Misconfigured request — no point retrying
-            logger.error(`请求配置错误:`, error.message)
+        if (error instanceof ApiResponseError) {
+          logger.error(`API 错误响应:`, { status: error.status, data: error.data })
+          if (error.status >= 400 && error.status < 500) {
             return {
               success: false,
-              error: `请求配置错误: ${error.message}`,
+              error: `API 错误 (${error.status}): ${(error.data['error'] as string) || error.statusText}`,
             }
           }
+          // 5xx 错误可以重试
+        } else if (
+          error instanceof TypeError ||
+          (error instanceof DOMException && error.name === 'AbortError')
+        ) {
+          logger.error(`无响应:`, { message: (error as Error).message, attempt })
+          if (attempt === WORKER_CONFIG.retryAttempts) {
+            return {
+              success: false,
+              error: `网络错误: 无法连接到服务器 (NETWORK_ERROR)`,
+            }
+          }
+          await this.sleep(WORKER_CONFIG.retryDelay * attempt)
         } else {
-          // Non-Axios errors are unexpected and not retryable
           logger.error(`未知错误:`, error)
           return {
             success: false,
@@ -283,83 +292,52 @@ class SCPScraper {
       logger.info(`正在搜索: ${apiUrl}?keyword=${keyword}`)
 
       // Call the Cloudflare Worker search API
-      const response = await axios.get(apiUrl, {
-        params: { keyword },
-        timeout: this.API_TIMEOUT,
-        headers: {
-          Accept: 'application/json',
-        },
-      })
+      const response = await apiFetch(apiUrl, { keyword }, this.API_TIMEOUT)
 
       logger.info(`搜索响应状态: ${response.status}`)
       logger.info(`搜索响应数据:`, response.data)
 
-      if (response.data.success && response.data.data) {
+      if (response.data['success'] && response.data['data']) {
         // Array response indicates database search results
-        if (Array.isArray(response.data.data)) {
-          if (response.data.data.length === 0) {
-            return {
-              success: false,
-              error: `未找到包含 "${keyword}" 的SCP对象`,
-            }
+        if (Array.isArray(response.data['data'])) {
+          if (response.data['data'].length === 0) {
+            return { success: false, error: `未找到包含 "${keyword}" 的SCP对象` }
           }
 
           // Use the first match as the primary result
-          const firstResult = response.data.data[0]
+          const firstResult = response.data['data'][0] as Record<string, unknown>
           const data = this.normalizeData({
-            id: `SCP-${firstResult.scp_id}`,
-            number: firstResult.scp_id.toString(),
-            name: firstResult.name,
-            objectClass: firstResult.object_class,
-            tags: firstResult.tags,
-            clearanceLevel: firstResult.clearance_level,
+            id: `SCP-${firstResult['scp_id']}`,
+            number: String(firstResult['scp_id']),
+            name: firstResult['name'],
+            objectClass: firstResult['object_class'],
+            tags: firstResult['tags'],
+            clearanceLevel: firstResult['clearance_level'],
           })
           return { success: true, data }
-        }
-        // Single object response indicates scraper result
-        else if (typeof response.data.data === 'object') {
-          const data = this.normalizeData(response.data.data)
+        } else if (typeof response.data['data'] === 'object') {
+          // Single object response indicates scraper result
+          const data = this.normalizeData(response.data['data'])
           return { success: true, data }
         }
       }
 
-      return {
-        success: false,
-        error: `未找到包含 "${keyword}" 的SCP对象`,
-      }
+      return { success: false, error: `未找到包含 "${keyword}" 的SCP对象` }
     } catch (error) {
       // Classify the error for a meaningful user-facing message
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // Server responded with an error status
-          logger.error(`搜索错误响应:`, {
-            status: error.response.status,
-            data: error.response.data,
-          })
-          return {
-            success: false,
-            error: `搜索错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`,
-          }
-        } else if (error.request) {
-          // Request sent but no response received
-          logger.error(`搜索无响应:`, {
-            message: error.message,
-            code: error.code,
-          })
-          return {
-            success: false,
-            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`,
-          }
-        } else {
-          // Request was misconfigured (e.g. invalid URL)
-          logger.error(`搜索配置错误:`, error.message)
-          return {
-            success: false,
-            error: `请求配置错误: ${error.message}`,
-          }
+      if (error instanceof ApiResponseError) {
+        logger.error(`搜索错误响应:`, { status: error.status, data: error.data })
+        return {
+          success: false,
+          error: `搜索错误 (${error.status}): ${(error.data['error'] as string) || error.statusText}`,
         }
+      } else if (
+        error instanceof TypeError ||
+        (error instanceof DOMException && error.name === 'AbortError')
+      ) {
+        logger.error(`搜索无响应:`, { message: error.message })
+        return { success: false, error: `网络错误: 无法连接到服务器 (NETWORK_ERROR)` }
       } else {
-        // Unexpected non-Axios error
         logger.error(`搜索未知错误:`, error)
         return {
           success: false,
@@ -372,17 +350,18 @@ class SCPScraper {
   /**
    * Normalize API response into a consistent SCPWikiData shape.
    */
-  private normalizeData(data: any): SCPWikiData {
+  private normalizeData(value: unknown): SCPWikiData {
+    const data = (value && typeof value === 'object' ? value : {}) as Record<string, unknown>
     return {
-      id: data.id || `SCP-${data.number}`,
-      name: data.name || '未知',
-      objectClass: data.objectClass || 'UNKNOWN',
-      containment: Array.isArray(data.containment) ? data.containment : [],
-      description: Array.isArray(data.description) ? data.description : [],
-      appendix: Array.isArray(data.appendix) ? data.appendix : [],
-      references: Array.isArray(data.references) ? data.references : [],
-      author: data.author || '未知作者',
-      url: data.url || '',
+      id: String(data.id || `SCP-${data.number || ''}`),
+      name: String(data.name || '未知'),
+      objectClass: objectClass(data.objectClass),
+      containment: stringArray(data.containment),
+      description: stringArray(data.description),
+      appendix: stringArray(data.appendix),
+      references: stringArray(data.references),
+      author: String(data.author || '未知作者'),
+      url: String(data.url || ''),
     }
   }
 
@@ -486,7 +465,11 @@ class SCPScraper {
    * Simplified formatting for mobile terminals.
    * Uses lightweight separators instead of box-drawing characters.
    */
-  private formatForMobile(data: SCPWikiData, classInfo: any, terminalWidth: number): string[] {
+  private formatForMobile(
+    data: SCPWikiData,
+    classInfo: ObjectClassInfo,
+    terminalWidth: number
+  ): string[] {
     const lines: string[] = []
     const padding = ' '.repeat(2)
 
@@ -626,57 +609,30 @@ class SCPScraper {
   /**
    * Test connectivity to the Worker API for diagnostics.
    */
-  async testConnection(): Promise<{ success: boolean; message: string; details?: any }> {
+  async testConnection(): Promise<{ success: boolean; message: string; details?: unknown }> {
     try {
       logger.info('测试 API 连接...')
-      const response = await axios.get(`${config.api.workerUrl}/`, {
-        timeout: 10000,
-        headers: {
-          Accept: 'application/json',
-        },
-      })
-
+      const response = await apiFetch(`${config.api.workerUrl}/`, {}, 10000)
       logger.info('API 连接测试成功:', response.data)
-
-      return {
-        success: true,
-        message: 'API 连接正常',
-        details: response.data,
-      }
+      return { success: true, message: 'API 连接正常', details: response.data }
     } catch (error) {
       logger.error('API 连接测试失败:', error)
-
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          return {
-            success: false,
-            message: `API 返回错误状态: ${error.response.status}`,
-            details: {
-              status: error.response.status,
-              data: error.response.data,
-            },
-          }
-        } else if (error.request) {
-          return {
-            success: false,
-            message: `无法连接到服务器: ${error.code || 'NETWORK_ERROR'}`,
-            details: {
-              code: error.code,
-              message: error.message,
-              url: config.api.workerUrl,
-            },
-          }
-        } else {
-          return {
-            success: false,
-            message: `请求配置错误: ${error.message}`,
-            details: {
-              message: error.message,
-            },
-          }
+      if (error instanceof ApiResponseError) {
+        return {
+          success: false,
+          message: `API 返回错误状态: ${error.status}`,
+          details: { status: error.status, data: error.data },
+        }
+      } else if (
+        error instanceof TypeError ||
+        (error instanceof DOMException && error.name === 'AbortError')
+      ) {
+        return {
+          success: false,
+          message: `无法连接到服务器: NETWORK_ERROR`,
+          details: { message: error.message, url: config.api.workerUrl },
         }
       }
-
       return {
         success: false,
         message: `未知错误: ${error instanceof Error ? error.message : String(error)}`,
@@ -710,7 +666,7 @@ class SCPScraper {
   }> {
     try {
       const apiUrl = `${config.api.workerUrl}/list`
-      const params: any = { limit, offset }
+      const params: Record<string, number | string> = { limit, offset }
 
       if (clearanceLevel !== undefined) {
         params.clearance_level = clearanceLevel
@@ -718,46 +674,39 @@ class SCPScraper {
 
       logger.info(`正在获取 SCP 列表: ${apiUrl}`, params)
 
-      const response = await axios.get(apiUrl, {
-        params,
-        timeout: this.API_TIMEOUT,
-        headers: {
-          Accept: 'application/json',
-        },
-      })
-
+      const response = await apiFetch(apiUrl, params, this.API_TIMEOUT)
       logger.info(`列表响应状态: ${response.status}`)
 
-      if (response.data.success) {
+      if (response.data['success']) {
         return {
           success: true,
-          data: response.data.data,
-          total: response.data.total,
+          data: response.data['data'] as Array<{
+            scp_id: number
+            name: string
+            object_class: string
+            tags: string
+            clearance_level: number
+            updated_at: string
+          }>,
+          total: response.data['total'] as number | undefined,
         }
       } else {
         return {
           success: false,
-          error: response.data.error || '获取列表失败',
+          error: (response.data['error'] as string) || '获取列表失败',
         }
       }
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          return {
-            success: false,
-            error: `API 错误 (${error.response.status}): ${error.response.data?.error || error.response.statusText}`,
-          }
-        } else if (error.request) {
-          return {
-            success: false,
-            error: `网络错误: 无法连接到服务器 (${error.code || 'NETWORK_ERROR'})`,
-          }
-        } else {
-          return {
-            success: false,
-            error: `请求配置错误: ${error.message}`,
-          }
+      if (error instanceof ApiResponseError) {
+        return {
+          success: false,
+          error: `API 错误 (${error.status}): ${(error.data['error'] as string) || error.statusText}`,
         }
+      } else if (
+        error instanceof TypeError ||
+        (error instanceof DOMException && error.name === 'AbortError')
+      ) {
+        return { success: false, error: `网络错误: 无法连接到服务器 (NETWORK_ERROR)` }
       } else {
         return {
           success: false,

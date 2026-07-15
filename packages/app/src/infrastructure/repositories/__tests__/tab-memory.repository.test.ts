@@ -7,7 +7,11 @@ describe('TabMemoryRepository', () => {
 
   const createTab = (
     id: string,
-    overrides: Partial<{ type: 'terminal' | 'scp-browser' | 'database' | 'settings'; status: 'active' | 'inactive' | 'loading' | 'error'; closable: boolean }> = {},
+    overrides: Partial<{
+      type: 'terminal' | 'scp-browser' | 'database' | 'settings'
+      status: 'active' | 'inactive' | 'loading' | 'error'
+      closable: boolean
+    }> = {}
   ) =>
     new TabEntity({
       id,
