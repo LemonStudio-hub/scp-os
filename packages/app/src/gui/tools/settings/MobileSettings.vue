@@ -249,46 +249,6 @@
             </div>
           </div>
 
-          <!-- Custom Accent Color Toggle -->
-          <div class="k-ios-list__item" @click="toggleCustomAccent">
-            <div class="k-ios-list__item-left">
-              <div class="k-ios-list__item-content">
-                <div class="k-ios-list__item-label">
-                  {{ t('settings.enableCustomAccent') || 'Enable Custom Accent' }}
-                </div>
-                <div class="k-ios-list__item-description">
-                  {{ t('settings.enableCustomAccentDesc') || 'Override accent color' }}
-                </div>
-              </div>
-            </div>
-            <div class="k-ios-list__item-right">
-              <ToggleSwitch
-                :active="!!themeStore.customAccentColor"
-                @update:active="toggleCustomAccent"
-              />
-            </div>
-          </div>
-
-          <!-- Custom Accent Color Picker -->
-          <div
-            v-if="!!themeStore.customAccentColor"
-            class="k-ios-list__item"
-            style="flex-direction: column; align-items: stretch; gap: 8px; cursor: default"
-          >
-            <div class="flex justify-between items-center w-full">
-              <span class="k-ios-list__item-label" style="font-size: 13px">{{
-                t('settings.pickAccentColor') || 'Choose Color'
-              }}</span>
-              <span class="k-ios-list__item-value" style="font-size: 11px">{{
-                themeStore.customAccentColor
-              }}</span>
-            </div>
-            <CustomAccentPicker
-              :model-value="themeStore.customAccentColor"
-              :presets="presetAccents"
-              @update:model-value="themeStore.setCustomAccentColor"
-            />
-          </div>
         </div>
 
         <!-- Storage Section -->
@@ -543,7 +503,6 @@ import MobileWindow from '../../components/MobileWindow.vue'
 import Sheet from '../../konsta/Sheet.vue'
 import ToggleSwitch from '../../konsta/ToggleSwitch.vue'
 import WallpaperPicker from '../../components/WallpaperPicker.vue'
-import CustomAccentPicker from './CustomAccentPicker.vue'
 import { useThemeStore } from '../../stores/themeStore'
 
 const { t, locale, availableLocales } = useI18n()
@@ -575,23 +534,6 @@ const themeStore = useThemeStore()
 
 // Initialize theme store
 themeStore.init()
-
-const presetAccents = [
-  '#0063D1', // Premium Blue
-  '#E94560', // SCP Red
-  '#34C759', // iOS Green
-  '#AF52DE', // iOS Purple
-  '#FF9500', // iOS Orange
-  '#00FF00', // Hacker Green
-]
-
-function toggleCustomAccent() {
-  if (themeStore.customAccentColor) {
-    themeStore.setCustomAccentColor(null)
-  } else {
-    themeStore.setCustomAccentColor('#0063D1')
-  }
-}
 
 // Wallpaper picker
 const wallpaperPickerVisible = ref(false)
