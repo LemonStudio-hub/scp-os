@@ -13,12 +13,25 @@ import ChatManagement from './pages/ChatManagement.vue'
 import FeedbackManagement from './pages/FeedbackManagement.vue'
 import SystemSettings from './pages/SystemSettings.vue'
 import AuditLog from './pages/AuditLog.vue'
+import PCWindow from '../../components/PCWindow.vue'
+import type { WindowInstance } from '../../types'
 
+const props = defineProps<{
+  windowInstance?: WindowInstance
+}>()
+const emit = defineEmits<{
+  close: []
+}>()
 const adminStore = useAdminStore()
 const { t } = useI18n()
 const currentPage = ref('dashboard')
 const isSidebarCollapsed = ref(false)
 const isInitializing = ref(true)
+
+const windowFrame = computed(() => (props.windowInstance ? PCWindow : 'div'))
+const windowFrameProps = computed(() =>
+  props.windowInstance ? { windowInstance: props.windowInstance } : { class: 'admin-layout-frame' }
+)
 
 const pageTitle = computed(() => {
   const titles: Record<string, string> = {
@@ -47,45 +60,53 @@ function handleLogout() {
 </script>
 
 <template>
-  <div class="admin-layout">
-    <div v-if="isInitializing" class="admin-layout__loading">
-      <div class="admin-layout__spinner"></div>
-    </div>
-
-    <AdminLogin v-else-if="!adminStore.isAuthenticated" @login-success="isInitializing = false" />
-
-    <template v-else>
-      <AdminSidebar
-        :current-page="currentPage"
-        :collapsed="isSidebarCollapsed"
-        @navigate="currentPage = $event"
-        @toggle-collapse="isSidebarCollapsed = !isSidebarCollapsed"
-      />
-
-      <div class="admin-layout__main">
-        <AdminTopbar @logout="handleLogout">
-          <template #title>
-            <span class="admin-layout__page-title">{{ pageTitle }}</span>
-          </template>
-        </AdminTopbar>
-
-        <div class="admin-layout__content">
-          <DashboardPage v-if="currentPage === 'dashboard'" class="admin-layout__page" />
-          <UserManagement v-else-if="currentPage === 'users'" class="admin-layout__page" />
-          <ContentManagement v-else-if="currentPage === 'content'" class="admin-layout__page" />
-          <ChatManagement v-else-if="currentPage === 'chat'" class="admin-layout__page" />
-          <FeedbackManagement v-else-if="currentPage === 'feedback'" class="admin-layout__page" />
-          <SystemSettings v-else-if="currentPage === 'settings'" class="admin-layout__page" />
-          <AuditLog v-else-if="currentPage === 'logs'" class="admin-layout__page" />
-        </div>
+  <component :is="windowFrame" v-bind="windowFrameProps" @close="emit('close')">
+    <div class="admin-layout">
+      <div v-if="isInitializing" class="admin-layout__loading">
+        <div class="admin-layout__spinner"></div>
       </div>
-    </template>
 
-    <ToastContainer />
-  </div>
+      <AdminLogin v-else-if="!adminStore.isAuthenticated" @login-success="isInitializing = false" />
+
+      <template v-else>
+        <AdminSidebar
+          :current-page="currentPage"
+          :collapsed="isSidebarCollapsed"
+          @navigate="currentPage = $event"
+          @toggle-collapse="isSidebarCollapsed = !isSidebarCollapsed"
+        />
+
+        <div class="admin-layout__main">
+          <AdminTopbar @logout="handleLogout">
+            <template #title>
+              <span class="admin-layout__page-title">{{ pageTitle }}</span>
+            </template>
+          </AdminTopbar>
+
+          <div class="admin-layout__content">
+            <DashboardPage v-if="currentPage === 'dashboard'" class="admin-layout__page" />
+            <UserManagement v-else-if="currentPage === 'users'" class="admin-layout__page" />
+            <ContentManagement v-else-if="currentPage === 'content'" class="admin-layout__page" />
+            <ChatManagement v-else-if="currentPage === 'chat'" class="admin-layout__page" />
+            <FeedbackManagement v-else-if="currentPage === 'feedback'" class="admin-layout__page" />
+            <SystemSettings v-else-if="currentPage === 'settings'" class="admin-layout__page" />
+            <AuditLog v-else-if="currentPage === 'logs'" class="admin-layout__page" />
+          </div>
+        </div>
+      </template>
+
+      <ToastContainer />
+    </div>
+  </component>
 </template>
 
 <style scoped>
+.admin-layout-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .admin-layout {
   display: flex;
   width: 100%;

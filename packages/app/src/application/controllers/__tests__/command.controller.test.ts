@@ -202,7 +202,13 @@ describe('CommandController', () => {
 
   describe('getStatistics', () => {
     it('should delegate to commandService.getStatistics', async () => {
-      const stats = { total: 10, successful: 8, failed: 2, averageDuration: 50, mostUsedCommands: [] }
+      const stats = {
+        total: 10,
+        successful: 8,
+        failed: 2,
+        averageDuration: 50,
+        mostUsedCommands: [],
+      }
       vi.mocked(mockCommandService.getStatistics).mockResolvedValue(stats)
 
       const result = await controller.getStatistics()
