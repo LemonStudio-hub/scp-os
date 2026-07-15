@@ -317,7 +317,16 @@ const wallpaperPatternColor2 = computed(() => themeStore.currentTheme.colors.wal
 const wallpaperPatternColor3 = computed(() => themeStore.currentTheme.colors.wallpaperGradient3)
 
 const iconGradientStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+  background:
+    themeStore.currentTheme.id === 'claude'
+      ? '#FAF9F5'
+      : `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+  border: themeStore.currentTheme.id === 'claude' ? '1.5px solid #D97757' : undefined,
+  color: themeStore.currentTheme.id === 'claude' ? '#D97757' : undefined,
+  boxShadow:
+    themeStore.currentTheme.id === 'claude'
+      ? '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04)'
+      : undefined,
 }))
 
 useHammer(homeRef, {
@@ -552,6 +561,58 @@ onUnmounted(() => {
 .light .home-screen__app-label {
   text-shadow: none;
   color: var(--gui-text-primary, #000000);
+}
+
+:global(.light:not(.claude) .home-screen__app-icon) {
+  background: #ffffff !important;
+  border: 1.5px solid #d1d1d6;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.02);
+}
+
+:global(.light:not(.claude) .home-screen__app-icon svg) {
+  stroke: #1c1c1e !important;
+}
+
+:global(.light:not(.claude) .home-screen__app-icon--terminal-text) {
+  color: #1c1c1e !important;
+}
+
+:global(.claude .home-screen__app-icon) {
+  background: #faf9f5 !important;
+  border: 1.5px solid #d97757;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
+:global(.claude .home-screen__app-icon svg) {
+  stroke: #d97757 !important;
+}
+
+:global(.claude .home-screen__app-icon--terminal-text) {
+  color: #d97757 !important;
+}
+
+:global(.light:not(.claude) .home-screen__app:hover .home-screen__app-icon),
+:global(.claude .home-screen__app:hover .home-screen__app-icon) {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+:global(.light:not(.claude) .home-screen__app-label) {
+  text-shadow: none;
+  color: #000000;
+  font-weight: 600;
+}
+
+:global(.claude .home-screen__app-label) {
+  width: auto;
+  min-width: 64px;
+  max-width: 120px;
+  text-shadow: none;
+  color: #1c1c1e;
+  font-weight: 600;
 }
 
 /* Home Indicator */
