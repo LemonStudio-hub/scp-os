@@ -23,6 +23,7 @@ function db(): D1Database {
 const env = {
   SCP_DB: db(),
   SCP_READER_DB: db(),
+  SCP_FILES: {} as R2Bucket,
   CHAT_ROOM_DO: {} as DurableObjectNamespace,
   JWT_SECRET: 'test-secret',
   ADMIN_JWT_SECRET: 'admin-secret',

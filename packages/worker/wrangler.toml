@@ -6,6 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 ENVIRONMENT = "production"
 API_DOMAIN = "os1api.daum.pw"
+EMAIL_FROM = "SCP OS <auth@daum.pw>"
 
 [[durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
@@ -27,6 +28,10 @@ migrations_dir = "migrations"
 binding = "SCP_CACHE"
 id = "c3296c65b63f4b99af6fd2e957d2932e"
 
+[[r2_buckets]]
+binding = "SCP_FILES"
+bucket_name = "scp-os-files"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["ChatRoomDO"]
@@ -37,7 +42,7 @@ crons = ["*/10 * * * *"]
 # ─── Production (deployed to Cloudflare) ────────────────────────
 # wrangler deploy --env production
 [env.production]
-vars = { ENVIRONMENT = "production", API_DOMAIN = "os1api.daum.pw" }
+vars = { ENVIRONMENT = "production", API_DOMAIN = "os1api.daum.pw", EMAIL_FROM = "SCP OS <auth@daum.pw>" }
 
 [[env.production.durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
@@ -59,10 +64,14 @@ migrations_dir = "migrations"
 binding = "SCP_CACHE"
 id = "40f0d23a05e14f7484232bc1960e217f"
 
+[[env.production.r2_buckets]]
+binding = "SCP_FILES"
+bucket_name = "scp-os-files"
+
 # ─── Development (local testing) ────────────────────────────────
 # wrangler dev --env development
 [env.development]
-vars = { ENVIRONMENT = "development", API_DOMAIN = "api.scpos.site" }
+vars = { ENVIRONMENT = "development", API_DOMAIN = "api.scpos.site", EMAIL_FROM = "SCP OS <auth@daum.pw>" }
 
 [[env.development.durable_objects.bindings]]
 name = "CHAT_ROOM_DO"
@@ -83,3 +92,7 @@ migrations_dir = "migrations"
 [[env.development.kv_namespaces]]
 binding = "SCP_CACHE"
 id = "local-dev-cache"
+
+[[env.development.r2_buckets]]
+binding = "SCP_FILES"
+bucket_name = "scp-os-files-dev"

@@ -1,47 +1,103 @@
-/**
- * User Authentication Store
- * Manages user authentication state using Pinia
- */
-
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import indexedDBService from '../utils/indexedDB'
 import { config } from '../config'
-import { authenticatedFetch } from '../utils/authFetch'
+import { authenticatedFetch, clearAuthToken, setAuthToken } from '../utils/authFetch'
+import { validateNickname } from '../utils/nicknameValidator'
 import logger from '../utils/logger'
 
 const API_BASE = config.api.workerUrl
 
+export type AccountType = 'guest' | 'registered'
+
+interface AuthUser {
+  userId: string
+  email?: string
+  nickname: string
+  accountType: AccountType
+}
+
+async function authRequest(
+  path: string,
+  body: Record<string, unknown>
+): Promise<{
+  success: boolean
+  token?: string
+  user?: AuthUser
+  error?: string
+  message?: string
+}> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    return {
+      success: false,
+      error: data.error || data.message || `HTTP ${response.status}`,
+      message: data.message,
+    }
+  }
+  return data
+}
+
 export const useAuthStore = defineStore('auth', () => {
-  // State
   const isLoggedIn = ref<boolean>(false)
   const nickname = ref<string | null>(null)
   const userId = ref<string | null>(null)
+  const email = ref<string | null>(null)
+  const accountType = ref<AccountType | null>(null)
   const isLoading = ref<boolean>(false)
+  const canUseCloudSync = computed(() => accountType.value === 'registered')
 
-  /**
-   * Initialize authentication state
-   * Check local storage for existing nickname and UUID
-   */
+  async function persistSession(user: AuthUser, token?: string): Promise<void> {
+    await indexedDBService.saveNickname(user.nickname)
+    await indexedDBService.saveSetting('account_type', user.accountType)
+    await indexedDBService.saveSetting('auth_email', user.email || null)
+    await indexedDBService.saveSetting('auth_token', token || null)
+    if (user.accountType === 'registered') {
+      await indexedDBService.saveSetting('user_id', user.userId)
+    }
+    if (token) setAuthToken(token, user.userId)
+    userId.value = user.userId
+    nickname.value = user.nickname
+    email.value = user.email || null
+    accountType.value = user.accountType
+    isLoggedIn.value = true
+  }
+
   async function initAuth(): Promise<void> {
     isLoading.value = true
     try {
-      // Get or generate user ID
-      const savedUserId = await indexedDBService.getUserId()
-      userId.value = savedUserId
-
-      // Check for saved nickname
       const savedNickname = await indexedDBService.getNickname()
-      if (savedNickname) {
+      const savedAccountType = (await indexedDBService.loadSetting(
+        'account_type'
+      )) as AccountType | null
+      const savedEmail = (await indexedDBService.loadSetting('auth_email')) as string | null
+      const savedToken = (await indexedDBService.loadSetting('auth_token')) as string | null
+      const savedUserId = await indexedDBService.getUserId()
+
+      if (savedNickname && savedAccountType === 'registered' && savedEmail && savedToken) {
+        setAuthToken(savedToken, savedEmail)
+        userId.value = savedEmail
+        email.value = savedEmail
         nickname.value = savedNickname
+        accountType.value = 'registered'
         isLoggedIn.value = true
-        logger.info('[Auth] Auto-login with existing user:', {
-          userId: savedUserId,
-          nickname: savedNickname,
-        })
+        return
+      }
+
+      if (savedNickname) {
+        userId.value = savedUserId
+        nickname.value = savedNickname
+        email.value = null
+        accountType.value = 'guest'
+        isLoggedIn.value = true
+        logger.info('[Auth] Auto-login guest:', { userId: savedUserId, nickname: savedNickname })
       } else {
         isLoggedIn.value = false
-        logger.info('[Auth] No saved nickname found, user not logged in')
       }
     } catch (error) {
       logger.error('[Auth] Failed to initialize auth:', error)
@@ -51,190 +107,161 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * Login with nickname
-   * Bind nickname with UUID and save to IndexedDB and remote API
-   */
-  async function login(nicknameInput: string): Promise<{ success: boolean; error?: string }> {
+  async function loginGuest(nicknameInput: string): Promise<{ success: boolean; error?: string }> {
+    const validation = validateNickname(nicknameInput)
+    if (!validation.valid) return { success: false, error: validation.error }
+
     isLoading.value = true
     try {
-      // Validate nickname
-      if (!nicknameInput || nicknameInput.trim().length === 0) {
-        return { success: false, error: 'Nickname cannot be empty' }
-      }
-
-      if (nicknameInput.length > 30) {
-        return { success: false, error: 'Nickname too long (max 30 characters)' }
-      }
-
-      const trimmedNickname = nicknameInput.trim()
-
-      // Get or generate user ID
+      const trimmed = nicknameInput.trim()
       const currentUserId = await indexedDBService.getUserId()
-      userId.value = currentUserId
-
-      // Save to IndexedDB
-      await indexedDBService.saveNickname(trimmedNickname)
-      nickname.value = trimmedNickname
-
-      // Register/update user on remote API
-      try {
-        const response = await authenticatedFetch(`${API_BASE}/api/user/register`, currentUserId, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: currentUserId,
-            nickname: trimmedNickname,
-          }),
-        })
-
-        if (!response.ok) {
-          // Try to parse error response
-          try {
-            const errorData = await response.json()
-            if (errorData.success === false && errorData.error === 'Nickname already taken') {
-              // Nickname is already taken, roll back local changes
-              await indexedDBService.clearUserData()
-              nickname.value = null
-              isLoggedIn.value = false
-              return { success: false, error: 'Nickname already taken' }
-            }
-          } catch (parseError) {
-            // Failed to parse error response
-            logger.warn('[Auth] Failed to parse error response:', parseError)
-          }
-          logger.warn('[Auth] Failed to register user on remote API, but local login succeeded')
-        }
-      } catch (apiError) {
-        // Remote API failure should not block local login
-        logger.warn('[Auth] Remote API unavailable, local login succeeded:', apiError)
-      }
-
-      isLoggedIn.value = true
-      logger.info('[Auth] User logged in successfully:', {
+      const data = await authRequest('/api/auth/guest', {
         userId: currentUserId,
-        nickname: trimmedNickname,
+        nickname: trimmed,
       })
+      if (!data.success || !data.user || !data.token) {
+        return { success: false, error: data.error || 'Guest login failed' }
+      }
+      await persistSession(data.user, data.token)
       return { success: true }
     } catch (error) {
-      logger.error('[Auth] Login failed:', error)
-      return { success: false, error: `Login failed: ${(error as Error).message}` }
+      logger.error('[Auth] Guest login failed:', error)
+      return { success: false, error: `登录失败: ${(error as Error).message}` }
     } finally {
       isLoading.value = false
     }
   }
 
-  /**
-   * Logout and clear local state
-   */
+  async function loginRegistered(
+    emailInput: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> {
+    isLoading.value = true
+    try {
+      const data = await authRequest('/api/auth/login', {
+        email: emailInput.trim(),
+        password,
+      })
+      if (!data.success || !data.user || !data.token) {
+        return { success: false, error: data.error || 'Email or password is incorrect' }
+      }
+      await persistSession(data.user, data.token)
+      return { success: true }
+    } catch (error) {
+      logger.error('[Auth] Login failed:', error)
+      return { success: false, error: `登录失败: ${(error as Error).message}` }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function sendVerificationCode(
+    emailInput: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const data = await authRequest('/api/auth/send-code', {
+        email: emailInput.trim(),
+      })
+      if (!data.success) {
+        return {
+          success: false,
+          error: data.error || data.message || 'Failed to send verification code',
+        }
+      }
+      return { success: true }
+    } catch (error) {
+      logger.error('[Auth] Send verification code failed:', error)
+      return {
+        success: false,
+        error: `Failed to send verification code: ${(error as Error).message}`,
+      }
+    }
+  }
+
+  async function register(
+    emailInput: string,
+    password: string,
+    nicknameInput: string,
+    code: string
+  ): Promise<{ success: boolean; error?: string }> {
+    const validation = validateNickname(nicknameInput)
+    if (!validation.valid) return { success: false, error: validation.error }
+
+    isLoading.value = true
+    try {
+      const data = await authRequest('/api/auth/register', {
+        email: emailInput.trim(),
+        password,
+        nickname: nicknameInput.trim(),
+        code: code.trim(),
+      })
+      if (!data.success || !data.user || !data.token) {
+        return { success: false, error: data.error || data.message || 'Registration failed' }
+      }
+      await persistSession(data.user, data.token)
+      return { success: true }
+    } catch (error) {
+      logger.error('[Auth] Registration failed:', error)
+      return { success: false, error: `注册失败: ${(error as Error).message}` }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function logout(): Promise<void> {
     try {
-      await indexedDBService.clearUserData()
+      clearAuthToken()
+      await indexedDBService.deleteSetting('nickname')
+      await indexedDBService.deleteSetting('account_type')
+      await indexedDBService.deleteSetting('auth_email')
+      await indexedDBService.deleteSetting('auth_token')
       isLoggedIn.value = false
       nickname.value = null
-      // Keep userId as it's a persistent identifier
-      logger.info('[Auth] User logged out successfully')
+      userId.value = null
+      email.value = null
+      accountType.value = null
+      logger.info('[Auth] Logged out')
     } catch (error) {
       logger.error('[Auth] Logout failed:', error)
       throw error
     }
   }
 
-  /**
-   * Check if user is currently logged in
-   */
-  function checkLoginStatus(): boolean {
-    return isLoggedIn.value
-  }
-
   async function checkNicknameAvailability(
     nicknameInput: string
   ): Promise<{ available: boolean; error?: string }> {
-    const trimmed = nicknameInput.trim()
-    if (!trimmed) {
-      return { available: false, error: 'Nickname cannot be empty' }
-    }
-    if (trimmed.length > 30) {
-      return { available: false, error: 'Nickname too long (max 30 characters)' }
-    }
-
-    try {
-      const response = await fetch(
-        `${API_BASE}/api/user/check-nickname?nickname=${encodeURIComponent(trimmed)}&excludeUserId=${encodeURIComponent(userId.value || '')}`
-      )
-      const data = await response.json()
-      if (data.success && data.available) {
-        return { available: true }
-      }
-      return { available: false, error: data.error || 'Nickname already taken' }
-    } catch (error) {
-      logger.warn('[Auth] Failed to check nickname availability:', error)
-      return { available: true }
-    }
+    const validation = validateNickname(nicknameInput)
+    if (!validation.valid) return { available: false, error: validation.error }
+    return { available: true }
   }
 
   async function updateNickname(
     newNickname: string
   ): Promise<{ success: boolean; error?: string }> {
-    const trimmed = newNickname.trim()
-    if (!trimmed) {
-      return { success: false, error: 'Nickname cannot be empty' }
-    }
-    if (trimmed.length > 30) {
-      return { success: false, error: 'Nickname too long (max 30 characters)' }
-    }
+    const validation = validateNickname(newNickname)
+    if (!validation.valid) return { success: false, error: validation.error }
 
     isLoading.value = true
     try {
-      const availability = await checkNicknameAvailability(trimmed)
-      if (!availability.available) {
-        return { success: false, error: availability.error || 'Nickname already taken' }
+      const trimmed = newNickname.trim()
+      const uid = userId.value ?? ''
+      const response = await authenticatedFetch(`${API_BASE}/api/user/register`, uid, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname: trimmed }),
+      })
+
+      if (!response.ok) {
+        logger.warn('[Auth] Remote update failed, updating locally only')
       }
 
       await indexedDBService.saveNickname(trimmed)
       nickname.value = trimmed
-
-      try {
-        const response = await authenticatedFetch(`${API_BASE}/api/user/register`, userId.value!, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: userId.value, nickname: trimmed }),
-        })
-
-        if (!response.ok) {
-          try {
-            const errorData = await response.json()
-            if (errorData.success === false && errorData.error === 'Nickname already taken') {
-              const oldNickname = await indexedDBService.getNickname()
-              nickname.value = oldNickname
-              return { success: false, error: 'Nickname already taken' }
-            }
-          } catch {
-            // ignore parse error
-          }
-          logger.warn('[Auth] Failed to update nickname on remote API, but local update succeeded')
-        } else {
-          try {
-            await authenticatedFetch(`${API_BASE}/chat/nickname`, userId.value!, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ user_id: userId.value, nickname: trimmed }),
-            })
-          } catch {
-            // ignore chat nickname update error
-          }
-        }
-      } catch (apiError) {
-        logger.warn('[Auth] Remote API unavailable, local update succeeded:', apiError)
-      }
-
-      logger.info('[Auth] Nickname updated successfully:', trimmed)
+      logger.info('[Auth] Nickname updated:', trimmed)
       return { success: true }
     } catch (error) {
       logger.error('[Auth] Failed to update nickname:', error)
-      return { success: false, error: `Update failed: ${(error as Error).message}` }
+      return { success: false, error: `更新失败: ${(error as Error).message}` }
     } finally {
       isLoading.value = false
     }
@@ -244,21 +271,26 @@ export const useAuthStore = defineStore('auth', () => {
    * Execute a fetch request with the current user's credentials attached.
    */
   async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    return authenticatedFetch(url, userId.value!, options)
+    return authenticatedFetch(url, userId.value ?? '', options)
   }
 
   return {
     isLoggedIn,
     nickname,
     userId,
+    email,
+    accountType,
     isLoading,
-
+    canUseCloudSync,
     initAuth,
-    login,
+    login: loginGuest,
+    loginGuest,
+    loginRegistered,
+    sendVerificationCode,
+    register,
     logout,
-    checkLoginStatus,
-    updateNickname,
     checkNicknameAvailability,
+    updateNickname,
     authFetch,
   }
 })

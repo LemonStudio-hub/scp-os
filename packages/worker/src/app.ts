@@ -13,6 +13,7 @@ import { registerDocs } from './routes/docs'
 import { registerNotifications } from './routes/notifications'
 import { registerAdmin } from './routes/admin'
 import { registerFiles } from './routes/files'
+import { registerSync } from './routes/sync'
 
 type AppEnv = { Bindings: Env }
 
@@ -21,7 +22,8 @@ export function createApp(): Hono<AppEnv> {
   app.use('*', cors)
 
   app.use('*', async (c, next) => {
-    const id = await userFromRequest(c.req.raw, c.env.JWT_SECRET || 'scp-os-default-secret')
+    const secret = c.env.JWT_SECRET?.trim()
+    const id = secret ? await userFromRequest(c.req.raw, secret) : null
     const ok = await rateLimit(c.env, id || requestInfo(c.req.raw).ip)
     if (!ok) return json({ code: 'RATE_LIMITED', message: 'Rate limit exceeded' }, 429)
     await next()
@@ -32,7 +34,15 @@ export function createApp(): Hono<AppEnv> {
     version: '3.0.0',
     status: 'online',
     endpoints: {
-      '/api/auth/token': 'Get JWT token',
+      '/api/auth/token': 'Refresh guest JWT token',
+      '/api/auth/guest': 'Guest login',
+      '/api/auth/register': 'Email registration with verification code',
+      '/api/auth/login': 'Email/password login',
+      '/api/auth/send-code': 'Send email verification code',
+      '/api/auth/email-domains': 'List allowed email domains',
+      '/files': 'Cloud file list/upload/quota (registered users, R2)',
+      '/api/sync/data': 'Full JSON data sync (registered users, R2)',
+      '/api/sync/quota': 'Cloud sync quota (registered users)',
       '/scrape?number={number}': 'Get SCP data',
       '/search?keyword={keyword}&clearance_level={level}': 'Search SCP data',
       '/list?limit={limit}&offset={offset}&clearance_level={level}': 'List SCP records',
@@ -70,7 +80,7 @@ export function createApp(): Hono<AppEnv> {
     if (numberMatch) {
       return json(await scrape(c.env, keyword.replace(/^SCP-/i, ''), c.req.query('branch') || 'en'))
     }
-    return json({ success: false, error: `未找到包含 "${keyword}" 的SCP对象` })
+    return json({ success: false, error: `未找到包�?"${keyword}" 的SCP对象` })
   })
 
   app.get('/list', async (c) => {
@@ -131,6 +141,7 @@ export function createApp(): Hono<AppEnv> {
   registerNotifications(app)
   registerAdmin(app)
   registerFiles(app)
+  registerSync(app)
 
   app.notFound(() => json({ code: 'INTERNAL_ERROR', message: 'Not found' }, 404))
   app.onError((error) => {

@@ -90,10 +90,7 @@ describe('useTheme', () => {
     })
 
     it('should load accent from localStorage', () => {
-      localStorage.setItem(
-        'scp-os-app-settings',
-        JSON.stringify({ accent: '#60a5fa' })
-      )
+      localStorage.setItem('scp-os-app-settings', JSON.stringify({ accent: '#60a5fa' }))
 
       const { currentAccent } = useTheme()
       expect(currentAccent.value).toBe('#60a5fa')

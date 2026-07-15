@@ -8,7 +8,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     home: {
       name: 'home',
       type: 'directory',
-      permissions: { user: { read: true, write: true, execute: true }, group: { read: true, write: false, execute: true }, others: { read: true, write: false, execute: true } },
+      permissions: {
+        user: { read: true, write: true, execute: true },
+        group: { read: true, write: false, execute: true },
+        others: { read: true, write: false, execute: true },
+      },
       owner: 'root',
       group: 'root',
       size: 0,
@@ -18,7 +22,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     tmp: {
       name: 'tmp',
       type: 'directory',
-      permissions: { user: { read: true, write: true, execute: true }, group: { read: true, write: true, execute: true }, others: { read: true, write: true, execute: true } },
+      permissions: {
+        user: { read: true, write: true, execute: true },
+        group: { read: true, write: true, execute: true },
+        others: { read: true, write: true, execute: true },
+      },
       owner: 'root',
       group: 'root',
       size: 0,
@@ -30,7 +38,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     scp: {
       name: 'scp',
       type: 'directory',
-      permissions: { user: { read: true, write: true, execute: true }, group: { read: true, write: true, execute: true }, others: { read: true, write: false, execute: true } },
+      permissions: {
+        user: { read: true, write: true, execute: true },
+        group: { read: true, write: true, execute: true },
+        others: { read: true, write: false, execute: true },
+      },
       owner: 'scp',
       group: 'foundation',
       size: 0,
@@ -42,7 +54,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     documents: {
       name: 'documents',
       type: 'directory',
-      permissions: { user: { read: true, write: true, execute: true }, group: { read: true, write: true, execute: true }, others: { read: true, write: false, execute: true } },
+      permissions: {
+        user: { read: true, write: true, execute: true },
+        group: { read: true, write: true, execute: true },
+        others: { read: true, write: false, execute: true },
+      },
       owner: 'scp',
       group: 'foundation',
       size: 0,
@@ -52,7 +68,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     desktop: {
       name: 'desktop',
       type: 'directory',
-      permissions: { user: { read: true, write: true, execute: true }, group: { read: true, write: true, execute: true }, others: { read: true, write: false, execute: true } },
+      permissions: {
+        user: { read: true, write: true, execute: true },
+        group: { read: true, write: true, execute: true },
+        others: { read: true, write: false, execute: true },
+      },
       owner: 'scp',
       group: 'foundation',
       size: 0,
@@ -62,7 +82,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     '.hidden': {
       name: '.hidden',
       type: 'file',
-      permissions: { user: { read: true, write: true, execute: false }, group: { read: false, write: false, execute: false }, others: { read: false, write: false, execute: false } },
+      permissions: {
+        user: { read: true, write: true, execute: false },
+        group: { read: false, write: false, execute: false },
+        others: { read: false, write: false, execute: false },
+      },
       owner: 'scp',
       group: 'foundation',
       size: 42,
@@ -72,7 +96,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     'readme.txt': {
       name: 'readme.txt',
       type: 'file',
-      permissions: { user: { read: true, write: true, execute: false }, group: { read: true, write: false, execute: false }, others: { read: true, write: false, execute: false } },
+      permissions: {
+        user: { read: true, write: true, execute: false },
+        group: { read: true, write: false, execute: false },
+        others: { read: true, write: false, execute: false },
+      },
       owner: 'scp',
       group: 'foundation',
       size: 100,
@@ -82,7 +110,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     'data.json': {
       name: 'data.json',
       type: 'file',
-      permissions: { user: { read: true, write: true, execute: false }, group: { read: true, write: false, execute: false }, others: { read: true, write: false, execute: false } },
+      permissions: {
+        user: { read: true, write: true, execute: false },
+        group: { read: true, write: false, execute: false },
+        others: { read: true, write: false, execute: false },
+      },
       owner: 'scp',
       group: 'foundation',
       size: 256,
@@ -94,7 +126,11 @@ const originalFsTree: Record<string, Record<string, FileSystemNode>> = {
     'report.txt': {
       name: 'report.txt',
       type: 'file',
-      permissions: { user: { read: true, write: true, execute: false }, group: { read: true, write: false, execute: false }, others: { read: true, write: false, execute: false } },
+      permissions: {
+        user: { read: true, write: true, execute: false },
+        group: { read: true, write: false, execute: false },
+        others: { read: true, write: false, execute: false },
+      },
       owner: 'scp',
       group: 'foundation',
       size: 512,
@@ -139,7 +175,11 @@ vi.mock('../../../utils/filesystem', () => ({
       fsTree[dir][name] = {
         name,
         type: 'file',
-        permissions: { user: { read: true, write: true, execute: false }, group: { read: false, write: false, execute: false }, others: { read: false, write: false, execute: false } },
+        permissions: {
+          user: { read: true, write: true, execute: false },
+          group: { read: false, write: false, execute: false },
+          others: { read: false, write: false, execute: false },
+        },
         owner: 'scp',
         group: 'foundation',
         size: (content || '').length,
@@ -156,7 +196,11 @@ vi.mock('../../../utils/filesystem', () => ({
       fsTree[dir][name] = {
         name,
         type: 'directory',
-        permissions: { user: { read: true, write: true, execute: true }, group: { read: false, write: false, execute: true }, others: { read: false, write: false, execute: true } },
+        permissions: {
+          user: { read: true, write: true, execute: true },
+          group: { read: false, write: false, execute: true },
+          others: { read: false, write: false, execute: true },
+        },
         owner: 'scp',
         group: 'foundation',
         size: 0,

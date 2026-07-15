@@ -181,13 +181,34 @@ END;
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id TEXT NOT NULL UNIQUE,
+  email TEXT UNIQUE,
+  password_hash TEXT,
   nickname TEXT NOT NULL,
+  account_type TEXT NOT NULL DEFAULT 'guest',
+  is_banned INTEGER NOT NULL DEFAULT 0,
+  ban_reason TEXT,
+  banned_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   last_active_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_user_id ON users(user_id);
 CREATE INDEX IF NOT EXISTS idx_users_nickname ON users(nickname);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_account_type ON users(account_type);
+
+CREATE TABLE IF NOT EXISTS email_verification_codes (
+  email TEXT PRIMARY KEY,
+  code_hash TEXT NOT NULL,
+  expires_at INTEGER NOT NULL,
+  sent_at INTEGER NOT NULL,
+  attempt_count INTEGER NOT NULL DEFAULT 0,
+  last_attempt_at INTEGER,
+  request_ip TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_verification_expires_at ON email_verification_codes(expires_at);
 
 -- =============================================
 -- 8. 反馈投票表

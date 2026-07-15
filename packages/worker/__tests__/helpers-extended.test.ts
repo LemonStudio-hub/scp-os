@@ -37,12 +37,12 @@ describe('adminSecret', () => {
 
   it('falls back to default when both are empty', () => {
     const env = { ADMIN_JWT_SECRET: '', JWT_SECRET: '' } as never
-    expect(adminSecret(env)).toBe('admin-secret-key')
+    expect(() => adminSecret(env)).toThrow(/not configured/)
   })
 
   it('falls back to default when both are undefined', () => {
     const env = {} as never
-    expect(adminSecret(env)).toBe('admin-secret-key')
+    expect(() => adminSecret(env)).toThrow(/not configured/)
   })
 })
 
