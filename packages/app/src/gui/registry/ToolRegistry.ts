@@ -29,6 +29,16 @@ export interface ToolWindowConfig {
   minHeight?: number
   /** Whether the window is resizable */
   resizable?: boolean
+  /** Whether the window is draggable */
+  draggable?: boolean
+  /** Whether the window can be closed */
+  closable?: boolean
+  /** Whether the window can be minimized */
+  minimizable?: boolean
+  /** Whether the window can be maximized */
+  maximizable?: boolean
+  /** Whether the window opens maximized */
+  isFullscreen?: boolean
 }
 
 export interface ToolModule {
@@ -103,6 +113,13 @@ class ToolRegistryClass {
 // Singleton instance — modules import and use this
 export const ToolRegistry = new ToolRegistryClass()
 
+let nextWindowIdSeed = 0
+
+function createWindowId(toolId: ToolType): string {
+  nextWindowIdSeed += 1
+  return `${toolId}-${Date.now()}-${nextWindowIdSeed}`
+}
+
 /**
  * Open a tool window using the registry's configuration.
  * This is the single entry point for opening any tool window.
@@ -116,10 +133,17 @@ export function openTool(
     iconName?: string
     width: number
     height: number
+    minWidth?: number
+    minHeight?: number
+    resizable?: boolean
+    draggable?: boolean
+    closable?: boolean
+    minimizable?: boolean
+    maximizable?: boolean
     isFullscreen?: boolean
-    data?: Record<string, any>
+    data?: Record<string, unknown>
   }) => void,
-  data?: Record<string, any>,
+  data?: Record<string, unknown>,
   existingToolIds?: string[]
 ): void {
   const tool = ToolRegistry.get(toolId)
@@ -140,13 +164,20 @@ export function openTool(
   const resolvedLabel = typeof tool.label === 'function' ? tool.label() : tool.label
 
   openWindow({
-    id: `${toolId}-${Date.now()}`,
+    id: createWindowId(toolId),
     tool: toolId,
     title: resolvedLabel,
     iconName: tool.icon,
     width: tool.windowConfig.width ?? 750,
     height: tool.windowConfig.height ?? 500,
-    isFullscreen: true,
+    minWidth: tool.windowConfig.minWidth,
+    minHeight: tool.windowConfig.minHeight,
+    resizable: tool.windowConfig.resizable,
+    draggable: tool.windowConfig.draggable,
+    closable: tool.windowConfig.closable,
+    minimizable: tool.windowConfig.minimizable,
+    maximizable: tool.windowConfig.maximizable,
+    isFullscreen: tool.windowConfig.isFullscreen ?? false,
     data,
   })
 }

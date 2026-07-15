@@ -2,6 +2,20 @@
 @import 'xterm/css/xterm.css';
 @import './gui/konsta/ios.css';
 
+/* Custom cursor: only hide system cursor when the root class is present (settings toggle). */
+html.custom-cursor-enabled,
+html.custom-cursor-enabled * {
+  cursor: none !important;
+}
+
+/* Accessibility: never hide system cursor for reduced-motion users. */
+@media (prefers-reduced-motion: reduce) {
+  html.custom-cursor-enabled,
+  html.custom-cursor-enabled * {
+    cursor: auto !important;
+  }
+}
+
 @theme {
   --radius-squircle-xs: 3px;
   --radius-squircle-sm: 6px;

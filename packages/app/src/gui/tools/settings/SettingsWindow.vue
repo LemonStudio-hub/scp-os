@@ -131,6 +131,18 @@
               />
             </div>
 
+            <!-- Custom Cursor Effect -->
+            <div class="pc-settings__row" @click="toggleCustomCursor">
+              <div class="pc-settings__row-info">
+                <div class="pc-settings__row-label">{{ t('settings.customCursor') }}</div>
+                <div class="pc-settings__row-description">{{ t('settings.customCursorDesc') }}</div>
+              </div>
+              <div
+                class="pc-settings__toggle"
+                :class="{ 'pc-settings__toggle--on': customCursorEnabled }"
+              />
+            </div>
+
             <!-- Boot Animation -->
             <div class="pc-settings__row" @click="settings.bootAnimation = !settings.bootAnimation">
               <div class="pc-settings__row-info">
@@ -406,6 +418,30 @@ const {
   confirmClearData,
   confirmResetSettings,
 } = useSettings()
+
+const customCursorEnabled = ref(
+  (() => {
+    try {
+      return localStorage.getItem('scp-os-custom-cursor') !== 'false'
+    } catch {
+      return true
+    }
+  })()
+)
+
+function toggleCustomCursor(): void {
+  customCursorEnabled.value = !customCursorEnabled.value
+  try {
+    localStorage.setItem('scp-os-custom-cursor', customCursorEnabled.value ? 'true' : 'false')
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(
+    new CustomEvent('scp-custom-cursor-toggle', {
+      detail: { enabled: customCursorEnabled.value },
+    })
+  )
+}
 
 const sections = computed(() => [
   {

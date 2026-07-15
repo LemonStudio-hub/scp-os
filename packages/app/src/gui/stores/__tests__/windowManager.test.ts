@@ -18,6 +18,8 @@ vi.mock('../../../utils/indexedDB', () => ({
 describe('WindowManager Store', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
+    Object.defineProperty(window, 'innerWidth', { value: 1440, configurable: true })
+    Object.defineProperty(window, 'innerHeight', { value: 900, configurable: true })
   })
 
   const createWindowConfig = (overrides = {}) => ({
@@ -40,6 +42,20 @@ describe('WindowManager Store', () => {
     expect(windowInstance.config.id).toBe('test-window')
     expect(store.windowCount).toBe(1)
     expect(store.openWindows.length).toBe(1)
+  })
+
+  it('should open new desktop windows away from the top-left corner', () => {
+    Object.defineProperty(window, 'innerWidth', { value: 1440, configurable: true })
+    Object.defineProperty(window, 'innerHeight', { value: 900, configurable: true })
+
+    const store = useWindowManagerStore()
+    const first = store.openWindow(createWindowConfig({ id: 'win1' }))
+    const second = store.openWindow(createWindowConfig({ id: 'win2' }))
+
+    expect(first.position.x).toBeGreaterThan(0)
+    expect(first.position.y).toBeGreaterThan(0)
+    expect(second.position.x).toBeGreaterThan(first.position.x)
+    expect(second.position.y).toBeGreaterThan(first.position.y)
   })
 
   it('should focus existing window if opened again', () => {
@@ -118,6 +134,24 @@ describe('WindowManager Store', () => {
     expect(win?.position.y).toBe(75)
     expect(win?.size.width).toBe(900)
     expect(win?.size.height).toBe(700)
+  })
+
+  it('should keep the left and top edges stable when resize exceeds right and bottom bounds', () => {
+    Object.defineProperty(window, 'innerWidth', { value: 1200, configurable: true })
+    Object.defineProperty(window, 'innerHeight', { value: 800, configurable: true })
+
+    const store = useWindowManagerStore()
+    store.openWindow(
+      createWindowConfig({ id: 'edge-resize', x: 500, y: 100, width: 500, height: 300 })
+    )
+
+    store.updateWindowDimensions('edge-resize', { x: 500, y: 100, width: 900, height: 700 })
+
+    const win = store.openWindows.find((w) => w.config.id === 'edge-resize')
+    expect(win?.position.x).toBe(500)
+    expect(win?.position.y).toBe(100)
+    expect(win?.size.width).toBe(688)
+    expect(win?.size.height).toBe(640)
   })
 
   it('should focus window and update z-index', () => {

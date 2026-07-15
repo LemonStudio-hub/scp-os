@@ -63,15 +63,18 @@
         </svg>
       </button>
 
-      <button class="btn-close" :aria-label="t('perf.closeDashboard')" @click="$emit('close')">
-        X
-      </button>
+      <WindowCloseButton
+        class="btn-close"
+        :aria-label="t('perf.closeDashboard')"
+        @click="$emit('close')"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useI18n } from '../../gui/composables/useI18n'
+import WindowCloseButton from '../../gui/components/WindowCloseButton.vue'
 
 const { t } = useI18n()
 
@@ -217,32 +220,6 @@ defineEmits<{
 }
 
 .btn-control:active {
-  transform: scale(0.9);
-}
-
-.btn-close {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--gui-bg-surface-raised, #2c2c2e);
-  color: var(--gui-text-secondary, #8e8e93);
-  border: 0.5px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.06));
-  border-radius: var(--gui-radius-md, 10px);
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 400;
-  transition: all 100ms cubic-bezier(0.2, 0.9, 0.3, 1.1);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.btn-close:hover {
-  background: var(--gui-error-bg, rgba(255, 59, 48, 0.12));
-  color: var(--gui-error, #ff3b30);
-}
-
-.btn-close:active {
   transform: scale(0.9);
 }
 

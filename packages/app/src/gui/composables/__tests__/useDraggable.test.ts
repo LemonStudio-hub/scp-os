@@ -79,6 +79,22 @@ describe('useDraggable', () => {
     expect(onMove).toHaveBeenCalled()
   })
 
+  it('should resolve boundary function on every move', () => {
+    let maxX = 500
+    const { handleMouseDown } = useDraggable(ref(element), {
+      boundary: () => ({ minX: 0, minY: 0, maxX, maxY: 500 }),
+      onMove,
+      dragThreshold: 0,
+    })
+
+    handleMouseDown(new MouseEvent('mousedown', { clientX: 100, clientY: 100, bubbles: true }))
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 700, clientY: 100 }))
+    maxX = 300
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 700, clientY: 100 }))
+
+    expect(onMove).toHaveBeenLastCalledWith(300, 0)
+  })
+
   it('should stop dragging on mouseup', () => {
     const { dragState, handleMouseDown, stop } = useDraggable(ref(element), {
       onEnd,
@@ -98,6 +114,18 @@ describe('useDraggable', () => {
 
     expect(dragState.value.currentX).toBe(50)
     expect(dragState.value.currentY).toBe(100)
+    expect(dragState.value.initialX).toBe(50)
+    expect(dragState.value.initialY).toBe(100)
+  })
+
+  it('should sync current position without rewriting drag origin', () => {
+    const { dragState, setInitialPosition, setCurrentPosition } = useDraggable(ref(element))
+
+    setInitialPosition(50, 100)
+    setCurrentPosition(70, 120)
+
+    expect(dragState.value.currentX).toBe(70)
+    expect(dragState.value.currentY).toBe(120)
     expect(dragState.value.initialX).toBe(50)
     expect(dragState.value.initialY).toBe(100)
   })

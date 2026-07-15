@@ -17,6 +17,7 @@ export const en = {
   'common.unknown': 'Unknown',
   'common.n/a': 'N/A',
   'common.file': 'File',
+  'common.refresh': 'Refresh',
   'common.english': 'English',
 
   // ── Login ─────────────────────────────────────────────────────────────
@@ -56,6 +57,7 @@ export const en = {
   'app.dash': 'Dash',
   'app.feedback': 'Feedback',
   'app.docs': 'Docs Reader',
+  'app.appManager': 'App Manager',
   'app.notification': 'Notifications',
 
   // ── Home Screen ─────────────────────────────────────────────────────
@@ -67,12 +69,15 @@ export const en = {
   'home.apps.settings': 'Settings',
   'home.apps.docs': 'Docs',
   'home.apps.editor': 'Editor',
+  'home.apps.appManager': 'App Manager',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': 'Settings',
   'settings.terminal': 'Terminal',
   'settings.fontSize': 'Font Size',
   'settings.cursorBlink': 'Cursor Blink',
+  'settings.customCursor': 'Custom Cursor',
+  'settings.customCursorDesc': 'Animated cursor overlay (desktop / fine pointer only)',
   'settings.bootAnimation': 'Boot Animation',
   'settings.appearance': 'Appearance',
   'settings.hapticFeedback': 'Haptic Feedback',
@@ -100,8 +105,40 @@ export const en = {
   'settings.failedClear': 'Failed to clear data',
   'settings.resetTitle': 'Reset Settings',
   'settings.resetMsg': 'Reset all settings to their default values?',
+  'settings.resetContinue': 'Continue',
+  'settings.resetFinalTitle': 'Final Reset Confirmation',
+  'settings.resetFinalMsg':
+    'This will overwrite your current settings with defaults. Confirm one more time to reset.',
   'settings.reset': 'Reset',
   'settings.fontPreview': 'Aa 123',
+
+  // App Manager
+  'appManager.title': 'App Manager',
+  'appManager.subtitle': '{installed} of {total} apps installed',
+  'appManager.allApps': 'All',
+  'appManager.installed': 'Installed',
+  'appManager.available': 'Available',
+  'appManager.statusInstalled': 'Installed',
+  'appManager.statusAvailable': 'Available',
+  'appManager.install': 'Install',
+  'appManager.uninstall': 'Uninstall',
+  'appManager.uninstallNow': 'Uninstall now',
+  'appManager.protectedHint': 'System app cannot be uninstalled',
+  'appManager.uninstallTitle': 'Uninstall app?',
+  'appManager.finalUninstallTitle': 'Final confirmation',
+  'appManager.uninstallMsg':
+    'Remove {app} from the desktop and taskbar? Open windows will be closed.',
+  'appManager.finalUninstallMsg':
+    'This will uninstall {app} from the desktop. Confirm again to continue.',
+  'appManager.desc.terminal': 'Command-line workspace for local system tasks.',
+  'appManager.desc.filemanager': 'Browse, open, and manage local SCP OS files.',
+  'appManager.desc.editor': 'Edit text files and quick notes.',
+  'appManager.desc.chat': 'Open the integrated chat workspace.',
+  'appManager.desc.dash': 'View the dashboard overview.',
+  'appManager.desc.feedback': 'Submit feedback and issue reports.',
+  'appManager.desc.docs': 'Read bundled documentation.',
+  'appManager.desc.settings': 'Adjust system appearance and behavior.',
+  'appManager.desc.appmanager': 'Install and uninstall desktop apps.',
 
   // ── File Manager ────────────────────────────────────────────────────
   'fm.dropFiles': 'Drop files to upload',
@@ -364,6 +401,11 @@ export const en = {
   'pc.restore': 'Restore',
   'pc.maximize': 'Maximize',
   'pc.close': 'Close',
+  'pc.closeAllWindows': 'Close all windows',
+  'pc.openNewWindow': 'Open new window',
+  'pc.notRunning': 'Not running',
+  'pc.oneWindowOpen': '1 window open',
+  'pc.nWindowsOpen': '{n} windows open',
   'pc.pinned': 'Pinned',
   'pc.allApps': 'All Apps',
   'pc.system': 'System',
@@ -535,6 +577,7 @@ export const zhCN: Record<string, string> = {
   'common.unknown': '未知',
   'common.n/a': '暂无',
   'common.file': '文件',
+  'common.refresh': '刷新',
   'common.english': 'English',
 
   // ── Login ─────────────────────────────────────────────────────────────
@@ -574,6 +617,7 @@ export const zhCN: Record<string, string> = {
   'app.dash': '仪表盘',
   'app.feedback': '反馈',
   'app.docs': '文档阅读器',
+  'app.appManager': '应用管理',
   'app.notification': '通知中心',
 
   // ── Home Screen ─────────────────────────────────────────────────────
@@ -585,12 +629,15 @@ export const zhCN: Record<string, string> = {
   'home.apps.settings': '设置',
   'home.apps.docs': '文档',
   'home.apps.editor': '编辑器',
+  'home.apps.appManager': '应用管理',
 
   // ── Settings ────────────────────────────────────────────────────────
   'settings.title': '设置',
   'settings.terminal': '终端',
   'settings.fontSize': '字体大小',
   'settings.cursorBlink': '光标闪烁',
+  'settings.customCursor': '自定义光标',
+  'settings.customCursorDesc': '动画光标（仅桌面/精细指针设备）',
   'settings.bootAnimation': '开机动画',
   'settings.appearance': '外观',
   'settings.hapticFeedback': '触感反馈',
@@ -617,8 +664,37 @@ export const zhCN: Record<string, string> = {
   'settings.failedClear': '清除数据失败',
   'settings.resetTitle': '重置设置',
   'settings.resetMsg': '将所有设置恢复为默认值？',
+  'settings.resetContinue': '继续',
+  'settings.resetFinalTitle': '最终确认重置',
+  'settings.resetFinalMsg': '这会用默认值覆盖当前设置。再次确认后才会重置。',
   'settings.reset': '重置',
   'settings.fontPreview': 'Aa 123 字体',
+
+  // App Manager
+  'appManager.title': '应用管理',
+  'appManager.subtitle': '已安装 {installed} / {total} 个应用',
+  'appManager.allApps': '全部',
+  'appManager.installed': '已安装',
+  'appManager.available': '可安装',
+  'appManager.statusInstalled': '已安装',
+  'appManager.statusAvailable': '未安装',
+  'appManager.install': '安装',
+  'appManager.uninstall': '卸载',
+  'appManager.uninstallNow': '立即卸载',
+  'appManager.protectedHint': '系统应用不能卸载',
+  'appManager.uninstallTitle': '卸载应用？',
+  'appManager.finalUninstallTitle': '最终确认',
+  'appManager.uninstallMsg': '将从桌面和任务栏移除 {app}，并关闭已打开的窗口。',
+  'appManager.finalUninstallMsg': '这会卸载桌面上的 {app}。再次确认后继续。',
+  'appManager.desc.terminal': '用于本地系统任务的命令行工作区。',
+  'appManager.desc.filemanager': '浏览、打开和管理 SCP OS 文件。',
+  'appManager.desc.editor': '编辑文本文件和临时笔记。',
+  'appManager.desc.chat': '打开内置聊天工作区。',
+  'appManager.desc.dash': '查看仪表盘概览。',
+  'appManager.desc.feedback': '提交反馈和问题报告。',
+  'appManager.desc.docs': '阅读内置文档。',
+  'appManager.desc.settings': '调整系统外观和行为。',
+  'appManager.desc.appmanager': '安装和卸载桌面应用。',
 
   // ── File Manager ────────────────────────────────────────────────────
   'fm.dropFiles': '释放文件以上传',
@@ -879,6 +955,11 @@ export const zhCN: Record<string, string> = {
   'pc.restore': '还原',
   'pc.maximize': '最大化',
   'pc.close': '关闭',
+  'pc.closeAllWindows': '关闭所有窗口',
+  'pc.openNewWindow': '打开新窗口',
+  'pc.notRunning': '未运行',
+  'pc.oneWindowOpen': '已打开 1 个窗口',
+  'pc.nWindowsOpen': '已打开 {n} 个窗口',
   'pc.pinned': '已固定',
   'pc.allApps': '所有应用',
   'pc.system': '系统',
