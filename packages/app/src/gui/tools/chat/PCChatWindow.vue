@@ -640,12 +640,20 @@ const ws = useChatWebSocket({
     nextTick(() => scrollToBottom())
   },
   onHistory: (msgs: WSChatMessage[]) => {
+    // Preserve optimistic (sending) messages that haven't been confirmed yet
+    const pending = messages.filter((m) => m.sending && m.tempId)
     messages.splice(0, messages.length)
     for (const msg of msgs) {
       messages.push({
         ...msg,
         isSelf: msg.user_id === userId,
       })
+    }
+    // Re-append pending optimistic messages not yet in history
+    for (const p of pending) {
+      if (!messages.some((m) => m.tempId === p.tempId || (m.content === p.content && m.user_id === p.user_id))) {
+        messages.push(p)
+      }
     }
     loading.value = false
     nextTick(() => scrollToBottom())
