@@ -9,7 +9,11 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { themes, availableThemes, darkTheme, type Theme } from '../themes'
 
-import { adjustColorBrightness, hexToRgbA, loadCustomAccent as loadAccent } from '../utils/accentColor'
+import {
+  adjustColorBrightness,
+  hexToRgbA,
+  loadCustomAccent as loadAccent,
+} from '../utils/accentColor'
 
 const THEME_STORAGE_KEY = 'scp-os-selected-theme'
 const CUSTOM_ACCENT_KEY = 'scp-os-custom-accent'
