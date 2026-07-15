@@ -10,16 +10,7 @@
         <div class="admin-modal" :style="{ width }">
           <div class="admin-modal__header">
             <h3 class="admin-modal__title">{{ title }}</h3>
-            <button class="admin-modal__close" @click="onClose">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M4 4L12 12M12 4L4 12"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                />
-              </svg>
-            </button>
+            <WindowCloseButton class="admin-modal__close" aria-label="Close" @click="onClose" />
           </div>
           <div class="admin-modal__body">
             <slot />
@@ -34,6 +25,8 @@
 </template>
 
 <script setup lang="ts">
+import WindowCloseButton from '../../../components/WindowCloseButton.vue'
+
 interface Props {
   visible: boolean
   title: string
@@ -94,25 +87,6 @@ function onClose() {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
-  color: var(--gui-text-primary, #e0e0e0);
-}
-
-.admin-modal__close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--gui-text-tertiary, #6a6a6a);
-  cursor: pointer;
-  transition: all 120ms ease;
-}
-
-.admin-modal__close:hover {
-  background: var(--gui-bg-surface-hover, rgba(255, 255, 255, 0.06));
   color: var(--gui-text-primary, #e0e0e0);
 }
 

@@ -23,18 +23,11 @@
                 <path d="M3 12v3a2 2 0 002 2h8a2 2 0 002-2v-3" />
               </svg>
             </button>
-            <button class="wallpaper-picker__close-btn" @click="close">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              >
-                <path d="M5 5l10 10M15 5L5 15" />
-              </svg>
-            </button>
+            <WindowCloseButton
+              class="wallpaper-picker__close-btn"
+              :aria-label="t('window.close')"
+              @click="close"
+            />
           </div>
         </div>
 
@@ -132,6 +125,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useI18n } from '../composables/useI18n'
 import { wallpaperService } from '../../utils/wallpaperService'
 import type { WallpaperInfo } from '../../utils/wallpaperService'
+import WindowCloseButton from './WindowCloseButton.vue'
 
 const { t } = useI18n()
 
@@ -308,8 +302,7 @@ function close() {
   gap: 8px;
 }
 
-.wallpaper-picker__action-btn,
-.wallpaper-picker__close-btn {
+.wallpaper-picker__action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -324,8 +317,7 @@ function close() {
   -webkit-tap-highlight-color: transparent;
 }
 
-.wallpaper-picker__action-btn:active,
-.wallpaper-picker__close-btn:active {
+.wallpaper-picker__action-btn:active {
   opacity: 0.7;
 }
 
