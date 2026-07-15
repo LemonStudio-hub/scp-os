@@ -3,8 +3,16 @@ import { useTerminalStore } from '../../stores/terminal'
 import indexedDBService from '../../utils/indexedDB'
 import { useCloudQuota, type CloudQuota } from './useCloudQuota'
 import { useI18n } from './useI18n'
-import type { AppSettings } from '../types/settings'
 import { usePreferencesStore } from '../stores/preferencesStore'
+
+export interface AppSettings {
+  fontSize: number
+  cursorBlink: boolean
+  bootAnimation: boolean
+  haptic: boolean
+  animations: boolean
+  accent: string
+}
 
 interface ConfirmDialog {
   title: string

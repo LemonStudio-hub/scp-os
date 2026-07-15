@@ -942,6 +942,56 @@ class IndexedDBService {
       request.onerror = () => reject(request.error)
     })
   }
+
+  async exportAllData(): Promise<Record<string, unknown[]>> {
+    await this.init()
+    const db = this.getDB()
+    const storeNames = Array.from(db.objectStoreNames)
+    const transaction = db.transaction(storeNames, 'readonly')
+    const result: Record<string, unknown[]> = {}
+
+    await Promise.all(
+      storeNames.map(
+        (storeName) =>
+          new Promise<void>((resolve, reject) => {
+            const request = transaction.objectStore(storeName).getAll()
+            request.onsuccess = () => {
+              result[storeName] = request.result || []
+              resolve()
+            }
+            request.onerror = () => reject(request.error)
+          })
+      )
+    )
+
+    return result
+  }
+
+  async importAllData(data: Record<string, unknown[]>): Promise<void> {
+    await this.init()
+    const db = this.getDB()
+    const storeNames = Object.keys(data).filter((storeName) =>
+      db.objectStoreNames.contains(storeName)
+    )
+    if (!storeNames.length) return
+
+    return new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction(storeNames, 'readwrite')
+
+      transaction.oncomplete = () => resolve()
+      transaction.onerror = () => reject(transaction.error)
+      transaction.onabort = () => reject(new Error('Import transaction aborted'))
+
+      for (const storeName of storeNames) {
+        const store = transaction.objectStore(storeName)
+        store.clear().onsuccess = () => {
+          for (const record of data[storeName] || []) {
+            store.put(record)
+          }
+        }
+      }
+    })
+  }
 }
 
 // Export singleton instance
