@@ -1,8 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { SimpleApplicationTemplate } from '../base-application-template'
-import type { ApplicationTemplateMetadata, ApplicationTemplateConfig } from '../application-template.interface'
+import type {
+  ApplicationTemplateMetadata,
+  ApplicationTemplateConfig,
+} from '../application-template.interface'
 
-const createMetadata = (overrides: Partial<ApplicationTemplateMetadata> = {}): ApplicationTemplateMetadata => ({
+const createMetadata = (
+  overrides: Partial<ApplicationTemplateMetadata> = {}
+): ApplicationTemplateMetadata => ({
   id: 'tpl-1',
   name: 'Test Template',
   description: 'A template for testing',
@@ -12,7 +17,9 @@ const createMetadata = (overrides: Partial<ApplicationTemplateMetadata> = {}): A
   ...overrides,
 })
 
-const createConfig = (overrides: Partial<ApplicationTemplateConfig> = {}): ApplicationTemplateConfig => ({
+const createConfig = (
+  overrides: Partial<ApplicationTemplateConfig> = {}
+): ApplicationTemplateConfig => ({
   appName: 'TestApp',
   appVersion: '1.0.0',
   defaultTheme: 'dark',
@@ -102,7 +109,12 @@ describe('SimpleApplicationTemplate', () => {
       const tpl = new SimpleApplicationTemplate(
         createMetadata(),
         createConfig({
-          features: { multiTab: true, gestureSupport: true, voiceControl: true, accessibility: true },
+          features: {
+            multiTab: true,
+            gestureSupport: true,
+            voiceControl: true,
+            accessibility: true,
+          },
         })
       )
       const summary = tpl.getSummary()
@@ -113,7 +125,12 @@ describe('SimpleApplicationTemplate', () => {
       const tpl = new SimpleApplicationTemplate(
         createMetadata(),
         createConfig({
-          features: { multiTab: false, gestureSupport: false, voiceControl: false, accessibility: false },
+          features: {
+            multiTab: false,
+            gestureSupport: false,
+            voiceControl: false,
+            accessibility: false,
+          },
         })
       )
       const summary = tpl.getSummary()

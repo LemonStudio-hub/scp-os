@@ -77,7 +77,9 @@ export function useTerminalEmulator(options: UseTerminalEmulatorOptions) {
     if (promptStyle === 'legacy') {
       terminal.write(`${ANSICode.prompt}SCP-ROOT>${ANSICode.reset} `)
     } else {
-      terminal.write(`${ANSICode.red}scp@foundation${ANSICode.reset}:${ANSICode.cyan}~${ANSICode.reset}$ `)
+      terminal.write(
+        `${ANSICode.red}scp@foundation${ANSICode.reset}:${ANSICode.cyan}~${ANSICode.reset}$ `
+      )
     }
 
     // Highlight recognized commands in green

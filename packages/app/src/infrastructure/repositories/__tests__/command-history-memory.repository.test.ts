@@ -10,7 +10,7 @@ describe('CommandHistoryMemoryRepository', () => {
     command: string,
     success = true,
     duration?: number,
-    timestamp?: Date,
+    timestamp?: Date
   ) =>
     new CommandHistoryEntity({
       id,
@@ -74,19 +74,10 @@ describe('CommandHistoryMemoryRepository', () => {
 
   describe('findByDateRange', () => {
     it('filters by date range', async () => {
-      await repo.addCommand(
-        createEntry('1', 'old', true, undefined, new Date('2024-01-01')),
-      )
-      await repo.addCommand(
-        createEntry('2', 'mid', true, undefined, new Date('2024-06-01')),
-      )
-      await repo.addCommand(
-        createEntry('3', 'new', true, undefined, new Date('2024-12-01')),
-      )
-      const results = await repo.findByDateRange(
-        new Date('2024-03-01'),
-        new Date('2024-09-01'),
-      )
+      await repo.addCommand(createEntry('1', 'old', true, undefined, new Date('2024-01-01')))
+      await repo.addCommand(createEntry('2', 'mid', true, undefined, new Date('2024-06-01')))
+      await repo.addCommand(createEntry('3', 'new', true, undefined, new Date('2024-12-01')))
+      const results = await repo.findByDateRange(new Date('2024-03-01'), new Date('2024-09-01'))
       expect(results).toHaveLength(1)
       expect(results[0].command).toBe('mid')
     })
@@ -136,15 +127,9 @@ describe('CommandHistoryMemoryRepository', () => {
 
   describe('find with options', () => {
     it('filters by command, startDate, endDate, and success', async () => {
-      await repo.addCommand(
-        createEntry('1', 'ls', true, undefined, new Date('2024-06-01')),
-      )
-      await repo.addCommand(
-        createEntry('2', 'ls', false, undefined, new Date('2024-07-01')),
-      )
-      await repo.addCommand(
-        createEntry('3', 'cd', true, undefined, new Date('2024-08-01')),
-      )
+      await repo.addCommand(createEntry('1', 'ls', true, undefined, new Date('2024-06-01')))
+      await repo.addCommand(createEntry('2', 'ls', false, undefined, new Date('2024-07-01')))
+      await repo.addCommand(createEntry('3', 'cd', true, undefined, new Date('2024-08-01')))
 
       const result = await repo.find({
         command: 'ls',
