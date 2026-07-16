@@ -316,4 +316,64 @@ const scoreStatus = computed(() => {
     gap: 12px;
   }
 }
+
+/* ── Light Mode Overrides ─────────────────────────────────────────── */
+:global(.light) .score-label {
+  color: #1c1c1e;
+  opacity: 0.7;
+}
+
+:global(.light) .detail-label {
+  color: #1c1c1e;
+  opacity: 0.65;
+}
+
+:global(.light) .detail-value {
+  color: #1c1c1e;
+}
+
+/* Darker shades for light backgrounds (AAA-ish contrast vs neon-on-white). */
+:global(.light) .score-value.score-good,
+:global(.light) .detail-value.score-good {
+  color: #006400;
+  text-shadow: none;
+}
+
+:global(.light) .score-value.score-medium,
+:global(.light) .detail-value.score-medium {
+  color: #b8860b;
+  text-shadow: none;
+}
+
+:global(.light) .score-value.score-poor,
+:global(.light) .detail-value.score-poor {
+  color: #b00020;
+  text-shadow: none;
+}
+
+:global(.light) .score-badge.score-good {
+  background: rgba(0, 100, 0, 0.12);
+  color: #006400;
+  border-color: rgba(0, 100, 0, 0.35);
+}
+
+:global(.light) .score-badge.score-medium {
+  background: rgba(184, 134, 11, 0.12);
+  color: #b8860b;
+  border-color: rgba(184, 134, 11, 0.35);
+}
+
+:global(.light) .score-bar-fill.score-good {
+  background: linear-gradient(90deg, #006400, #228b22);
+  box-shadow: none;
+}
+
+:global(.light) .score-bar-fill.score-medium {
+  background: linear-gradient(90deg, #b8860b, #daa520);
+  box-shadow: none;
+}
+
+:global(.light) .score-marks .mark {
+  background: rgba(0, 0, 0, 0.15);
+}
 </style>

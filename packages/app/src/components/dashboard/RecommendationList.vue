@@ -73,8 +73,17 @@
             </button>
           </div>
           <div class="steps-list" :class="{ expanded: expandedRecs.has(rec.id) }">
-            <div v-for="(step, index) in rec.steps" :key="index" class="step-item">
-              <span class="step-number">{{ index + 1 }}</span>
+            <div
+              v-for="(step, index) in rec.steps"
+              :key="index"
+              class="step-item"
+              :class="{ completed: isStepCompleted(rec.id, index) }"
+              @click="onToggleStep(rec.id, index)"
+            >
+              <div class="step-checkbox" :class="{ checked: isStepCompleted(rec.id, index) }">
+                <span v-if="isStepCompleted(rec.id, index)" class="checkmark">✓</span>
+                <span v-else class="step-number-inner">{{ index + 1 }}</span>
+              </div>
               <span class="step-text">{{ step }}</span>
             </div>
           </div>
@@ -90,20 +99,40 @@ import { useI18n } from '../../gui/composables/useI18n'
 
 const { t } = useI18n()
 
-defineProps<{
-  recommendations: Array<{
-    id: string
-    name: string
-    description: string
-    type: string
-    estimatedImprovement: string
-    effort: string
-    steps: string[]
-  }>
-  showSteps?: boolean
+const props = withDefaults(
+  defineProps<{
+    recommendations: Array<{
+      id: string
+      name: string
+      description: string
+      type: string
+      estimatedImprovement: string
+      effort: string
+      steps: string[]
+    }>
+    showSteps?: boolean
+    completedSteps?: Record<string, number[]>
+  }>(),
+  {
+    showSteps: false,
+    completedSteps: () => ({}),
+  }
+)
+
+const emit = defineEmits<{
+  toggleStep: [strategyId: string, stepIndex: number]
 }>()
 
 const expandedRecs = ref<Set<string>>(new Set())
+
+const isStepCompleted = (strategyId: string, index: number): boolean => {
+  const completed = props.completedSteps?.[strategyId]
+  return Array.isArray(completed) && completed.includes(index)
+}
+
+const onToggleStep = (strategyId: string, index: number): void => {
+  emit('toggleStep', strategyId, index)
+}
 
 const getTypeIcon = (type: string): string => {
   switch (type) {
@@ -444,38 +473,70 @@ const toggleSteps = (recId: string) => {
 
 .step-item {
   display: flex;
+  align-items: center;
   gap: 12px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
   margin-bottom: 6px;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
 }
 
 .step-item:hover {
   background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
   transform: translateX(4px);
 }
 
-.step-number {
+.step-item.completed {
+  background: rgba(52, 199, 89, 0.05);
+  border-color: rgba(52, 199, 89, 0.15);
+  box-shadow: inset 0 0 10px rgba(52, 199, 89, 0.02);
+}
+
+.step-checkbox {
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 50%;
   font-size: 11px;
   font-weight: 700;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.7);
   flex-shrink: 0;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.step-checkbox.checked {
+  background: linear-gradient(135deg, #34c759 0%, #28a745 100%);
+  border-color: rgba(52, 199, 89, 0.4);
+  box-shadow: 0 0 8px rgba(52, 199, 89, 0.35);
+  transform: scale(1.08);
+  color: #ffffff;
+}
+
+.checkmark {
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .step-text {
   font-size: 12px;
   color: #ffffff;
-  opacity: 0.8;
+  opacity: 0.85;
   line-height: 1.5;
+  transition: all 0.3s ease;
+}
+
+.step-item.completed .step-text {
+  opacity: 0.45;
+  text-decoration: line-through;
 }
 
 /* Responsive design */
