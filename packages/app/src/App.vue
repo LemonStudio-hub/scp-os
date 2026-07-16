@@ -21,6 +21,7 @@ import { filesystem } from './utils/filesystem'
 import { useNotification } from './gui/composables/useNotification'
 import { useMobile } from './gui/composables/useMobile'
 import { useI18n } from './gui/composables/useI18n'
+import GlobalDialog from './gui/components/GlobalDialog.vue'
 import logger from './utils/logger'
 import indexedDBService from './utils/indexedDB'
 
@@ -44,6 +45,10 @@ const loadingProgress = ref(0)
 const loadingStep = ref('loading.steps.initializing')
 
 onMounted(() => {
+  // Do not override window.confirm/prompt — they are synchronous and cannot return
+  // Promise results from dialogService (would always return false/null and break callers).
+  // Use dialogService.confirm() / dialogService.alert() directly in app code.
+
   // Safety timeout: force show app after 3s even if init hangs
   const forceReady = setTimeout(() => {
     if (!isAppReady.value) {
@@ -194,6 +199,8 @@ function handleLoginSuccess(): void {
 </script>
 
 <template>
+  <GlobalDialog />
+
   <!-- App Loading Overlay -->
   <div
     v-show="!isAppReady"

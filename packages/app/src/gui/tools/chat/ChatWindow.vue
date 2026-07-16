@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <MobileWindow
     :visible="visible"
     :title="view === 'rooms' ? t('chat.title') : currentRoom?.name || ''"
@@ -120,7 +120,7 @@
               border-bottom: 1px solid var(--gui-border-subtle, rgba(255, 255, 255, 0.1));
             "
           >
-            DEBUG: 房间={{ currentRoomId }} 消息数={{ messages.length }} 最后ID={{
+            DEBUG: 鎴块棿={{ currentRoomId }} 娑堟伅鏁?{{ messages.length }} 鏈€鍚嶪D={{
               messages[messages.length - 1]?.id || '?'
             }}
           </div>
@@ -147,12 +147,17 @@
               'chat-bubble--sending': msg.sending,
               'chat-bubble--error': msg.error,
             }"
+            @touchstart="onMessageTouchStart($event, msg)"
+            @touchend="onMessageTouchEnd"
+            @touchmove="onMessageTouchEnd"
+            @contextmenu.prevent
           >
             <div class="chat-bubble__header">
               <span class="chat-bubble__username">{{ msg.username }}</span>
               <span class="chat-bubble__time"
-                >{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}</span
-              >
+                >{{ formatTime(msg.created_at) }} #{{ msg.id || '?' }}
+                <span v-if="msg.edited" class="chat-bubble__edited">{{ t('chat.edited') }}</span>
+              </span>
             </div>
             <div class="chat-bubble__content">{{ msg.content }}</div>
             <div v-if="msg.sending" class="chat-bubble__status">
@@ -164,7 +169,7 @@
               class="chat-bubble__status chat-bubble__status--error"
               @click="retryMessage(msg)"
             >
-              {{ msg.error }} ·
+              {{ msg.error }} 路
               <span class="chat-bubble__retry">{{ t('chat.retry') }}</span>
             </div>
           </div>
@@ -185,18 +190,16 @@
           :class="`mobile-chat__ws-status--${ws.connectionState.value}`"
         >
           <span class="mobile-chat__ws-dot" />
-          <span class="mobile-chat__ws-text">{{
-            ws.connectionState.value === 'connected'
-              ? '已连接'
-              : ws.connectionState.value === 'connecting'
-                ? '连接中...'
-                : ws.connectionState.value === 'reconnecting'
-                  ? '重连中...'
-                  : ws.lastError.value || '已断开'
-          }}</span>
+          <span class="mobile-chat__ws-text">{{ wsStatusLabel }}</span>
         </div>
 
         <div class="mobile-chat__input-bar">
+          <div v-if="editingMessageId" class="mobile-chat__edit-hint">
+            <span>{{ t('chat.editing') }}</span>
+            <button class="mobile-chat__edit-cancel" @click="cancelEdit">
+              {{ t('common.cancel') }}
+            </button>
+          </div>
           <textarea
             ref="inputRef"
             v-model="inputContent"
@@ -204,13 +207,13 @@
             :placeholder="t('chat.placeholder')"
             :disabled="sending || rateLimited"
             rows="1"
-            @keydown.enter.exact.prevent="sendMessage"
+            @keydown.enter.exact.prevent="sendOrEditMessage"
             @input="autoResizeInput"
           />
           <button
             class="mobile-chat__send-btn"
             :disabled="!inputContent.trim() || sending || rateLimited"
-            @click="sendMessage"
+            @click="sendOrEditMessage"
           >
             <svg v-if="!sending" width="20" height="20" viewBox="0 0 20 20" fill="none">
               <path d="M3 10L17 3L10 17L9 11L3 10Z" fill="currentColor" />
@@ -315,17 +318,66 @@
           </div>
         </div>
       </Transition>
+
+      <!-- Action Sheet -->
+      <Transition name="mobile-fade">
+        <div
+          v-if="showActionSheet"
+          class="mobile-chat__action-overlay"
+          @click.self="showActionSheet = false"
+        >
+          <div class="mobile-chat__action-sheet">
+            <button class="mobile-chat__action-item" @click="startEdit(actionSheetMsg)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              {{ t('chat.edit') }}
+            </button>
+            <button
+              class="mobile-chat__action-item mobile-chat__action-item--danger"
+              @click="startDelete(actionSheetMsg)"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                />
+              </svg>
+              {{ t('chat.delete') }}
+            </button>
+            <div class="mobile-chat__action-divider" />
+            <button class="mobile-chat__action-item" @click="showActionSheet = false">
+              {{ t('common.cancel') }}
+            </button>
+          </div>
+        </div>
+      </Transition>
     </div>
   </MobileWindow>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, nextTick, onUnmounted, ref } from 'vue'
 import MobileWindow from '../../components/MobileWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
-import { useI18n } from '../../composables/useI18n'
-import { useAuthStore } from '../../../stores/authStore'
 import { useChat } from '../../composables/useChat'
+import { useI18n } from '../../composables/useI18n'
+import type { ChatMessage } from '../../types/chat'
 
 interface Props {
   visible: boolean
@@ -337,16 +389,22 @@ defineEmits<{ close: [] }>()
 const themeStore = useThemeStore()
 themeStore.init()
 
-const authStore = useAuthStore()
 const { t } = useI18n()
-
-const view = ref<'rooms' | 'chat'>('rooms')
+const messagesRef = ref<HTMLElement>()
+const inputRef = ref<HTMLTextAreaElement>()
+const editingMessageId = ref<number | null>(null)
+const showActionSheet = ref(false)
+const actionSheetMsg = ref<ChatMessage | null>(null)
+let longPressTimer: number | null = null
 
 const {
+  authStore,
+  view,
   inputContent,
   messages,
   rooms,
   currentRoomId,
+  currentRoom,
   loading,
   sending,
   rateLimitWarning,
@@ -359,25 +417,26 @@ const {
   nicknameCheckStatus,
   nicknameSaveError,
   roomSearchQuery,
+  filteredRooms,
   showCreateRoom,
   newRoomName,
   newRoomDescription,
-  filteredRooms,
-  currentRoom,
   ws,
+  wsStatusLabel,
   getUnreadCount,
   createRoom,
-  enterRoom: baseEnterRoom,
-  autoResizeInput,
+  enterRoom,
   sendMessage,
+  editMessage,
+  deleteMessage,
   retryMessage,
-  formatTime,
-  formatRoomTime,
-  truncateMessage,
   openNicknameDialog,
   onNicknameInput,
   saveNickname,
-} = useChat()
+  formatTime,
+  formatRoomTime,
+  truncateMessage,
+} = useChat({ scrollToBottom, connectOnMount: false })
 
 const chatThemeStyles = computed(() => ({
   '--chat-bg': themeStore.currentTheme.colors.bgBase || '#1C1C1E',
@@ -391,9 +450,80 @@ const chatThemeStyles = computed(() => ({
   '--chat-error': '#FF3B30',
 }))
 
-async function enterRoom(roomId: number) {
-  await baseEnterRoom(roomId)
-  view.value = 'chat'
+onUnmounted(() => {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+})
+
+function autoResizeInput() {
+  if (inputRef.value) {
+    inputRef.value.style.height = 'auto'
+    inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 100) + 'px'
+  }
+}
+
+function sendOrEditMessage() {
+  if (editingMessageId.value) {
+    confirmEdit()
+  } else {
+    void sendMessage().then(autoResizeInput)
+  }
+}
+
+function onMessageTouchStart(_event: TouchEvent, msg: ChatMessage) {
+  if (!msg.isSelf || msg.sending || !msg.id) return
+  if (longPressTimer) clearTimeout(longPressTimer)
+  longPressTimer = window.setTimeout(() => {
+    actionSheetMsg.value = msg
+    showActionSheet.value = true
+    longPressTimer = null
+  }, 500)
+}
+
+function onMessageTouchEnd() {
+  if (longPressTimer) {
+    clearTimeout(longPressTimer)
+    longPressTimer = null
+  }
+}
+
+function startEdit(msg: ChatMessage | null) {
+  showActionSheet.value = false
+  if (!msg || !msg.id) return
+  editingMessageId.value = msg.id
+  inputContent.value = msg.content
+  void nextTick(() => inputRef.value?.focus())
+}
+
+function cancelEdit() {
+  editingMessageId.value = null
+  inputContent.value = ''
+  void nextTick(autoResizeInput)
+}
+
+async function confirmEdit() {
+  if (!editingMessageId.value) return
+  const content = inputContent.value.trim()
+  if (!content) return
+  const result = await editMessage(editingMessageId.value, content)
+  if (result.success) cancelEdit()
+}
+
+async function startDelete(msg: ChatMessage | null) {
+  showActionSheet.value = false
+  if (!msg || !msg.id) return
+  await deleteMessage(msg.id)
+}
+
+function scrollToBottom() {
+  if (messagesRef.value) {
+    messagesRef.value.scrollTo({
+      top: messagesRef.value.scrollHeight,
+      behavior: 'smooth',
+    })
+  }
 }
 </script>
 
@@ -406,7 +536,7 @@ async function enterRoom(roomId: number) {
   position: relative;
 }
 
-/* ── Rooms View ────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Rooms View 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__rooms-view {
   display: flex;
   flex-direction: column;
@@ -446,7 +576,7 @@ async function enterRoom(roomId: number) {
   color: var(--chat-text-tertiary, #636366);
 }
 
-/* ── Room List ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Room List 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__room-list {
   flex: 1;
   overflow-y: auto;
@@ -590,7 +720,7 @@ async function enterRoom(roomId: number) {
   background: var(--chat-surface-hover, #3a3a3c);
 }
 
-/* ── Chat View ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Chat View 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__chat-view {
   display: flex;
   flex-direction: column;
@@ -621,7 +751,7 @@ async function enterRoom(roomId: number) {
   margin: 0;
 }
 
-/* ── Chat Bubbles ──────────────────────────────────────────────────── */
+/* 鈹€鈹€ Chat Bubbles 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .chat-bubble {
   margin-bottom: 10px;
   animation: chat-fade-in 200ms ease;
@@ -730,7 +860,7 @@ async function enterRoom(roomId: number) {
   }
 }
 
-/* ── Rate Warning ──────────────────────────────────────────────────── */
+/* 鈹€鈹€ Rate Warning 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__rate-warning {
   padding: 8px 12px;
   background: var(--chat-error, #ff3b30);
@@ -758,19 +888,19 @@ async function enterRoom(roomId: number) {
 }
 
 .mobile-chat__ws-status--connected .mobile-chat__ws-dot {
-  background: #34c759;
-  box-shadow: 0 0 5px rgba(52, 199, 89, 0.5);
+  background: var(--gui-success, #34c759);
+  box-shadow: 0 0 5px var(--gui-success-bg, rgba(52, 199, 89, 0.5));
 }
 .mobile-chat__ws-status--connecting .mobile-chat__ws-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: mwsPulse 1s ease-in-out infinite;
 }
 .mobile-chat__ws-status--reconnecting .mobile-chat__ws-dot {
-  background: #ff9500;
+  background: var(--gui-warning, #ff9500);
   animation: mwsPulse 1s ease-in-out infinite;
 }
 .mobile-chat__ws-status--disconnected .mobile-chat__ws-dot {
-  background: #ff3b30;
+  background: var(--gui-error, #ff3b30);
 }
 
 .mobile-chat__ws-text {
@@ -795,7 +925,7 @@ async function enterRoom(roomId: number) {
   }
 }
 
-/* ── Loading ───────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Loading 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__loading {
   display: flex;
   justify-content: center;
@@ -829,7 +959,7 @@ async function enterRoom(roomId: number) {
   }
 }
 
-/* ── Input Bar ─────────────────────────────────────────────────────── */
+/* 鈹€鈹€ Input Bar 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__input-bar {
   display: flex;
   align-items: flex-end;
@@ -901,7 +1031,92 @@ async function enterRoom(roomId: number) {
   }
 }
 
-/* ── Dialogs ───────────────────────────────────────────────────────── */
+.mobile-chat__edit-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--chat-accent, #007aff);
+  background: var(--chat-bg, #1c1c1e);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.mobile-chat__edit-cancel {
+  background: none;
+  border: none;
+  color: var(--chat-text-secondary, #8e8e93);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.mobile-chat__edit-cancel:active {
+  color: var(--chat-text-primary, #ffffff);
+  background: var(--chat-surface-hover, #3a3a3c);
+}
+
+.chat-bubble__edited {
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--chat-text-tertiary, #636366);
+  font-style: italic;
+}
+
+.mobile-chat__action-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--gui-backdrop-bg, rgba(0, 0, 0, 0.5));
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 12px 24px;
+}
+
+.mobile-chat__action-sheet {
+  width: 100%;
+  max-width: 400px;
+  background: var(--chat-surface, #2c2c2e);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-chat__action-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  color: var(--chat-text-primary, #ffffff);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.mobile-chat__action-item:active {
+  background: var(--chat-surface-hover, #3a3a3c);
+}
+
+.mobile-chat__action-item--danger {
+  color: var(--chat-error, #ff3b30);
+}
+
+.mobile-chat__action-divider {
+  height: 0.5px;
+  background: var(--chat-border, #38383a);
+}
+
+/* 鈹€鈹€ Dialogs 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-chat__dialog-overlay {
   position: absolute;
   inset: 0;
@@ -1013,7 +1228,7 @@ async function enterRoom(roomId: number) {
   margin: 0 auto;
 }
 
-/* ── Transitions ───────────────────────────────────────────────────── */
+/* 鈹€鈹€ Transitions 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .mobile-fade-enter-active,
 .mobile-fade-leave-active {
   transition: opacity 0.2s ease;
@@ -1024,7 +1239,7 @@ async function enterRoom(roomId: number) {
   opacity: 0;
 }
 
-/* ── Light Mode Overrides ─────────────────────────────────────────── */
+/* 鈹€鈹€ Light Mode Overrides 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ */
 .light .mobile-chat__emoji-picker {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
@@ -1052,5 +1267,25 @@ async function enterRoom(roomId: number) {
 }
 .light .mobile-chat__action-btn:active {
   background: rgba(0, 0, 0, 0.06);
+}
+.light .mobile-chat__edit-hint {
+  background: var(--chat-bg, #f2f2f7);
+}
+.light .mobile-chat__edit-cancel:active {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--chat-text-primary, #000000);
+}
+.light .mobile-chat__action-sheet {
+  background: var(--chat-surface, #ffffff);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.light .mobile-chat__action-item {
+  color: var(--chat-text-primary, #000000);
+}
+.light .mobile-chat__action-item:active {
+  background: var(--chat-surface-hover, rgba(0, 0, 0, 0.06));
+}
+.light .mobile-chat__action-divider {
+  background: var(--chat-border, #e5e5ea);
 }
 </style>

@@ -53,6 +53,58 @@ export function registerChat(app: Hono<AppEnv>): void {
     return json({ success: true, data: room }, 201)
   })
 
+  app.put('/chat/rooms/:id', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const roomId = Number(c.req.param('id'))
+    const body = await readJson<{ name?: string; description?: string; is_public?: number }>(c.req.raw)
+    const name = cleanText(body?.name, 50)
+    if (!name) return json({ code: 'VALIDATION_ERROR', message: 'Missing name' }, 400)
+    const room = await first<{ id: number; created_by: string }>(c.env.SCP_DB, 'SELECT id, created_by FROM chat_rooms WHERE id = ?', [roomId])
+    if (!room) return json({ success: false, error: 'Room not found' }, 404)
+    if (room.created_by !== userId) return json({ success: false, error: 'Permission denied' }, 403)
+    await run(c.env.SCP_DB, 'UPDATE chat_rooms SET name = ?, description = ?, is_public = ? WHERE id = ?', [name, cleanText(body?.description, 300), body?.is_public ?? 1, roomId])
+    const updated = await first(c.env.SCP_DB, 'SELECT * FROM chat_rooms WHERE id = ?', [roomId])
+    return json({ success: true, data: updated })
+  })
+
+  app.delete('/chat/rooms/:id', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const roomId = Number(c.req.param('id'))
+    const room = await first<{ id: number; created_by: string }>(c.env.SCP_DB, 'SELECT id, created_by FROM chat_rooms WHERE id = ?', [roomId])
+    if (!room) return json({ success: false, error: 'Room not found' }, 404)
+    if (room.created_by !== userId) return json({ success: false, error: 'Permission denied' }, 403)
+    await run(c.env.SCP_DB, 'DELETE FROM chat_rooms WHERE id = ?', [roomId])
+    return json({ success: true })
+  })
+
+  app.put('/chat/messages/:id', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const messageId = Number(c.req.param('id'))
+    const body = await readJson<{ content?: string }>(c.req.raw)
+    const content = cleanText(body?.content, 1000)
+    if (!content) return json({ code: 'VALIDATION_ERROR', message: 'Missing content' }, 400)
+    const msg = await first<{ id: number; user_id: string }>(c.env.SCP_DB, 'SELECT id, user_id FROM chat_messages WHERE id = ?', [messageId])
+    if (!msg) return json({ success: false, error: 'Message not found' }, 404)
+    if (msg.user_id !== userId) return json({ success: false, error: 'Permission denied' }, 403)
+    await run(c.env.SCP_DB, 'UPDATE chat_messages SET content = ? WHERE id = ?', [content, messageId])
+    const updated = await first(c.env.SCP_DB, 'SELECT * FROM chat_messages WHERE id = ?', [messageId])
+    return json({ success: true, data: updated })
+  })
+
+  app.delete('/chat/messages/:id', async (c) => {
+    const userId = await requiredUser(c)
+    if (userId instanceof Response) return userId
+    const messageId = Number(c.req.param('id'))
+    const msg = await first<{ id: number; user_id: string }>(c.env.SCP_DB, 'SELECT id, user_id FROM chat_messages WHERE id = ?', [messageId])
+    if (!msg) return json({ success: false, error: 'Message not found' }, 404)
+    if (msg.user_id !== userId) return json({ success: false, error: 'Permission denied' }, 403)
+    await run(c.env.SCP_DB, 'DELETE FROM chat_messages WHERE id = ?', [messageId])
+    return json({ success: true })
+  })
+
   app.post('/chat/nickname', async (c) => {
     const userId = await requiredUser(c)
     if (userId instanceof Response) return userId
