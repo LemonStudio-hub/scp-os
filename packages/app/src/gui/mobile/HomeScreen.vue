@@ -141,6 +141,23 @@
               />
             </svg>
           </template>
+          <template v-else-if="app.id === 'appmanager'">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7" rx="1" />
+              <rect x="14" y="3" width="7" height="7" rx="1" />
+              <rect x="3" y="14" width="7" height="7" rx="1" />
+              <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+          </template>
           <template v-else-if="app.id === 'chat'">
             <svg
               width="24"
@@ -233,31 +250,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useHammer } from '../composables/useHammer'
 import { useThemeStore } from '../stores/themeStore'
 import { useI18n } from '../composables/useI18n'
 import { wallpaperService } from '../../utils/wallpaperService'
+import type { ToolType } from '../types'
+import { APP_CATALOG, getInstalledAppTools } from '../utils/appCatalog'
 
 export interface HomeApp {
   id: string
   label: string
-  tool: string
+  tool: ToolType
   color: string
 }
 
 const { t } = useI18n()
+const installedTools = ref<Set<ToolType>>(new Set())
 
-const apps = computed<HomeApp[]>(() => [
-  { id: 'terminal', label: t('home.apps.terminal'), tool: 'terminal', color: 'var(--gui-accent)' },
-  { id: 'files', label: t('home.apps.files'), tool: 'filemanager', color: 'var(--gui-accent)' },
-  { id: 'chat', label: t('home.apps.chat'), tool: 'chat', color: 'var(--gui-accent)' },
-  { id: 'dash', label: t('home.apps.dash'), tool: 'dash', color: 'var(--gui-accent)' },
-  { id: 'feedback', label: t('home.apps.feedback'), tool: 'feedback', color: 'var(--gui-accent)' },
-  { id: 'docs', label: t('home.apps.docs'), tool: 'docs', color: 'var(--gui-accent)' },
-  { id: 'settings', label: t('home.apps.settings'), tool: 'settings', color: 'var(--gui-accent)' },
-  { id: 'editor', label: t('home.apps.editor'), tool: 'editor', color: 'var(--gui-accent)' },
-])
+const homeAppLabelKeys: Partial<Record<ToolType, string>> = {
+  terminal: 'home.apps.terminal',
+  filemanager: 'home.apps.files',
+  chat: 'home.apps.chat',
+  dash: 'home.apps.dash',
+  feedback: 'home.apps.feedback',
+  docs: 'home.apps.docs',
+  settings: 'home.apps.settings',
+  appmanager: 'home.apps.appManager',
+  editor: 'home.apps.editor',
+}
+
+const apps = computed<HomeApp[]>(() =>
+  APP_CATALOG.filter((app) => installedTools.value.has(app.tool)).map((app) => ({
+    id: app.id,
+    label: t(homeAppLabelKeys[app.tool] ?? app.labelKey),
+    tool: app.tool,
+    color: 'var(--gui-accent)',
+  }))
+)
+
+function refreshInstalledApps(): void {
+  installedTools.value = getInstalledAppTools()
+}
 
 const emit = defineEmits<{
   launch: [app: HomeApp]
@@ -283,7 +317,16 @@ const wallpaperPatternColor2 = computed(() => themeStore.currentTheme.colors.wal
 const wallpaperPatternColor3 = computed(() => themeStore.currentTheme.colors.wallpaperGradient3)
 
 const iconGradientStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+  background:
+    themeStore.currentTheme.id === 'claude'
+      ? '#FAF9F5'
+      : `linear-gradient(135deg, ${themeStore.currentTheme.colors.appIconFrom}, ${themeStore.currentTheme.colors.appIconTo})`,
+  border: themeStore.currentTheme.id === 'claude' ? '1.5px solid #D97757' : undefined,
+  color: themeStore.currentTheme.id === 'claude' ? '#D97757' : undefined,
+  boxShadow:
+    themeStore.currentTheme.id === 'claude'
+      ? '0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 0.5px rgba(0, 0, 0, 0.04)'
+      : undefined,
 }))
 
 useHammer(homeRef, {
@@ -309,6 +352,7 @@ function onAppTap(app: HomeApp): void {
 }
 
 onMounted(async () => {
+  refreshInstalledApps()
   updateTime()
   setInterval(updateTime, 10000)
 
@@ -335,6 +379,11 @@ onMounted(async () => {
       // Silently fail
     }
   })
+  window.addEventListener('app-catalog-changed', refreshInstalledApps)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('app-catalog-changed', refreshInstalledApps)
 })
 </script>
 
@@ -512,6 +561,58 @@ onMounted(async () => {
 .light .home-screen__app-label {
   text-shadow: none;
   color: var(--gui-text-primary, #000000);
+}
+
+:global(.light:not(.claude) .home-screen__app-icon) {
+  background: #ffffff !important;
+  border: 1.5px solid #d1d1d6;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.02);
+}
+
+:global(.light:not(.claude) .home-screen__app-icon svg) {
+  stroke: #1c1c1e !important;
+}
+
+:global(.light:not(.claude) .home-screen__app-icon--terminal-text) {
+  color: #1c1c1e !important;
+}
+
+:global(.claude .home-screen__app-icon) {
+  background: #faf9f5 !important;
+  border: 1.5px solid #d97757;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 0 0 0.5px rgba(0, 0, 0, 0.04);
+}
+
+:global(.claude .home-screen__app-icon svg) {
+  stroke: #d97757 !important;
+}
+
+:global(.claude .home-screen__app-icon--terminal-text) {
+  color: #d97757 !important;
+}
+
+:global(.light:not(.claude) .home-screen__app:hover .home-screen__app-icon),
+:global(.claude .home-screen__app:hover .home-screen__app-icon) {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+:global(.light:not(.claude) .home-screen__app-label) {
+  text-shadow: none;
+  color: #000000;
+  font-weight: 600;
+}
+
+:global(.claude .home-screen__app-label) {
+  width: auto;
+  min-width: 64px;
+  max-width: 120px;
+  text-shadow: none;
+  color: #1c1c1e;
+  font-weight: 600;
 }
 
 /* Home Indicator */

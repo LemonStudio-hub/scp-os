@@ -101,6 +101,11 @@ export const useThemeStore = defineStore('theme', () => {
     root.style.setProperty('--gui-editor-bg', c.editorBg)
     root.style.setProperty('--gui-inner-glow', c.innerGlow)
 
+    availableThemes.forEach((t) => {
+      root.classList.remove(t.id)
+    })
+    root.classList.add(theme.id)
+
     // Update light/dark class on html element
     if (theme.isDark) {
       root.classList.add('dark')

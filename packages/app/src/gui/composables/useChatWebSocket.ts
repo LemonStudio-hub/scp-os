@@ -105,10 +105,6 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
   const pendingMessages: Array<{ content: string; tempId?: string }> = []
 
   function getWsUrl(): string {
-    // In dev mode, connect to the local wrangler server to avoid Cloudflare tunnel issues
-    if (import.meta.env.DEV) {
-      return `ws://localhost:8787/chat/ws?user_id=${encodeURIComponent(currentUserId)}&username=${encodeURIComponent(currentUsername)}&room_id=${currentRoomId}`
-    }
     const base = apiUrl.startsWith('https')
       ? apiUrl.replace(/^https/, 'wss')
       : apiUrl.replace(/^http/, 'ws')
