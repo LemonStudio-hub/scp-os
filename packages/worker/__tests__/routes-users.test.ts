@@ -100,19 +100,20 @@ describe('POST /api/user/register', () => {
     expect(body.success).toBe(true)
   })
 
-  it('returns 409 when nickname is taken', async () => {
+  it('allows shared guest nicknames (no 409 for display-name collisions)', async () => {
     mockUserId = 'user-123'
-    const mockDb = makeDb([], { id: 2 })
+    // first() returns existing guest row; guests may share nicknames
+    const mockDb = makeDb([], { account_type: 'guest' })
     const env = { ...baseEnv, SCP_DB: mockDb }
     const app = createApp()
     const res = await app.request('/api/user/register', {
       method: 'POST',
-      body: JSON.stringify({ nickname: 'TakenName' }),
+      body: JSON.stringify({ nickname: 'SharedGuest' }),
       headers: { 'Content-Type': 'application/json' },
     }, env)
-    expect(res.status).toBe(409)
-    const body = await res.json<{ success: boolean; error: string }>()
-    expect(body.error).toBe('Nickname already taken')
+    expect(res.status).toBe(200)
+    const body = await res.json<{ success: boolean }>()
+    expect(body.success).toBe(true)
   })
 })
 
@@ -128,7 +129,8 @@ describe('GET /api/user/check-nickname', () => {
     expect(body.available).toBe(true)
   })
 
-  it('returns available false when nickname is taken', async () => {
+  it('returns available false when nickname is already taken', async () => {
+    // Uniqueness is enforced so registered (and guest) nicknames cannot collide.
     const mockDb = makeDb([], { id: 1 })
     const env = { ...baseEnv, SCP_DB: mockDb }
     const app = createApp()
