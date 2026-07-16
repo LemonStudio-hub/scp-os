@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Dependencies
+.pnpm-store
 node_modules
 dist
 dist-ssr
@@ -55,12 +56,18 @@ tauri.conf.json.bak
 .worker-meta/
 wrangler.toml.bak
 
-# Environment files
+# Environment files (never commit secrets — JWT etc. belong in Worker secrets only)
 .env
 .env.local
 .env.*.local
 .env.production
 .env.development
+**/.env
+**/.env.local
+**/.env.production
+**/.env.development
+!.env.example
+!**/.env.example
 
 # TypeScript
 *.tsbuildinfo
