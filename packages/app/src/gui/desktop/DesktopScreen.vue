@@ -386,6 +386,10 @@ function saveDesktopShortcut(app: DesktopApp) {
 
 /** Resolve desktop icon label via i18n so system apps follow locale without rewriting .desktop files. */
 function getAppLabel(app: DesktopApp): string {
+  // Folder/file icons keep their real names; only pure app shortcuts map tool → i18n.
+  if (app.isFile || app.isDirectory) {
+    return app.label
+  }
   const toolToKey: Record<string, string> = {
     terminal: 'app.terminal',
     filemanager: 'app.files',
