@@ -451,7 +451,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import PCWindow from '../../components/PCWindow.vue'
 import { useThemeStore } from '../../stores/themeStore'
 import { useI18n } from '../../composables/useI18n'
@@ -509,7 +509,6 @@ const {
   switchRoom,
   sendMessage,
   retryMessage,
-  autoResizeInput,
   formatTime,
   formatRoomTime,
   truncateMessage,
@@ -521,6 +520,14 @@ const {
   saveNickname,
   loadHistoryFromAPI,
 } = useChat()
+
+// Local to this window (useChat does not own the textarea DOM node).
+const inputRef = ref<HTMLTextAreaElement>()
+function autoResizeInput(): void {
+  if (!inputRef.value) return
+  inputRef.value.style.height = 'auto'
+  inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 100) + 'px'
+}
 
 const userId = computed(() => authStore.userId)
 
